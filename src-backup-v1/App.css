@@ -18,3 +18,12 @@ h1 {
 section {
   margin-bottom: 40px;
 }
+/* Existing styles above */
+
+.module {
+  border: 1px solid #aaa;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background: #f0f0f0;
+}

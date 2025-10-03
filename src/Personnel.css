@@ -1,111 +1,47 @@
-/* Card container (match Checklist look & width) */
-.personnel-section {
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 700px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* Heading */
-.personnel-section h2 {
-  margin: 0 0 12px 0;
-  font-size: 1.5rem;
-  color: #333;
-  border-bottom: 2px solid #0077cc;
-  padding-bottom: 8px;
-}
-
-/* Add form */
-.personnel-input {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.personnel-input input {
-  flex: 1;
-  padding: 10px;
-  font-size: 1rem;
+.personnel {
   background: #fff;
-  border: 1px solid #cfcfcf;
-  border-radius: 6px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.personnel-input input:focus {
-  outline: none;
-  border-color: #0077cc;
-  box-shadow: 0 0 0 3px rgba(0,119,204,0.15);
+.personnel h2 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
 }
 
-.add-btn {
-  background-color: #0077cc;
-  color: #fff;
+.personnel ul {
+  list-style: none;
+  padding: 0;
+}
+
+.personnel li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1rem;
+}
+
+.personnel li:last-child {
+  border-bottom: none;
+}
+
+.add-button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background: #28a745; /* green */
+  color: white;
   border: none;
-  padding: 10px 14px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
   transition: background 0.2s ease;
 }
 
-.add-btn:hover {
-  background-color: #005fa3;
-}
-
-/* List */
-.personnel-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.personnel-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
-}
-
-.personnel-list li:hover {
-  background: #f4f8ff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  transform: translateY(-1px);
-}
-
-.personnel-list li span {
-  flex: 1;
-  color: #222;
-  font-size: 1rem;
-}
-
-/* Remove button */
-.remove-btn {
-  background-color: #e53935;
-  color: #fff;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s ease;
-}
-
-.remove-btn:hover {
-  background-color: #c62828;
-}
-
-/* Mobile tweaks */
-@media (max-width: 480px) {
-  .personnel-input {
-    flex-direction: column;
-  }
+.add-button:hover {
+  background: #218838;
 }

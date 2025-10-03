@@ -1,61 +1,49 @@
 import React, { useState } from "react";
-import "./Personnel.css";
 
 export default function Personnel() {
-  // Prepopulated so you can confirm styling immediately
-  const [personnel, setPersonnel] = useState([
-    "Alice — Project Sponsor",
-    "Bob — Project Manager"
+  const [team, setTeam] = useState([
+    { name: "Alice", role: "Project Sponsor" },
+    { name: "Bob", role: "Project Manager" }
   ]);
-  const [name, setName] = useState("");
 
-  const addPerson = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    setPersonnel((prev) => [...prev, trimmed]);
-    setName("");
+  const [newName, setNewName] = useState("");
+  const [newRole, setNewRole] = useState("");
+
+  const addMember = () => {
+    if (newName.trim() === "" || newRole.trim() === "") return;
+    setTeam([...team, { name: newName, role: newRole }]);
+    setNewName("");
+    setNewRole("");
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") addPerson();
-  };
-
-  const removePerson = (index) => {
-    setPersonnel((prev) => prev.filter((_, i) => i !== index));
+  const removeMember = (index) => {
+    setTeam(team.filter((_, i) => i !== index));
   };
 
   return (
-    <div className="personnel-section">
+    <section className="box">
       <h2>Project Personnel</h2>
-
-      <div className="personnel-input">
-        <input
-          type="text"
-          placeholder="Enter name & role (e.g. Jane — Quality Manager)"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button type="button" onClick={addPerson} className="add-btn">
-          Add
-        </button>
-      </div>
-
-      <ul className="personnel-list">
-        {personnel.map((person, index) => (
-          <li key={index}>
-            <span>{person}</span>
-            <button
-              type="button"
-              className="remove-btn"
-              onClick={() => removePerson(index)}
-              aria-label={`Remove ${person}`}
-            >
-              Remove
-            </button>
+      <ul>
+        {team.map((member, idx) => (
+          <li key={idx}>
+            {member.name} — {member.role} 
+            <button onClick={() => removeMember(idx)}>Remove</button>
           </li>
         ))}
       </ul>
-    </div>
+      <input
+        type="text"
+        placeholder="Name"
+        value={newName}
+        onChange={(e) => setNewName(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Role"
+        value={newRole}
+        onChange={(e) => setNewRole(e.target.value)}
+      />
+      <button className="add-btn" onClick={addMember}>Add</button>
+    </section>
   );
 }

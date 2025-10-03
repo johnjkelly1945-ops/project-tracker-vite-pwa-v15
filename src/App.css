@@ -1,20 +1,33 @@
-.app {
-  max-width: 900px;         /* wider container for the whole app */
-  margin: 0 auto;           /* center horizontally */
-  padding: 20px;
+.app-container {
   font-family: Arial, sans-serif;
-  background: #f0f2f5;      /* soft background */
-  min-height: 100vh;        /* full height */
+  padding: 20px;
 }
 
-h1 {
+.header {
   text-align: center;
-  color: #222;
-  font-size: 2rem;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
-/* Separate sections (Checklist, Personnel, etc.) */
-section {
-  margin-bottom: 40px;
+.header h1 {
+  font-size: 2em;
 }
+
+.header p {
+  font-size: 1.2em;
+  color: #555;
+}
+
+.boxes {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.box {
+  border: 1px solid #ccc;
+  padding: 15px;
+  width: 30%;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+npm run dev

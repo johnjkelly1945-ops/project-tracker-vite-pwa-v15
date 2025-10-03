@@ -1,67 +1,37 @@
 import React, { useState } from "react";
-import "./Checklist.css";
 
 export default function Checklist({ title, items }) {
-  const [tasks, setTasks] = useState(items);
+  const [list, setList] = useState(items);
+  const [newItem, setNewItem] = useState("");
 
-  const updateStatus = (index, newStatus) => {
-    const updated = [...tasks];
-    updated[index].status = newStatus;
-    setTasks(updated);
+  const handleAdd = () => {
+    if (newItem.trim() === "") return;
+    setList([...list, { text: newItem }]);
+    setNewItem("");
   };
 
-  const deleteTask = (index) => {
-    setTasks(tasks.filter((_, i) => i !== index));
-  };
-
-  const addTask = (text) => {
-    if (text.trim()) {
-      setTasks([...tasks, { text, status: "Not started" }]);
-    }
+  const handleDelete = (index) => {
+    const updated = list.filter((_, i) => i !== index);
+    setList(updated);
   };
 
   return (
-    <div className="checklist">
+    <section className="box">
       <h2>{title}</h2>
       <ul>
-        {tasks.map((task, index) => (
-          <li key={index} className={`status-${task.status.toLowerCase().replace(" ", "-")}`}>
-            <span>{task.text}</span>
-            <select
-              value={task.status}
-              onChange={(e) => updateStatus(index, e.target.value)}
-            >
-              <option>Not started</option>
-              <option>In progress</option>
-              <option>Completed</option>
-            </select>
-            <button onClick={() => deleteTask(index)}>Delete</button>
+        {list.map((item, idx) => (
+          <li key={idx}>
+            {item.text} <button onClick={() => handleDelete(idx)}>Delete</button>
           </li>
         ))}
       </ul>
-      <AddTaskForm onAdd={addTask} />
-    </div>
-  );
-}
-
-function AddTaskForm({ onAdd }) {
-  const [value, setValue] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onAdd(value);
-    setValue("");
-  };
-
-  return (
-    <form className="add-task" onSubmit={handleSubmit}>
       <input
         type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Add a new task..."
+        value={newItem}
+        placeholder="Add new item..."
+        onChange={(e) => setNewItem(e.target.value)}
       />
-      <button type="submit">Add</button>
-    </form>
+      <button className="add-btn" onClick={handleAdd}>Add</button>
+    </section>
   );
 }

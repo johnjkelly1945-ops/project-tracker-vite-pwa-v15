@@ -1,59 +1,55 @@
 import React from "react";
-import Checklist from "./Checklist";
-import Personnel from "./Personnel";
-import "./App.css";
+import PreProject from "./Components/PreProject";
+import Personnel from "./Components/Personnel";
+import Progress from "./Components/Progress";
+import Closure from "./Components/Closure";
+import "./Styles/App.css";
 
-export default function App() {
-  const projectPhases = [
-    {
-      title: "Pre-Project",
-      items: [
-        { text: "Cost benefit analysis completed", status: "Not started" },
-        { text: "Feasibility study approved", status: "Not started" },
-        { text: "Project charter signed", status: "Not started" }
-      ]
-    },
-    {
-      title: "Planning",
-      items: [
-        { text: "Requirements gathered", status: "Not started" },
-        { text: "Timeline created", status: "Not started" },
-        { text: "Resources allocated", status: "Not started" }
-      ]
-    },
-    {
-      title: "Execution",
-      items: [
-        { text: "Development started", status: "Not started" },
-        { text: "Testing ongoing", status: "Not started" },
-        { text: "Regular updates provided", status: "Not started" }
-      ]
-    },
-    {
-      title: "Closure",
-      items: [
-        { text: "Deliverables signed off", status: "Not started" },
-        { text: "Team released", status: "Not started" },
-        { text: "Lessons learned completed", status: "Not started" }
-      ]
-    }
-  ];
-
+function App() {
   return (
-    <div className="app">
-      <h1>Project Tracker v2</h1>
+    <div className="app-container">
+      {/* Welcome section */}
+      <div className="header">
+        <h1>Welcome to METRA</h1>
+        <p>Your personal project tracker</p>
+      </div>
 
-      {/* Pre-Project */}
-      <Checklist title={projectPhases[0].title} items={projectPhases[0].items} />
+      {/* MVP blocks */}
+      <div className="boxes">
+        <div className="box">
+          <h2>Projects</h2>
+          <ul>
+            <li>Project Alpha</li>
+            <li>Project Beta</li>
+          </ul>
+        </div>
 
-      {/* Personnel goes here */}
+        <div className="box">
+          <h2>Tasks</h2>
+          <ul>
+            <li>Task 1</li>
+            <li>Task 2</li>
+          </ul>
+        </div>
+
+        <div className="box">
+          <h2>Templates</h2>
+          <ul>
+            <li>Project Charter</li>
+            <li>Risk Log</li>
+            <li>Resource Plan</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Original modules */}
+      <PreProject />
       <Personnel />
-
-      {/* Rest of the phases */}
-      {projectPhases.slice(1).map((phase, index) => (
-        <Checklist key={index} title={phase.title} items={phase.items} />
-      ))}
+      <Progress />
+      <Closure />
     </div>
   );
 }
+
+export default App;
 
