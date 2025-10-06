@@ -1,3 +1,8 @@
+/* ============================
+   METRA - Checklist Styling
+   Light Theme (Safari compatible)
+   ============================ */
+
 .checklist {
   background: #f9f9f9;
   border: 1px solid #ddd;
@@ -32,9 +37,9 @@
   transition: background 0.3s ease;
 }
 
-/* Status colors */
+/* --- Status Colors --- */
 .status-not-started {
-  background: #ffe6e6; /* light red */
+  background: #ffe6e6; /* light red/pink */
 }
 
 .status-in-progress {
@@ -46,10 +51,15 @@
   text-decoration: line-through;
 }
 
+/* --- Select & Buttons --- */
 .checklist select {
   margin-left: 10px;
   padding: 4px 6px;
   font-size: 0.9rem;
+  background: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .checklist button {
@@ -60,8 +70,14 @@
   border-radius: 4px;
   color: white;
   cursor: pointer;
+  background: #5cb85c;
 }
 
+.checklist button:hover {
+  background: #4cae4c;
+}
+
+/* --- Delete Button --- */
 .checklist button.delete-btn {
   background: #d9534f;
 }
@@ -70,9 +86,14 @@
   background: #c9302c;
 }
 
+/* --- Add Task Row --- */
 .checklist .add-task {
   display: flex;
+  align-items: center;
   margin-top: 15px;
+  background: #ffe6e6; /* matches Not Started */
+  border-radius: 6px;
+  padding: 8px;
 }
 
 .checklist .add-task input {
@@ -81,6 +102,8 @@
   border: 1px solid #ddd;
   border-radius: 4px 0 0 4px;
   font-size: 0.95rem;
+  background: #fff;
+  color: #333;
 }
 
 .checklist .add-task button {
@@ -89,26 +112,76 @@
   background: #5cb85c;
   border: none;
   border-radius: 0 4px 4px 0;
+  color: #fff;
+  cursor: pointer;
 }
 
 .checklist .add-task button:hover {
   background: #4cae4c;
 }
-/* Ensure Add row looks like a "Not Started" task */
-.checklist li.add-task {
-  background: #ffe6e6; /* same as .status-not-started */
+
+/* --- Document / Template Link Styling --- */
+.task-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.task-text {
+  flex: 1;
+  color: #333;
+  font-weight: 500;
+}
+
+.link-input {
+  width: 45%;
+  padding: 5px 6px;
+  border: 1px solid #ccc;
   border-radius: 6px;
-}
-/* Status colors */
-.status-not-started {
-  background: #ffe6e6; /* light pink */
-}
-
-.status-in-progress {
-  background: #fff4cc; /* light yellow */
+  font-size: 0.9rem;
+  background: #fff;
+  color: #333;
 }
 
-.status-completed {
-  background: #e6ffe6; /* light green */
-  text-decoration: line-through;
+.task-link {
+  text-decoration: none;
+  color: #0077cc;
+  font-size: 0.9rem;
+  margin-left: 6px;
+}
+
+.task-link:hover {
+  text-decoration: underline;
+}
+
+.task-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Safari / macOS Light Theme Lock --- */
+:root {
+  color-scheme: light;
+}
+
+input, select, button {
+  background-color: #fff !important;
+  color: #333 !important;
+}
+.checklist ul {
+  max-height: 300px;   /* adjust height as needed */
+  overflow-y: auto;
+  padding-right: 8px;  /* space for scrollbar */
+}
+
+/* Optional: make scrollbar subtle on Safari */
+.checklist ul::-webkit-scrollbar {
+  width: 8px;
+}
+.checklist ul::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
 }

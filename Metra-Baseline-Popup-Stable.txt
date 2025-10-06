@@ -1,0 +1,34 @@
+
+
+📦 METRA – Baseline Summary (Tag: baseline-popup-stable)
+
+Branch: main  
+Tag: baseline-popup-stable  
+Environment: Vite + React 18, Safari browser, VS Code workspace (project-tracker-vite-pwa-v15.code-workspace)
+
+✅ Current stable features
+- All core modules active: PreProject, Progress, Personnel, Closure
+- Add/Delete functions working in each module
+- Personnel popup live (organisation, department, email fields)
+- LocalStorage persistence confirmed
+- Light theme styling consistent
+- Welcome header displays properly
+- GitHub main branch synced and tagged at baseline-popup-stable
+
+🧭 Next feature target
+Document / Template Linking for PreProject module:
+- Add “Attach Document” or “Link Template” button beside each task
+- Allow URL or file reference
+- Store in localStorage
+- Maintain layout and light styling
+- Test each change in Safari before next step
+
+🧰 Workflow
+- Run dev server: npm run dev  (🟢 zsh terminal)
+- Stop server: Ctrl + C
+- Open in Safari: http://localhost:5173/
+- New feature branch: git checkout -b feature-document-linking
+- Restore this version anytime: git checkout baseline-popup-stable
+
+All source files are stored on GitHub at tag baseline-popup-stable.  
+Please pick up from here and guide me step-by-step as before.

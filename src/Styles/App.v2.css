@@ -1,0 +1,200 @@
+/* ============================================================
+   METRA – BASELINE GLOBAL STYLES (LIGHT MODE)
+   ============================================================ */
+
+/* Root setup */
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color-scheme: light;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Page layout */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #f9f9f9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Header === */
+.header {
+  background: #003366;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  margin-bottom: 20px;
+}
+
+/* === App Container === */
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* === Lists and Items === */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+/* === Inputs === */
+input, select {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px;
+  margin: 4px 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  color: #333;
+}
+
+/* Add Person Section */
+.add-person {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* ============================================================
+   BUTTON STYLES – FIXED COLOUR PRIORITY
+   ============================================================ */
+
+button {
+  font-family: inherit;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px 12px;
+  margin-left: 6px;
+  transition: background 0.3s ease;
+}
+
+/* Blue Primary Buttons */
+.btn-primary,
+.view-btn,
+button:not(.add-btn):not(.delete-btn):not(.save-btn):not(.close-btn) {
+  background-color: #007bff !important;
+  color: #fff !important;
+}
+.btn-primary:hover,
+.view-btn:hover {
+  background-color: #0056b3 !important;
+}
+
+/* Green Add Buttons */
+.add-btn,
+.add-person button {
+  background-color: #5cb85c !important;
+  color: #fff !important;
+}
+.add-btn:hover,
+.add-person button:hover {
+  background-color: #4cae4c !important;
+}
+
+/* Red Delete Buttons */
+.delete-btn,
+.btn-danger {
+  background-color: #d9534f !important;
+  color: #fff !important;
+}
+.delete-btn:hover,
+.btn-danger:hover {
+  background-color: #c9302c !important;
+}
+
+/* Popup Buttons */
+.save-btn {
+  background-color: #5cb85c !important;
+  color: #fff !important;
+}
+.save-btn:hover {
+  background-color: #4cae4c !important;
+}
+.close-btn {
+  background-color: #d9534f !important;
+  color: #fff !important;
+}
+.close-btn:hover {
+  background-color: #c9302c !important;
+}
+
+/* === Popup Overlay === */
+.modal-overlay, .popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* === Popup Content === */
+.modal-box, .popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-box h3, .popup-content h3 {
+  margin-top: 0;
+  color: #003366;
+  margin-bottom: 10px;
+}
+
+/* Popup Actions */
+.modal-actions, .popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* === Responsive === */
+@media (max-width: 600px) {
+  .add-person {
+    flex-direction: column;
+  }
+
+  li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

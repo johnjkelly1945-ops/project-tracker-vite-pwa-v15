@@ -3,7 +3,7 @@ import PreProject from "./components/PreProject";
 import Personnel from "./components/Personnel";
 import Progress from "./components/Progress";
 import Closure from "./components/Closure";
-import "./Styles/App.css";
+import "./Styles/App.v2.css";
 
 function App() {
   return (

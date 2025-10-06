@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
 
+console.log("✅ Progress component loaded (with delete confirmation)");
+
 export default function Progress() {
-  const storageKey = "progressTasks";
+  const storageKey = "progress-tasks";
 
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem(storageKey);
     return saved
       ? JSON.parse(saved)
       : [
-          { text: "Requirements gathered", status: "Not started" },
-          { text: "Timeline created", status: "Not started" },
-          { text: "Resources allocated", status: "Not started" }
+          { text: "Project kick-off meeting held", status: "Not started" },
+          { text: "Requirements documented", status: "Not started" },
+          { text: "Initial design reviewed", status: "Not started" },
         ];
   });
 
@@ -21,17 +23,25 @@ export default function Progress() {
     localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
 
+  // --- Add new task ---
   const addTask = () => {
     if (!newTask.trim()) return;
     setTasks([...tasks, { text: newTask, status: "Not started" }]);
     setNewTask("");
   };
 
+  // --- Confirm before delete ---
   const deleteTask = (index) => {
-    const updated = tasks.filter((_, i) => i !== index);
-    setTasks(updated);
+    const task = tasks[index];
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${task.text}"?`
+    );
+    if (confirmDelete) {
+      setTasks(tasks.filter((_, i) => i !== index));
+    }
   };
 
+  // --- Change task status ---
   const changeStatus = (index, newStatus) => {
     const updated = [...tasks];
     updated[index].status = newStatus;
@@ -40,7 +50,8 @@ export default function Progress() {
 
   return (
     <div className="checklist">
-      <h2>Progress</h2>
+      <h2>Project Progress</h2>
+
       <ul>
         {tasks.map((task, i) => (
           <li
