@@ -1,0 +1,102 @@
+## METRA – Baseline & Version Control Notes
+(Prepared October 2025)
+
+This note summarises best practice for handling baselines, branches, and tags in Git to keep METRA stable during development.
+
+---
+
+### 🔹 1. Baseline = A locked snapshot
+A “baseline” is a point-in-time record of code that is known to work correctly.
+
+Create a baseline **only** when the app runs cleanly in Safari and all modules behave as expected.
+
+Command:
+    git add -A
+    git commit -m "Stable baseline: description"
+    git tag -a baseline-YYYY-MM-DD -m "notes"
+    git push origin HEAD --tags
+
+Example:
+    git tag -a baseline-2025-10-10 -m "Stable PreProject restore"
+
+---
+
+### 🔹 2. Keep experiments separate
+Before trying new ideas (e.g. scroll fix, pop-up windows, permissions):
+    git switch -c feature-new-idea
+
+This makes a new branch so experiments can’t damage the working baseline.
+
+When done, you can merge or delete the branch safely.
+
+---
+
+### 🔹 3. Always push tags
+Tags are local by default. To ensure GitHub also keeps them:
+    git push origin HEAD --tags
+
+That permanently stores every baseline remotely.
+
+---
+
+### 🔹 4. Checking a previous baseline
+To view or test an earlier version:
+    git checkout baseline-YYYY-MM-DD
+
+You will be in “detached HEAD” state — this is normal for viewing or testing.
+To return to normal development:
+    git switch main
+    or
+    git switch <branch-name>
+
+---
+
+### 🔹 5. Safe restart cycle
+When testing changes:
+    npm run dev   → start Vite
+    Control + C   → stop server
+    npm run dev   → restart
+
+Vite’s cache can be cleared if things look odd:
+    rm -rf node_modules/.vite
+
+Safari hard refresh:
+    ⌘ + Option + R
+
+---
+
+### 🔹 6. Quick status & differences
+Check what’s changed:
+    git status
+    git diff
+
+List all tags:
+    git tag
+
+Compare two baselines:
+    git diff baseline-2025-10-09 baseline-2025-10-10
+
+---
+
+### 🔹 7. Recovery principle
+If a working version seems lost:
+1. Identify the last tag or branch that worked.
+2. Restore the specific file from that tag:
+       git show baseline-YYYY-MM-DD:path/to/file > path/to/file
+3. Re-tag the recovered version with a new date.
+
+---
+
+### 🔹 8. Always document
+Keep a short note after each stable tag describing:
+- which modules worked
+- what features were added
+- known issues (if any)
+
+This habit makes troubleshooting far easier later.
+
+---
+
+Prepared for: John Kelly
+Project: METRA – Project Tracker
+Location: ~/Documents/project-tracker-vite-pwa-v15
