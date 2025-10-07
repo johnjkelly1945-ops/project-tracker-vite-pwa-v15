@@ -1,0 +1,18 @@
+## METRA – Baseline Quick-Reference Guide
+
+This guide explains how to view, compare, and restore your saved baselines and tags in Git.
+
+---
+
+### 🟢 List all available tags
+```bash
+git tag
+
+git show baseline-2025-10-09
+
+git checkout baseline-2025-10-09
+
+git switch feature-module-windows
+
+git diff baseline-2025-10-08 baseline-2025-10-09
+
