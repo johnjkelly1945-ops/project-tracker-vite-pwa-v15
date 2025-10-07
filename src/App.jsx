@@ -1,25 +1,18 @@
+// src/App.jsx
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Summary from "./components/Summary";
 import PreProject from "./components/PreProject";
-import Personnel from "./components/Personnel";
-import Progress from "./components/Progress";
-import Closure from "./components/Closure";
 import "./Styles/App.css";
 
 function App() {
   return (
-    <div className="app-container">
-      {/* Header */}
-      <div className="header">
-        <h1>Welcome to METRA</h1>
-        <p>Your personal project tracker</p>
-      </div>
-
-      {/* Modules in order */}
-      <PreProject />
-      <Personnel />
-      <Progress />
-      <Closure />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Summary />} />
+        <Route path="/preproject" element={<PreProject />} />
+      </Routes>
+    </Router>
   );
 }
 

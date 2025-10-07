@@ -1,26 +1,29 @@
+/* === Checklist.css (Baseline styling + scroll containment) === */
+
+/* Container for each checklist module (PreProject, Progress, Personnel, Closure) */
 .checklist {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 20px auto;
-  max-width: 700px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  max-height: 60vh;               /* Height limit for internal scrolling */
+  overflow-y: auto;               /* Enable vertical scroll only inside this box */
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on Safari */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;   /* ✅ Prevent scroll from reaching the page */
+  padding-right: 8px;
+  margin-top: 10px;
+  background-color: transparent;
+  box-sizing: border-box;
 }
 
-.checklist h2 {
-  margin-top: 0;
-  text-align: center;
-  font-size: 1.4rem;
-  color: #333;
-}
-
+/* Checklist list structure */
 .checklist ul {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
+/* Checklist list items */
 .checklist li {
   display: flex;
   justify-content: space-between;
@@ -32,83 +35,99 @@
   transition: background 0.3s ease;
 }
 
-/* Status colors */
+/* === Colour-coded status backgrounds === */
 .status-not-started {
-  background: #ffe6e6; /* light red */
+  background: #ffe0e0;
 }
 
 .status-in-progress {
-  background: #fff4cc; /* light yellow */
+  background: #fff4cc;
 }
 
 .status-completed {
-  background: #e6ffe6; /* light green */
+  background: #e0ffe0;
   text-decoration: line-through;
+  color: #666;
 }
 
-.checklist select {
-  margin-left: 10px;
-  padding: 4px 6px;
-  font-size: 0.9rem;
-}
-
+/* === Buttons inside checklist === */
 .checklist button {
   margin-left: 10px;
-  padding: 4px 8px;
-  font-size: 0.9rem;
   border: none;
-  border-radius: 4px;
-  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
 }
 
-.checklist button.delete-btn {
-  background: #d9534f;
+/* Blue (add item) */
+button.add-btn {
+  background-color: #007bff;
+  color: white;
 }
 
-.checklist button.delete-btn:hover {
-  background: #c9302c;
+button.add-btn:hover {
+  background-color: #0069d9;
 }
 
-.checklist .add-task {
+/* Red (delete) */
+button.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+button.delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* Green (undo) */
+button.undo-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+button.undo-btn:hover {
+  background-color: #218838;
+}
+
+/* === Optional scrollbar styling === */
+.checklist::-webkit-scrollbar {
+  width: 8px;
+}
+
+.checklist::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.checklist::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* === App container (from your original baseline) === */
+.app-container {
+  font-family: Arial, sans-serif;
+}
+
+/* General header styling if used globally */
+h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Input area styling */
+.input-area {
   display: flex;
-  margin-top: 15px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.checklist .add-task input {
+.input-area input {
   flex: 1;
   padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px 0 0 4px;
-  font-size: 0.95rem;
-}
-
-.checklist .add-task button {
-  padding: 8px 12px;
-  font-size: 0.95rem;
-  background: #5cb85c;
-  border: none;
-  border-radius: 0 4px 4px 0;
-}
-
-.checklist .add-task button:hover {
-  background: #4cae4c;
-}
-/* Ensure Add row looks like a "Not Started" task */
-.checklist li.add-task {
-  background: #ffe6e6; /* same as .status-not-started */
+  font-size: 1rem;
   border-radius: 6px;
-}
-/* Status colors */
-.status-not-started {
-  background: #ffe6e6; /* light pink */
-}
-
-.status-in-progress {
-  background: #fff4cc; /* light yellow */
-}
-
-.status-completed {
-  background: #e6ffe6; /* light green */
-  text-decoration: line-through;
+  border: 1px solid #ccc;
+  outline: none;
 }
