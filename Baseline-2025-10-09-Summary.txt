@@ -1,0 +1,23 @@
+## Baseline Summary — baseline-2025-10-09
+Tag: baseline-2025-10-09
+Branch: feature-module-windows
+Date: 9 October 2025
+Commit: Stable header baseline (PreProject only)
+
+Description:
+This baseline captures the first fully functional modular window implementation in METRA.
+The PreProject module now opens in its own independent window with:
+• A unified blue header bar containing “Return to Summary” and “Close Window”
+• Full task list restored with persistence via localStorage
+• All colour-coded statuses and checklist styling from earlier baselines intact
+• Correct storage key alignment (“preproject-tasks”) maintaining historical data
+• Integration with new windowTracker.js and ModuleHeader.jsx components
+
+The Summary Dashboard remains the central control hub, while this baseline demonstrates
+the new multi-window structure that will later extend to Progress, Personnel, and Closure.
+
+Stability:
+• Verified launch via Safari (npm run dev)
+• Header visible and functional
+• Checklist data loads and persists correctly
+• Safe restore point for all future module-window development
