@@ -1,84 +1,90 @@
+// src/components/PreProject.jsx
 import React, { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
+import ModuleHeader from "./ModuleHeader";
 
 export default function PreProject() {
+ const storageKey = "preproject-tasks";
+
+
   const [tasks, setTasks] = useState(() => {
-    // Load from localStorage if available
-    const saved = localStorage.getItem("preproject-tasks");
-    return saved
-      ? JSON.parse(saved)
-      : [
-          { text: "Cost benefit analysis completed", status: "Not started" },
-          { text: "Feasibility study approved", status: "Not started" },
-          { text: "Project charter signed", status: "Not started" }
-        ];
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [newTask, setNewTask] = useState("");
 
-  // Save tasks whenever they change
   useEffect(() => {
-    localStorage.setItem("preproject-tasks", JSON.stringify(tasks));
+    localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
 
   const addTask = () => {
-    if (!newTask.trim()) return;
-    setTasks([...tasks, { text: newTask, status: "Not started" }]);
+    if (newTask.trim() === "") return;
+    const newItem = {
+      id: Date.now(),
+      text: newTask,
+      status: "Not Started",
+      dateAdded: new Date().toLocaleString(),
+    };
+    setTasks([...tasks, newItem]);
     setNewTask("");
   };
 
-  const deleteTask = (index) => {
-    const updated = tasks.filter((_, i) => i !== index);
-    setTasks(updated);
+  const updateStatus = (id, newStatus) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id
+          ? { ...task, status: newStatus, dateUpdated: new Date().toLocaleString() }
+          : task
+      )
+    );
   };
 
-  const changeStatus = (index, newStatus) => {
-    const updated = [...tasks];
-    updated[index].status = newStatus;
-    setTasks(updated);
+  const deleteTask = (id) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
   return (
-    <div className="checklist">
-      <h2>Pre-Project Planning</h2>
-      <ul>
-        {tasks.map((task, i) => (
-          <li
-            key={i}
-            className={
-              task.status === "Not started"
-                ? "status-not-started"
-                : task.status === "In progress"
-                ? "status-in-progress"
-                : "status-completed"
-            }
-          >
-            {task.text}
-            <div>
-              <select
-                value={task.status}
-                onChange={(e) => changeStatus(i, e.target.value)}
-              >
-                <option>Not started</option>
-                <option>In progress</option>
-                <option>Completed</option>
-              </select>
-              <button className="delete-btn" onClick={() => deleteTask(i)}>
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div className="checklist-container">
+      <ModuleHeader moduleName="PreProject" />
 
-      <div className="add-task">
+      <h2 style={{ textAlign: "center", marginTop: "20px" }}>PreProject Checklist</h2>
+
+      <div className="input-area">
         <input
+          type="text"
           value={newTask}
+          placeholder="Enter new task..."
           onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add new task"
         />
-        <button onClick={addTask}>Add</button>
+        <button onClick={addTask}>Add Task</button>
       </div>
+
+      {tasks.length === 0 ? (
+        <p style={{ textAlign: "center", color: "#888" }}>No tasks added yet.</p>
+      ) : (
+        <ul className="checklist">
+          {tasks.map((task) => (
+            <li
+              key={task.id}
+              className={`status-${task.status.toLowerCase().replace(" ", "-")}`}
+            >
+              <span>{task.text}</span>
+              <div className="buttons">
+                <select
+                  value={task.status}
+                  onChange={(e) => updateStatus(task.id, e.target.value)}
+                >
+                  <option>Not Started</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                </select>
+                <button onClick={() => deleteTask(task.id)}>Delete</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
