@@ -1,133 +1,141 @@
-/* === Checklist.css (Baseline styling + scroll containment) === */
+/* src/Styles/Checklist.css */
 
-/* Container for each checklist module (PreProject, Progress, Personnel, Closure) */
+/* === Main checklist container === */
 .checklist {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  max-height: 60vh;               /* Height limit for internal scrolling */
-  overflow-y: auto;               /* Enable vertical scroll only inside this box */
-  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on Safari */
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  overscroll-behavior: contain;   /* ✅ Prevent scroll from reaching the page */
-  padding-right: 8px;
-  margin-top: 10px;
-  background-color: transparent;
-  box-sizing: border-box;
+  padding: 24px;
+  margin: 24px auto;
+  background: #f9fafc;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 1000px;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
-/* Checklist list structure */
+.checklist h2,
+.checklist h3 {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
 .checklist ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-/* Checklist list items */
 .checklist li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
+  display: block;
+  padding: 12px;
   margin: 8px 0;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
   transition: background 0.3s ease;
 }
 
-/* === Colour-coded status backgrounds === */
-.status-not-started {
-  background: #ffe0e0;
+.checklist li .row {
+  display: grid;
+  grid-template-columns: 1fr 180px 90px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
-.status-in-progress {
-  background: #fff4cc;
-}
+.status-not-started { background: #f0f0f0; }
+.status-in-progress { background: #fff4cc; }
+.status-completed { background: #d2f8d2; text-decoration: line-through; }
 
-.status-completed {
-  background: #e0ffe0;
-  text-decoration: line-through;
-  color: #666;
-}
-
-/* === Buttons inside checklist === */
-.checklist button {
-  margin-left: 10px;
-  border: none;
-  padding: 6px 10px;
+.checklist select {
+  width: 100%;
+  min-width: 160px;
+  padding: 6px 8px;
+  border: 1px solid #cfcfcf;
   border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s ease;
 }
 
-/* Blue (add item) */
-button.add-btn {
-  background-color: #007bff;
-  color: white;
+.timestamp {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
 }
 
-button.add-btn:hover {
-  background-color: #0069d9;
-}
-
-/* Red (delete) */
-button.delete-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-button.delete-btn:hover {
-  background-color: #c82333;
-}
-
-/* Green (undo) */
-button.undo-btn {
+.add-task button {
   background-color: #28a745;
-  color: white;
-}
-
-button.undo-btn:hover {
-  background-color: #218838;
-}
-
-/* === Optional scrollbar styling === */
-.checklist::-webkit-scrollbar {
-  width: 8px;
-}
-
-.checklist::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-.checklist::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.35);
-}
-
-/* === App container (from your original baseline) === */
-.app-container {
-  font-family: Arial, sans-serif;
-}
-
-/* General header styling if used globally */
-h2 {
-  color: #333;
-  margin-bottom: 10px;
-}
-
-/* Input area styling */
-.input-area {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.input-area input {
-  flex: 1;
-  padding: 8px;
-  font-size: 1rem;
+  color: #fff;
+  border: none;
   border-radius: 6px;
-  border: 1px solid #ccc;
-  outline: none;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.95rem;
+}
+.add-task button:hover { background-color: #1e7e34; }
+
+.delete-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+.delete-btn:hover { background: #bb2d3b; }
+
+.undo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  background: #fffae6;
+  border: 1px solid #ffe58f;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 14px;
+}
+.undo-banner .deleted-label { font-weight: 600; }
+.undo-banner .deleted-text {
+  font-style: italic;
+  opacity: 0.85;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.undo-banner button {
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+.undo-banner button:hover { background: #0b5ed7; }
+
+.add-task {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+.add-task input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
 }

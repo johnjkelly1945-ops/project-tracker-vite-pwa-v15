@@ -8,10 +8,22 @@ import "./Styles/App.css";
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Summary />} />
-        <Route path="/preproject" element={<PreProject />} />
-      </Routes>
+      <div className="app-container">
+        <Routes>
+          {/* Main summary view */}
+          <Route path="/" element={<Summary />} />
+
+          {/* Dedicated full-width PreProject window */}
+          <Route
+            path="/preproject"
+            element={
+              <div className="preproject-page">
+                <PreProject />
+              </div>
+            }
+          />
+        </Routes>
+      </div>
     </Router>
   );
 }

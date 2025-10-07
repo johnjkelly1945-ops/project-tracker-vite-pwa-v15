@@ -1,11 +1,12 @@
 // src/components/PreProject.jsx
 import React, { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
+import ModuleHeader from "./ModuleHeader";
 
 export default function PreProject() {
   const storageKey = "preproject-tasks";
 
-  // ✅ Load saved tasks or use default four
+  // Load saved tasks or defaults
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem(storageKey);
     return saved
@@ -21,87 +22,94 @@ export default function PreProject() {
   const [newTask, setNewTask] = useState("");
   const [recentlyDeleted, setRecentlyDeleted] = useState(null);
 
-  // ✅ Persist tasks
+  // Save tasks to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
 
-  // === Actions ===
-  const handleAddTask = () => {
+  // Add a new task
+  const addTask = () => {
     if (!newTask.trim()) return;
     setTasks([...tasks, { text: newTask.trim(), status: "Not started" }]);
     setNewTask("");
   };
 
-  const handleDelete = (index) => {
+  // Delete a task
+  const deleteTask = (index) => {
     const deleted = tasks[index];
-    const updated = tasks.filter((_, i) => i !== index);
-    setTasks(updated);
     setRecentlyDeleted(deleted);
+    setTasks(tasks.filter((_, i) => i !== index));
   };
 
-  const handleUndo = () => {
+  // Undo a deleted task
+  const undoDelete = () => {
     if (!recentlyDeleted) return;
     setTasks([...tasks, recentlyDeleted]);
     setRecentlyDeleted(null);
   };
 
+  // Change a task’s status and timestamp it
   const handleStatusChange = (index, newStatus) => {
     const updated = [...tasks];
     updated[index].status = newStatus;
-    updated[index].date = new Date().toLocaleString(); // date-stamp
+    updated[index].timestamp = new Date().toLocaleString();
     setTasks(updated);
   };
 
+  // Truncate long text safely
+  const truncate = (s, n = 60) =>
+    s && s.length > n ? `${s.slice(0, n)}…` : s || "";
+
+  // Render component
   return (
     <div className="checklist">
-      <h2>Pre-Project Checklist</h2>
-
-      <div className="task-input">
-        <input
-          type="text"
-          value={newTask}
-          placeholder="Add a new task"
-          onChange={(e) => setNewTask(e.target.value)}
-        />
-        <button onClick={handleAddTask}>Add Task</button>
-      </div>
+      <ModuleHeader title="PreProject Module" />
 
       <ul>
         {tasks.map((task, index) => (
           <li
             key={index}
-            className={`status-${task.status.toLowerCase().replace(" ", "-")}`}
+            className={`status-${task.status.toLowerCase().replace(/\s+/g, "-")}`}
           >
-            <span>
-              {task.text}
-              {task.date && (
-                <small style={{ display: "block", opacity: 0.7 }}>
-                  {task.date}
-                </small>
-              )}
-            </span>
-            <select
-              value={task.status}
-              onChange={(e) => handleStatusChange(index, e.target.value)}
-            >
-              <option>Not started</option>
-              <option>In progress</option>
-              <option>Completed</option>
-            </select>
-            <button className="delete-btn" onClick={() => handleDelete(index)}>
-              ✕
-            </button>
+            <div className="row">
+              <span>{task.text}</span>
+              <select
+                value={task.status}
+                onChange={(e) => handleStatusChange(index, e.target.value)}
+              >
+                <option>Not started</option>
+                <option>In progress</option>
+                <option>Completed</option>
+              </select>
+              <button className="delete-btn" onClick={() => deleteTask(index)}>
+                Delete
+              </button>
+            </div>
+
+            {task.timestamp && (
+              <small className="timestamp">Updated: {task.timestamp}</small>
+            )}
           </li>
         ))}
       </ul>
 
       {recentlyDeleted && (
         <div className="undo-banner">
-          <p>Task deleted.</p>
-          <button onClick={handleUndo}>Undo</button>
+          <span className="deleted-label">Deleted:</span>
+          <span className="deleted-text">{truncate(recentlyDeleted.text)}</span>
+          <button onClick={undoDelete}>Undo</button>
         </div>
       )}
+
+      <div className="add-task">
+        <input
+          type="text"
+          placeholder="New task…"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+        />
+        <button onClick={addTask}>Add Task</button>
+      </div>
     </div>
   );
 }

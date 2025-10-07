@@ -4,13 +4,21 @@
   padding: 20px;
 }
 
+/* ===== Header ===== */
 .header {
   text-align: center;
   margin-bottom: 20px;
 }
 
-/* ===== Section panels ===== */
-.checklist,
+/* ===== PreProject full-width page ===== */
+.preproject-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* ===== Section panels (Personnel only) ===== */
 .personnel {
   margin: 20px 0;
   padding: 15px;
@@ -54,7 +62,10 @@
   color: #fff;
   cursor: pointer;
 }
-.delete-btn:hover { background: #c9302c; }
+
+.delete-btn:hover {
+  background: #c9302c;
+}
 
 .view-btn {
   padding: 4px 8px;
@@ -64,7 +75,10 @@
   color: #fff;
   cursor: pointer;
 }
-.view-btn:hover { background: #0b5ed7; }
+
+.view-btn:hover {
+  background: #0b5ed7;
+}
 
 .add-person,
 .add-task {
@@ -90,8 +104,11 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
 .add-person button:hover,
-.add-task button:hover { background: #4cae4c; }
+.add-task button:hover {
+  background: #4cae4c;
+}
 
 /* ===== Popup modal ===== */
 .popup-overlay {
@@ -110,7 +127,7 @@
   padding: 20px;
   width: 320px;
   max-width: calc(100vw - 32px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .popup h3 {
@@ -141,5 +158,12 @@
   cursor: pointer;
 }
 
-.popup-buttons button:first-child { background: #5cb85c; color: #fff; }
-.popup-buttons button:last-child { background: #d9534f; color: #fff; }
+.popup-buttons button:first-child {
+  background: #5cb85c;
+  color: #fff;
+}
+
+.popup-buttons button:last-child {
+  background: #d9534f;
+  color: #fff;
+}
