@@ -6,27 +6,32 @@ export default function PreProject() {
   const STORAGE_KEY = "preprojectTasks";
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  // ✅ Load saved tasks
+  // Load from localStorage once
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setTasks(JSON.parse(saved));
+      if (saved) {
+        setTasks(JSON.parse(saved));
+      }
+      setHasLoaded(true);
     } catch (err) {
-      console.error("Load error:", err);
+      console.error("Error loading tasks:", err);
     }
   }, []);
 
-  // ✅ Save tasks whenever they change
+  // Save after initial load
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    } catch (err) {
-      console.error("Save error:", err);
+    if (hasLoaded) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (err) {
+        console.error("Error saving tasks:", err);
+      }
     }
-  }, [tasks]);
+  }, [tasks, hasLoaded]);
 
-  // ➕ Add a new task
   const addTask = () => {
     if (!newTask.trim()) return;
     const updated = [
@@ -41,7 +46,6 @@ export default function PreProject() {
     setNewTask("");
   };
 
-  // 🔁 Update status
   const updateStatus = (index, status) => {
     const updated = [...tasks];
     updated[index].status = status;
@@ -49,25 +53,29 @@ export default function PreProject() {
     setTasks(updated);
   };
 
-  // ❌ Delete task
   const deleteTask = (index) => {
     const updated = tasks.filter((_, i) => i !== index);
     setTasks(updated);
   };
 
+  const getStatusClass = (status) => {
+    if (status === "Completed") return "status-completed";
+    if (status === "In progress") return "status-in-progress";
+    return "status-not-started";
+  };
+
   return (
-    <div className="checklist">
+    <div className="checklist preproject">
       <ModuleHeader title="PreProject Module" />
       <h2>Pre-Project Checklist</h2>
 
       <ul className="task-list">
         {tasks.map((task, index) => (
-          <li key={index} className={`task-item status-${task.status.replace(" ", "-")}`}>
+          <li key={index} className={`task-item ${getStatusClass(task.status)}`}>
             <div className="task-row">
               <span className={task.status === "Completed" ? "done" : ""}>
                 {task.text}
               </span>
-
               <div className="task-controls">
                 <select
                   value={task.status}
@@ -77,7 +85,12 @@ export default function PreProject() {
                   <option>In progress</option>
                   <option>Completed</option>
                 </select>
-                <button onClick={() => deleteTask(index)}>Delete</button>
+                <button
+                  className="delete-btn"
+                  onClick={() => deleteTask(index)}
+                >
+                  Delete
+                </button>
               </div>
             </div>
             <div className="timestamp">Last updated: {task.timestamp}</div>
@@ -92,7 +105,9 @@ export default function PreProject() {
           onChange={(e) => setNewTask(e.target.value)}
           placeholder="Add new task…"
         />
-        <button onClick={addTask}>Add</button>
+        <button className="add-btn" onClick={addTask}>
+          Add Task
+        </button>
       </div>
     </div>
   );
