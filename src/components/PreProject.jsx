@@ -7,26 +7,26 @@ export default function PreProject() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
-  // Load saved tasks
+  // ✅ Load saved tasks
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setTasks(JSON.parse(saved));
     } catch (err) {
-      console.warn("Load error:", err);
+      console.error("Load error:", err);
     }
   }, []);
 
-  // Save tasks on change
+  // ✅ Save tasks whenever they change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     } catch (err) {
-      console.warn("Save error:", err);
+      console.error("Save error:", err);
     }
   }, [tasks]);
 
-  // Add new task
+  // ➕ Add a new task
   const addTask = () => {
     if (!newTask.trim()) return;
     const updated = [
@@ -41,49 +41,53 @@ export default function PreProject() {
     setNewTask("");
   };
 
-  // Update status
-  const updateStatus = (i, s) => {
+  // 🔁 Update status
+  const updateStatus = (index, status) => {
     const updated = [...tasks];
-    updated[i].status = s;
-    updated[i].timestamp = new Date().toLocaleString();
+    updated[index].status = status;
+    updated[index].timestamp = new Date().toLocaleString();
     setTasks(updated);
   };
 
-  // Delete task
-  const del = (i) => setTasks(tasks.filter((_, x) => x !== i));
+  // ❌ Delete task
+  const deleteTask = (index) => {
+    const updated = tasks.filter((_, i) => i !== index);
+    setTasks(updated);
+  };
 
-  // Return full UI
   return (
     <div className="checklist">
       <ModuleHeader title="PreProject Module" />
       <h2>Pre-Project Checklist</h2>
 
-      <ul>
-        {tasks.map((t, i) => (
-          <li key={i} className={`status-${t.status.replace(" ", "-")}`}>
-            <div className="task-line">
-              <span className={t.status === "Completed" ? "done" : ""}>
-                {t.text}
+      <ul className="task-list">
+        {tasks.map((task, index) => (
+          <li key={index} className={`task-item status-${task.status.replace(" ", "-")}`}>
+            <div className="task-row">
+              <span className={task.status === "Completed" ? "done" : ""}>
+                {task.text}
               </span>
-              <div>
+
+              <div className="task-controls">
                 <select
-                  value={t.status}
-                  onChange={(e) => updateStatus(i, e.target.value)}
+                  value={task.status}
+                  onChange={(e) => updateStatus(index, e.target.value)}
                 >
                   <option>Not started</option>
                   <option>In progress</option>
                   <option>Completed</option>
                 </select>
-                <button onClick={() => del(i)}>Delete</button>
+                <button onClick={() => deleteTask(index)}>Delete</button>
               </div>
             </div>
-            <small>Last updated: {t.timestamp}</small>
+            <div className="timestamp">Last updated: {task.timestamp}</div>
           </li>
         ))}
       </ul>
 
       <div className="add-row">
         <input
+          type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           placeholder="Add new task…"
