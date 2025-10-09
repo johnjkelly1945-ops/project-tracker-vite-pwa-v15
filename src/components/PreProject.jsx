@@ -1,114 +1,112 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "../Styles/Checklist.css";
-import ModuleHeader from "./ModuleHeader";
 
 export default function PreProject() {
-  const STORAGE_KEY = "preprojectTasks";
+  const storageKey = "preprojectTasks";
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
-  const [hasLoaded, setHasLoaded] = useState(false);
 
-  // Load from localStorage once
+  // Load saved tasks (safe parse)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setTasks(JSON.parse(saved));
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setTasks(parsed);
+      } catch {
+        // Ignore bad data; keep empty
       }
-      setHasLoaded(true);
-    } catch (err) {
-      console.error("Error loading tasks:", err);
     }
   }, []);
 
-  // Save after initial load
+  // Save tasks on change
   useEffect(() => {
-    if (hasLoaded) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      } catch (err) {
-        console.error("Error saving tasks:", err);
-      }
-    }
-  }, [tasks, hasLoaded]);
+    localStorage.setItem(storageKey, JSON.stringify(tasks));
+  }, [tasks]);
 
   const addTask = () => {
-    if (!newTask.trim()) return;
-    const updated = [
-      ...tasks,
+    const text = newTask.trim();
+    if (!text) return;
+    setTasks((prev) => [
+      ...prev,
       {
-        text: newTask.trim(),
+        text,
         status: "Not started",
         timestamp: new Date().toLocaleString(),
       },
-    ];
-    setTasks(updated);
+    ]);
     setNewTask("");
   };
 
   const updateStatus = (index, status) => {
-    const updated = [...tasks];
-    updated[index].status = status;
-    updated[index].timestamp = new Date().toLocaleString();
-    setTasks(updated);
+    setTasks((prev) => {
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        status,
+        timestamp: new Date().toLocaleString(),
+      };
+      return copy;
+    });
   };
 
   const deleteTask = (index) => {
-    const updated = tasks.filter((_, i) => i !== index);
-    setTasks(updated);
+    setTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const getStatusClass = (status) => {
+  const statusClass = (status) => {
     if (status === "Completed") return "status-completed";
     if (status === "In progress") return "status-in-progress";
     return "status-not-started";
   };
 
   return (
-    <div className="checklist preproject">
-      <ModuleHeader title="PreProject Module" />
+    <div className="checklist-container">
       <h2>Pre-Project Checklist</h2>
 
-      <ul className="task-list">
-        {tasks.map((task, index) => (
-          <li key={index} className={`task-item ${getStatusClass(task.status)}`}>
+      <div className="task-input">
+        <input
+          type="text"
+          placeholder="Add new pre-project task..."
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+        />
+        <button className="add-btn" onClick={addTask}>Add Task</button>
+      </div>
+
+      <ul className="checklist">
+        {tasks.map((task, i) => (
+          <li key={i} className={`checklist-item ${statusClass(task.status)}`}>
             <div className="task-row">
-              <span className={task.status === "Completed" ? "done" : ""}>
+              <span
+                className={`task-text ${
+                  task.status === "Completed" ? "done" : ""
+                }`}
+                title={task.text}
+              >
                 {task.text}
               </span>
-              <div className="task-controls">
+
+              <div className="controls">
                 <select
                   value={task.status}
-                  onChange={(e) => updateStatus(index, e.target.value)}
+                  onChange={(e) => updateStatus(i, e.target.value)}
                 >
                   <option>Not started</option>
                   <option>In progress</option>
                   <option>Completed</option>
                 </select>
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteTask(index)}
-                >
+
+                <button className="delete-btn" onClick={() => deleteTask(i)}>
                   Delete
                 </button>
               </div>
             </div>
+
             <div className="timestamp">Last updated: {task.timestamp}</div>
           </li>
         ))}
       </ul>
-
-      <div className="add-row">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add new task…"
-        />
-        <button className="add-btn" onClick={addTask}>
-          Add Task
-        </button>
-      </div>
     </div>
   );
 }
