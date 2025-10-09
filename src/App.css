@@ -1,0 +1,45 @@
+/* =========================================
+   METRA App.css – Restored baseline
+   ========================================= */
+
+.app-container {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #000;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Module button layout */
+.module-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.module-buttons button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.module-buttons button:hover {
+  background-color: #0056b3;
+}
+
+/* General headings */
+h1 {
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
