@@ -1,148 +1,187 @@
-/* === PreProject container (wide card) === */
-.checklist-container {
-  max-width: 1100px;
-  width: 92%;
-  margin: 40px auto;
-  padding: 28px 36px;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-  color: #000; /* force black text inside the card */
+/* TEST CHECKLIST LOAD */
+body {
+  background-color: #e8ffe8 !important;
 }
 
-/* Ensure form controls are visible even if globals theme them */
-.checklist-container input[type="text"],
-.checklist-container select,
-.checklist-container button {
-  color: #000 !important;
-  background: #fff !important;
-}
-
-/* Header */
-.checklist-container h2 {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 22px;
-}
-
-/* Add row */
-.task-input {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 22px;
-}
-
-.task-input input[type="text"] {
-  flex: 1;
-  max-width: 640px;
-  padding: 12px 14px;
-  font-size: 1rem;
-  border: 1px solid #cfcfcf;
-  border-radius: 8px;
-  background: #fff !important;
-  color: #000 !important;
-  caret-color: #000;
-}
-
-.task-input input[type="text"]::placeholder {
-  color: #888;
-}
-
-.add-btn {
-  background: #2e8b57 !important; /* green */
-  color: #fff !important;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-.add-btn:hover { filter: brightness(0.95); }
-
-/* List reset */
+/* Checklist layout */
 .checklist {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  width: 90%;
+  max-width: 1200px;
+  margin: 30px auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  padding: 30px;
 }
 
-/* Task item with state bg */
-.checklist-item {
-  border: 1px solid #e2e2e2;
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  background: #fafafa;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+.checklist h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.6rem;
+  color: #222;
 }
 
-/* Row = one line: text | controls */
-.task-row {
+/* Add task section */
+.add-task {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 25px;
 }
 
-.task-text {
+.add-task input {
   flex: 1;
-  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   font-size: 1rem;
-  font-weight: 500;
-  color: #111;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.done { text-decoration: line-through; color: #666; }
+.add-task button {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
 
-/* Controls block (right) */
-.controls {
+.add-task button:hover {
+  background-color: #43a047;
+}
+
+/* Task list */
+.checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
 }
 
-.controls select {
-  padding: 8px 10px;
-  border: 1px solid #cfcfcf;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  background: #fff !important;
-  color: #000 !important;
+.checklist li span {
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-.delete-btn {
-  background: #dc3545 !important;
-  color: #fff !important;
+/* Buttons within task row */
+.task-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.task-buttons select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.task-buttons button {
+  background: #e74c3c;
+  color: white;
   border: none;
   border-radius: 6px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
-.delete-btn:hover { filter: brightness(0.95); }
 
-/* Status backgrounds */
-.status-not-started { background: #fbeaea; }
-.status-in-progress { background: #fff8cc; }
-.status-completed   { background: #e6f8e8; }
+.task-buttons button:hover {
+  background: #c0392b;
+}
+
+/* Status colours */
+.status-not-started {
+  border-left: 6px solid #ccc;
+}
+
+.status-in-progress {
+  border-left: 6px solid #f1c40f;
+  background: #fffbe6;
+}
+
+.status-completed {
+  border-left: 6px solid #2ecc71;
+  background: #f3fff6;
+}
 
 /* Timestamp */
 .timestamp {
-  margin-top: 6px;
   font-size: 0.85rem;
-  color: #444;
-  text-align: right;
+  color: #777;
+}
+/* Horizontal scroll layout */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 20px;
+  min-width: 900px; /* ensures horizontal scroll */
 }
 
-/* Mobile behavior */
-@media (max-width: 768px) {
-  .task-row { flex-direction: column; align-items: flex-start; }
-  .controls { width: 100%; }
-  .controls select { width: 100%; }
-  .delete-btn { width: 100%; }
-  .task-input { flex-direction: column; }
-  .task-input input[type="text"] { max-width: 100%; width: 100%; }
+.checklist-container {
+  width: 100%;
+}
+
+.checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  min-width: 900px; /* matches scroll width */
+}
+
+.task-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.task-buttons select,
+.task-buttons button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.task-buttons button {
+  background-color: #e74c3c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.task-buttons button:hover {
+  background-color: #c0392b;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #555;
+  margin-left: 12px;
 }

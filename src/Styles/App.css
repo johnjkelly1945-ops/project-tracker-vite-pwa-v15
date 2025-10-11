@@ -1,157 +1,97 @@
-/* ===== Base layout ===== */
-.app-container {
-  font-family: Arial, sans-serif;
-  padding: 20px;
-}
-
-/* ===== Header ===== */
-.header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-/* ===== Section panels (Personnel only) ===== */
-.personnel {
-  margin: 20px 0;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #f9f9f9;
-}
-
-/* ===== Personnel list ===== */
-.personnel ul {
-  list-style: none;
-  padding: 0;
+/* ===========================
+   Global Layout and Typography
+   =========================== */
+body {
   margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: #f8f9fc;
+  color: #333;
 }
 
-.personnel li {
+/* Container for all pages */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ===========================
+   Header (Top Navigation Bar)
+   =========================== */
+.top-header {
+  background-color: #0a2c63;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px;
-  margin: 8px 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
+  padding: 12px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Inline actions (right side of each row) */
-.personnel li > div {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ===== Buttons ===== */
-.delete-btn {
-  padding: 4px 8px;
-  background: #d9534f;
+.top-header button {
+  background-color: #1e4aa8;
   border: none;
-  border-radius: 4px;
   color: #fff;
+  padding: 8px 14px;
+  margin-left: 8px;
+  border-radius: 6px;
   cursor: pointer;
-}
-.delete-btn:hover {
-  background: #c9302c;
-}
-
-.view-btn {
-  padding: 4px 8px;
-  background: #0d6efd;
-  border: none;
-  border-radius: 4px;
-  color: #fff;
-  cursor: pointer;
-}
-.view-btn:hover {
-  background: #0b5ed7;
+  font-weight: 500;
+  transition: background 0.2s ease;
 }
 
-.add-person,
-.add-task {
-  display: flex;
-  margin-top: 15px;
-  gap: 10px;
+.top-header button:hover {
+  background-color: #3162d0;
 }
 
-.add-person input,
-.add-task input {
+/* ===========================
+   Main Content Area
+   =========================== */
+.main-content {
   flex: 1;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.add-person button,
-.add-task button {
-  padding: 6px 12px;
-  background: #5cb85c;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.add-person button:hover,
-.add-task button:hover {
-  background: #4cae4c;
-}
-
-/* ===== Popup modal ===== */
-.popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  padding: 40px 20px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  align-items: flex-start;
 }
 
-.popup {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 20px;
-  width: 320px;
-  max-width: calc(100vw - 32px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+/* ===========================
+   Summary Screen
+   =========================== */
+.summary-screen {
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px 30px;
+  max-width: 600px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.popup h3 {
-  margin-top: 0;
+.summary-screen h1 {
+  color: #0a2c63;
   margin-bottom: 12px;
 }
 
-.popup input {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.popup-buttons {
+.summary-buttons {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.popup-buttons button {
-  flex: 1;
-  padding: 8px 12px;
+.summary-buttons button {
+  background-color: #1e4aa8;
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  padding: 10px 18px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
 }
 
-.popup-buttons button:first-child {
-  background: #5cb85c;
-  color: #fff;
-}
-.popup-buttons button:last-child {
-  background: #d9534f;
-  color: #fff;
+.summary-buttons button:hover {
+  background-color: #3162d0;
 }

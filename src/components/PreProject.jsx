@@ -1,109 +1,112 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
 
 export default function PreProject() {
   const storageKey = "preprojectTasks";
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    // ✅ Load from localStorage immediately on startup
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      console.warn("⚠️ Failed to parse stored tasks");
+      return [];
+    }
+  });
   const [newTask, setNewTask] = useState("");
 
-  // Load saved tasks (safe parse)
+  // ✅ Save to localStorage whenever tasks change
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setTasks(parsed);
-      } catch {
-        // Ignore bad data; keep empty
-      }
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(tasks));
+      console.log("💾 Tasks saved:", tasks);
+    } catch (err) {
+      console.error("❌ Save error:", err);
     }
-  }, []);
-
-  // Save tasks on change
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
 
+  // ✅ Add task
   const addTask = () => {
-    const text = newTask.trim();
-    if (!text) return;
-    setTasks((prev) => [
-      ...prev,
-      {
-        text,
-        status: "Not started",
-        timestamp: new Date().toLocaleString(),
-      },
-    ]);
+    if (!newTask.trim()) return;
+    const newItem = {
+      text: newTask.trim(),
+      status: "Not Started",
+      timestamp: new Date().toLocaleString(),
+    };
+    const updated = [...tasks, newItem];
+    setTasks(updated);
     setNewTask("");
+    console.log("➕ Task added:", newItem);
   };
 
-  const updateStatus = (index, status) => {
-    setTasks((prev) => {
-      const copy = [...prev];
-      copy[index] = {
-        ...copy[index],
-        status,
-        timestamp: new Date().toLocaleString(),
-      };
-      return copy;
-    });
-  };
-
+  // ✅ Delete task
   const deleteTask = (index) => {
-    setTasks((prev) => prev.filter((_, i) => i !== index));
+    const updated = tasks.filter((_, i) => i !== index);
+    setTasks(updated);
+    console.log("🗑️ Task deleted at index:", index);
   };
 
-  const statusClass = (status) => {
-    if (status === "Completed") return "status-completed";
-    if (status === "In progress") return "status-in-progress";
-    return "status-not-started";
+  // ✅ Cycle status
+  const cycleStatus = (index) => {
+    const order = ["Not Started", "In Progress", "Completed"];
+    const updated = [...tasks];
+    const next =
+      order[(order.indexOf(updated[index].status) + 1) % order.length];
+    updated[index] = {
+      ...updated[index],
+      status: next,
+      timestamp: new Date().toLocaleString(),
+    };
+    setTasks(updated);
+    console.log("🔁 Status changed:", updated[index]);
+  };
+
+  // ✅ Clear all
+  const clearAll = () => {
+    if (window.confirm("Clear all tasks?")) {
+      setTasks([]);
+      localStorage.removeItem(storageKey);
+      console.log("🧹 All tasks cleared");
+    }
   };
 
   return (
     <div className="checklist-container">
-      <h2>Pre-Project Checklist</h2>
+      <header className="top-header">
+        <h2>Pre-Project Checklist</h2>
+      </header>
 
-      <div className="task-input">
+      <div className="add-task-row">
         <input
           type="text"
           placeholder="Add new pre-project task..."
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
         />
-        <button className="add-btn" onClick={addTask}>Add Task</button>
+        <button className="add-btn" onClick={addTask}>
+          Add
+        </button>
+        <button className="clear-btn" onClick={clearAll}>
+          Clear All
+        </button>
       </div>
 
       <ul className="checklist">
-        {tasks.map((task, i) => (
-          <li key={i} className={`checklist-item ${statusClass(task.status)}`}>
-            <div className="task-row">
-              <span
-                className={`task-text ${
-                  task.status === "Completed" ? "done" : ""
-                }`}
-                title={task.text}
-              >
-                {task.text}
-              </span>
-
-              <div className="controls">
-                <select
-                  value={task.status}
-                  onChange={(e) => updateStatus(i, e.target.value)}
-                >
-                  <option>Not started</option>
-                  <option>In progress</option>
-                  <option>Completed</option>
-                </select>
-
-                <button className="delete-btn" onClick={() => deleteTask(i)}>
-                  Delete
-                </button>
-              </div>
-            </div>
-
-            <div className="timestamp">Last updated: {task.timestamp}</div>
+        {tasks.map((task, index) => (
+          <li
+            key={index}
+            className={`task-item status-${task.status
+              .toLowerCase()
+              .replace(" ", "-")}`}
+          >
+            <span className="task-text" onClick={() => cycleStatus(index)}>
+              {task.text}
+            </span>
+            <span className="status-label">{task.status}</span>
+            <small className="timestamp">{task.timestamp}</small>
+            <button className="delete-btn" onClick={() => deleteTask(index)}>
+              Delete
+            </button>
           </li>
         ))}
       </ul>
