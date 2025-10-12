@@ -4,11 +4,11 @@ import Progress from "./components/Progress";
 import Personnel from "./components/Personnel";
 import Closure from "./components/Closure";
 import { useState } from "react";
-import ModuleHeader from "./components/ModuleHeader";
 
 export default function App() {
   const [activeModule, setActiveModule] = useState("summary");
 
+  // Switch between modules
   const renderModule = () => {
     switch (activeModule) {
       case "preproject":
@@ -43,23 +43,17 @@ export default function App() {
     }
   };
 
-  const showHeader = activeModule !== "summary";
-
   return (
     <div className="app-container">
-      {/* 🔹 Show header only when in a module */}
-      {showHeader && (
-        <header className="top-header">
-          <ModuleHeader
-            title="Module"
-            onReturn={() => setActiveModule("summary")}
-            onClose={() => window.close()}
-          />
-        </header>
-      )}
+      {/* === Top Header Bar === */}
+      <div className="header-bar">
+        <button onClick={() => setActiveModule("summary")}>
+          Return to Summary
+        </button>
+      </div>
 
-      {/* 🔹 Main display area */}
-      <main className="main-content">{renderModule()}</main>
+      {/* === Main Display Area === */}
+      <div className="main-content">{renderModule()}</div>
     </div>
   );
 }
