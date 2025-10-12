@@ -1,97 +1,121 @@
-/* ===========================
-   Global Layout and Typography
-   =========================== */
-body {
+/* === METRA – Final App Layout (Vibrant Blue Summary + Red Delete + Full-Width Modules) === */
+
+/* === Reset === */
+html, body, #root {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  background-color: #f8f9fc;
+  background-color: #f8fafc;
   color: #333;
+  box-sizing: border-box;
 }
 
-/* Container for all pages */
+/* === App Container === */
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
-/* ===========================
-   Header (Top Navigation Bar)
-   =========================== */
+/* === Global Header === */
 .top-header {
-  background-color: #0a2c63;
-  color: #fff;
+  background-color: #0a2e63;
+  color: white;
+  padding: 14px 20px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-bottom: 3px solid #002a5c;
+}
+
+/* === SUMMARY (Dashboard) === */
+.summary-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.top-header button {
-  background-color: #1e4aa8;
-  border: none;
-  color: #fff;
-  padding: 8px 14px;
-  margin-left: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.top-header button:hover {
-  background-color: #3162d0;
-}
-
-/* ===========================
-   Main Content Area
-   =========================== */
-.main-content {
-  flex: 1;
-  padding: 40px 20px;
-  display: flex;
   justify-content: center;
-  align-items: flex-start;
+  height: calc(100vh - 80px);
+  padding: 20px;
+  background-color: #f8fafc;
 }
 
-/* ===========================
-   Summary Screen
-   =========================== */
-.summary-screen {
-  text-align: center;
-  background: #fff;
+.summary-card {
+  background: white;
+  padding: 40px 60px;
   border-radius: 12px;
-  padding: 40px 30px;
-  max-width: 600px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 700px;
+  width: 80%;
 }
 
-.summary-screen h1 {
-  color: #0a2c63;
-  margin-bottom: 12px;
+.summary-card h1 {
+  font-size: 2rem;
+  color: #1565c0; /* updated vibrant blue heading */
+  margin-bottom: 20px;
 }
 
+/* --- Summary Buttons Row --- */
 .summary-buttons {
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
+/* --- Vibrant Blue Summary Buttons ("Bee Blue" visible on Safari) --- */
 .summary-buttons button {
-  background-color: #1e4aa8;
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  background-color: #1565c0 !important; /* vibrant medium blue */
+  color: #fff !important;
+  border: 1px solid #0d47a1 !important;
+  border-radius: 6px;
+  padding: 10px 22px;
+  min-width: 150px;
+  font-size: 1rem;
   font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.1s ease;
 }
 
 .summary-buttons button:hover {
-  background-color: #3162d0;
+  background-color: #0d47a1 !important; /* darker blue on hover */
+  transform: scale(1.03);
+}
+
+/* --- Optional Delete / Clear Buttons in Summary --- */
+.summary-buttons button.delete,
+.summary-buttons button.clear {
+  background-color: #dc3545 !important;
+  border: 1px solid #a71d2a !important;
+}
+.summary-buttons button.delete:hover,
+.summary-buttons button.clear:hover {
+  background-color: #b52b3b !important;
+}
+
+/* === MODULE PAGES (PreProject / Progress / Personnel / Closure) === */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === Global Button Defaults (outside Summary) === */
+button {
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
