@@ -1,126 +1,202 @@
-/* === METRA – PreProject Checklist (Scoped Compact + Scroll Stable, No ClearAll) === */
+/* === Checklist Styling – Scroll + Strikethrough (Text + Button) === */
 
+:root {
+  --header-blue: #0a2b5c;
+  --page-bg: #f9f9f9;
+
+  --status-not-started-bg: #e0e0e0;
+  --status-in-progress-bg: #ffce33;
+  --status-completed-bg: #6fdc6f;
+
+  --add-blue: #0078d4;
+  --add-blue-hover: #005ea2;
+  --delete-red: #e74c3c;
+  --delete-red-hover: #c0392b;
+}
+
+/* === Main container === */
 .checklist-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
   width: 100%;
-  height: calc(100vh - 80px);
-  background: #f8fafc;
-  box-sizing: border-box;
+  height: 100vh;
+  background: var(--page-bg);
+  overflow: hidden;
 }
 
-/* Scroll area */
-.checklist-container .checklist {
+/* === Header bar === */
+.top-header {
+  background: var(--header-blue);
+  color: #fff;
+  padding: 6px 16px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: left;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* === Scrollable checklist === */
+.checklist {
   flex: 1;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 20px 10px 20px;
+  overflow-x: hidden;
+  padding: 10px 18px;
+  width: 95%;
+  max-width: 1000px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* === Task list === */
+.checklist ul {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-/* Task item */
-.checklist-container .task-item {
+.task-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 4px 10px;
-  margin: 5px 0;
-  border: 1px solid #d0d0d0;
+  padding: 3px 6px;
+  margin-bottom: 4px;
   border-radius: 6px;
-  background: #fff;
-  min-height: 34px;
-  box-sizing: border-box;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.2s ease;
+  min-height: 24px;
 }
 
-/* Text area */
-.checklist-container .task-text-area {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-.checklist-container .task-text {
-  font-size: 0.95rem;
-  line-height: 1.2;
+.task-item:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Controls */
-.checklist-container .task-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  min-width: 340px;
+/* === Status backgrounds === */
+.status-not-started {
+  background: var(--status-not-started-bg);
+}
+.status-in-progress {
+  background: var(--status-in-progress-bg);
+}
+.status-completed {
+  background: var(--status-completed-bg);
 }
 
-/* Timestamp */
-.checklist-container .timestamp {
-  font-size: 0.8rem;
-  color: #444;
-  white-space: nowrap;
-}
-
-/* Buttons inside checklist */
-.checklist-container button {
-  border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 0.9rem;
-  line-height: 1.1;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.3s ease, border-color 0.3s ease;
-  border: 1px solid transparent;
-}
-
-/* Add */
-.checklist-container button.add {
-  background-color: #28a745;
-  color: #fff;
-  border: 1px solid #1e7e34;
-}
-.checklist-container button.add:hover { background-color: #23923d; }
-
-/* Delete */
-.checklist-container button.delete {
-  background-color: #dc3545;
-  color: #fff;
-  border: 1px solid #a71d2a;
-}
-.checklist-container button.delete:hover { background-color: #b52b3b; }
-
-/* Status */
-.checklist-container button.status-btn {
-  background-color: #f8f9fa;
+/* === Strikethrough for completed tasks (text + status button) === */
+.status-completed .task-text {
+  text-decoration: line-through;
   color: #333;
-  border: 1px solid #aaa;
-  width: 120px;
+  opacity: 0.8;
 }
-.checklist-container button.status-btn:hover {
-  background-color: #e9ecef;
-  border-color: #666;
+.status-completed .status-btn {
+  text-decoration: line-through;
+  opacity: 0.85;
 }
 
-/* Add-row input */
-.checklist-container .add-row {
-  background: #eef3ff;
-  border: 1px solid #cdd7f5;
-}
-.checklist-container .add-row input {
+/* === Text and controls === */
+.task-text-area {
   flex: 1;
-  min-width: 240px;
-  padding: 8px;
-  border: 1px solid #bbb;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  background-color: #fff;
-  color: #222;
+  display: flex;
+  align-items: center;
 }
 
-/* Status colours */
-.checklist-container .status-not-started { background-color: #f2f2f2 !important; }
-.checklist-container .status-in-progress { background-color: #fff4cc !important; }
-.checklist-container .status-completed    { background-color: #d8f5d0 !important; }
+.task-text {
+  font-size: 0.88rem;
+  color: #333;
+  word-break: break-word;
+}
+
+.task-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* === Buttons === */
+button {
+  border: none;
+  border-radius: 5px;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+.status-btn {
+  background: #fff;
+  border: 1px solid #bbb;
+  color: #333;
+  min-width: 80px;
+  text-align: center;
+}
+
+.add {
+  background-color: var(--add-blue);
+  color: #fff;
+}
+.add:hover {
+  background-color: var(--add-blue-hover);
+}
+
+.delete {
+  background-color: var(--delete-red);
+  color: #fff;
+}
+.delete:hover {
+  background-color: var(--delete-red-hover);
+}
+
+/* === Timestamp === */
+.timestamp {
+  font-size: 0.72rem;
+  color: #555;
+}
+
+/* === Add-row (white input fix) === */
+.add-row input {
+  width: 100%;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.8rem;
+  background: #ffffff;
+  color: #000000;
+}
+.add-row input::placeholder {
+  color: #666;
+}
+
+/* === Scrollbar === */
+.checklist::-webkit-scrollbar {
+  width: 10px;
+}
+.checklist::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 6px;
+}
+.checklist::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* === Responsive === */
+@media (max-width: 700px) {
+  .task-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .status-btn,
+  .delete {
+    width: 100%;
+  }
+}

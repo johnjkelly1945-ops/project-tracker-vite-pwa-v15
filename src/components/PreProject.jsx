@@ -9,10 +9,12 @@ export default function PreProject() {
   });
   const [newTask, setNewTask] = useState("");
 
+  // Persist to localStorage
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
 
+  // === Add new task ===
   const addTask = () => {
     if (!newTask.trim()) return;
     const timestamp = new Date().toLocaleString("en-GB");
@@ -26,12 +28,14 @@ export default function PreProject() {
     setNewTask("");
   };
 
+  // === Delete a task ===
   const deleteTask = (id) => {
     if (window.confirm("Delete this task?")) {
       setTasks(tasks.filter((task) => task.id !== id));
     }
   };
 
+  // === Cycle status + update timestamp ===
   const cycleStatus = (id) => {
     setTasks(
       tasks.map((task) => {
@@ -40,19 +44,24 @@ export default function PreProject() {
           if (task.status === "Not Started") newStatus = "In Progress";
           else if (task.status === "In Progress") newStatus = "Completed";
           else newStatus = "Not Started";
-          return { ...task, status: newStatus };
+
+          // Update timestamp to show latest change
+          const updatedTime = new Date().toLocaleString("en-GB");
+          return { ...task, status: newStatus, timestamp: updatedTime };
         }
         return task;
       })
     );
   };
 
+  // === Status colours ===
   const getStatusClass = (status) => {
     if (status === "In Progress") return "status-in-progress";
     if (status === "Completed") return "status-completed";
     return "status-not-started";
   };
 
+  // === Render ===
   return (
     <div className="checklist-container">
       <header className="top-header">
