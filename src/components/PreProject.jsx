@@ -1,8 +1,8 @@
+// src/components/PreProject.jsx
 import { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
 
 export default function PreProject({ setActiveModule }) {
-
   const storageKey = "preprojectTasks";
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem(storageKey);
@@ -15,7 +15,6 @@ export default function PreProject({ setActiveModule }) {
     localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
 
-  // === Add new task ===
   const addTask = () => {
     if (!newTask.trim()) return;
     const timestamp = new Date().toLocaleString("en-GB");
@@ -29,14 +28,12 @@ export default function PreProject({ setActiveModule }) {
     setNewTask("");
   };
 
-  // === Delete a task ===
   const deleteTask = (id) => {
     if (window.confirm("Delete this task?")) {
       setTasks(tasks.filter((task) => task.id !== id));
     }
   };
 
-  // === Cycle status + update timestamp ===
   const cycleStatus = (id) => {
     setTasks(
       tasks.map((task) => {
@@ -45,8 +42,6 @@ export default function PreProject({ setActiveModule }) {
           if (task.status === "Not Started") newStatus = "In Progress";
           else if (task.status === "In Progress") newStatus = "Completed";
           else newStatus = "Not Started";
-
-          // Update timestamp to show latest change
           const updatedTime = new Date().toLocaleString("en-GB");
           return { ...task, status: newStatus, timestamp: updatedTime };
         }
@@ -55,18 +50,24 @@ export default function PreProject({ setActiveModule }) {
     );
   };
 
-  // === Status colours ===
   const getStatusClass = (status) => {
     if (status === "In Progress") return "status-in-progress";
     if (status === "Completed") return "status-completed";
     return "status-not-started";
   };
 
-  // === Render ===
+  const returnToSummary = () => {
+    if (setActiveModule) setActiveModule("summary");
+  };
+
   return (
     <div className="checklist-container">
-      <header className="top-header">
-        <h2>Pre-Project Checklist</h2>
+      {/* === Clean Blue Header Box === */}
+      <header className="module-header-box">
+        <h2>PreProject Module</h2>
+        <button className="return-btn" onClick={returnToSummary}>
+          Return to Summary
+        </button>
       </header>
 
       <div className="checklist">

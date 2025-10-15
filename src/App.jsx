@@ -8,17 +8,17 @@ import { useState } from "react";
 export default function App() {
   const [activeModule, setActiveModule] = useState("summary");
 
-  // Switch between modules
+  // === Module Switcher ===
   const renderModule = () => {
     switch (activeModule) {
       case "preproject":
-        return <PreProject />;
+        return <PreProject setActiveModule={setActiveModule} />;
       case "progress":
-        return <Progress />;
+        return <Progress setActiveModule={setActiveModule} />;
       case "personnel":
-        return <Personnel />;
+        return <Personnel setActiveModule={setActiveModule} />;
       case "closure":
-        return <Closure />;
+        return <Closure setActiveModule={setActiveModule} />;
       default:
         return (
           <div className="summary-screen">
@@ -45,14 +45,16 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* === Top Header Bar === */}
-      <div className="header-bar">
-        <button onClick={() => setActiveModule("summary")}>
-          Return to Summary
-        </button>
-      </div>
+      {/* === Top Header: only visible on summary screen === */}
+      {activeModule === "summary" && (
+        <div className="header-bar">
+          <button onClick={() => setActiveModule("summary")}>
+            Return to Summary
+          </button>
+        </div>
+      )}
 
-      {/* === Main Display Area === */}
+      {/* === Main Display === */}
       <div className="main-content">{renderModule()}</div>
     </div>
   );

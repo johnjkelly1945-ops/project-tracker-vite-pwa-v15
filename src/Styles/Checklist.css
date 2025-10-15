@@ -1,6 +1,6 @@
-/* === METRA – PreProject Ultra Compact Layout v3 ===
-   Refines status/delete buttons to reduce task row depth
-   Baseline Target: baseline-2025-10-18-preproject-ultracompact-v3
+/* === METRA – PreProject Ultra Compact Layout v3 + Header Box ===
+   Adds blue rounded header box for PreProject module
+   Baseline Target: baseline-2025-10-18-preproject-headerbox
 --------------------------------------------------------------- */
 
 :root {
@@ -28,18 +28,39 @@
   overflow: hidden;
 }
 
-/* === Header bar === */
-.top-header {
+/* === Modern Blue Rounded Header Box === */
+.module-header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: var(--header-blue);
-  color: #fff;
-  padding: 6px 16px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-align: left;
-  width: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1000px;
+  margin: 12px auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.module-header-box h2 {
+  font-size: 1.3rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.module-header-box .return-btn {
+  background: var(--add-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.module-header-box .return-btn:hover {
+  background: var(--add-blue-hover);
 }
 
 /* === Scrollable checklist === */
@@ -47,7 +68,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 5px 12px; /* slightly reduced */
+  padding: 5px 12px;
   width: 95%;
   max-width: 1000px;
   margin-top: 4px;
@@ -67,9 +88,9 @@
 .task-item {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* tighter vertical alignment */
-  padding: 1px 4px; /* reduced */
-  margin-bottom: 2px; /* reduced */
+  align-items: flex-start;
+  padding: 1px 4px;
+  margin-bottom: 2px;
   border-radius: 5px;
   transition: background 0.3s ease, box-shadow 0.2s ease;
   min-height: 18px;
@@ -117,7 +138,7 @@
 .task-controls {
   display: flex;
   align-items: center;
-  gap: 2px; /* slightly reduced */
+  gap: 2px;
   flex-wrap: wrap;
 }
 
@@ -125,9 +146,9 @@
 button {
   border: none;
   border-radius: 4px;
-  padding: 0px 3px; /* very tight vertical spacing */
+  padding: 0px 3px;
   cursor: pointer;
-  font-size: 0.7rem; /* smaller text */
+  font-size: 0.7rem;
   line-height: 1.0;
   transition: background 0.2s ease, transform 0.1s ease;
 }
@@ -141,8 +162,8 @@ button:hover {
   background: #fff;
   border: 1px solid #bbb;
   color: #333;
-  min-width: 62px; /* narrower */
-  height: 16px; /* fixed height to reduce row depth */
+  min-width: 62px;
+  height: 16px;
   text-align: center;
   display: flex;
   align-items: center;
