@@ -1,4 +1,7 @@
-/* === Checklist Styling – Scroll + Strikethrough (Text + Button) === */
+/* === METRA – PreProject Ultra Compact Layout v3 ===
+   Refines status/delete buttons to reduce task row depth
+   Baseline Target: baseline-2025-10-18-preproject-ultracompact-v3
+--------------------------------------------------------------- */
 
 :root {
   --header-blue: #0a2b5c;
@@ -44,11 +47,11 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px 18px;
+  padding: 5px 12px; /* slightly reduced */
   width: 95%;
   max-width: 1000px;
-  margin-top: 5px;
-  margin-bottom: 10px;
+  margin-top: 4px;
+  margin-bottom: 8px;
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
@@ -64,16 +67,16 @@
 .task-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 3px 6px;
-  margin-bottom: 4px;
-  border-radius: 6px;
+  align-items: flex-start; /* tighter vertical alignment */
+  padding: 1px 4px; /* reduced */
+  margin-bottom: 2px; /* reduced */
+  border-radius: 5px;
   transition: background 0.3s ease, box-shadow 0.2s ease;
-  min-height: 24px;
+  min-height: 18px;
 }
 
 .task-item:hover {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 /* === Status backgrounds === */
@@ -87,7 +90,7 @@
   background: var(--status-completed-bg);
 }
 
-/* === Strikethrough for completed tasks (text + status button) === */
+/* === Strikethrough for completed tasks === */
 .status-completed .task-text {
   text-decoration: line-through;
   color: #333;
@@ -106,7 +109,7 @@
 }
 
 .task-text {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: #333;
   word-break: break-word;
 }
@@ -114,31 +117,39 @@
 .task-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px; /* slightly reduced */
+  flex-wrap: wrap;
 }
 
-/* === Buttons === */
+/* === Buttons (Final Compact Refinement) === */
 button {
   border: none;
-  border-radius: 5px;
-  padding: 2px 6px;
+  border-radius: 4px;
+  padding: 0px 3px; /* very tight vertical spacing */
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 0.7rem; /* smaller text */
+  line-height: 1.0;
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
 button:hover {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
+/* === Status Buttons === */
 .status-btn {
   background: #fff;
   border: 1px solid #bbb;
   color: #333;
-  min-width: 80px;
+  min-width: 62px; /* narrower */
+  height: 16px; /* fixed height to reduce row depth */
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* === Add / Delete Buttons === */
 .add {
   background-color: var(--add-blue);
   color: #fff;
@@ -150,6 +161,12 @@ button:hover {
 .delete {
   background-color: var(--delete-red);
   color: #fff;
+  font-size: 0.7rem;
+  padding: 0px 4px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .delete:hover {
   background-color: var(--delete-red-hover);
@@ -157,17 +174,19 @@ button:hover {
 
 /* === Timestamp === */
 .timestamp {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: #555;
+  margin-top: 1px;
+  text-align: right;
 }
 
-/* === Add-row (white input fix) === */
+/* === Add-row === */
 .add-row input {
   width: 100%;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 3px;
+  border-radius: 5px;
   border: 1px solid #ccc;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   background: #ffffff;
   color: #000000;
 }
@@ -177,11 +196,11 @@ button:hover {
 
 /* === Scrollbar === */
 .checklist::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 .checklist::-webkit-scrollbar-thumb {
   background: #bbb;
-  border-radius: 6px;
+  border-radius: 5px;
 }
 .checklist::-webkit-scrollbar-thumb:hover {
   background: #999;
@@ -192,7 +211,7 @@ button:hover {
   .task-controls {
     flex-direction: column;
     align-items: flex-start;
-    gap: 3px;
+    gap: 2px;
   }
 
   .status-btn,

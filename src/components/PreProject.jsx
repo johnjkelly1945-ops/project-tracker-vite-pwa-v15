@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
 
-export default function PreProject() {
+export default function PreProject({ setActiveModule }) {
+
   const storageKey = "preprojectTasks";
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem(storageKey);
