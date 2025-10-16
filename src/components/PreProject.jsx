@@ -1,4 +1,7 @@
-// src/components/PreProject.jsx
+// === METRA – PreProject Module with Filter Bar (Phase 1) ===
+// Adds top filter controls while keeping header v2.5 styling intact
+// Baseline Target: baseline-2025-10-19-preproject-filter
+
 import { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
 
@@ -9,8 +12,8 @@ export default function PreProject({ setActiveModule }) {
     return saved ? JSON.parse(saved) : [];
   });
   const [newTask, setNewTask] = useState("");
+  const [filter, setFilter] = useState("All");
 
-  // Persist to localStorage
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(tasks));
   }, [tasks]);
@@ -23,6 +26,7 @@ export default function PreProject({ setActiveModule }) {
       text: newTask.trim(),
       status: "Not Started",
       timestamp,
+      flagged: false, // future use
     };
     setTasks([...tasks, newEntry]);
     setNewTask("");
@@ -56,27 +60,43 @@ export default function PreProject({ setActiveModule }) {
     return "status-not-started";
   };
 
-  const returnToSummary = () => {
-    if (setActiveModule) setActiveModule("summary");
-  };
+  // === Filter logic ===
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "All") return true;
+    if (filter === "Flagged") return task.flagged === true;
+    return task.status === filter;
+  });
 
+  // === Render ===
   return (
     <div className="checklist-container">
-      {/* === Clean Blue Header Box === */}
-      <header className="module-header-box">
-        <h2>PreProject Module</h2>
-        <button className="return-btn" onClick={returnToSummary}>
+      {/* === Unified METRA Header === */}
+      <div className="module-header-box inline">
+        <span className="brand-large angled">METRA</span>
+        <h2 className="module-subtitle">PreProject Module</h2>
+        <button className="return-btn" onClick={() => setActiveModule("summary")}>
           Return to Summary
         </button>
-      </header>
+      </div>
 
+      {/* === Filter Bar === */}
+      <div className="filter-bar">
+        {["All", "Not Started", "In Progress", "Completed", "Flagged"].map((type) => (
+          <button
+            key={type}
+            className={`filter-btn ${filter === type ? "active" : ""}`}
+            onClick={() => setFilter(type)}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+
+      {/* === Checklist === */}
       <div className="checklist">
         <ul>
-          {tasks.map((task) => (
-            <li
-              key={task.id}
-              className={`task-item ${getStatusClass(task.status)}`}
-            >
+          {filteredTasks.map((task) => (
+            <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
               <div className="task-text-area">
                 <span className="task-text">{task.text}</span>
               </div>
@@ -89,9 +109,7 @@ export default function PreProject({ setActiveModule }) {
                 >
                   {task.status}
                 </button>
-
                 <span className="timestamp">{task.timestamp}</span>
-
                 <button className="delete" onClick={() => deleteTask(task.id)}>
                   Delete
                 </button>
@@ -99,7 +117,6 @@ export default function PreProject({ setActiveModule }) {
             </li>
           ))}
 
-          {/* Add-task input row */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input
@@ -109,7 +126,6 @@ export default function PreProject({ setActiveModule }) {
                 onChange={(e) => setNewTask(e.target.value)}
               />
             </div>
-
             <div className="task-controls">
               <button className="add" onClick={addTask}>
                 Add

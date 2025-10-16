@@ -1,23 +1,21 @@
-/* === METRA – PreProject Ultra Compact Layout v3 + Header Box ===
-   Adds blue rounded header box for PreProject module
-   Baseline Target: baseline-2025-10-18-preproject-headerbox
+/* === METRA – Unified Compact Header (v2.5) ===
+   One-line layout: METRA left, title center, Return right
+   Baseline Target: baseline-2025-10-18-preproject-headerbox-v2.5
 --------------------------------------------------------------- */
 
 :root {
   --header-blue: #0a2b5c;
   --page-bg: #f9f9f9;
-
   --status-not-started-bg: #e0e0e0;
   --status-in-progress-bg: #ffce33;
   --status-completed-bg: #6fdc6f;
-
   --add-blue: #0078d4;
   --add-blue-hover: #005ea2;
   --delete-red: #e74c3c;
   --delete-red-hover: #c0392b;
 }
 
-/* === Main container === */
+/* === Main Container === */
 .checklist-container {
   display: flex;
   flex-direction: column;
@@ -26,44 +24,65 @@
   height: 100vh;
   background: var(--page-bg);
   overflow: hidden;
+  font-family: "Segoe UI", Avenir, Helvetica, Arial, sans-serif;
 }
 
-/* === Modern Blue Rounded Header Box === */
-.module-header-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* === Unified Header Box === */
+.module-header-box.inline {
   background: var(--header-blue);
   color: white;
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 8px 20px;
+  border-radius: 8px;
   width: 95%;
-  max-width: 1000px;
-  margin: 12px auto;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  max-width: 950px;
+  margin: 10px auto 8px auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.module-header-box h2 {
-  font-size: 1.3rem;
+/* === METRA (Angled Gold) === */
+.brand-large.angled {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffd84d;
+  font-style: italic;
+  transform: skewX(-6deg);
+  letter-spacing: 1.2px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: "Poppins", "Segoe UI Semibold", "Trebuchet MS", sans-serif;
+}
+
+/* === Subtitle (Center) === */
+.module-subtitle {
+  flex: 1;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #ffffff;
   margin: 0;
-  font-weight: 700;
+  font-family: "Segoe UI", Avenir, Helvetica, sans-serif;
 }
 
+/* === Return Button (Right) === */
 .module-header-box .return-btn {
   background: var(--add-blue);
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
-
 .module-header-box .return-btn:hover {
   background: var(--add-blue-hover);
 }
 
-/* === Scrollable checklist === */
+/* === Checklist === */
 .checklist {
   flex: 1;
   overflow-y: auto;
@@ -71,19 +90,12 @@
   padding: 5px 12px;
   width: 95%;
   max-width: 1000px;
-  margin-top: 4px;
-  margin-bottom: 8px;
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* === Task list === */
-.checklist ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+.checklist ul { list-style: none; padding: 0; margin: 0; }
 
 .task-item {
   display: flex;
@@ -95,46 +107,25 @@
   transition: background 0.3s ease, box-shadow 0.2s ease;
   min-height: 18px;
 }
+.task-item:hover { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
 
-.task-item:hover {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-}
+.status-not-started { background: var(--status-not-started-bg); }
+.status-in-progress { background: var(--status-in-progress-bg); }
+.status-completed { background: var(--status-completed-bg); }
 
-/* === Status backgrounds === */
-.status-not-started {
-  background: var(--status-not-started-bg);
-}
-.status-in-progress {
-  background: var(--status-in-progress-bg);
-}
-.status-completed {
-  background: var(--status-completed-bg);
-}
+.status-completed .task-text { text-decoration: line-through; opacity: 0.8; }
+.status-completed .status-btn { text-decoration: line-through; opacity: 0.85; }
 
-/* === Strikethrough for completed tasks === */
-.status-completed .task-text {
-  text-decoration: line-through;
-  color: #333;
-  opacity: 0.8;
-}
-.status-completed .status-btn {
-  text-decoration: line-through;
-  opacity: 0.85;
-}
-
-/* === Text and controls === */
 .task-text-area {
   flex: 1;
   display: flex;
   align-items: center;
 }
-
 .task-text {
   font-size: 0.8rem;
   color: #333;
   word-break: break-word;
 }
-
 .task-controls {
   display: flex;
   align-items: center;
@@ -142,7 +133,6 @@
   flex-wrap: wrap;
 }
 
-/* === Buttons (Final Compact Refinement) === */
 button {
   border: none;
   border-radius: 4px;
@@ -152,48 +142,40 @@ button {
   line-height: 1.0;
   transition: background 0.2s ease, transform 0.1s ease;
 }
+button:hover { transform: scale(1.02); }
 
-button:hover {
-  transform: scale(1.02);
-}
-
-/* === Status Buttons === */
 .status-btn {
   background: #fff;
   border: 1px solid #bbb;
   color: #333;
   min-width: 62px;
   height: 16px;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* === Add / Delete Buttons === */
-.add {
-  background-color: var(--add-blue);
-  color: #fff;
-}
-.add:hover {
-  background-color: var(--add-blue-hover);
-}
-
-.delete {
-  background-color: var(--delete-red);
-  color: #fff;
+.add, .delete {
   font-size: 0.7rem;
-  padding: 0px 4px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.delete:hover {
-  background-color: var(--delete-red-hover);
+.add {
+  background-color: var(--add-blue);
+  color: #fff;
+  padding: 0px 4px;
 }
+.add:hover { background-color: var(--add-blue-hover); }
 
-/* === Timestamp === */
+.delete {
+  background-color: var(--delete-red);
+  color: #fff;
+  padding: 0px 4px;
+}
+.delete:hover { background-color: var(--delete-red-hover); }
+
 .timestamp {
   font-size: 0.68rem;
   color: #555;
@@ -201,7 +183,6 @@ button:hover {
   text-align: right;
 }
 
-/* === Add-row === */
 .add-row input {
   width: 100%;
   padding: 3px;
@@ -211,32 +192,48 @@ button:hover {
   background: #ffffff;
   color: #000000;
 }
-.add-row input::placeholder {
-  color: #666;
-}
+.add-row input::placeholder { color: #666; }
 
-/* === Scrollbar === */
-.checklist::-webkit-scrollbar {
-  width: 8px;
-}
+.checklist::-webkit-scrollbar { width: 8px; }
 .checklist::-webkit-scrollbar-thumb {
   background: #bbb;
   border-radius: 5px;
 }
-.checklist::-webkit-scrollbar-thumb:hover {
-  background: #999;
+.checklist::-webkit-scrollbar-thumb:hover { background: #999; }
+
+@media (max-width: 700px) {
+  .module-header-box.inline {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
+  .status-btn, .delete, .add { width: 100%; }
+}
+/* === Filter Bar Styling (Phase 1) === */
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
-/* === Responsive === */
-@media (max-width: 700px) {
-  .task-controls {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
+.filter-btn {
+  background: #e6e6e6;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
-  .status-btn,
-  .delete {
-    width: 100%;
-  }
+.filter-btn:hover {
+  background: #dcdcdc;
+}
+
+.filter-btn.active {
+  background: #0078d4;
+  color: white;
+  border-color: #005ea2;
 }
