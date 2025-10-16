@@ -1,17 +1,30 @@
-// src/components/Personnel.jsx
+// === METRA – Personnel Module (v3.2: Isolated Popup Light Theme) ===
+// Fully self-contained, persists via localStorage, popup with neutral background
+// Compatible with isolated Personnel.css v3.2
+// Baseline Target: baseline-2025-10-22-personnel-popup-isolated-v3.2
+
 import React, { useState, useEffect } from "react";
 import "../Styles/Personnel.css";
 
-export default function Personnel() {
+export default function Personnel({ setActiveModule }) {
   const storageKey = "personnel-list";
 
   const [people, setPeople] = useState(() => {
     const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : [];
+    return saved
+      ? JSON.parse(saved)
+      : [
+          // optional seed data
+          { name: "Jane Doe", role: "Project Manager", organisation: "Metra Ltd", department: "PMO", email: "jane@metra.com" },
+          { name: "Alex Lee", role: "Developer", organisation: "Metra Ltd", department: "Engineering", email: "alex@metra.com" },
+          { name: "Sam Carter", role: "Consultant", organisation: "Carter Advisory", department: "External", email: "sam@carteradvisory.com" },
+        ];
   });
 
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("");
+
+  // Popup state
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [popupData, setPopupData] = useState({
     name: "",
@@ -21,12 +34,10 @@ export default function Personnel() {
     email: "",
   });
 
-  // Save to localStorage
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(people));
   }, [people]);
 
-  // === Add new person ===
   const addPerson = () => {
     if (!newName.trim() || !newRole.trim()) return;
     const newPerson = {
@@ -41,14 +52,12 @@ export default function Personnel() {
     setNewRole("");
   };
 
-  // === Delete person ===
   const deletePerson = (index) => {
     if (window.confirm("Delete this person?")) {
       setPeople((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
-  // === Popup ===
   const openPopup = (person, index) => {
     setSelectedIndex(index);
     setPopupData({
@@ -73,33 +82,32 @@ export default function Personnel() {
 
   return (
     <div className="personnel-container">
-      <header className="personnel-header">
-        <div className="header-left">
-          <h2>
-            <span className="metra-brand">METRA</span> Project Personnel
-          </h2>
-        </div>
-      </header>
+      {/* === Header === */}
+      <div className="personnel-header">
+        <span className="metra-title">METRA</span>
+        <h2>Project Personnel</h2>
+        <button onClick={() => setActiveModule("summary")}>Return</button>
+      </div>
 
-      <div className="personnel-list">
-        <ul>
-          {people.map((person, i) => (
-            <li key={i} className="person-row">
-              <span className="person-text">
-                {person.name} – {person.role}
-              </span>
-              <div className="person-buttons">
-                <button className="view-btn" onClick={() => openPopup(person, i)}>
-                  View
-                </button>
-                <button className="delete-btn" onClick={() => deletePerson(i)}>
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+      {/* === Personnel List === */}
+      <div className="personnel-list-box">
+        {people.map((person, i) => (
+          <div key={i} className="person-row">
+            <div className="person-info">
+              {person.name} – {person.role}
+            </div>
+            <div className="person-controls">
+              <button className="view-btn" onClick={() => openPopup(person, i)}>
+                View
+              </button>
+              <button className="delete-btn" onClick={() => deletePerson(i)}>
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
 
+        {/* Add New Person Row */}
         <div className="add-person-row">
           <input
             value={newName}
@@ -117,53 +125,59 @@ export default function Personnel() {
         </div>
       </div>
 
+      {/* === Popup === */}
       {selectedIndex !== null && (
         <div className="popup-overlay" onClick={closePopup}>
-          <div className="popup-card" onClick={(e) => e.stopPropagation()}>
-            <h3>Personnel Details</h3>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-header">Personnel Details</div>
 
-            <input
-              value={popupData.name}
-              onChange={(e) =>
-                setPopupData({ ...popupData, name: e.target.value })
-              }
-              placeholder="Name"
-            />
-            <input
-              value={popupData.role}
-              onChange={(e) =>
-                setPopupData({ ...popupData, role: e.target.value })
-              }
-              placeholder="Role"
-            />
-            <input
-              value={popupData.organisation}
-              onChange={(e) =>
-                setPopupData({ ...popupData, organisation: e.target.value })
-              }
-              placeholder="Organisation"
-            />
-            <input
-              value={popupData.department}
-              onChange={(e) =>
-                setPopupData({ ...popupData, department: e.target.value })
-              }
-              placeholder="Department"
-            />
-            <input
-              value={popupData.email}
-              onChange={(e) =>
-                setPopupData({ ...popupData, email: e.target.value })
-              }
-              placeholder="Email"
-              type="email"
-            />
+            <div className="popup-content">
+              <input
+                value={popupData.name}
+                onChange={(e) =>
+                  setPopupData({ ...popupData, name: e.target.value })
+                }
+                placeholder="Name"
+              />
+              <input
+                value={popupData.role}
+                onChange={(e) =>
+                  setPopupData({ ...popupData, role: e.target.value })
+                }
+                placeholder="Role"
+              />
+              <input
+                value={popupData.organisation}
+                onChange={(e) =>
+                  setPopupData({
+                    ...popupData,
+                    organisation: e.target.value,
+                  })
+                }
+                placeholder="Organisation"
+              />
+              <input
+                value={popupData.department}
+                onChange={(e) =>
+                  setPopupData({ ...popupData, department: e.target.value })
+                }
+                placeholder="Department"
+              />
+              <input
+                type="email"
+                value={popupData.email}
+                onChange={(e) =>
+                  setPopupData({ ...popupData, email: e.target.value })
+                }
+                placeholder="Email"
+              />
+            </div>
 
             <div className="popup-buttons">
-              <button onClick={savePopup} className="save-btn">
+              <button className="save-btn" onClick={savePopup}>
                 Save
               </button>
-              <button onClick={closePopup} className="cancel-btn">
+              <button className="cancel-btn" onClick={closePopup}>
                 Cancel
               </button>
             </div>
