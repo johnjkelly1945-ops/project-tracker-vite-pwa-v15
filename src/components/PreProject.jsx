@@ -1,8 +1,10 @@
-// === METRA – PreProject Module (Phase 3.2 Step 2c: Assign/Unassign Logic) ===
-// Adds “— None —” option to unassign and revert to Not Started (grey)
-// Baseline Target: baseline-2025-10-24-preproject-assignlogic-noneoption-v1
+// === METRA – PreProject Module (Phase 3.4 Step 2: Hover-Based Dropdown) ===
+// Shows personnel dropdown when hovering over person icon.
+// Smooth interaction, colour persistence, and full assignment logic retained.
+// Baseline Target: baseline-2025-10-25-preproject-icon-hover-v1
 
 import { useState, useEffect } from "react";
+import { User } from "lucide-react";
 import "../Styles/Checklist.css";
 
 export default function PreProject({ setActiveModule }) {
@@ -16,6 +18,7 @@ export default function PreProject({ setActiveModule }) {
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
+  const [hoveredTask, setHoveredTask] = useState(null); // which task is being hovered
 
   // --- Load personnel list ---
   useEffect(() => {
@@ -29,18 +32,15 @@ export default function PreProject({ setActiveModule }) {
     }
   }, []);
 
-  // --- Ensure correct status on load (assigned = In Progress) ---
+  // --- Auto-fix assigned status on load ---
   useEffect(() => {
-    const updated = tasks.map((task) => {
-      if (task.assignedTo && task.status === "Not Started") {
-        return { ...task, status: "In Progress" };
-      }
-      return task;
-    });
-    if (JSON.stringify(updated) !== JSON.stringify(tasks)) {
-      setTasks(updated);
-    }
-  }, []); // run only once on mount
+    const updated = tasks.map((t) =>
+      t.assignedTo && t.status === "Not Started"
+        ? { ...t, status: "In Progress" }
+        : t
+    );
+    if (JSON.stringify(updated) !== JSON.stringify(tasks)) setTasks(updated);
+  }, []);
 
   // --- Persist tasks ---
   useEffect(() => {
@@ -51,84 +51,74 @@ export default function PreProject({ setActiveModule }) {
   const addTask = () => {
     if (!newTask.trim()) return;
     const timestamp = new Date().toLocaleString("en-GB");
-    const newEntry = {
-      id: Date.now(),
-      text: newTask.trim(),
-      status: "Not Started",
-      timestamp,
-      flagged: false,
-      assignedTo: "",
-    };
-    setTasks([...tasks, newEntry]);
+    setTasks([
+      ...tasks,
+      {
+        id: Date.now(),
+        text: newTask.trim(),
+        status: "Not Started",
+        timestamp,
+        flagged: false,
+        assignedTo: "",
+      },
+    ]);
     setNewTask("");
   };
 
   // --- Delete task ---
   const deleteTask = (id) => {
     if (window.confirm("Delete this task?")) {
-      setTasks(tasks.filter((task) => task.id !== id));
+      setTasks(tasks.filter((t) => t.id !== id));
     }
   };
 
   // --- Cycle status manually ---
   const cycleStatus = (id) => {
     setTasks(
-      tasks.map((task) => {
-        if (task.id === id) {
-          let newStatus;
-          if (task.status === "Not Started") newStatus = "In Progress";
-          else if (task.status === "In Progress") newStatus = "Completed";
-          else newStatus = "Not Started";
-          const updatedTime = new Date().toLocaleString("en-GB");
-          return { ...task, status: newStatus, timestamp: updatedTime };
+      tasks.map((t) => {
+        if (t.id === id) {
+          let next;
+          if (t.status === "Not Started") next = "In Progress";
+          else if (t.status === "In Progress") next = "Completed";
+          else next = "Not Started";
+          return { ...t, status: next, timestamp: new Date().toLocaleString("en-GB") };
         }
-        return task;
+        return t;
       })
     );
   };
 
-  // --- Assign or unassign a person ---
+  // --- Assign or unassign person ---
   const assignPerson = (taskId, personName) => {
     setTasks(
-      tasks.map((task) => {
-        if (task.id === taskId) {
-          const updatedTime = new Date().toLocaleString("en-GB");
-          let newStatus = task.status;
-
-          if (personName === "" || personName === "None") {
-            // unassigned → Not Started (grey)
-            newStatus = "Not Started";
-          } else if (task.status === "Not Started") {
-            // first assignment → In Progress (amber)
-            newStatus = "In Progress";
-          }
-
+      tasks.map((t) => {
+        if (t.id === taskId) {
+          const now = new Date().toLocaleString("en-GB");
+          const newStatus = personName ? "In Progress" : "Not Started";
           return {
-            ...task,
-            assignedTo: personName === "None" ? "" : personName,
+            ...t,
+            assignedTo: personName,
             status: newStatus,
-            timestamp: updatedTime,
+            timestamp: now,
           };
         }
-        return task;
+        return t;
       })
     );
+    setHoveredTask(null); // hide dropdown after change
   };
 
-  const getStatusClass = (status) => {
-    if (status === "In Progress") return "status-in-progress";
-    if (status === "Completed") return "status-completed";
-    return "status-not-started";
-  };
+  const getStatusClass = (s) =>
+    s === "In Progress"
+      ? "status-in-progress"
+      : s === "Completed"
+      ? "status-completed"
+      : "status-not-started";
 
-  // --- Filtering ---
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === "All") return true;
-    if (filter === "Flagged") return task.flagged === true;
-    return task.status === filter;
-  });
+  const filtered = tasks.filter((t) =>
+    filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
+  );
 
-  // --- Render ---
   return (
     <div className="checklist-container">
       {/* Header */}
@@ -140,7 +130,7 @@ export default function PreProject({ setActiveModule }) {
         </button>
       </div>
 
-      {/* Filter Buttons */}
+      {/* Filter Bar */}
       <div className="filter-bar">
         {["All", "Not Started", "In Progress", "Completed", "Flagged"].map((type) => (
           <button
@@ -156,13 +146,17 @@ export default function PreProject({ setActiveModule }) {
       {/* Checklist */}
       <div className="checklist">
         <ul>
-          {filteredTasks.map((task) => (
+          {filtered.map((task) => (
             <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
               <div className="task-text-area">
                 <span className="task-text">{task.text}</span>
               </div>
 
-              <div className="task-controls">
+              <div
+                className="task-controls"
+                style={{ position: "relative" }}
+                onMouseLeave={() => setHoveredTask(null)}
+              >
                 {/* Status button */}
                 <button
                   className="status-btn"
@@ -172,15 +166,40 @@ export default function PreProject({ setActiveModule }) {
                   {task.status}
                 </button>
 
-                {/* Assign dropdown */}
-                {personnel.length > 0 && (
+                {/* Person icon */}
+                <button
+                  className="assign-icon-btn"
+                  onMouseEnter={() => setHoveredTask(task.id)}
+                  title={
+                    task.assignedTo
+                      ? `Assigned to ${task.assignedTo} (hover to change)`
+                      : "Hover to assign person"
+                  }
+                >
+                  <User
+                    size={18}
+                    strokeWidth={2.6}
+                    color={task.assignedTo ? "#0057b8" : "#666"}
+                    style={{
+                      verticalAlign: "middle",
+                      transition: "all 0.2s ease",
+                      filter: task.assignedTo
+                        ? "drop-shadow(0 0 3px rgba(0, 123, 255, 0.6))"
+                        : "drop-shadow(0 0 1px rgba(0, 0, 0, 0.3))",
+                    }}
+                  />
+                </button>
+
+                {/* Dropdown appears on hover */}
+                {hoveredTask === task.id && (
                   <select
-                    className="personnel-select"
-                    value={task.assignedTo || "None"}
+                    className="personnel-select dropdown-below"
+                    value={task.assignedTo}
                     onChange={(e) => assignPerson(task.id, e.target.value)}
-                    title="Assign or unassign person"
+                    onMouseLeave={() => setHoveredTask(null)}
+                    autoFocus
                   >
-                    <option value="None">— None —</option>
+                    <option value="">— None —</option>
                     {personnel.map((p) => (
                       <option key={p.id} value={p.name}>
                         {p.name}
@@ -198,7 +217,7 @@ export default function PreProject({ setActiveModule }) {
             </li>
           ))}
 
-          {/* Add new task row */}
+          {/* Add new task */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input
@@ -214,7 +233,7 @@ export default function PreProject({ setActiveModule }) {
               </button>
             </div>
           </li>
-        </ul>
+        ))}
       </div>
     </div>
   );
