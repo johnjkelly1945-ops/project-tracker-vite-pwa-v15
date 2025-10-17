@@ -1,6 +1,6 @@
-// === METRA – PreProject Module (Phase 3.4l: Hover Stability Fix) ===
-// Prevents dropdown from closing too quickly when moving cursor to the list.
-// Baseline Target: baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-fixhover-v10
+// === METRA – PreProject Module (Phase 3.5a: Fade-In Hover Dropdown) ===
+// Adds smooth fade-in animation for the personnel list on hover.
+// Baseline Target: baseline-2025-10-27-preproject-hoverhighlight-fadein-v11
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -108,6 +108,18 @@ export default function PreProject({ setActiveModule }) {
     setOpenTaskId(null);
   };
 
+  const handleMouseEnter = (taskId) => {
+    clearTimeout(hoverTimeout.current);
+    setOpenTaskId(taskId);
+  };
+
+  const handleMouseLeave = () => {
+    clearTimeout(hoverTimeout.current);
+    hoverTimeout.current = setTimeout(() => {
+      setOpenTaskId(null);
+    }, 150);
+  };
+
   const getStatusClass = (s) =>
     s === "In Progress"
       ? "status-in-progress"
@@ -119,23 +131,9 @@ export default function PreProject({ setActiveModule }) {
     filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
   );
 
-  // --- Hover management ---
-  const handleMouseEnter = (taskId) => {
-    clearTimeout(hoverTimeout.current);
-    setOpenTaskId(taskId);
-  };
-
-  const handleMouseLeave = () => {
-    clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => {
-      setOpenTaskId(null);
-    }, 150); // 150ms grace period
-  };
-
   // --- Render ---
   return (
     <div className="checklist-container">
-      {/* Header */}
       <div className="module-header-box inline">
         <span className="brand-large angled">METRA</span>
         <h2 className="module-subtitle">PreProject Module</h2>
@@ -144,7 +142,6 @@ export default function PreProject({ setActiveModule }) {
         </button>
       </div>
 
-      {/* Filter Bar */}
       <div className="filter-bar">
         {["All", "Not Started", "In Progress", "Completed", "Flagged"].map((type) => (
           <button
@@ -157,11 +154,9 @@ export default function PreProject({ setActiveModule }) {
         ))}
       </div>
 
-      {/* Checklist */}
       <div className="checklist">
         <ul>
           {filtered.map((task) => {
-            // reorder personnel so assigned person appears first
             const sortedPersonnel = [...personnel];
             if (task.assignedTo) {
               sortedPersonnel.sort((a, b) =>
@@ -176,7 +171,6 @@ export default function PreProject({ setActiveModule }) {
                 </div>
 
                 <div className="task-controls" style={{ position: "relative" }}>
-                  {/* Status Button */}
                   <button
                     className="status-btn"
                     onClick={() => cycleStatus(task.id)}
@@ -185,7 +179,6 @@ export default function PreProject({ setActiveModule }) {
                     {task.status}
                   </button>
 
-                  {/* Hover zone */}
                   <div
                     className="assign-hover-zone"
                     onMouseEnter={() => handleMouseEnter(task.id)}
@@ -204,16 +197,12 @@ export default function PreProject({ setActiveModule }) {
                           ? "drop-shadow(0 0 3px rgba(0, 123, 255, 0.6))"
                           : "drop-shadow(0 0 1px rgba(0, 0, 0, 0.3))",
                       }}
-                      title={
-                        task.assignedTo
-                          ? `Assigned to ${task.assignedTo}`
-                          : "Hover to assign person"
-                      }
                     />
 
-                    {/* Dropdown with arrow pointer */}
+                    {/* Dropdown container with fade animation */}
                     {openTaskId === task.id && (
                       <div
+                        className="personnel-dropdown fade-in"
                         style={{
                           position: "absolute",
                           top: "-6px",
@@ -245,7 +234,6 @@ export default function PreProject({ setActiveModule }) {
                             borderRight: "8px solid #ccc",
                           }}
                         />
-                        {/* Inner white arrow */}
                         <div
                           style={{
                             position: "absolute",
@@ -260,7 +248,6 @@ export default function PreProject({ setActiveModule }) {
                           }}
                         />
 
-                        {/* List container */}
                         <div style={{ flex: 1 }}>
                           {sortedPersonnel.length === 0 ? (
                             <div style={{ padding: "6px", color: "#888" }}>
@@ -310,7 +297,6 @@ export default function PreProject({ setActiveModule }) {
                     )}
                   </div>
 
-                  {/* Timestamp + Delete */}
                   <span className="timestamp">{task.timestamp}</span>
                   <button className="delete" onClick={() => deleteTask(task.id)}>
                     Delete
@@ -320,7 +306,6 @@ export default function PreProject({ setActiveModule }) {
             );
           })}
 
-          {/* Add new task row */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input
