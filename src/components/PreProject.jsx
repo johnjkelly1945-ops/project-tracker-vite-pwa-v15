@@ -1,7 +1,6 @@
-// === METRA – PreProject Module (Phase 3.4 Step 2: Hover-Based Dropdown) ===
-// Shows personnel dropdown when hovering over person icon.
-// Smooth interaction, colour persistence, and full assignment logic retained.
-// Baseline Target: baseline-2025-10-25-preproject-icon-hover-v1
+// === METRA – PreProject Module (Phase 3.4k: Inline Hover Dropdown + Pointer Arrow) ===
+// Adds a small grey arrow pointer linking the icon and dropdown list.
+// Baseline Target: baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-v9
 
 import { useState, useEffect } from "react";
 import { User } from "lucide-react";
@@ -18,7 +17,7 @@ export default function PreProject({ setActiveModule }) {
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
-  const [hoveredTask, setHoveredTask] = useState(null); // which task is being hovered
+  const [openTaskId, setOpenTaskId] = useState(null);
 
   // --- Load personnel list ---
   useEffect(() => {
@@ -32,7 +31,7 @@ export default function PreProject({ setActiveModule }) {
     }
   }, []);
 
-  // --- Auto-fix assigned status on load ---
+  // --- Auto-update assigned status ---
   useEffect(() => {
     const updated = tasks.map((t) =>
       t.assignedTo && t.status === "Not Started"
@@ -105,7 +104,7 @@ export default function PreProject({ setActiveModule }) {
         return t;
       })
     );
-    setHoveredTask(null); // hide dropdown after change
+    setOpenTaskId(null);
   };
 
   const getStatusClass = (s) =>
@@ -119,6 +118,7 @@ export default function PreProject({ setActiveModule }) {
     filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
   );
 
+  // --- Render ---
   return (
     <div className="checklist-container">
       {/* Header */}
@@ -146,78 +146,167 @@ export default function PreProject({ setActiveModule }) {
       {/* Checklist */}
       <div className="checklist">
         <ul>
-          {filtered.map((task) => (
-            <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
-              <div className="task-text-area">
-                <span className="task-text">{task.text}</span>
-              </div>
+          {filtered.map((task) => {
+            // reorder personnel so assigned person appears first
+            const sortedPersonnel = [...personnel];
+            if (task.assignedTo) {
+              sortedPersonnel.sort((a, b) =>
+                a.name === task.assignedTo ? -1 : b.name === task.assignedTo ? 1 : 0
+              );
+            }
 
-              <div
-                className="task-controls"
-                style={{ position: "relative" }}
-                onMouseLeave={() => setHoveredTask(null)}
-              >
-                {/* Status button */}
-                <button
-                  className="status-btn"
-                  onClick={() => cycleStatus(task.id)}
-                  title="Click to change status"
-                >
-                  {task.status}
-                </button>
+            return (
+              <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
+                <div className="task-text-area">
+                  <span className="task-text">{task.text}</span>
+                </div>
 
-                {/* Person icon */}
-                <button
-                  className="assign-icon-btn"
-                  onMouseEnter={() => setHoveredTask(task.id)}
-                  title={
-                    task.assignedTo
-                      ? `Assigned to ${task.assignedTo} (hover to change)`
-                      : "Hover to assign person"
-                  }
-                >
-                  <User
-                    size={18}
-                    strokeWidth={2.6}
-                    color={task.assignedTo ? "#0057b8" : "#666"}
-                    style={{
-                      verticalAlign: "middle",
-                      transition: "all 0.2s ease",
-                      filter: task.assignedTo
-                        ? "drop-shadow(0 0 3px rgba(0, 123, 255, 0.6))"
-                        : "drop-shadow(0 0 1px rgba(0, 0, 0, 0.3))",
-                    }}
-                  />
-                </button>
-
-                {/* Dropdown appears on hover */}
-                {hoveredTask === task.id && (
-                  <select
-                    className="personnel-select dropdown-below"
-                    value={task.assignedTo}
-                    onChange={(e) => assignPerson(task.id, e.target.value)}
-                    onMouseLeave={() => setHoveredTask(null)}
-                    autoFocus
+                <div className="task-controls" style={{ position: "relative" }}>
+                  {/* Status Button */}
+                  <button
+                    className="status-btn"
+                    onClick={() => cycleStatus(task.id)}
+                    title="Click to change status"
                   >
-                    <option value="">— None —</option>
-                    {personnel.map((p) => (
-                      <option key={p.id} value={p.name}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                    {task.status}
+                  </button>
 
-                {/* Timestamp + Delete */}
-                <span className="timestamp">{task.timestamp}</span>
-                <button className="delete" onClick={() => deleteTask(task.id)}>
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
+                  {/* Hover zone */}
+                  <div
+                    className="assign-hover-zone"
+                    onMouseEnter={() => setOpenTaskId(task.id)}
+                    onMouseLeave={() => setOpenTaskId(null)}
+                    style={{ display: "inline-block", position: "relative" }}
+                  >
+                    <User
+                      size={18}
+                      strokeWidth={2.6}
+                      color={task.assignedTo ? "#0057b8" : "#666"}
+                      style={{
+                        verticalAlign: "middle",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        filter: task.assignedTo
+                          ? "drop-shadow(0 0 3px rgba(0, 123, 255, 0.6))"
+                          : "drop-shadow(0 0 1px rgba(0, 0, 0, 0.3))",
+                      }}
+                      title={
+                        task.assignedTo
+                          ? `Assigned to ${task.assignedTo}`
+                          : "Hover to assign person"
+                      }
+                    />
 
-          {/* Add new task */}
+                    {/* Dropdown with arrow pointer */}
+                    {openTaskId === task.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "-6px",
+                          left: "32px",
+                          zIndex: 30,
+                          background: "#fff",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          boxShadow: "0 3px 8px rgba(0,0,0,0.18)",
+                          width: "220px",
+                          padding: "6px",
+                          fontSize: "0.82rem",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        onMouseEnter={() => setOpenTaskId(task.id)}
+                        onMouseLeave={() => setOpenTaskId(null)}
+                      >
+                        {/* Pointer arrow */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: "-8px",
+                            top: "10px",
+                            width: 0,
+                            height: 0,
+                            borderTop: "6px solid transparent",
+                            borderBottom: "6px solid transparent",
+                            borderRight: "8px solid #ccc",
+                          }}
+                        />
+                        {/* Inner white arrow to soften edge */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: "-7px",
+                            top: "10px",
+                            width: 0,
+                            height: 0,
+                            borderTop: "5px solid transparent",
+                            borderBottom: "5px solid transparent",
+                            borderRight: "7px solid #fff",
+                            zIndex: 31,
+                          }}
+                        />
+
+                        {/* List container */}
+                        <div style={{ flex: 1 }}>
+                          {sortedPersonnel.length === 0 ? (
+                            <div style={{ padding: "6px", color: "#888" }}>
+                              No personnel found
+                            </div>
+                          ) : (
+                            sortedPersonnel.map((p) => (
+                              <div
+                                key={p.id}
+                                onClick={() => assignPerson(task.id, p.name)}
+                                style={{
+                                  padding: "5px 8px",
+                                  borderRadius: "5px",
+                                  background:
+                                    task.assignedTo === p.name
+                                      ? "#e6f0ff"
+                                      : "transparent",
+                                  color:
+                                    task.assignedTo === p.name
+                                      ? "#0057b8"
+                                      : "#222",
+                                  fontWeight:
+                                    task.assignedTo === p.name ? "600" : "400",
+                                  cursor: "pointer",
+                                }}
+                                onMouseOver={(e) =>
+                                  (e.currentTarget.style.background =
+                                    task.assignedTo === p.name
+                                      ? "#dce8ff"
+                                      : "#f5f5f5")
+                                }
+                                onMouseOut={(e) =>
+                                  (e.currentTarget.style.background =
+                                    task.assignedTo === p.name
+                                      ? "#e6f0ff"
+                                      : "transparent")
+                                }
+                              >
+                                {p.name}
+                                {p.role ? ` – ${p.role}` : ""}
+                                {p.department ? ` (${p.department})` : ""}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Timestamp + Delete */}
+                  <span className="timestamp">{task.timestamp}</span>
+                  <button className="delete" onClick={() => deleteTask(task.id)}>
+                    Delete
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+
+          {/* Add new task row */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input
@@ -233,7 +322,7 @@ export default function PreProject({ setActiveModule }) {
               </button>
             </div>
           </li>
-        ))}
+        </ul>
       </div>
     </div>
   );
