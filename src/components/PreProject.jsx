@@ -1,8 +1,8 @@
-// === METRA – PreProject Module (Phase 3.4k: Inline Hover Dropdown + Pointer Arrow) ===
-// Adds a small grey arrow pointer linking the icon and dropdown list.
-// Baseline Target: baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-v9
+// === METRA – PreProject Module (Phase 3.4l: Hover Stability Fix) ===
+// Prevents dropdown from closing too quickly when moving cursor to the list.
+// Baseline Target: baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-fixhover-v10
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
 import "../Styles/Checklist.css";
 
@@ -18,6 +18,7 @@ export default function PreProject({ setActiveModule }) {
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
   const [openTaskId, setOpenTaskId] = useState(null);
+  const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
   useEffect(() => {
@@ -118,6 +119,19 @@ export default function PreProject({ setActiveModule }) {
     filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
   );
 
+  // --- Hover management ---
+  const handleMouseEnter = (taskId) => {
+    clearTimeout(hoverTimeout.current);
+    setOpenTaskId(taskId);
+  };
+
+  const handleMouseLeave = () => {
+    clearTimeout(hoverTimeout.current);
+    hoverTimeout.current = setTimeout(() => {
+      setOpenTaskId(null);
+    }, 150); // 150ms grace period
+  };
+
   // --- Render ---
   return (
     <div className="checklist-container">
@@ -174,8 +188,8 @@ export default function PreProject({ setActiveModule }) {
                   {/* Hover zone */}
                   <div
                     className="assign-hover-zone"
-                    onMouseEnter={() => setOpenTaskId(task.id)}
-                    onMouseLeave={() => setOpenTaskId(null)}
+                    onMouseEnter={() => handleMouseEnter(task.id)}
+                    onMouseLeave={handleMouseLeave}
                     style={{ display: "inline-block", position: "relative" }}
                   >
                     <User
@@ -215,8 +229,8 @@ export default function PreProject({ setActiveModule }) {
                           display: "flex",
                           alignItems: "center",
                         }}
-                        onMouseEnter={() => setOpenTaskId(task.id)}
-                        onMouseLeave={() => setOpenTaskId(null)}
+                        onMouseEnter={() => handleMouseEnter(task.id)}
+                        onMouseLeave={handleMouseLeave}
                       >
                         {/* Pointer arrow */}
                         <div
@@ -231,7 +245,7 @@ export default function PreProject({ setActiveModule }) {
                             borderRight: "8px solid #ccc",
                           }}
                         />
-                        {/* Inner white arrow to soften edge */}
+                        {/* Inner white arrow */}
                         <div
                           style={{
                             position: "absolute",
