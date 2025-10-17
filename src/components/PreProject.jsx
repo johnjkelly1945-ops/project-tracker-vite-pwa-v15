@@ -1,6 +1,6 @@
-// === METRA – PreProject Module (Phase 3.2 Step 2a) ===
-// Adds “Assign Person” dropdown + persistent linkage to personnel-list
-// Baseline Target: baseline-2025-10-23-preproject-personnel-assign-v1
+// === METRA – PreProject Module (Phase 3.2 Step 2c: Assign/Unassign Logic) ===
+// Adds “— None —” option to unassign and revert to Not Started (grey)
+// Baseline Target: baseline-2025-10-24-preproject-assignlogic-noneoption-v1
 
 import { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
@@ -17,11 +17,6 @@ export default function PreProject({ setActiveModule }) {
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
 
-  // --- Persist tasks ---
-  useEffect(() => {
-    localStorage.setItem(taskKey, JSON.stringify(tasks));
-  }, [tasks]);
-
   // --- Load personnel list ---
   useEffect(() => {
     const stored = localStorage.getItem(personnelKey);
@@ -33,6 +28,24 @@ export default function PreProject({ setActiveModule }) {
       }
     }
   }, []);
+
+  // --- Ensure correct status on load (assigned = In Progress) ---
+  useEffect(() => {
+    const updated = tasks.map((task) => {
+      if (task.assignedTo && task.status === "Not Started") {
+        return { ...task, status: "In Progress" };
+      }
+      return task;
+    });
+    if (JSON.stringify(updated) !== JSON.stringify(tasks)) {
+      setTasks(updated);
+    }
+  }, []); // run only once on mount
+
+  // --- Persist tasks ---
+  useEffect(() => {
+    localStorage.setItem(taskKey, JSON.stringify(tasks));
+  }, [tasks]);
 
   // --- Add new task ---
   const addTask = () => {
@@ -57,7 +70,7 @@ export default function PreProject({ setActiveModule }) {
     }
   };
 
-  // --- Cycle through status values ---
+  // --- Cycle status manually ---
   const cycleStatus = (id) => {
     setTasks(
       tasks.map((task) => {
@@ -74,16 +87,26 @@ export default function PreProject({ setActiveModule }) {
     );
   };
 
-  // --- Assign a person to task ---
+  // --- Assign or unassign a person ---
   const assignPerson = (taskId, personName) => {
     setTasks(
       tasks.map((task) => {
         if (task.id === taskId) {
           const updatedTime = new Date().toLocaleString("en-GB");
+          let newStatus = task.status;
+
+          if (personName === "" || personName === "None") {
+            // unassigned → Not Started (grey)
+            newStatus = "Not Started";
+          } else if (task.status === "Not Started") {
+            // first assignment → In Progress (amber)
+            newStatus = "In Progress";
+          }
+
           return {
             ...task,
-            assignedTo: personName,
-            status: "In Progress",
+            assignedTo: personName === "None" ? "" : personName,
+            status: newStatus,
             timestamp: updatedTime,
           };
         }
@@ -108,47 +131,39 @@ export default function PreProject({ setActiveModule }) {
   // --- Render ---
   return (
     <div className="checklist-container">
-      {/* === METRA Header === */}
+      {/* Header */}
       <div className="module-header-box inline">
         <span className="brand-large angled">METRA</span>
         <h2 className="module-subtitle">PreProject Module</h2>
-        <button
-          className="return-btn"
-          onClick={() => setActiveModule("summary")}
-        >
+        <button className="return-btn" onClick={() => setActiveModule("summary")}>
           Return to Summary
         </button>
       </div>
 
-      {/* === Filter Bar === */}
+      {/* Filter Buttons */}
       <div className="filter-bar">
-        {["All", "Not Started", "In Progress", "Completed", "Flagged"].map(
-          (type) => (
-            <button
-              key={type}
-              className={`filter-btn ${filter === type ? "active" : ""}`}
-              onClick={() => setFilter(type)}
-            >
-              {type}
-            </button>
-          )
-        )}
+        {["All", "Not Started", "In Progress", "Completed", "Flagged"].map((type) => (
+          <button
+            key={type}
+            className={`filter-btn ${filter === type ? "active" : ""}`}
+            onClick={() => setFilter(type)}
+          >
+            {type}
+          </button>
+        ))}
       </div>
 
-      {/* === Checklist === */}
+      {/* Checklist */}
       <div className="checklist">
         <ul>
           {filteredTasks.map((task) => (
-            <li
-              key={task.id}
-              className={`task-item ${getStatusClass(task.status)}`}
-            >
+            <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
               <div className="task-text-area">
                 <span className="task-text">{task.text}</span>
               </div>
 
               <div className="task-controls">
-                {/* Status cycle */}
+                {/* Status button */}
                 <button
                   className="status-btn"
                   onClick={() => cycleStatus(task.id)}
@@ -157,16 +172,15 @@ export default function PreProject({ setActiveModule }) {
                   {task.status}
                 </button>
 
-                {/* Assign person dropdown */}
+                {/* Assign dropdown */}
                 {personnel.length > 0 && (
                   <select
                     className="personnel-select"
-                    value={task.assignedTo}
-                    onChange={(e) =>
-                      assignPerson(task.id, e.target.value)
-                    }
+                    value={task.assignedTo || "None"}
+                    onChange={(e) => assignPerson(task.id, e.target.value)}
+                    title="Assign or unassign person"
                   >
-                    <option value="">Assign Person</option>
+                    <option value="None">— None —</option>
                     {personnel.map((p) => (
                       <option key={p.id} value={p.name}>
                         {p.name}
