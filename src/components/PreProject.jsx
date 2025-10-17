@@ -1,6 +1,6 @@
-// === METRA – PreProject Module (Phase 3.5a: Fade-In Hover Dropdown) ===
-// Adds smooth fade-in animation for the personnel list on hover.
-// Baseline Target: baseline-2025-10-27-preproject-hoverhighlight-fadein-v11
+// === METRA – PreProject Module (Phase 3.6 Step 2: Assignment Flash + Unassign Option) ===
+// Adds “None” option to unassign a person, retains blue flash + fade effects.
+// Baseline Target: baseline-2025-10-28-preproject-assignflash-unassign-v13
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -18,6 +18,7 @@ export default function PreProject({ setActiveModule }) {
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
   const [openTaskId, setOpenTaskId] = useState(null);
+  const [flashId, setFlashId] = useState(null);
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -106,18 +107,20 @@ export default function PreProject({ setActiveModule }) {
       })
     );
     setOpenTaskId(null);
+    if (personName) {
+      setFlashId(taskId);
+      setTimeout(() => setFlashId(null), 600); // remove flash after 0.6 s
+    }
   };
 
+  // --- Hover controls ---
   const handleMouseEnter = (taskId) => {
     clearTimeout(hoverTimeout.current);
     setOpenTaskId(taskId);
   };
-
   const handleMouseLeave = () => {
     clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => {
-      setOpenTaskId(null);
-    }, 150);
+    hoverTimeout.current = setTimeout(() => setOpenTaskId(null), 150);
   };
 
   const getStatusClass = (s) =>
@@ -165,12 +168,18 @@ export default function PreProject({ setActiveModule }) {
             }
 
             return (
-              <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
+              <li
+                key={task.id}
+                className={`task-item ${getStatusClass(task.status)} ${
+                  flashId === task.id ? "flash-assign" : ""
+                }`}
+              >
                 <div className="task-text-area">
                   <span className="task-text">{task.text}</span>
                 </div>
 
                 <div className="task-controls" style={{ position: "relative" }}>
+                  {/* Status button */}
                   <button
                     className="status-btn"
                     onClick={() => cycleStatus(task.id)}
@@ -179,6 +188,7 @@ export default function PreProject({ setActiveModule }) {
                     {task.status}
                   </button>
 
+                  {/* Hover icon and dropdown */}
                   <div
                     className="assign-hover-zone"
                     onMouseEnter={() => handleMouseEnter(task.id)}
@@ -199,7 +209,6 @@ export default function PreProject({ setActiveModule }) {
                       }}
                     />
 
-                    {/* Dropdown container with fade animation */}
                     {openTaskId === task.id && (
                       <div
                         className="personnel-dropdown fade-in"
@@ -221,7 +230,7 @@ export default function PreProject({ setActiveModule }) {
                         onMouseEnter={() => handleMouseEnter(task.id)}
                         onMouseLeave={handleMouseLeave}
                       >
-                        {/* Pointer arrow */}
+                        {/* small pointer arrow */}
                         <div
                           style={{
                             position: "absolute",
@@ -248,50 +257,68 @@ export default function PreProject({ setActiveModule }) {
                           }}
                         />
 
+                        {/* Dropdown list */}
                         <div style={{ flex: 1 }}>
-                          {sortedPersonnel.length === 0 ? (
-                            <div style={{ padding: "6px", color: "#888" }}>
-                              No personnel found
+                          {/* Unassign option */}
+                          <div
+                            onClick={() => assignPerson(task.id, "")}
+                            style={{
+                              padding: "5px 8px",
+                              borderRadius: "5px",
+                              background: !task.assignedTo ? "#e6f0ff" : "transparent",
+                              color: !task.assignedTo ? "#0057b8" : "#222",
+                              fontWeight: !task.assignedTo ? "600" : "400",
+                              cursor: "pointer",
+                              marginBottom: "3px",
+                            }}
+                            onMouseOver={(e) =>
+                              (e.currentTarget.style.background = !task.assignedTo
+                                ? "#dce8ff"
+                                : "#f5f5f5")
+                            }
+                            onMouseOut={(e) =>
+                              (e.currentTarget.style.background = !task.assignedTo
+                                ? "#e6f0ff"
+                                : "transparent")
+                            }
+                          >
+                            — None —
+                          </div>
+
+                          {/* Personnel list */}
+                          {sortedPersonnel.map((p) => (
+                            <div
+                              key={p.id}
+                              onClick={() => assignPerson(task.id, p.name)}
+                              style={{
+                                padding: "5px 8px",
+                                borderRadius: "5px",
+                                background:
+                                  task.assignedTo === p.name ? "#e6f0ff" : "transparent",
+                                color:
+                                  task.assignedTo === p.name ? "#0057b8" : "#222",
+                                fontWeight:
+                                  task.assignedTo === p.name ? "600" : "400",
+                                cursor: "pointer",
+                              }}
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.background =
+                                  task.assignedTo === p.name
+                                    ? "#dce8ff"
+                                    : "#f5f5f5")
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.background =
+                                  task.assignedTo === p.name
+                                    ? "#e6f0ff"
+                                    : "transparent")
+                              }
+                            >
+                              {p.name}
+                              {p.role ? ` – ${p.role}` : ""}
+                              {p.department ? ` (${p.department})` : ""}
                             </div>
-                          ) : (
-                            sortedPersonnel.map((p) => (
-                              <div
-                                key={p.id}
-                                onClick={() => assignPerson(task.id, p.name)}
-                                style={{
-                                  padding: "5px 8px",
-                                  borderRadius: "5px",
-                                  background:
-                                    task.assignedTo === p.name
-                                      ? "#e6f0ff"
-                                      : "transparent",
-                                  color:
-                                    task.assignedTo === p.name
-                                      ? "#0057b8"
-                                      : "#222",
-                                  fontWeight:
-                                    task.assignedTo === p.name ? "600" : "400",
-                                  cursor: "pointer",
-                                }}
-                                onMouseOver={(e) =>
-                                  (e.currentTarget.style.background =
-                                    task.assignedTo === p.name
-                                      ? "#dce8ff"
-                                      : "#f5f5f5")
-                                }
-                                onMouseOut={(e) =>
-                                  (e.currentTarget.style.background =
-                                    task.assignedTo === p.name
-                                      ? "#e6f0ff"
-                                      : "transparent")
-                                }
-                              >
-                                {p.name}
-                                {p.role ? ` – ${p.role}` : ""}
-                                {p.department ? ` (${p.department})` : ""}
-                              </div>
-                            ))
-                          )}
+                          ))}
                         </div>
                       </div>
                     )}
@@ -306,6 +333,7 @@ export default function PreProject({ setActiveModule }) {
             );
           })}
 
+          {/* Add new task row */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input

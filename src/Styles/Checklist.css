@@ -236,3 +236,13 @@ button:hover { transform: scale(1.02); }
 .fade-in {
   animation: fadeInDropdown 0.35s ease-out;
 }
+/* === Blue flash when assignment occurs === */
+@keyframes flashBlue {
+  0% { box-shadow: 0 0 0 rgba(0, 87, 184, 0); }
+  20% { box-shadow: 0 0 14px rgba(0, 87, 184, 0.7); }
+  100% { box-shadow: 0 0 0 rgba(0, 87, 184, 0); }
+}
+
+.flash-assign {
+  animation: flashBlue 0.6s ease-out;
+}
