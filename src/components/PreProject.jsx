@@ -1,25 +1,40 @@
-// === METRA – PreProject Module (Clean Baseline Restore v3.0) ===
-// Stable baseline: fully functional persistence, compact layout, no assignment duplication
-// Baseline Tag: baseline-2025-10-21-preproject-restore-clean
+// === METRA – PreProject Module (Phase 3.2 Step 2a) ===
+// Adds “Assign Person” dropdown + persistent linkage to personnel-list
+// Baseline Target: baseline-2025-10-23-preproject-personnel-assign-v1
 
 import { useState, useEffect } from "react";
 import "../Styles/Checklist.css";
 
 export default function PreProject({ setActiveModule }) {
-  const storageKey = "preprojectTasks";
+  const taskKey = "preprojectTasks";
+  const personnelKey = "personnel-list";
+
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
+    const saved = localStorage.getItem(taskKey);
     return saved ? JSON.parse(saved) : [];
   });
-
   const [newTask, setNewTask] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [personnel, setPersonnel] = useState([]);
 
-  // Persist tasks
+  // --- Persist tasks ---
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(tasks));
+    localStorage.setItem(taskKey, JSON.stringify(tasks));
   }, [tasks]);
 
-  // === Add Task ===
+  // --- Load personnel list ---
+  useEffect(() => {
+    const stored = localStorage.getItem(personnelKey);
+    if (stored) {
+      try {
+        setPersonnel(JSON.parse(stored));
+      } catch (e) {
+        console.error("Error parsing personnel-list:", e);
+      }
+    }
+  }, []);
+
+  // --- Add new task ---
   const addTask = () => {
     if (!newTask.trim()) return;
     const timestamp = new Date().toLocaleString("en-GB");
@@ -28,62 +43,112 @@ export default function PreProject({ setActiveModule }) {
       text: newTask.trim(),
       status: "Not Started",
       timestamp,
+      flagged: false,
+      assignedTo: "",
     };
     setTasks([...tasks, newEntry]);
     setNewTask("");
   };
 
-  // === Delete Task ===
+  // --- Delete task ---
   const deleteTask = (id) => {
     if (window.confirm("Delete this task?")) {
-      setTasks(tasks.filter((t) => t.id !== id));
+      setTasks(tasks.filter((task) => task.id !== id));
     }
   };
 
-  // === Cycle Status ===
+  // --- Cycle through status values ---
   const cycleStatus = (id) => {
     setTasks(
-      tasks.map((t) => {
-        if (t.id === id) {
+      tasks.map((task) => {
+        if (task.id === id) {
           let newStatus;
-          if (t.status === "Not Started") newStatus = "In Progress";
-          else if (t.status === "In Progress") newStatus = "Completed";
+          if (task.status === "Not Started") newStatus = "In Progress";
+          else if (task.status === "In Progress") newStatus = "Completed";
           else newStatus = "Not Started";
           const updatedTime = new Date().toLocaleString("en-GB");
-          return { ...t, status: newStatus, timestamp: updatedTime };
+          return { ...task, status: newStatus, timestamp: updatedTime };
         }
-        return t;
+        return task;
       })
     );
   };
 
-  // === Status Colour Class ===
+  // --- Assign a person to task ---
+  const assignPerson = (taskId, personName) => {
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === taskId) {
+          const updatedTime = new Date().toLocaleString("en-GB");
+          return {
+            ...task,
+            assignedTo: personName,
+            status: "In Progress",
+            timestamp: updatedTime,
+          };
+        }
+        return task;
+      })
+    );
+  };
+
   const getStatusClass = (status) => {
     if (status === "In Progress") return "status-in-progress";
     if (status === "Completed") return "status-completed";
     return "status-not-started";
   };
 
-  // === Render ===
+  // --- Filtering ---
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "All") return true;
+    if (filter === "Flagged") return task.flagged === true;
+    return task.status === filter;
+  });
+
+  // --- Render ---
   return (
     <div className="checklist-container">
+      {/* === METRA Header === */}
       <div className="module-header-box inline">
         <span className="brand-large angled">METRA</span>
         <h2 className="module-subtitle">PreProject Module</h2>
-        <button className="return-btn" onClick={() => setActiveModule("summary")}>
+        <button
+          className="return-btn"
+          onClick={() => setActiveModule("summary")}
+        >
           Return to Summary
         </button>
       </div>
 
+      {/* === Filter Bar === */}
+      <div className="filter-bar">
+        {["All", "Not Started", "In Progress", "Completed", "Flagged"].map(
+          (type) => (
+            <button
+              key={type}
+              className={`filter-btn ${filter === type ? "active" : ""}`}
+              onClick={() => setFilter(type)}
+            >
+              {type}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* === Checklist === */}
       <div className="checklist">
         <ul>
-          {tasks.map((task) => (
-            <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
+          {filteredTasks.map((task) => (
+            <li
+              key={task.id}
+              className={`task-item ${getStatusClass(task.status)}`}
+            >
               <div className="task-text-area">
                 <span className="task-text">{task.text}</span>
               </div>
 
               <div className="task-controls">
+                {/* Status cycle */}
                 <button
                   className="status-btn"
                   onClick={() => cycleStatus(task.id)}
@@ -92,8 +157,26 @@ export default function PreProject({ setActiveModule }) {
                   {task.status}
                 </button>
 
-                <span className="timestamp">{task.timestamp}</span>
+                {/* Assign person dropdown */}
+                {personnel.length > 0 && (
+                  <select
+                    className="personnel-select"
+                    value={task.assignedTo}
+                    onChange={(e) =>
+                      assignPerson(task.id, e.target.value)
+                    }
+                  >
+                    <option value="">Assign Person</option>
+                    {personnel.map((p) => (
+                      <option key={p.id} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
 
+                {/* Timestamp + Delete */}
+                <span className="timestamp">{task.timestamp}</span>
                 <button className="delete" onClick={() => deleteTask(task.id)}>
                   Delete
                 </button>
@@ -101,7 +184,7 @@ export default function PreProject({ setActiveModule }) {
             </li>
           ))}
 
-          {/* Add New Task Row */}
+          {/* Add new task row */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input
