@@ -1,6 +1,6 @@
-// === METRA – PreProject Module (Phase 3.4l: Hover Stability Fix) ===
-// Prevents dropdown from closing too quickly when moving cursor to the list.
-// Baseline Target: baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-fixhover-v10
+// === METRA – PreProject Module (Phase 3.4m: Hover Pointer + None Reset + Status Clear) ===
+// Based on baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-fixhover-v10
+// Adds “None” unassign option and clears assigned person when reverted to Not Started.
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -81,7 +81,14 @@ export default function PreProject({ setActiveModule }) {
           if (t.status === "Not Started") next = "In Progress";
           else if (t.status === "In Progress") next = "Completed";
           else next = "Not Started";
-          return { ...t, status: next, timestamp: new Date().toLocaleString("en-GB") };
+          const updated = {
+            ...t,
+            status: next,
+            timestamp: new Date().toLocaleString("en-GB"),
+          };
+          // clear assignment if reverting to Not Started
+          if (next === "Not Started") updated.assignedTo = "";
+          return updated;
         }
         return t;
       })
@@ -108,17 +115,6 @@ export default function PreProject({ setActiveModule }) {
     setOpenTaskId(null);
   };
 
-  const getStatusClass = (s) =>
-    s === "In Progress"
-      ? "status-in-progress"
-      : s === "Completed"
-      ? "status-completed"
-      : "status-not-started";
-
-  const filtered = tasks.filter((t) =>
-    filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
-  );
-
   // --- Hover management ---
   const handleMouseEnter = (taskId) => {
     clearTimeout(hoverTimeout.current);
@@ -131,6 +127,17 @@ export default function PreProject({ setActiveModule }) {
       setOpenTaskId(null);
     }, 150); // 150ms grace period
   };
+
+  const getStatusClass = (s) =>
+    s === "In Progress"
+      ? "status-in-progress"
+      : s === "Completed"
+      ? "status-completed"
+      : "status-not-started";
+
+  const filtered = tasks.filter((t) =>
+    filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
+  );
 
   // --- Render ---
   return (
@@ -161,7 +168,7 @@ export default function PreProject({ setActiveModule }) {
       <div className="checklist">
         <ul>
           {filtered.map((task) => {
-            // reorder personnel so assigned person appears first
+            // reorder so assigned person appears first
             const sortedPersonnel = [...personnel];
             if (task.assignedTo) {
               sortedPersonnel.sort((a, b) =>
@@ -211,7 +218,7 @@ export default function PreProject({ setActiveModule }) {
                       }
                     />
 
-                    {/* Dropdown with arrow pointer */}
+                    {/* Dropdown with pointer */}
                     {openTaskId === task.id && (
                       <div
                         style={{
@@ -245,7 +252,6 @@ export default function PreProject({ setActiveModule }) {
                             borderRight: "8px solid #ccc",
                           }}
                         />
-                        {/* Inner white arrow */}
                         <div
                           style={{
                             position: "absolute",
@@ -260,8 +266,32 @@ export default function PreProject({ setActiveModule }) {
                           }}
                         />
 
-                        {/* List container */}
+                        {/* Personnel List */}
                         <div style={{ flex: 1 }}>
+                          {/* None Option */}
+                          <div
+                            onClick={() => assignPerson(task.id, "")}
+                            style={{
+                              padding: "5px 8px",
+                              borderRadius: "5px",
+                              background: task.assignedTo === "" ? "#e6f0ff" : "transparent",
+                              color: task.assignedTo === "" ? "#0057b8" : "#222",
+                              fontWeight: task.assignedTo === "" ? "600" : "400",
+                              cursor: "pointer",
+                            }}
+                            onMouseOver={(e) =>
+                              (e.currentTarget.style.background =
+                                task.assignedTo === "" ? "#dce8ff" : "#f5f5f5")
+                            }
+                            onMouseOut={(e) =>
+                              (e.currentTarget.style.background =
+                                task.assignedTo === "" ? "#e6f0ff" : "transparent")
+                            }
+                          >
+                            — None —
+                          </div>
+
+                          {/* Personnel options */}
                           {sortedPersonnel.length === 0 ? (
                             <div style={{ padding: "6px", color: "#888" }}>
                               No personnel found
