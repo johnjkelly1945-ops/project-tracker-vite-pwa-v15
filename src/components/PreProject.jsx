@@ -1,6 +1,6 @@
-// === METRA – PreProject Module (Phase 3.4m: Hover Pointer + None Reset + Status Clear) ===
-// Based on baseline-2025-10-26-preproject-hoverhighlight-inlinearrow-fixhover-v10
-// Adds “None” unassign option and clears assigned person when reverted to Not Started.
+// === METRA – PreProject Module (Phase 4.9: Hover+Popup Integration) ===
+// Combines hover-based personnel assignment (pointer + “None”) with popup log.
+// Baseline target: baseline-2025-10-29-preproject-hoverpopup-merged-v1
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -10,14 +10,16 @@ export default function PreProject({ setActiveModule }) {
   const taskKey = "preprojectTasks";
   const personnelKey = "personnel-list";
 
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem(taskKey);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [tasks, setTasks] = useState(() =>
+    JSON.parse(localStorage.getItem(taskKey) || "[]")
+  );
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
   const [openTaskId, setOpenTaskId] = useState(null);
+  const [popupTask, setPopupTask] = useState(null);
+  const [purpose, setPurpose] = useState("");
+  const [log, setLog] = useState("");
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -27,12 +29,12 @@ export default function PreProject({ setActiveModule }) {
       try {
         setPersonnel(JSON.parse(stored));
       } catch (e) {
-        console.error("Error parsing personnel-list:", e);
+        console.error("Error parsing personnel list:", e);
       }
     }
   }, []);
 
-  // --- Auto-update assigned status ---
+  // --- Auto update status for assigned tasks ---
   useEffect(() => {
     const updated = tasks.map((t) =>
       t.assignedTo && t.status === "Not Started"
@@ -50,16 +52,18 @@ export default function PreProject({ setActiveModule }) {
   // --- Add new task ---
   const addTask = () => {
     if (!newTask.trim()) return;
-    const timestamp = new Date().toLocaleString("en-GB");
+    const now = new Date().toLocaleString("en-GB");
     setTasks([
       ...tasks,
       {
         id: Date.now(),
         text: newTask.trim(),
         status: "Not Started",
-        timestamp,
+        timestamp: now,
         flagged: false,
         assignedTo: "",
+        purpose: "",
+        log: "",
       },
     ]);
     setNewTask("");
@@ -67,65 +71,68 @@ export default function PreProject({ setActiveModule }) {
 
   // --- Delete task ---
   const deleteTask = (id) => {
-    if (window.confirm("Delete this task?")) {
+    if (window.confirm("Delete this task?"))
       setTasks(tasks.filter((t) => t.id !== id));
-    }
   };
 
-  // --- Cycle status manually ---
+  // --- Cycle status ---
   const cycleStatus = (id) => {
     setTasks(
       tasks.map((t) => {
         if (t.id === id) {
-          let next;
-          if (t.status === "Not Started") next = "In Progress";
-          else if (t.status === "In Progress") next = "Completed";
-          else next = "Not Started";
-          const updated = {
-            ...t,
-            status: next,
-            timestamp: new Date().toLocaleString("en-GB"),
-          };
-          // clear assignment if reverting to Not Started
-          if (next === "Not Started") updated.assignedTo = "";
-          return updated;
+          let next =
+            t.status === "Not Started"
+              ? "In Progress"
+              : t.status === "In Progress"
+              ? "Completed"
+              : "Not Started";
+          return { ...t, status: next, timestamp: new Date().toLocaleString("en-GB") };
         }
         return t;
       })
     );
   };
 
-  // --- Assign or unassign person ---
+  // --- Assign / unassign person ---
   const assignPerson = (taskId, personName) => {
     setTasks(
-      tasks.map((t) => {
-        if (t.id === taskId) {
-          const now = new Date().toLocaleString("en-GB");
-          const newStatus = personName ? "In Progress" : "Not Started";
-          return {
-            ...t,
-            assignedTo: personName,
-            status: newStatus,
-            timestamp: now,
-          };
-        }
-        return t;
-      })
+      tasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              assignedTo: personName,
+              status: personName ? "In Progress" : "Not Started",
+              timestamp: new Date().toLocaleString("en-GB"),
+            }
+          : t
+      )
     );
     setOpenTaskId(null);
   };
 
-  // --- Hover management ---
-  const handleMouseEnter = (taskId) => {
-    clearTimeout(hoverTimeout.current);
-    setOpenTaskId(taskId);
+  // --- Popup open / save ---
+  const openPopup = (task) => {
+    setPopupTask(task);
+    setPurpose(task.purpose || "");
+    setLog(task.log || "");
+  };
+  const saveAndClosePopup = () => {
+    setTasks(
+      tasks.map((t) =>
+        t.id === popupTask.id ? { ...t, purpose, log } : t
+      )
+    );
+    setPopupTask(null);
   };
 
+  // --- Hover management ---
+  const handleMouseEnter = (id) => {
+    clearTimeout(hoverTimeout.current);
+    setOpenTaskId(id);
+  };
   const handleMouseLeave = () => {
     clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => {
-      setOpenTaskId(null);
-    }, 150); // 150ms grace period
+    hoverTimeout.current = setTimeout(() => setOpenTaskId(null), 150);
   };
 
   const getStatusClass = (s) =>
@@ -136,7 +143,11 @@ export default function PreProject({ setActiveModule }) {
       : "status-not-started";
 
   const filtered = tasks.filter((t) =>
-    filter === "All" ? true : filter === "Flagged" ? t.flagged : t.status === filter
+    filter === "All"
+      ? true
+      : filter === "Flagged"
+      ? t.flagged
+      : t.status === filter
   );
 
   // --- Render ---
@@ -151,15 +162,15 @@ export default function PreProject({ setActiveModule }) {
         </button>
       </div>
 
-      {/* Filter Bar */}
+      {/* Filters */}
       <div className="filter-bar">
-        {["All", "Not Started", "In Progress", "Completed", "Flagged"].map((type) => (
+        {["All", "Not Started", "In Progress", "Completed", "Flagged"].map((f) => (
           <button
-            key={type}
-            className={`filter-btn ${filter === type ? "active" : ""}`}
-            onClick={() => setFilter(type)}
+            key={f}
+            className={`filter-btn ${filter === f ? "active" : ""}`}
+            onClick={() => setFilter(f)}
           >
-            {type}
+            {f}
           </button>
         ))}
       </div>
@@ -168,7 +179,6 @@ export default function PreProject({ setActiveModule }) {
       <div className="checklist">
         <ul>
           {filtered.map((task) => {
-            // reorder so assigned person appears first
             const sortedPersonnel = [...personnel];
             if (task.assignedTo) {
               sortedPersonnel.sort((a, b) =>
@@ -178,26 +188,25 @@ export default function PreProject({ setActiveModule }) {
 
             return (
               <li key={task.id} className={`task-item ${getStatusClass(task.status)}`}>
-                <div className="task-text-area">
+                <div
+                  className="task-text-area clickable"
+                  onClick={() => openPopup(task)}
+                  title="Click to view or edit task purpose and log"
+                >
                   <span className="task-text">{task.text}</span>
                 </div>
 
                 <div className="task-controls" style={{ position: "relative" }}>
-                  {/* Status Button */}
-                  <button
-                    className="status-btn"
-                    onClick={() => cycleStatus(task.id)}
-                    title="Click to change status"
-                  >
+                  {/* Status button */}
+                  <button className="status-btn" onClick={() => cycleStatus(task.id)}>
                     {task.status}
                   </button>
 
-                  {/* Hover zone */}
+                  {/* Hover personnel zone */}
                   <div
                     className="assign-hover-zone"
                     onMouseEnter={() => handleMouseEnter(task.id)}
                     onMouseLeave={handleMouseLeave}
-                    style={{ display: "inline-block", position: "relative" }}
                   >
                     <User
                       size={18}
@@ -207,135 +216,44 @@ export default function PreProject({ setActiveModule }) {
                         verticalAlign: "middle",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
-                        filter: task.assignedTo
-                          ? "drop-shadow(0 0 3px rgba(0, 123, 255, 0.6))"
-                          : "drop-shadow(0 0 1px rgba(0, 0, 0, 0.3))",
                       }}
-                      title={
-                        task.assignedTo
-                          ? `Assigned to ${task.assignedTo}`
-                          : "Hover to assign person"
-                      }
                     />
 
-                    {/* Dropdown with pointer */}
                     {openTaskId === task.id && (
                       <div
-                        style={{
-                          position: "absolute",
-                          top: "-6px",
-                          left: "32px",
-                          zIndex: 30,
-                          background: "#fff",
-                          border: "1px solid #ccc",
-                          borderRadius: "6px",
-                          boxShadow: "0 3px 8px rgba(0,0,0,0.18)",
-                          width: "220px",
-                          padding: "6px",
-                          fontSize: "0.82rem",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
+                        className="personnel-dropdown"
                         onMouseEnter={() => handleMouseEnter(task.id)}
                         onMouseLeave={handleMouseLeave}
                       >
-                        {/* Pointer arrow */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: "-8px",
-                            top: "10px",
-                            width: 0,
-                            height: 0,
-                            borderTop: "6px solid transparent",
-                            borderBottom: "6px solid transparent",
-                            borderRight: "8px solid #ccc",
-                          }}
-                        />
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: "-7px",
-                            top: "10px",
-                            width: 0,
-                            height: 0,
-                            borderTop: "5px solid transparent",
-                            borderBottom: "5px solid transparent",
-                            borderRight: "7px solid #fff",
-                            zIndex: 31,
-                          }}
-                        />
-
-                        {/* Personnel List */}
-                        <div style={{ flex: 1 }}>
-                          {/* None Option */}
-                          <div
-                            onClick={() => assignPerson(task.id, "")}
-                            style={{
-                              padding: "5px 8px",
-                              borderRadius: "5px",
-                              background: task.assignedTo === "" ? "#e6f0ff" : "transparent",
-                              color: task.assignedTo === "" ? "#0057b8" : "#222",
-                              fontWeight: task.assignedTo === "" ? "600" : "400",
-                              cursor: "pointer",
-                            }}
-                            onMouseOver={(e) =>
-                              (e.currentTarget.style.background =
-                                task.assignedTo === "" ? "#dce8ff" : "#f5f5f5")
-                            }
-                            onMouseOut={(e) =>
-                              (e.currentTarget.style.background =
-                                task.assignedTo === "" ? "#e6f0ff" : "transparent")
-                            }
-                          >
-                            — None —
-                          </div>
-
-                          {/* Personnel options */}
-                          {sortedPersonnel.length === 0 ? (
-                            <div style={{ padding: "6px", color: "#888" }}>
-                              No personnel found
+                        <div className="pointer-outer"></div>
+                        <div className="pointer-inner"></div>
+                        {sortedPersonnel.length === 0 ? (
+                          <div className="dropdown-empty">No personnel found</div>
+                        ) : (
+                          <>
+                            <div
+                              className={`dropdown-option ${
+                                task.assignedTo === "" ? "active" : ""
+                              }`}
+                              onClick={() => assignPerson(task.id, "")}
+                            >
+                              — None —
                             </div>
-                          ) : (
-                            sortedPersonnel.map((p) => (
+                            {sortedPersonnel.map((p) => (
                               <div
                                 key={p.id}
+                                className={`dropdown-option ${
+                                  task.assignedTo === p.name ? "active" : ""
+                                }`}
                                 onClick={() => assignPerson(task.id, p.name)}
-                                style={{
-                                  padding: "5px 8px",
-                                  borderRadius: "5px",
-                                  background:
-                                    task.assignedTo === p.name
-                                      ? "#e6f0ff"
-                                      : "transparent",
-                                  color:
-                                    task.assignedTo === p.name
-                                      ? "#0057b8"
-                                      : "#222",
-                                  fontWeight:
-                                    task.assignedTo === p.name ? "600" : "400",
-                                  cursor: "pointer",
-                                }}
-                                onMouseOver={(e) =>
-                                  (e.currentTarget.style.background =
-                                    task.assignedTo === p.name
-                                      ? "#dce8ff"
-                                      : "#f5f5f5")
-                                }
-                                onMouseOut={(e) =>
-                                  (e.currentTarget.style.background =
-                                    task.assignedTo === p.name
-                                      ? "#e6f0ff"
-                                      : "transparent")
-                                }
                               >
                                 {p.name}
                                 {p.role ? ` – ${p.role}` : ""}
                                 {p.department ? ` (${p.department})` : ""}
                               </div>
-                            ))
-                          )}
-                        </div>
+                            ))}
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -350,7 +268,7 @@ export default function PreProject({ setActiveModule }) {
             );
           })}
 
-          {/* Add new task row */}
+          {/* Add new task */}
           <li className="task-item add-row">
             <div className="task-text-area">
               <input
@@ -368,6 +286,33 @@ export default function PreProject({ setActiveModule }) {
           </li>
         </ul>
       </div>
+
+      {/* Popup overlay */}
+      {popupTask && (
+        <div className="popup-overlay" onClick={saveAndClosePopup}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-title">{popupTask.text}</div>
+            <label className="popup-subheader">PURPOSE</label>
+            <textarea
+              className="popup-purpose"
+              placeholder="Define task purpose..."
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              rows={2}
+            />
+            <hr className="popup-divider" />
+            <textarea
+              className="popup-textarea"
+              placeholder="Enter ongoing log or comments..."
+              value={log}
+              onChange={(e) => setLog(e.target.value)}
+            />
+            <button className="close-popup" onClick={saveAndClosePopup}>
+              Save & Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
