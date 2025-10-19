@@ -1,5 +1,6 @@
-// === METRA – PreProject Module (Phase 5.3: Smart Document Link + Scroll Stable) ===
-// Adds date-stamped log entries with link persistence and smart display labels.
+// === METRA – PreProject Module (v5.2: Popup User-Selectable Print Range + Unique Filename) ===
+// Adds numeric input for "entries to print" and auto-unique filenames.
+// Baseline target: baseline-2025-11-01-preproject-popup-userprint-v1
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -18,8 +19,8 @@ export default function PreProject({ setActiveModule }) {
   const [openTaskId, setOpenTaskId] = useState(null);
   const [popupTask, setPopupTask] = useState(null);
   const [purpose, setPurpose] = useState("");
-  const [newLogEntry, setNewLogEntry] = useState("");
-  const [newLogLink, setNewLogLink] = useState("");
+  const [log, setLog] = useState("");
+  const [entriesToPrint, setEntriesToPrint] = useState(0); // 0 = All
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -49,22 +50,10 @@ export default function PreProject({ setActiveModule }) {
     localStorage.setItem(taskKey, JSON.stringify(tasks));
   }, [tasks]);
 
-  // --- Helper: formatted timestamp ---
-  const getCurrentTime = () => {
-    const now = new Date();
-    return now.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   // --- Add new task ---
   const addTask = () => {
     if (!newTask.trim()) return;
-    const now = getCurrentTime();
+    const now = new Date().toLocaleString("en-GB");
     setTasks([
       ...tasks,
       {
@@ -98,7 +87,7 @@ export default function PreProject({ setActiveModule }) {
               : t.status === "In Progress"
               ? "Completed"
               : "Not Started";
-          return { ...t, status: next, timestamp: getCurrentTime() };
+          return { ...t, status: next, timestamp: new Date().toLocaleString("en-GB") };
         }
         return t;
       })
@@ -114,7 +103,7 @@ export default function PreProject({ setActiveModule }) {
               ...t,
               assignedTo: personName,
               status: personName ? "In Progress" : "Not Started",
-              timestamp: getCurrentTime(),
+              timestamp: new Date().toLocaleString("en-GB"),
             }
           : t
       )
@@ -122,53 +111,72 @@ export default function PreProject({ setActiveModule }) {
     setOpenTaskId(null);
   };
 
-  // --- Open popup ---
+  // --- Popup open / save ---
   const openPopup = (task) => {
     setPopupTask(task);
     setPurpose(task.purpose || "");
-    setNewLogEntry("");
-    setNewLogLink("");
+    setLog("");
   };
 
-  // --- Save + close popup (safe persistence fix) ---
   const saveAndClosePopup = () => {
     if (!popupTask) return;
-
-    // Capture values before React resets them
-    const entryText = newLogEntry.trim();
-    const entryLink = newLogLink.trim();
-    const updatedPurpose = purpose.trim();
-
+    const now = new Date().toLocaleString("en-GB");
     const updatedTasks = tasks.map((t) => {
-      if (t.id !== popupTask.id) return t;
-
-      const changesMade =
-        t.purpose !== updatedPurpose || entryText !== "" || entryLink !== "";
-
-      if (!changesMade) return t;
-
-      const updatedLog = [...(t.logEntries || [])];
-
-      if (entryText !== "" || entryLink !== "") {
-        updatedLog.push({
-          text: entryText,
-          link: entryLink,
-          date: getCurrentTime(),
-        });
+      if (t.id === popupTask.id) {
+        const updatedLog = log.trim()
+          ? [
+              ...(t.logEntries || []),
+              {
+                date: now,
+                text: log,
+              },
+            ]
+          : t.logEntries || [];
+        return { ...t, purpose, logEntries: updatedLog, timestamp: now };
       }
-
-      return {
-        ...t,
-        purpose: updatedPurpose,
-        logEntries: updatedLog,
-        timestamp: getCurrentTime(),
-      };
+      return t;
     });
-
     setTasks(updatedTasks);
     setPopupTask(null);
-    setNewLogEntry("");
-    setNewLogLink("");
+  };
+
+  // --- Print selected log entries ---
+  const printLogEntries = (task) => {
+    if (!task) return;
+    const allEntries = task.logEntries || [];
+    if (allEntries.length === 0) {
+      alert("No log entries to print.");
+      return;
+    }
+
+    const entries =
+      entriesToPrint > 0 ? allEntries.slice(-entriesToPrint) : allEntries;
+
+    const printWindow = window.open("", "PRINT", "height=650,width=900");
+
+    const safeName = task.text.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    const now = new Date();
+    const dateStr = now.toISOString().split("T")[0];
+    const timeStr = now.toTimeString().split(" ")[0].replace(/:/g, "");
+    const filename = `${safeName}_${dateStr}_${timeStr}.pdf`;
+
+    printWindow.document.write("<html><head><title>METRA Log</title>");
+    printWindow.document.write(
+      "<style>body{font-family:Arial;padding:20px;color:#000;} h2{color:#0a2b5c;} .entry{margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:6px;} .date{font-size:0.85rem;color:#555;font-style:italic;} .text{margin-top:4px;}</style>"
+    );
+    printWindow.document.write("</head><body>");
+    printWindow.document.write(`<h2>Task Log: ${task.text}</h2>`);
+    entries.forEach((entry) => {
+      printWindow.document.write(
+        `<div class='entry'><div class='date'>${entry.date}</div><div class='text'>${entry.text}</div></div>`
+      );
+    });
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.focus();
+
+    printWindow.print();
+    printWindow.document.title = filename;
   };
 
   // --- Hover management ---
@@ -247,6 +255,7 @@ export default function PreProject({ setActiveModule }) {
                     {task.status}
                   </button>
 
+                  {/* Hover personnel dropdown */}
                   <div
                     className="assign-hover-zone"
                     onMouseEnter={() => handleMouseEnter(task.id)}
@@ -256,13 +265,8 @@ export default function PreProject({ setActiveModule }) {
                       size={18}
                       strokeWidth={2.6}
                       color={task.assignedTo ? "#0057b8" : "#666"}
-                      style={{
-                        verticalAlign: "middle",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease",
-                      }}
+                      style={{ verticalAlign: "middle", cursor: "pointer" }}
                     />
-
                     {openTaskId === task.id && (
                       <div
                         className="personnel-dropdown"
@@ -330,7 +334,7 @@ export default function PreProject({ setActiveModule }) {
         </ul>
       </div>
 
-      {/* Popup overlay */}
+      {/* Popup */}
       {popupTask && (
         <div className="popup-overlay" onClick={saveAndClosePopup}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
@@ -346,68 +350,57 @@ export default function PreProject({ setActiveModule }) {
             />
 
             <hr className="popup-divider" />
+            <textarea
+              className="popup-textarea"
+              placeholder="Enter log note (press Save & Close when done)"
+              value={log}
+              onChange={(e) => setLog(e.target.value)}
+            />
 
+            {/* Log history display */}
             <div className="popup-log-section">
-              <label className="popup-subheader">LOG HISTORY</label>
-              <div className="popup-log-history">
-                {popupTask.logEntries && popupTask.logEntries.length > 0 ? (
-                  popupTask.logEntries.map((entry, idx) => (
-                    <div key={idx} className="popup-log-entry">
-                      <span className="popup-log-date">{entry.date}</span>
+              <h4>Log History</h4>
+              {popupTask.logEntries && popupTask.logEntries.length > 0 ? (
+                <div className="popup-log-history">
+                  {popupTask.logEntries.map((entry, index) => (
+                    <div key={index} className="popup-log-entry">
+                      <div className="popup-log-date">{entry.date}</div>
                       <div className="popup-log-text">{entry.text}</div>
-                      {entry.link &&
-                        (() => {
-                          const isICloud = entry.link.includes("icloud.com");
-                          const label = isICloud
-                            ? "📄 Download from iCloud"
-                            : "📄 View Document";
-                          const safeLink = entry.link.startsWith("http")
-                            ? entry.link
-                            : `https://${entry.link}`;
-                          return (
-                            <a
-                              href={safeLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="popup-log-link"
-                            >
-                              {label}
-                            </a>
-                          );
-                        })()}
                     </div>
-                  ))
-                ) : (
-                  <div className="popup-log-empty">No log entries yet.</div>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="popup-log-empty">No log entries yet.</div>
+              )}
+            </div>
 
-              <label className="popup-subheader">NEW ENTRY</label>
-              <textarea
-                className="popup-textarea"
-                placeholder="Add new update or comment..."
-                value={newLogEntry}
-                onChange={(e) => setNewLogEntry(e.target.value)}
-              />
+            {/* User numeric input for entries to print */}
+            <div style={{ marginTop: "8px", textAlign: "right" }}>
+              <label style={{ fontSize: "0.8rem", marginRight: "4px" }}>
+                Entries to print (0 = All):
+              </label>
               <input
-                type="url"
-                placeholder="Optional document link"
-                value={newLogLink}
-                onChange={(e) => setNewLogLink(e.target.value)}
+                type="number"
+                min="0"
+                placeholder="0"
+                onChange={(e) => setEntriesToPrint(Number(e.target.value))}
                 style={{
-                  width: "100%",
-                  border: "1px solid #ccc",
-                  borderRadius: "6px",
-                  padding: "6px",
-                  marginTop: "6px",
-                  fontSize: "0.9rem",
+                  width: "60px",
+                  fontSize: "0.8rem",
+                  textAlign: "right",
+                  padding: "2px",
                 }}
               />
             </div>
 
-            <button className="close-popup" onClick={saveAndClosePopup}>
-              Save & Close
-            </button>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "6px" }}>
+              <button className="print-log-btn" onClick={() => printLogEntries(popupTask)}>
+                🖨️ Print Log
+              </button>
+              <button className="close-popup" onClick={saveAndClosePopup}>
+                Save & Close
+              </button>
+            </div>
           </div>
         </div>
       )}
