@@ -1,26 +1,30 @@
-// === METRA – PreProject Module (v5.2: Popup User-Selectable Print Range + Unique Filename) ===
-// Adds numeric input for "entries to print" and auto-unique filenames.
-// Baseline target: baseline-2025-11-01-preproject-popup-userprint-v1
+// === METRA – PreProject Module (Phase 6.1: Template Link UI Integration) ===
+// Adds popup UI for attaching template name + link to each task (stored in templates[]).
 
 import { useState, useEffect, useRef } from "react";
-import { User } from "lucide-react";
+import { User, Paperclip, X } from "lucide-react";
 import "../Styles/Checklist.css";
 
 export default function PreProject({ setActiveModule }) {
   const taskKey = "preprojectTasks";
   const personnelKey = "personnel-list";
 
-  const [tasks, setTasks] = useState(() =>
-    JSON.parse(localStorage.getItem(taskKey) || "[]")
-  );
+  const [tasks, setTasks] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem(taskKey) || "[]");
+    console.log("Loaded tasks with template array:", stored);
+    return stored.map((t) => ({ ...t, templates: t.templates || [] }));
+  });
+
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("All");
   const [personnel, setPersonnel] = useState([]);
   const [openTaskId, setOpenTaskId] = useState(null);
   const [popupTask, setPopupTask] = useState(null);
   const [purpose, setPurpose] = useState("");
-  const [log, setLog] = useState("");
-  const [entriesToPrint, setEntriesToPrint] = useState(0); // 0 = All
+  const [newLogEntry, setNewLogEntry] = useState("");
+  const [newLogLink, setNewLogLink] = useState("");
+  const [templateName, setTemplateName] = useState("");
+  const [templateUrl, setTemplateUrl] = useState("");
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -35,7 +39,7 @@ export default function PreProject({ setActiveModule }) {
     }
   }, []);
 
-  // --- Auto update status for assigned tasks ---
+  // --- Auto update status ---
   useEffect(() => {
     const updated = tasks.map((t) =>
       t.assignedTo && t.status === "Not Started"
@@ -50,10 +54,21 @@ export default function PreProject({ setActiveModule }) {
     localStorage.setItem(taskKey, JSON.stringify(tasks));
   }, [tasks]);
 
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   // --- Add new task ---
   const addTask = () => {
     if (!newTask.trim()) return;
-    const now = new Date().toLocaleString("en-GB");
+    const now = getCurrentTime();
     setTasks([
       ...tasks,
       {
@@ -65,18 +80,17 @@ export default function PreProject({ setActiveModule }) {
         assignedTo: "",
         purpose: "",
         logEntries: [],
+        templates: [],
       },
     ]);
     setNewTask("");
   };
 
-  // --- Delete task ---
   const deleteTask = (id) => {
     if (window.confirm("Delete this task?"))
       setTasks(tasks.filter((t) => t.id !== id));
   };
 
-  // --- Cycle status ---
   const cycleStatus = (id) => {
     setTasks(
       tasks.map((t) => {
@@ -87,14 +101,13 @@ export default function PreProject({ setActiveModule }) {
               : t.status === "In Progress"
               ? "Completed"
               : "Not Started";
-          return { ...t, status: next, timestamp: new Date().toLocaleString("en-GB") };
+          return { ...t, status: next, timestamp: getCurrentTime() };
         }
         return t;
       })
     );
   };
 
-  // --- Assign / unassign person ---
   const assignPerson = (taskId, personName) => {
     setTasks(
       tasks.map((t) =>
@@ -103,7 +116,7 @@ export default function PreProject({ setActiveModule }) {
               ...t,
               assignedTo: personName,
               status: personName ? "In Progress" : "Not Started",
-              timestamp: new Date().toLocaleString("en-GB"),
+              timestamp: getCurrentTime(),
             }
           : t
       )
@@ -111,75 +124,78 @@ export default function PreProject({ setActiveModule }) {
     setOpenTaskId(null);
   };
 
-  // --- Popup open / save ---
-  const openPopup = (task) => {
-    setPopupTask(task);
-    setPurpose(task.purpose || "");
-    setLog("");
-  };
-
-  const saveAndClosePopup = () => {
-    if (!popupTask) return;
-    const now = new Date().toLocaleString("en-GB");
+  // --- Template handling ---
+  const addTemplate = () => {
+    if (!popupTask || !templateName.trim()) return;
+    const safeUrl = templateUrl.trim();
+    const now = getCurrentTime();
     const updatedTasks = tasks.map((t) => {
       if (t.id === popupTask.id) {
-        const updatedLog = log.trim()
-          ? [
-              ...(t.logEntries || []),
-              {
-                date: now,
-                text: log,
-              },
-            ]
-          : t.logEntries || [];
-        return { ...t, purpose, logEntries: updatedLog, timestamp: now };
+        const newTemplate = { id: Date.now(), name: templateName, url: safeUrl, date: now };
+        return { ...t, templates: [...(t.templates || []), newTemplate] };
       }
       return t;
     });
     setTasks(updatedTasks);
+    setTemplateName("");
+    setTemplateUrl("");
+  };
+
+  const removeTemplate = (taskId, templateId) => {
+    setTasks(
+      tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, templates: t.templates.filter((tpl) => tpl.id !== templateId) }
+          : t
+      )
+    );
+  };
+
+  // --- Popup open/save ---
+  const openPopup = (task) => {
+    setPopupTask(task);
+    setPurpose(task.purpose || "");
+    setNewLogEntry("");
+    setNewLogLink("");
+    setTemplateName("");
+    setTemplateUrl("");
+  };
+
+  const saveAndClosePopup = () => {
+    if (!popupTask) return;
+    const entryText = newLogEntry.trim();
+    const entryLink = newLogLink.trim();
+    const updatedPurpose = purpose.trim();
+
+    const updatedTasks = tasks.map((t) => {
+      if (t.id !== popupTask.id) return t;
+      const changesMade =
+        t.purpose !== updatedPurpose || entryText !== "" || entryLink !== "";
+
+      if (!changesMade) return t;
+
+      const updatedLog = [...(t.logEntries || [])];
+      if (entryText !== "" || entryLink !== "") {
+        updatedLog.push({
+          text: entryText,
+          link: entryLink,
+          date: getCurrentTime(),
+        });
+      }
+
+      return {
+        ...t,
+        purpose: updatedPurpose,
+        logEntries: updatedLog,
+        timestamp: getCurrentTime(),
+      };
+    });
+
+    setTasks(updatedTasks);
     setPopupTask(null);
   };
 
-  // --- Print selected log entries ---
-  const printLogEntries = (task) => {
-    if (!task) return;
-    const allEntries = task.logEntries || [];
-    if (allEntries.length === 0) {
-      alert("No log entries to print.");
-      return;
-    }
-
-    const entries =
-      entriesToPrint > 0 ? allEntries.slice(-entriesToPrint) : allEntries;
-
-    const printWindow = window.open("", "PRINT", "height=650,width=900");
-
-    const safeName = task.text.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-    const now = new Date();
-    const dateStr = now.toISOString().split("T")[0];
-    const timeStr = now.toTimeString().split(" ")[0].replace(/:/g, "");
-    const filename = `${safeName}_${dateStr}_${timeStr}.pdf`;
-
-    printWindow.document.write("<html><head><title>METRA Log</title>");
-    printWindow.document.write(
-      "<style>body{font-family:Arial;padding:20px;color:#000;} h2{color:#0a2b5c;} .entry{margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:6px;} .date{font-size:0.85rem;color:#555;font-style:italic;} .text{margin-top:4px;}</style>"
-    );
-    printWindow.document.write("</head><body>");
-    printWindow.document.write(`<h2>Task Log: ${task.text}</h2>`);
-    entries.forEach((entry) => {
-      printWindow.document.write(
-        `<div class='entry'><div class='date'>${entry.date}</div><div class='text'>${entry.text}</div></div>`
-      );
-    });
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.focus();
-
-    printWindow.print();
-    printWindow.document.title = filename;
-  };
-
-  // --- Hover management ---
+  // --- Hover handling ---
   const handleMouseEnter = (id) => {
     clearTimeout(hoverTimeout.current);
     setOpenTaskId(id);
@@ -245,7 +261,7 @@ export default function PreProject({ setActiveModule }) {
                 <div
                   className="task-text-area clickable"
                   onClick={() => openPopup(task)}
-                  title="Click to view or edit task purpose and log"
+                  title="Click to view or edit task"
                 >
                   <span className="task-text">{task.text}</span>
                 </div>
@@ -255,7 +271,6 @@ export default function PreProject({ setActiveModule }) {
                     {task.status}
                   </button>
 
-                  {/* Hover personnel dropdown */}
                   <div
                     className="assign-hover-zone"
                     onMouseEnter={() => handleMouseEnter(task.id)}
@@ -265,8 +280,13 @@ export default function PreProject({ setActiveModule }) {
                       size={18}
                       strokeWidth={2.6}
                       color={task.assignedTo ? "#0057b8" : "#666"}
-                      style={{ verticalAlign: "middle", cursor: "pointer" }}
+                      style={{
+                        verticalAlign: "middle",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                      }}
                     />
+
                     {openTaskId === task.id && (
                       <div
                         className="personnel-dropdown"
@@ -350,57 +370,124 @@ export default function PreProject({ setActiveModule }) {
             />
 
             <hr className="popup-divider" />
-            <textarea
-              className="popup-textarea"
-              placeholder="Enter log note (press Save & Close when done)"
-              value={log}
-              onChange={(e) => setLog(e.target.value)}
-            />
 
-            {/* Log history display */}
+            {/* Log section */}
             <div className="popup-log-section">
-              <h4>Log History</h4>
-              {popupTask.logEntries && popupTask.logEntries.length > 0 ? (
-                <div className="popup-log-history">
-                  {popupTask.logEntries.map((entry, index) => (
-                    <div key={index} className="popup-log-entry">
-                      <div className="popup-log-date">{entry.date}</div>
+              <label className="popup-subheader">LOG HISTORY</label>
+              <div className="popup-log-history">
+                {popupTask.logEntries && popupTask.logEntries.length > 0 ? (
+                  popupTask.logEntries.map((entry, idx) => (
+                    <div key={idx} className="popup-log-entry">
+                      <span className="popup-log-date">{entry.date}</span>
                       <div className="popup-log-text">{entry.text}</div>
+                      {entry.link && (
+                        <a
+                          href={entry.link.startsWith("http") ? entry.link : `https://${entry.link}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="popup-log-link"
+                        >
+                          📄 View Document
+                        </a>
+                      )}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="popup-log-empty">No log entries yet.</div>
-              )}
-            </div>
+                  ))
+                ) : (
+                  <div className="popup-log-empty">No log entries yet.</div>
+                )}
+              </div>
 
-            {/* User numeric input for entries to print */}
-            <div style={{ marginTop: "8px", textAlign: "right" }}>
-              <label style={{ fontSize: "0.8rem", marginRight: "4px" }}>
-                Entries to print (0 = All):
-              </label>
+              <label className="popup-subheader">NEW ENTRY</label>
+              <textarea
+                className="popup-textarea"
+                placeholder="Add new update or comment..."
+                value={newLogEntry}
+                onChange={(e) => setNewLogEntry(e.target.value)}
+              />
               <input
-                type="number"
-                min="0"
-                placeholder="0"
-                onChange={(e) => setEntriesToPrint(Number(e.target.value))}
+                type="url"
+                placeholder="Optional document link"
+                value={newLogLink}
+                onChange={(e) => setNewLogLink(e.target.value)}
                 style={{
-                  width: "60px",
-                  fontSize: "0.8rem",
-                  textAlign: "right",
-                  padding: "2px",
+                  width: "100%",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  padding: "6px",
+                  marginTop: "6px",
+                  fontSize: "0.9rem",
                 }}
               />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "6px" }}>
-              <button className="print-log-btn" onClick={() => printLogEntries(popupTask)}>
-                🖨️ Print Log
+            {/* Templates section */}
+            <div className="popup-template-section" style={{ marginTop: "14px" }}>
+              <label className="popup-subheader">TEMPLATES</label>
+              <input
+                type="text"
+                placeholder="Template name..."
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                style={{
+                  width: "100%",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  padding: "6px",
+                  marginBottom: "6px",
+                  fontSize: "0.9rem",
+                }}
+              />
+              <input
+                type="url"
+                placeholder="Template link (URL)..."
+                value={templateUrl}
+                onChange={(e) => setTemplateUrl(e.target.value)}
+                style={{
+                  width: "100%",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  padding: "6px",
+                  marginBottom: "6px",
+                  fontSize: "0.9rem",
+                }}
+              />
+              <button className="add" style={{ marginBottom: "8px" }} onClick={addTemplate}>
+                ➕ Add Template
               </button>
-              <button className="close-popup" onClick={saveAndClosePopup}>
-                Save & Close
-              </button>
+
+              <div className="popup-template-list">
+                {popupTask.templates && popupTask.templates.length > 0 ? (
+                  popupTask.templates.map((tpl) => (
+                    <div key={tpl.id} className="popup-template-item">
+                      <Paperclip size={14} style={{ marginRight: "6px" }} />
+                      <a
+                        href={tpl.url.startsWith("http") ? tpl.url : `https://${tpl.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {tpl.name || "Untitled Template"}
+                      </a>
+                      <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: "6px" }}>
+                        ({tpl.date})
+                      </span>
+                      <button
+                        className="delete"
+                        style={{ marginLeft: "8px" }}
+                        onClick={() => removeTemplate(popupTask.id, tpl.id)}
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="popup-log-empty">No templates linked yet.</div>
+                )}
+              </div>
             </div>
+
+            <button className="close-popup" onClick={saveAndClosePopup}>
+              Save & Close
+            </button>
           </div>
         </div>
       )}
