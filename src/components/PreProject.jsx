@@ -1,5 +1,6 @@
-// === METRA – PreProject Module (Phase 6.1: Template Link UI Integration) ===
-// Adds popup UI for attaching template name + link to each task (stored in templates[]).
+// === METRA – PreProject Module (Phase 6.2: Intelligent Log Tracking of Assignee Changes) ===
+// Adds automatic log entries whenever task assignee changes.
+// Preserves popup UI, template links, scroll-safe layout, and persistence.
 
 import { useState, useEffect, useRef } from "react";
 import { User, Paperclip, X } from "lucide-react";
@@ -108,18 +109,33 @@ export default function PreProject({ setActiveModule }) {
     );
   };
 
+  // --- Enhanced: Assign person + automatic log entry ---
   const assignPerson = (taskId, personName) => {
     setTasks(
-      tasks.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              assignedTo: personName,
-              status: personName ? "In Progress" : "Not Started",
-              timestamp: getCurrentTime(),
-            }
-          : t
-      )
+      tasks.map((t) => {
+        if (t.id === taskId) {
+          const previousAssignee = t.assignedTo || "Unassigned";
+          const newAssignee = personName || "Unassigned";
+          const now = getCurrentTime();
+
+          const updatedLog = [...(t.logEntries || [])];
+          if (previousAssignee !== newAssignee) {
+            updatedLog.push({
+              text: `Assignee changed from ${previousAssignee} to ${newAssignee}.`,
+              date: now,
+            });
+          }
+
+          return {
+            ...t,
+            assignedTo: personName,
+            status: personName ? "In Progress" : "Not Started",
+            timestamp: now,
+            logEntries: updatedLog,
+          };
+        }
+        return t;
+      })
     );
     setOpenTaskId(null);
   };
@@ -131,7 +147,13 @@ export default function PreProject({ setActiveModule }) {
     const now = getCurrentTime();
     const updatedTasks = tasks.map((t) => {
       if (t.id === popupTask.id) {
-        const newTemplate = { id: Date.now(), name: templateName, url: safeUrl, date: now };
+        const newTemplate = {
+          id: Date.now(),
+          name: templateName,
+          url: safeUrl,
+          date: now,
+          reviewStatus: "Pending",
+        };
         return { ...t, templates: [...(t.templates || []), newTemplate] };
       }
       return t;
@@ -360,6 +382,12 @@ export default function PreProject({ setActiveModule }) {
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <div className="popup-title">{popupTask.text}</div>
 
+            {/* Display current assignee */}
+            <div className="popup-assignee">
+              <strong>Assigned to:</strong>{" "}
+              {popupTask.assignedTo || "Unassigned"}
+            </div>
+
             <label className="popup-subheader">PURPOSE</label>
             <textarea
               className="popup-purpose"
@@ -468,7 +496,7 @@ export default function PreProject({ setActiveModule }) {
                         {tpl.name || "Untitled Template"}
                       </a>
                       <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: "6px" }}>
-                        ({tpl.date})
+                        ({tpl.date}) – {tpl.reviewStatus}
                       </span>
                       <button
                         className="delete"
