@@ -1,6 +1,6 @@
-// === METRA – PreProject Module (Phase 4.9: Hover+Popup Integration) ===
-// Combines hover-based personnel assignment (pointer + “None”) with popup log.
-// Baseline target: baseline-2025-10-29-preproject-hoverpopup-merged-v1
+// === METRA – PreProject Module (Phase 5.1: Popup Running Log with Date-Stamped Entries) ===
+// Adds running log history inside popup; appends new entries with timestamps.
+// If viewed only, no change occurs. Outer timestamp updates only on modification.
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -19,7 +19,7 @@ export default function PreProject({ setActiveModule }) {
   const [openTaskId, setOpenTaskId] = useState(null);
   const [popupTask, setPopupTask] = useState(null);
   const [purpose, setPurpose] = useState("");
-  const [log, setLog] = useState("");
+  const [newLogEntry, setNewLogEntry] = useState("");
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -49,10 +49,22 @@ export default function PreProject({ setActiveModule }) {
     localStorage.setItem(taskKey, JSON.stringify(tasks));
   }, [tasks]);
 
+  // --- Helper: current timestamp ---
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   // --- Add new task ---
   const addTask = () => {
     if (!newTask.trim()) return;
-    const now = new Date().toLocaleString("en-GB");
+    const now = getCurrentTime();
     setTasks([
       ...tasks,
       {
@@ -63,7 +75,7 @@ export default function PreProject({ setActiveModule }) {
         flagged: false,
         assignedTo: "",
         purpose: "",
-        log: "",
+        logEntries: [], // array of {text, date}
       },
     ]);
     setNewTask("");
@@ -86,7 +98,7 @@ export default function PreProject({ setActiveModule }) {
               : t.status === "In Progress"
               ? "Completed"
               : "Not Started";
-          return { ...t, status: next, timestamp: new Date().toLocaleString("en-GB") };
+          return { ...t, status: next, timestamp: getCurrentTime() };
         }
         return t;
       })
@@ -102,7 +114,7 @@ export default function PreProject({ setActiveModule }) {
               ...t,
               assignedTo: personName,
               status: personName ? "In Progress" : "Not Started",
-              timestamp: new Date().toLocaleString("en-GB"),
+              timestamp: getCurrentTime(),
             }
           : t
       )
@@ -114,14 +126,39 @@ export default function PreProject({ setActiveModule }) {
   const openPopup = (task) => {
     setPopupTask(task);
     setPurpose(task.purpose || "");
-    setLog(task.log || "");
+    setNewLogEntry("");
   };
+
   const saveAndClosePopup = () => {
-    setTasks(
-      tasks.map((t) =>
-        t.id === popupTask.id ? { ...t, purpose, log } : t
-      )
-    );
+    if (!popupTask) return;
+
+    const updatedTasks = tasks.map((t) => {
+      if (t.id !== popupTask.id) return t;
+
+      const changesMade =
+        t.purpose !== purpose.trim() || newLogEntry.trim() !== "";
+
+      if (!changesMade) return t; // viewed only
+
+      const updatedLog = [...(t.logEntries || [])];
+
+      // Add new entry if provided
+      if (newLogEntry.trim() !== "") {
+        updatedLog.push({
+          text: newLogEntry.trim(),
+          date: getCurrentTime(),
+        });
+      }
+
+      return {
+        ...t,
+        purpose: purpose.trim(),
+        logEntries: updatedLog,
+        timestamp: getCurrentTime(),
+      };
+    });
+
+    setTasks(updatedTasks);
     setPopupTask(null);
   };
 
@@ -292,6 +329,7 @@ export default function PreProject({ setActiveModule }) {
         <div className="popup-overlay" onClick={saveAndClosePopup}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <div className="popup-title">{popupTask.text}</div>
+
             <label className="popup-subheader">PURPOSE</label>
             <textarea
               className="popup-purpose"
@@ -300,13 +338,33 @@ export default function PreProject({ setActiveModule }) {
               onChange={(e) => setPurpose(e.target.value)}
               rows={2}
             />
+
             <hr className="popup-divider" />
-            <textarea
-              className="popup-textarea"
-              placeholder="Enter ongoing log or comments..."
-              value={log}
-              onChange={(e) => setLog(e.target.value)}
-            />
+
+            <div className="popup-log-section">
+              <label className="popup-subheader">LOG HISTORY</label>
+              <div className="popup-log-history">
+                {popupTask.logEntries && popupTask.logEntries.length > 0 ? (
+                  popupTask.logEntries.map((entry, idx) => (
+                    <div key={idx} className="popup-log-entry">
+                      <span className="popup-log-date">{entry.date}</span>
+                      <div className="popup-log-text">{entry.text}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="popup-log-empty">No log entries yet.</div>
+                )}
+              </div>
+
+              <label className="popup-subheader">NEW ENTRY</label>
+              <textarea
+                className="popup-textarea"
+                placeholder="Add new update or comment..."
+                value={newLogEntry}
+                onChange={(e) => setNewLogEntry(e.target.value)}
+              />
+            </div>
+
             <button className="close-popup" onClick={saveAndClosePopup}>
               Save & Close
             </button>
