@@ -1,6 +1,5 @@
-// === METRA – PreProject Module (Phase 5.1: Popup Running Log with Date-Stamped Entries) ===
-// Adds running log history inside popup; appends new entries with timestamps.
-// If viewed only, no change occurs. Outer timestamp updates only on modification.
+// === METRA – PreProject Module (Phase 5.3: Smart Document Link + Scroll Stable) ===
+// Adds date-stamped log entries with link persistence and smart display labels.
 
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
@@ -20,6 +19,7 @@ export default function PreProject({ setActiveModule }) {
   const [popupTask, setPopupTask] = useState(null);
   const [purpose, setPurpose] = useState("");
   const [newLogEntry, setNewLogEntry] = useState("");
+  const [newLogLink, setNewLogLink] = useState("");
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -49,7 +49,7 @@ export default function PreProject({ setActiveModule }) {
     localStorage.setItem(taskKey, JSON.stringify(tasks));
   }, [tasks]);
 
-  // --- Helper: current timestamp ---
+  // --- Helper: formatted timestamp ---
   const getCurrentTime = () => {
     const now = new Date();
     return now.toLocaleString("en-GB", {
@@ -75,7 +75,7 @@ export default function PreProject({ setActiveModule }) {
         flagged: false,
         assignedTo: "",
         purpose: "",
-        logEntries: [], // array of {text, date}
+        logEntries: [],
       },
     ]);
     setNewTask("");
@@ -122,37 +122,44 @@ export default function PreProject({ setActiveModule }) {
     setOpenTaskId(null);
   };
 
-  // --- Popup open / save ---
+  // --- Open popup ---
   const openPopup = (task) => {
     setPopupTask(task);
     setPurpose(task.purpose || "");
     setNewLogEntry("");
+    setNewLogLink("");
   };
 
+  // --- Save + close popup (safe persistence fix) ---
   const saveAndClosePopup = () => {
     if (!popupTask) return;
+
+    // Capture values before React resets them
+    const entryText = newLogEntry.trim();
+    const entryLink = newLogLink.trim();
+    const updatedPurpose = purpose.trim();
 
     const updatedTasks = tasks.map((t) => {
       if (t.id !== popupTask.id) return t;
 
       const changesMade =
-        t.purpose !== purpose.trim() || newLogEntry.trim() !== "";
+        t.purpose !== updatedPurpose || entryText !== "" || entryLink !== "";
 
-      if (!changesMade) return t; // viewed only
+      if (!changesMade) return t;
 
       const updatedLog = [...(t.logEntries || [])];
 
-      // Add new entry if provided
-      if (newLogEntry.trim() !== "") {
+      if (entryText !== "" || entryLink !== "") {
         updatedLog.push({
-          text: newLogEntry.trim(),
+          text: entryText,
+          link: entryLink,
           date: getCurrentTime(),
         });
       }
 
       return {
         ...t,
-        purpose: purpose.trim(),
+        purpose: updatedPurpose,
         logEntries: updatedLog,
         timestamp: getCurrentTime(),
       };
@@ -160,6 +167,8 @@ export default function PreProject({ setActiveModule }) {
 
     setTasks(updatedTasks);
     setPopupTask(null);
+    setNewLogEntry("");
+    setNewLogLink("");
   };
 
   // --- Hover management ---
@@ -234,12 +243,10 @@ export default function PreProject({ setActiveModule }) {
                 </div>
 
                 <div className="task-controls" style={{ position: "relative" }}>
-                  {/* Status button */}
                   <button className="status-btn" onClick={() => cycleStatus(task.id)}>
                     {task.status}
                   </button>
 
-                  {/* Hover personnel zone */}
                   <div
                     className="assign-hover-zone"
                     onMouseEnter={() => handleMouseEnter(task.id)}
@@ -295,7 +302,6 @@ export default function PreProject({ setActiveModule }) {
                     )}
                   </div>
 
-                  {/* Timestamp + Delete */}
                   <span className="timestamp">{task.timestamp}</span>
                   <button className="delete" onClick={() => deleteTask(task.id)}>
                     Delete
@@ -349,6 +355,26 @@ export default function PreProject({ setActiveModule }) {
                     <div key={idx} className="popup-log-entry">
                       <span className="popup-log-date">{entry.date}</span>
                       <div className="popup-log-text">{entry.text}</div>
+                      {entry.link &&
+                        (() => {
+                          const isICloud = entry.link.includes("icloud.com");
+                          const label = isICloud
+                            ? "📄 Download from iCloud"
+                            : "📄 View Document";
+                          const safeLink = entry.link.startsWith("http")
+                            ? entry.link
+                            : `https://${entry.link}`;
+                          return (
+                            <a
+                              href={safeLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="popup-log-link"
+                            >
+                              {label}
+                            </a>
+                          );
+                        })()}
                     </div>
                   ))
                 ) : (
@@ -362,6 +388,20 @@ export default function PreProject({ setActiveModule }) {
                 placeholder="Add new update or comment..."
                 value={newLogEntry}
                 onChange={(e) => setNewLogEntry(e.target.value)}
+              />
+              <input
+                type="url"
+                placeholder="Optional document link"
+                value={newLogLink}
+                onChange={(e) => setNewLogLink(e.target.value)}
+                style={{
+                  width: "100%",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  padding: "6px",
+                  marginTop: "6px",
+                  fontSize: "0.9rem",
+                }}
               />
             </div>
 

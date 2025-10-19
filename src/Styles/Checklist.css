@@ -410,3 +410,43 @@ button:hover { transform: scale(1.02); }
   color: #888;
   text-align: left;
 }
+/* === Popup Scroll Behaviour Fix (Baseline 5.2 Scroll Correction) === */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 43, 92, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  overflow: hidden; /* prevent background scroll */
+}
+
+.popup-content {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  width: 80%;
+  max-width: 520px;
+  max-height: 85vh;          /* prevent off-screen overflow */
+  overflow-y: auto;          /* allow internal scrolling */
+  padding: 20px;
+  text-align: left;
+  position: relative;
+  animation: fadeIn 0.25s ease;
+}
+
+.popup-content::-webkit-scrollbar {
+  width: 8px;
+}
+.popup-content::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 6px;
+}
+.popup-content::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
