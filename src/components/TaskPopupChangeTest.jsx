@@ -1,10 +1,9 @@
 /* === METRA – TaskPopupChangeTest.jsx
-   Phase 9.7-E Step 3 – Temporary Persistence + Attachment Field
-   -------------------------------------------------------------
-   Enhances the Change Request panel:
-   - Keeps scope and note active while popup is open
-   - Adds document attachment input (URL or link)
-   - Still non-persistent across sessions
+   Phase 9.7-E Step 4 – Persistent Change Request Storage
+   ------------------------------------------------------
+   - Saves scope, note, and attachment to localStorage (per task)
+   - Auto-loads values when popup reopens
+   - Adds visual confirmation banner
 */
 
 import React, { useEffect, useState } from "react";
@@ -15,9 +14,36 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
   const [scope, setScope] = useState("Internal");
   const [note, setNote] = useState("");
   const [attachment, setAttachment] = useState("");
+  const [saved, setSaved] = useState(false);
 
   if (!task) return null;
 
+  const storageKey = `changeRequest-${task.text}`;
+
+  // --- Load from localStorage when opened ---
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(storageKey));
+      if (stored) {
+        setScope(stored.scope || "Internal");
+        setNote(stored.note || "");
+        setAttachment(stored.attachment || "");
+        setSaved(true);
+      } else {
+        setSaved(false);
+      }
+    } catch (err) {
+      console.error("⚠️ Error loading change request data:", err);
+    }
+  }, [task]);
+
+  // --- Auto-save to localStorage when values change ---
+  useEffect(() => {
+    const payload = { scope, note, attachment };
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+  }, [scope, note, attachment]);
+
+  // --- Clear on Close (visual only) ---
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (e.target.classList.contains("popup-overlay")) onClose();
@@ -26,15 +52,24 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
     return () => window.removeEventListener("click", handleOutsideClick);
   }, [onClose]);
 
-  // --- Temporary state persistence while open (handled by React) ---
-  const handleScopeChange = (value) => setScope(value);
-  const handleNoteChange = (e) => setNote(e.target.value);
-  const handleAttachmentChange = (e) => setAttachment(e.target.value);
-
   return (
     <div className="popup-overlay">
       <div className="popup-box">
-        <h3 className="popup-title">Change Control Task</h3>
+        <h3 className="popup-title">
+          Change Control Task{" "}
+          {saved && (
+            <span
+              style={{
+                fontSize: "0.8rem",
+                color: "#00703c",
+                marginLeft: "8px",
+                fontWeight: "600",
+              }}
+            >
+              ✔ Saved
+            </span>
+          )}
+        </h3>
 
         <p className="popup-line">
           <strong>Task:</strong> {task.text}
@@ -88,7 +123,7 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
               {["Internal", "PMO"].map((option) => (
                 <button
                   key={option}
-                  onClick={() => handleScopeChange(option)}
+                  onClick={() => setScope(option)}
                   style={{
                     flex: 1,
                     padding: "6px 0",
@@ -121,7 +156,7 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
             <textarea
               placeholder="Enter change description..."
               value={note}
-              onChange={handleNoteChange}
+              onChange={(e) => setNote(e.target.value)}
               rows={3}
               style={{
                 width: "100%",
@@ -150,7 +185,7 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
               type="url"
               placeholder="Paste document URL or link..."
               value={attachment}
-              onChange={handleAttachmentChange}
+              onChange={(e) => setAttachment(e.target.value)}
               style={{
                 width: "100%",
                 border: "1px solid #ccc",
@@ -168,7 +203,7 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
                 fontSize: "0.85rem",
               }}
             >
-              (All fields are temporary – will reset when popup closes)
+              (Saved locally – retained after popup close)
             </p>
           </div>
         )}
