@@ -1,0 +1,53 @@
+/* === METRA – Popup Overlay Diagnostic Style (Temporary Visibility Test) === */
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 0, 0, 0.3); /* bright red tint for test */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* topmost layer */
+}
+
+.popup-box {
+  background-color: #ffffff;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  width: 340px;
+  max-width: 90%;
+  text-align: left;
+  font-family: Arial, sans-serif;
+}
+
+.popup-title {
+  color: #0a2b5c;
+  margin-bottom: 12px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.popup-line {
+  color: #333;
+  margin: 8px 0;
+  font-size: 15px;
+}
+
+.popup-close {
+  margin-top: 20px;
+  display: block;
+  width: 100%;
+  background-color: #0a2b5c;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.popup-close:hover {
+  background-color: #174ba0;
+}
