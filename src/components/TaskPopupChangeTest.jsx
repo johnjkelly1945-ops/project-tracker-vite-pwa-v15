@@ -1,27 +1,22 @@
-/* === METRA – TaskPopupChangeTest.jsx (Diagnostic Visibility Test)
-   Phase 9.5 – Popup Overlay Reintegration
+/* === METRA – TaskPopupChangeTest.jsx (Phase 9.6 Visual Finalisation)
    ---------------------------------------------------------------
-   Diagnostic version to confirm the popup is rendering in DOM.
-   Temporary red background used for visibility.
+   Production visual version with fade animation and neutral overlay.
 */
 
 import React, { useEffect } from "react";
 import "../Styles/TaskPopupChangeTest.css";
 
 const TaskPopupChangeTest = ({ task, onClose }) => {
-  // Guard: if no task, render nothing
   if (!task) return null;
 
-  console.log("🎯 Popup component rendering:", task.text);
-
-  // Close popup when clicking outside the box
   useEffect(() => {
+    console.log("🎯 Popup component rendering:", task.text);
     const handleOutsideClick = (e) => {
       if (e.target.classList.contains("popup-overlay")) onClose();
     };
     window.addEventListener("click", handleOutsideClick);
     return () => window.removeEventListener("click", handleOutsideClick);
-  }, [onClose]);
+  }, [onClose, task]);
 
   return (
     <div className="popup-overlay">
