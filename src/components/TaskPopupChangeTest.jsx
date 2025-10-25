@@ -1,8 +1,8 @@
 /* === METRA – TaskPopupChangeTest.jsx
-   Phase 9.7-E Step 1 – Change Request Button + Placeholder Toggle
+   Phase 9.7-E Step 2 – Change Request Panel with Scope + Note Field
    --------------------------------------------------------------
-   Adds a visual Change Request button inside the popup overlay.
-   No data handling — UI toggle only.
+   Adds Internal/PMO scope selector and text area within the popup.
+   Behaviour is non-persistent (for layout and interaction testing only).
 */
 
 import React, { useEffect, useState } from "react";
@@ -10,6 +10,8 @@ import "../Styles/TaskPopupChangeTest.css";
 
 const TaskPopupChangeTest = ({ task, onClose }) => {
   const [showChangeRequest, setShowChangeRequest] = useState(false);
+  const [scope, setScope] = useState("Internal");
+  const [note, setNote] = useState("");
 
   if (!task) return null;
 
@@ -33,7 +35,7 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
           <strong>Timestamp:</strong> {task.timestamp}
         </p>
 
-        {/* === New Change Request Button === */}
+        {/* === Change Request Button === */}
         <button
           className="popup-change-btn"
           onClick={() => setShowChangeRequest(!showChangeRequest)}
@@ -51,21 +53,102 @@ const TaskPopupChangeTest = ({ task, onClose }) => {
           📋 Change Request
         </button>
 
-        {/* === Toggle Placeholder Area === */}
+        {/* === Change Request Panel (New Section) === */}
         {showChangeRequest && (
           <div
-            className="popup-change-placeholder"
+            className="popup-change-panel"
             style={{
-              marginTop: "12px",
-              backgroundColor: "#f0f0f0",
-              padding: "12px",
-              borderRadius: "8px",
+              marginTop: "14px",
+              backgroundColor: "#f7f7f7",
               border: "1px solid #ccc",
-              color: "#333",
-              fontStyle: "italic",
+              borderRadius: "8px",
+              padding: "12px",
             }}
           >
-            Change Request area – coming next phase.
+            <label
+              style={{
+                fontWeight: "bold",
+                display: "block",
+                marginBottom: "6px",
+                color: "#0a2b5c",
+              }}
+            >
+              Request Scope:
+            </label>
+
+            {/* === Internal / PMO Toggle === */}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <button
+                onClick={() => setScope("Internal")}
+                style={{
+                  flex: 1,
+                  padding: "6px 0",
+                  borderRadius: "6px",
+                  border:
+                    scope === "Internal" ? "2px solid #0057b8" : "1px solid #ccc",
+                  backgroundColor:
+                    scope === "Internal" ? "#e3ecf7" : "#ffffff",
+                  cursor: "pointer",
+                  fontWeight: scope === "Internal" ? "600" : "400",
+                }}
+              >
+                Internal
+              </button>
+              <button
+                onClick={() => setScope("PMO")}
+                style={{
+                  flex: 1,
+                  padding: "6px 0",
+                  borderRadius: "6px",
+                  border:
+                    scope === "PMO" ? "2px solid #0057b8" : "1px solid #ccc",
+                  backgroundColor: scope === "PMO" ? "#e3ecf7" : "#ffffff",
+                  cursor: "pointer",
+                  fontWeight: scope === "PMO" ? "600" : "400",
+                }}
+              >
+                PMO
+              </button>
+            </div>
+
+            {/* === Text Area for Change Note === */}
+            <label
+              style={{
+                fontWeight: "bold",
+                display: "block",
+                marginBottom: "4px",
+                color: "#0a2b5c",
+              }}
+            >
+              Change Request Note:
+            </label>
+            <textarea
+              placeholder="Enter change description..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              style={{
+                width: "100%",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                padding: "6px",
+                fontSize: "0.9rem",
+                resize: "vertical",
+                backgroundColor: "#fff",
+              }}
+            />
+
+            {/* === Non-functional message === */}
+            <p
+              style={{
+                marginTop: "8px",
+                fontStyle: "italic",
+                color: "#666",
+                fontSize: "0.85rem",
+              }}
+            >
+              (Entries are not yet saved – layout verification only)
+            </p>
           </div>
         )}
 
