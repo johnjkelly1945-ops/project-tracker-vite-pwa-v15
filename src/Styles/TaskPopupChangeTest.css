@@ -1,74 +1,188 @@
-/* === METRA – Popup Overlay Style (Phase 9.6 Visual Finalisation) ===
-   Replaces diagnostic red tint with production-style dim grey overlay.
-   Adds fade-in / fade-out animation for popup and backdrop.
-*/
+/* === METRA – TaskPopupChangeTest.css
+   Phase 9.7-D: Persistent + Scoped Change Log Styling
+   --------------------------------------------------- */
 
 .popup-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: fadeIn 0.3s ease-in-out forwards;
   z-index: 9999;
+  animation: fadeIn 0.25s ease-in;
 }
 
-.popup-box {
-  background-color: #ffffff;
-  padding: 26px 34px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  width: 360px;
-  max-width: 92%;
-  text-align: left;
-  font-family: Arial, sans-serif;
-  animation: scaleIn 0.25s ease forwards;
-}
-
-.popup-title {
-  color: #0a2b5c;
-  margin-bottom: 12px;
-  font-size: 20px;
-  text-align: center;
-}
-
-.popup-line {
-  color: #333;
-  margin: 8px 0;
-  font-size: 15px;
-}
-
-.popup-close {
-  margin-top: 20px;
-  display: block;
-  width: 100%;
-  background-color: #0a2b5c;
-  color: #fff;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.popup-close:hover {
-  background-color: #174ba0;
-}
-
-/* === Animations === */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+.popup-box {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 22px;
+  width: 480px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #222;
+  position: relative;
+  animation: scaleIn 0.25s ease-in;
 }
 
 @keyframes scaleIn {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+.popup-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0a2b5c;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.popup-line {
+  font-size: 0.95rem;
+  margin: 4px 0;
+  color: #333;
+}
+
+.change-log-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 14px;
+  background: #f9fafc;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.change-log-box strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  color: #0a2b5c;
+}
+
+.no-entries {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin: 6px 0;
+}
+
+.entry-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.entry-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.entry-date {
+  font-size: 0.8rem;
+  color: #444;
+}
+
+.entry-author {
+  font-size: 0.8rem;
+  color: #0078d4;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.entry-text {
+  font-size: 0.9rem;
+  margin-top: 2px;
+  color: #222;
+}
+
+.entry-input {
+  width: 100%;
+  min-height: 60px;
+  margin-top: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.scope-row {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.scope-label {
+  margin-right: 8px;
+  font-size: 0.9rem;
+  color: #222;
+}
+
+.scope-select {
+  flex-grow: 1;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.add-entry-btn,
+.clear-btn {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-entry-btn {
+  background: #0078d4;
+  color: white;
+  margin-right: 8px;
+}
+
+.add-entry-btn:hover {
+  background: #005ea6;
+}
+
+.clear-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.clear-btn:hover {
+  background: #c8c8c8;
+}
+
+.popup-close {
+  display: block;
+  margin: 18px auto 0 auto;
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.popup-close:hover {
+  background: #4e555b;
 }
