@@ -1,9 +1,10 @@
-// === METRA – PreProject Module (Phase 6.2: Intelligent Log Tracking of Assignee Changes) ===
-// Adds automatic log entries whenever task assignee changes.
-// Preserves popup UI, template links, scroll-safe layout, and persistence.
+// === METRA – PreProject Module (Phase 9.7-A: Change Control Popup Shell Integration) ===
+// Adds safe import and placeholder mount of the Change Control popup (TaskPopupChangeTest).
+// No logic changes to task, log, or template behaviour – purely integration verification.
 
 import { useState, useEffect, useRef } from "react";
 import { User, Paperclip, X } from "lucide-react";
+import TaskPopupChangeTest from "./TaskPopupChangeTest.jsx";   // ← Added import
 import "../Styles/Checklist.css";
 
 export default function PreProject({ setActiveModule }) {
@@ -26,6 +27,7 @@ export default function PreProject({ setActiveModule }) {
   const [newLogLink, setNewLogLink] = useState("");
   const [templateName, setTemplateName] = useState("");
   const [templateUrl, setTemplateUrl] = useState("");
+  const [showChangePopup, setShowChangePopup] = useState(false); // ← New state
   const hoverTimeout = useRef(null);
 
   // --- Load personnel list ---
@@ -109,7 +111,7 @@ export default function PreProject({ setActiveModule }) {
     );
   };
 
-  // --- Enhanced: Assign person + automatic log entry ---
+  // --- Assign person + automatic log entry ---
   const assignPerson = (taskId, personName) => {
     setTasks(
       tasks.map((t) => {
@@ -252,6 +254,14 @@ export default function PreProject({ setActiveModule }) {
         <button className="return-btn" onClick={() => setActiveModule("summary")}>
           Return to Summary
         </button>
+        {/* New temporary test button */}
+        <button
+          className="add"
+          style={{ marginLeft: "10px" }}
+          onClick={() => setShowChangePopup(true)}
+        >
+          Open Change Popup
+        </button>
       </div>
 
       {/* Filters */}
@@ -381,13 +391,9 @@ export default function PreProject({ setActiveModule }) {
         <div className="popup-overlay" onClick={saveAndClosePopup}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <div className="popup-title">{popupTask.text}</div>
-
-            {/* Display current assignee */}
             <div className="popup-assignee">
-              <strong>Assigned to:</strong>{" "}
-              {popupTask.assignedTo || "Unassigned"}
+              <strong>Assigned to:</strong> {popupTask.assignedTo || "Unassigned"}
             </div>
-
             <label className="popup-subheader">PURPOSE</label>
             <textarea
               className="popup-purpose"
@@ -396,10 +402,7 @@ export default function PreProject({ setActiveModule }) {
               onChange={(e) => setPurpose(e.target.value)}
               rows={2}
             />
-
             <hr className="popup-divider" />
-
-            {/* Log section */}
             <div className="popup-log-section">
               <label className="popup-subheader">LOG HISTORY</label>
               <div className="popup-log-history">
@@ -410,7 +413,11 @@ export default function PreProject({ setActiveModule }) {
                       <div className="popup-log-text">{entry.text}</div>
                       {entry.link && (
                         <a
-                          href={entry.link.startsWith("http") ? entry.link : `https://${entry.link}`}
+                          href={
+                            entry.link.startsWith("http")
+                              ? entry.link
+                              : `https://${entry.link}`
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                           className="popup-log-link"
@@ -424,7 +431,6 @@ export default function PreProject({ setActiveModule }) {
                   <div className="popup-log-empty">No log entries yet.</div>
                 )}
               </div>
-
               <label className="popup-subheader">NEW ENTRY</label>
               <textarea
                 className="popup-textarea"
@@ -448,7 +454,6 @@ export default function PreProject({ setActiveModule }) {
               />
             </div>
 
-            {/* Templates section */}
             <div className="popup-template-section" style={{ marginTop: "14px" }}>
               <label className="popup-subheader">TEMPLATES</label>
               <input
@@ -489,13 +494,21 @@ export default function PreProject({ setActiveModule }) {
                     <div key={tpl.id} className="popup-template-item">
                       <Paperclip size={14} style={{ marginRight: "6px" }} />
                       <a
-                        href={tpl.url.startsWith("http") ? tpl.url : `https://${tpl.url}`}
+                        href={
+                          tpl.url.startsWith("http") ? tpl.url : `https://${tpl.url}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         {tpl.name || "Untitled Template"}
                       </a>
-                      <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: "6px" }}>
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "#666",
+                          marginLeft: "6px",
+                        }}
+                      >
                         ({tpl.date}) – {tpl.reviewStatus}
                       </span>
                       <button
@@ -518,6 +531,17 @@ export default function PreProject({ setActiveModule }) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Diagnostic Change Control Popup Shell */}
+      {showChangePopup && (
+        <TaskPopupChangeTest
+          task={{
+            text: "Demo Change Control Task",
+            timestamp: new Date().toLocaleString("en-GB"),
+          }}
+          onClose={() => setShowChangePopup(false)}
+        />
       )}
     </div>
   );
