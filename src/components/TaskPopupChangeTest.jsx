@@ -1,212 +1,157 @@
 /* === METRA – TaskPopupChangeTest.jsx
-   Phase 9.7-E Step 4 – Persistent Change Request Storage
-   ------------------------------------------------------
-   - Saves scope, note, and attachment to localStorage (per task)
-   - Auto-loads values when popup reopens
-   - Adds visual confirmation banner
+   Phase 9.8A – Embedded Mini-Task Workflow Prototype
+   -------------------------------------------------
+   Introduces process tabs [Change][Risk][Issue][Quality].
+   Adds non-persistent “mini-tasks” for Change Control with
+   Start / Complete buttons and placeholder comms sections.
 */
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "../Styles/TaskPopupChangeTest.css";
 
 const TaskPopupChangeTest = ({ task, onClose }) => {
-  const [showChangeRequest, setShowChangeRequest] = useState(false);
-  const [scope, setScope] = useState("Internal");
-  const [note, setNote] = useState("");
-  const [attachment, setAttachment] = useState("");
-  const [saved, setSaved] = useState(false);
-
   if (!task) return null;
 
-  const storageKey = `changeRequest-${task.text}`;
+  const [activeProcess, setActiveProcess] = useState("change");
 
-  // --- Load from localStorage when opened ---
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(storageKey));
-      if (stored) {
-        setScope(stored.scope || "Internal");
-        setNote(stored.note || "");
-        setAttachment(stored.attachment || "");
-        setSaved(true);
-      } else {
-        setSaved(false);
-      }
-    } catch (err) {
-      console.error("⚠️ Error loading change request data:", err);
-    }
-  }, [task]);
+  // Mini-tasks for Change process
+  const [changeSteps, setChangeSteps] = useState([
+    {
+      id: 1,
+      title: "Impact Assessment",
+      status: "Not Started",
+      startedAt: "",
+      completedAt: "",
+    },
+    {
+      id: 2,
+      title: "Board Review",
+      status: "Not Started",
+      startedAt: "",
+      completedAt: "",
+    },
+    {
+      id: 3,
+      title: "Implementation Verification",
+      status: "Not Started",
+      startedAt: "",
+      completedAt: "",
+    },
+  ]);
 
-  // --- Auto-save to localStorage when values change ---
-  useEffect(() => {
-    const payload = { scope, note, attachment };
-    localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [scope, note, attachment]);
+  // Handle Start and Complete actions
+  const handleStart = (id) => {
+    setChangeSteps((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? { ...s, status: "In Progress", startedAt: new Date().toLocaleString() }
+          : s
+      )
+    );
+    console.log("🟢 Started mini-task", id);
+  };
 
-  // --- Clear on Close (visual only) ---
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (e.target.classList.contains("popup-overlay")) onClose();
-    };
-    window.addEventListener("click", handleOutsideClick);
-    return () => window.removeEventListener("click", handleOutsideClick);
-  }, [onClose]);
+  const handleComplete = (id) => {
+    setChangeSteps((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? { ...s, status: "Completed", completedAt: new Date().toLocaleString() }
+          : s
+      )
+    );
+    console.log("✅ Completed mini-task", id);
+  };
+
+  const renderChangePanel = () => (
+    <div className="process-panel">
+      <h4 className="process-title">Change Control Steps</h4>
+      {changeSteps.map((step) => (
+        <div key={step.id} className="mini-task-block">
+          <div className="mini-task-header">
+            <span className="mini-task-title">{step.title}</span>
+            <div className="mini-task-buttons">
+              <button
+                className="start-btn"
+                onClick={() => handleStart(step.id)}
+                disabled={step.status !== "Not Started"}
+              >
+                🟢 Start
+              </button>
+              <button
+                className="complete-btn"
+                onClick={() => handleComplete(step.id)}
+                disabled={step.status === "Completed"}
+              >
+                ✅ Complete
+              </button>
+            </div>
+          </div>
+
+          <div className="mini-task-status-line">
+            <span
+              className={`mini-status ${
+                step.status === "Completed"
+                  ? "done"
+                  : step.status === "In Progress"
+                  ? "active"
+                  : "pending"
+              }`}
+            >
+              {step.status}
+            </span>
+            {step.startedAt && (
+              <span className="timestamp">Started: {step.startedAt}</span>
+            )}
+            {step.completedAt && (
+              <span className="timestamp">Completed: {step.completedAt}</span>
+            )}
+          </div>
+
+          <div className="mini-task-comms">
+            <div className="comms-title">Comms / Notes</div>
+            <ul className="comms-list">
+              <li className="comms-item">[Sample] Awaiting feedback from team</li>
+              <li className="comms-item">[Sample] Email sent to PM for approval</li>
+            </ul>
+            <button className="add-note-btn">+ Add Note</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderPlaceholderPanel = (label) => (
+    <div className="process-panel placeholder">
+      <h4 className="process-title">{label} Process</h4>
+      <p>Coming soon in Phase 9.8B – workflow & persistence logic.</p>
+    </div>
+  );
 
   return (
     <div className="popup-overlay">
       <div className="popup-box">
-        <h3 className="popup-title">
-          Change Control Task{" "}
-          {saved && (
-            <span
-              style={{
-                fontSize: "0.8rem",
-                color: "#00703c",
-                marginLeft: "8px",
-                fontWeight: "600",
-              }}
+        <h3 className="popup-title">Change Control Task</h3>
+
+        {/* Process Tab Bar */}
+        <div className="process-tab-bar">
+          {["change", "risk", "issue", "quality"].map((p) => (
+            <button
+              key={p}
+              className={`process-tab ${
+                activeProcess === p ? "active" : ""
+              }`}
+              onClick={() => setActiveProcess(p)}
             >
-              ✔ Saved
-            </span>
-          )}
-        </h3>
+              {p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>
+          ))}
+        </div>
 
-        <p className="popup-line">
-          <strong>Task:</strong> {task.text}
-        </p>
-        <p className="popup-line">
-          <strong>Timestamp:</strong> {task.timestamp}
-        </p>
-
-        {/* === Change Request Button === */}
-        <button
-          className="popup-change-btn"
-          onClick={() => setShowChangeRequest(!showChangeRequest)}
-          style={{
-            marginTop: "8px",
-            padding: "6px 12px",
-            backgroundColor: "#0057b8",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-          }}
-        >
-          📋 Change Request
-        </button>
-
-        {/* === Change Request Panel === */}
-        {showChangeRequest && (
-          <div
-            className="popup-change-panel"
-            style={{
-              marginTop: "14px",
-              backgroundColor: "#f7f7f7",
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "12px",
-            }}
-          >
-            {/* Scope Selector */}
-            <label
-              style={{
-                fontWeight: "bold",
-                display: "block",
-                marginBottom: "6px",
-                color: "#0a2b5c",
-              }}
-            >
-              Request Scope:
-            </label>
-            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-              {["Internal", "PMO"].map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setScope(option)}
-                  style={{
-                    flex: 1,
-                    padding: "6px 0",
-                    borderRadius: "6px",
-                    border:
-                      scope === option ? "2px solid #0057b8" : "1px solid #ccc",
-                    backgroundColor:
-                      scope === option ? "#e3ecf7" : "#ffffff",
-                    cursor: "pointer",
-                    fontWeight: scope === option ? "600" : "400",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-
-            {/* Change Request Note */}
-            <label
-              style={{
-                fontWeight: "bold",
-                display: "block",
-                marginBottom: "4px",
-                color: "#0a2b5c",
-              }}
-            >
-              Change Request Note:
-            </label>
-            <textarea
-              placeholder="Enter change description..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={3}
-              style={{
-                width: "100%",
-                border: "1px solid #ccc",
-                borderRadius: "6px",
-                padding: "6px",
-                fontSize: "0.9rem",
-                resize: "vertical",
-                backgroundColor: "#fff",
-                marginBottom: "10px",
-              }}
-            />
-
-            {/* Attachment Field */}
-            <label
-              style={{
-                fontWeight: "bold",
-                display: "block",
-                marginBottom: "4px",
-                color: "#0a2b5c",
-              }}
-            >
-              Attach Document (optional):
-            </label>
-            <input
-              type="url"
-              placeholder="Paste document URL or link..."
-              value={attachment}
-              onChange={(e) => setAttachment(e.target.value)}
-              style={{
-                width: "100%",
-                border: "1px solid #ccc",
-                borderRadius: "6px",
-                padding: "6px",
-                fontSize: "0.9rem",
-              }}
-            />
-
-            <p
-              style={{
-                marginTop: "8px",
-                fontStyle: "italic",
-                color: "#666",
-                fontSize: "0.85rem",
-              }}
-            >
-              (Saved locally – retained after popup close)
-            </p>
-          </div>
-        )}
+        {/* Active Process Panel */}
+        {activeProcess === "change" && renderChangePanel()}
+        {activeProcess === "risk" && renderPlaceholderPanel("Risk")}
+        {activeProcess === "issue" && renderPlaceholderPanel("Issue")}
+        {activeProcess === "quality" && renderPlaceholderPanel("Quality")}
 
         <button className="popup-close" onClick={onClose}>
           × Close
