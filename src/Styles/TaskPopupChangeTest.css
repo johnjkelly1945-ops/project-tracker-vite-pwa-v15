@@ -1,215 +1,178 @@
 /* === METRA – TaskPopupChangeTest.css
-   Phase 9.8A Visual Layer – Mini-Task Workflow Styling
-   --------------------------------------------------- */
+   Phase 9.8C – Inline ✔ Saved Indicator & Layout Stabilisation
+   ------------------------------------------------------------ */
 
 .popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 30, 30, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
+  z-index: 900;
+  animation: fadeIn 0.2s ease-in;
 }
 
-.popup-box {
+.popup-box.stable {
   background: #fff;
-  border-radius: 14px;
-  padding: 24px 30px;
-  width: 620px;
-  max-height: 80vh;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  width: 640px;
+  max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  font-family: "Inter", Arial, sans-serif;
+  padding: 24px;
+  position: relative;
+  font-family: system-ui, sans-serif;
+  transition: none;
 }
 
 .popup-title {
-  text-align: center;
   color: #0a2b5c;
   font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  text-align: center;
 }
 
-/* Process tab bar */
-.process-tab-bar {
+.process-tabs {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
-.process-tab {
-  background: #f0f2f8;
+.tab-btn {
   border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 4px 10px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 6px 14px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
 }
 
-.process-tab.active {
+.tab-btn.active {
   background: #0a2b5c;
   color: #fff;
   border-color: #0a2b5c;
 }
 
-.process-tab:hover:not(.active) {
-  background: #e6e9f0;
+.mini-task-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* Process panels */
-.process-panel {
-  background: #fafbfc;
-  border: 1px solid #e1e4e8;
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 20px;
-}
-
-.process-title {
-  color: #0a2b5c;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-/* Mini-task blocks */
-.mini-task-block {
-  background: #fff;
-  border: 1px solid #e1e4e8;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.mini-task-header {
+.mini-task-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
 }
 
-.mini-task-title {
+.mini-task-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.mini-task-text {
   font-weight: 600;
   color: #222;
 }
 
-.mini-task-buttons button {
-  margin-left: 6px;
-  padding: 3px 10px;
-  border: none;
-  border-radius: 5px;
+.mini-task-status {
   font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  margin-top: 2px;
 }
 
-.start-btn {
-  background: #0078d4;
-  color: #fff;
-}
-
-.start-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.complete-btn {
-  background: #4caf50;
-  color: #fff;
-}
-
-.complete-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Status line */
-.mini-task-status-line {
-  font-size: 0.85rem;
-  margin: 4px 0 8px 0;
-  color: #555;
-}
-
-.mini-status {
-  display: inline-block;
-  font-weight: 600;
-  margin-right: 10px;
-}
-
-.mini-status.pending {
-  color: #999;
-}
-
-.mini-status.active {
-  color: #0078d4;
-}
-
-.mini-status.done {
-  color: #2e8b57;
-}
-
-/* Comms */
-.mini-task-comms {
-  background: #f7f9fb;
-  border: 1px dashed #c8d1e0;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 0.85rem;
-}
-
-.comms-title {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.comms-list {
-  list-style-type: disc;
-  margin-left: 16px;
-  color: #333;
-}
-
-.comms-item {
-  margin-bottom: 4px;
-}
-
-.add-note-btn {
-  background: #0057b8;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
+.mini-task-time {
   font-size: 0.8rem;
-  margin-top: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  color: #777;
+  margin-top: 2px;
 }
 
-.add-note-btn:hover {
-  background: #003f87;
+.mini-task-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Close button */
-.popup-close {
-  background: #555;
-  color: white;
+.mini-btn {
   border: none;
   border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 0.9rem;
-  display: block;
-  margin: 16px auto 6px;
+  padding: 5px 10px;
   cursor: pointer;
+  font-size: 0.85rem;
   transition: background 0.2s ease;
 }
 
-.popup-close:hover {
-  background: #333;
+.mini-btn.start {
+  background: #0078d4;
+  color: white;
+}
+.mini-btn.complete {
+  background: #3aa655;
+  color: white;
+}
+.mini-btn.reset {
+  background: #999;
+  color: white;
+}
+.mini-btn.add-disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+.mini-btn:hover {
+  opacity: 0.9;
+}
+
+.inline-saved {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: #3aa655;
+  animation: fadeBadge 2.5s ease forwards;
+}
+
+.mini-task-add {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.coming-soon {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  padding: 20px;
+}
+
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+@keyframes fadeBadge {
+  0% { opacity: 0; transform: translateY(-3px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-3px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

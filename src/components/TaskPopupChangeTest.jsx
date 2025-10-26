@@ -1,157 +1,154 @@
 /* === METRA – TaskPopupChangeTest.jsx
-   Phase 9.8A – Embedded Mini-Task Workflow Prototype
-   -------------------------------------------------
-   Introduces process tabs [Change][Risk][Issue][Quality].
-   Adds non-persistent “mini-tasks” for Change Control with
-   Start / Complete buttons and placeholder comms sections.
+   Phase 9.8C – Inline ✔ Saved Indicator & Layout Stabilisation
+   -------------------------------------------------------------
+   ✔ Appears next to Start/Complete button for 2.5 s.
+   🧱 Fixed popup wobble.
+   ➕ Disabled ‘Add Step’ placeholder added (bottom of list).
 */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Styles/TaskPopupChangeTest.css";
+import { CheckCircle } from "lucide-react";
 
 const TaskPopupChangeTest = ({ task, onClose }) => {
-  if (!task) return null;
-
-  const [activeProcess, setActiveProcess] = useState("change");
-
-  // Mini-tasks for Change process
-  const [changeSteps, setChangeSteps] = useState([
-    {
-      id: 1,
-      title: "Impact Assessment",
-      status: "Not Started",
-      startedAt: "",
-      completedAt: "",
-    },
-    {
-      id: 2,
-      title: "Board Review",
-      status: "Not Started",
-      startedAt: "",
-      completedAt: "",
-    },
-    {
-      id: 3,
-      title: "Implementation Verification",
-      status: "Not Started",
-      startedAt: "",
-      completedAt: "",
-    },
+  const [activeTab, setActiveTab] = useState("Change");
+  const [miniTasks, setMiniTasks] = useState([
+    { id: 1, text: "Impact Assessment", status: "Not Started", timestamp: "", showSaved: false },
+    { id: 2, text: "Board Review", status: "Not Started", timestamp: "", showSaved: false },
+    { id: 3, text: "Implementation Verification", status: "Not Started", timestamp: "", showSaved: false },
   ]);
 
-  // Handle Start and Complete actions
-  const handleStart = (id) => {
-    setChangeSteps((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, status: "In Progress", startedAt: new Date().toLocaleString() }
-          : s
+  // Load saved mini-tasks
+  useEffect(() => {
+    const stored = localStorage.getItem("metraChangeMiniTasks");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setMiniTasks(parsed);
+      } catch (e) {
+        console.error("Error reading saved Change mini-tasks:", e);
+      }
+    }
+  }, []);
+
+  const triggerSave = (updated, id) => {
+    setMiniTasks(updated);
+    localStorage.setItem("metraChangeMiniTasks", JSON.stringify(updated));
+
+    // show inline ✔ Saved
+    setMiniTasks((prev) =>
+      prev.map((mt) =>
+        mt.id === id ? { ...mt, showSaved: true } : { ...mt, showSaved: false }
       )
     );
-    console.log("🟢 Started mini-task", id);
+    setTimeout(() => {
+      setMiniTasks((prev) => prev.map((mt) => ({ ...mt, showSaved: false })));
+    }, 2500);
   };
 
-  const handleComplete = (id) => {
-    setChangeSteps((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, status: "Completed", completedAt: new Date().toLocaleString() }
-          : s
-      )
+  const toggleStatus = (id, newStatus) => {
+    const now = new Date().toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const updated = miniTasks.map((mt) =>
+      mt.id === id ? { ...mt, status: newStatus, timestamp: now } : mt
     );
-    console.log("✅ Completed mini-task", id);
+    triggerSave(updated, id);
   };
 
-  const renderChangePanel = () => (
-    <div className="process-panel">
-      <h4 className="process-title">Change Control Steps</h4>
-      {changeSteps.map((step) => (
-        <div key={step.id} className="mini-task-block">
-          <div className="mini-task-header">
-            <span className="mini-task-title">{step.title}</span>
-            <div className="mini-task-buttons">
-              <button
-                className="start-btn"
-                onClick={() => handleStart(step.id)}
-                disabled={step.status !== "Not Started"}
-              >
-                🟢 Start
-              </button>
-              <button
-                className="complete-btn"
-                onClick={() => handleComplete(step.id)}
-                disabled={step.status === "Completed"}
-              >
-                ✅ Complete
-              </button>
-            </div>
-          </div>
+  const getStatusColor = (status) => {
+    if (status === "Completed") return "#3aa655";
+    if (status === "In Progress") return "#e3b341";
+    return "#888";
+  };
 
-          <div className="mini-task-status-line">
-            <span
-              className={`mini-status ${
-                step.status === "Completed"
-                  ? "done"
-                  : step.status === "In Progress"
-                  ? "active"
-                  : "pending"
-              }`}
-            >
-              {step.status}
-            </span>
-            {step.startedAt && (
-              <span className="timestamp">Started: {step.startedAt}</span>
-            )}
-            {step.completedAt && (
-              <span className="timestamp">Completed: {step.completedAt}</span>
-            )}
-          </div>
-
-          <div className="mini-task-comms">
-            <div className="comms-title">Comms / Notes</div>
-            <ul className="comms-list">
-              <li className="comms-item">[Sample] Awaiting feedback from team</li>
-              <li className="comms-item">[Sample] Email sent to PM for approval</li>
-            </ul>
-            <button className="add-note-btn">+ Add Note</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderPlaceholderPanel = (label) => (
-    <div className="process-panel placeholder">
-      <h4 className="process-title">{label} Process</h4>
-      <p>Coming soon in Phase 9.8B – workflow & persistence logic.</p>
-    </div>
-  );
+  if (!task) return null;
 
   return (
-    <div className="popup-overlay">
-      <div className="popup-box">
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-box stable" onClick={(e) => e.stopPropagation()}>
         <h3 className="popup-title">Change Control Task</h3>
 
-        {/* Process Tab Bar */}
-        <div className="process-tab-bar">
-          {["change", "risk", "issue", "quality"].map((p) => (
+        <div className="process-tabs">
+          {["Change", "Risk", "Issue", "Quality"].map((tab) => (
             <button
-              key={p}
-              className={`process-tab ${
-                activeProcess === p ? "active" : ""
-              }`}
-              onClick={() => setActiveProcess(p)}
+              key={tab}
+              className={`tab-btn ${activeTab === tab ? "active" : ""}`}
+              onClick={() => setActiveTab(tab)}
             >
-              {p.charAt(0).toUpperCase() + p.slice(1)}
+              {tab}
             </button>
           ))}
         </div>
 
-        {/* Active Process Panel */}
-        {activeProcess === "change" && renderChangePanel()}
-        {activeProcess === "risk" && renderPlaceholderPanel("Risk")}
-        {activeProcess === "issue" && renderPlaceholderPanel("Issue")}
-        {activeProcess === "quality" && renderPlaceholderPanel("Quality")}
+        {activeTab === "Change" && (
+          <div className="mini-task-section">
+            {miniTasks.map((mt) => (
+              <div key={mt.id} className="mini-task-row">
+                <div className="mini-task-info">
+                  <span className="mini-task-text">{mt.text}</span>
+                  <span
+                    className="mini-task-status"
+                    style={{ color: getStatusColor(mt.status) }}
+                  >
+                    {mt.status}
+                  </span>
+                  <span className="mini-task-time">{mt.timestamp}</span>
+                </div>
+
+                <div className="mini-task-actions">
+                  {mt.status === "Not Started" && (
+                    <button
+                      className="mini-btn start"
+                      onClick={() => toggleStatus(mt.id, "In Progress")}
+                    >
+                      ▶ Start
+                    </button>
+                  )}
+                  {mt.status === "In Progress" && (
+                    <button
+                      className="mini-btn complete"
+                      onClick={() => toggleStatus(mt.id, "Completed")}
+                    >
+                      ✔ Complete
+                    </button>
+                  )}
+                  {mt.status === "Completed" && (
+                    <button
+                      className="mini-btn reset"
+                      onClick={() => toggleStatus(mt.id, "Not Started")}
+                    >
+                      ↺ Reset
+                    </button>
+                  )}
+
+                  {/* Inline ✔ Saved */}
+                  {mt.showSaved && (
+                    <span className="inline-saved">
+                      <CheckCircle size={14} color="#3aa655" /> Saved
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Add Step placeholder */}
+            <div className="mini-task-add">
+              <button className="mini-btn add-disabled" disabled>
+                ➕ Add Step (coming soon)
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab !== "Change" && (
+          <div className="coming-soon">
+            {activeTab} process integration coming in Phase 9.8D
+          </div>
+        )}
 
         <button className="popup-close" onClick={onClose}>
           × Close
