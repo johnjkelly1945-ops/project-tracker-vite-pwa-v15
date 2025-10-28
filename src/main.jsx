@@ -1,17 +1,27 @@
-/* === METRA – Direct Component Mount Diagnostic ===
-   Phase 9.4 – Root-Level Hydration Verification
-   ----------------------------------------------
-   Purpose: Ensure PreProjectChangeTest mounts directly to React root,
-   bypassing App.jsx routing or stale import layers.
-*/
+/* =====================================================================
+   METRA – Application Entry Point (Restored Normal Routing)
+   ---------------------------------------------------------------------
+   Phase: feature-preproject-popup-integration-phase1
+   Source Baseline: baseline-2025-10-29-popup-universal-v1-stable
+   ---------------------------------------------------------------------
+   Purpose:
+   - Restores standard app startup through App.jsx
+   - Enables PreProject and other modules to load normally
+   - Keeps environment stable for popup integration work
+   ===================================================================== */
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import PreProjectChangeTest from "./components/PreProjectChangeTest.jsx";
+import App from "./App.jsx";
+import "./index.css";
 
-console.log("🚀 Direct mount test starting...");
+console.log("🚀 METRA application starting… (normal routing restored)");
 
-const root = document.getElementById("root");
-console.log("Root element found:", root);
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
 
-ReactDOM.createRoot(root).render(<PreProjectChangeTest />);
+console.log("✅ App successfully mounted via App.jsx");
