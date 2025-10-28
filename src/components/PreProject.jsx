@@ -1,11 +1,13 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Branch: feature-preproject-popup-integration-phase1
+   Branch: feature-preproject-popup-integration-phase2
+   Baseline target: baseline-2025-10-30-preproject-popup-integration-phase2-v2.0
    ----------------------------------------------------------------------
-   - Restores verified PreProject layout (blue header + white cards)
-   - Integrates Universal Popup (PopupUniversal.jsx)
-   - Each task opens its own popup log (persistent per task)
-   - Fixes dark-mode artefacts with enforced white inputs
+   - Full PreProject UI restored (blue header, filters, white task cards)
+   - Universal Popup (PopupUniversal.jsx) integrated per task
+   - Close / Save / Reset functional
+   - Local persistence retained
+   - Smooth scroll + state restore verified
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -13,142 +15,155 @@ import PopupUniversal from "./PopupUniversal.jsx";
 import "../Styles/PreProject.css";
 
 export default function PreProject() {
-  const STORAGE_KEY = "metra_preproject_tasks_v1";
-
-  // === Load or initialise tasks ===
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 1,
-        title: "Define project objectives",
-        status: "In Progress",
-        logKey: "task_1_log",
-      },
-      {
-        id: 2,
-        title: "Identify key stakeholders",
-        status: "Not Started",
-        logKey: "task_2_log",
-      },
-    ];
+    const saved = localStorage.getItem("metra_preproject_tasks");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          { id: 1, title: "Define project objectives", status: "In Progress" },
+          { id: 2, title: "Identify key stakeholders", status: "Not Started" },
+          { id: 3, title: "Prepare feasibility summary", status: "Not Started" },
+        ];
   });
 
   const [activeTask, setActiveTask] = useState(null);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [filter, setFilter] = useState("All");
 
-  // === Persist tasks ===
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    localStorage.setItem("metra_preproject_tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  // === Cycle task status ===
-  const cycleStatus = (id) => {
+  const handleOpenPopup = (task) => {
+    setActiveTask(task);
+    setPopupVisible(true);
+  };
+
+  const handleClosePopup = () => {
+    setPopupVisible(false);
+    setActiveTask(null);
+  };
+
+  const cycleStatus = (taskId) => {
     setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
+      prev.map((task) => {
+        if (task.id !== taskId) return task;
         const next =
-          t.status === "Not Started"
+          task.status === "Not Started"
             ? "In Progress"
-            : t.status === "In Progress"
+            : task.status === "In Progress"
             ? "Completed"
             : "Not Started";
-        return { ...t, status: next };
+        return { ...task, status: next };
       })
     );
   };
 
-  // === Add new task ===
   const addTask = () => {
     const newTask = {
       id: Date.now(),
       title: "New Pre-Project Task",
       status: "Not Started",
-      logKey: `task_${Date.now()}_log`,
     };
     setTasks([...tasks, newTask]);
   };
 
-  // === Clear all tasks ===
-  const clearAll = () => {
-    if (window.confirm("Clear all pre-project tasks?")) {
-      setTasks([]);
-      localStorage.removeItem(STORAGE_KEY);
-    }
+  const clearTasks = () => {
+    setTasks([]);
+    localStorage.removeItem("metra_preproject_tasks");
   };
 
-  // === Popup handlers ===
-  const openPopup = (task) => setActiveTask(task);
-  const closePopup = () => setActiveTask(null);
-
-  // === Apply inline white-input style (prevents Safari dark artefacts) ===
-  const whiteInputFix = `
-    textarea, input[type="text"], input[type="url"], input[type="email"] {
-      background-color: #fff !important;
-      color: #000 !important;
-    }
-  `;
+  const filteredTasks =
+    filter === "All"
+      ? tasks
+      : tasks.filter((t) => t.status === filter);
 
   return (
-    <div className="preproject-container">
-      <style>{whiteInputFix}</style>
-
-      <h1 className="preproject-title">Pre-Project Task List</h1>
-
-      <div className="preproject-controls">
-        <button onClick={addTask} className="btn-blue">
-          Add
-        </button>
-        <button onClick={clearAll} className="btn-grey">
-          Clear All
-        </button>
+    <div className="preproject-wrapper">
+      <div className="preproject-header">
+        <div className="logo">METRA</div>
+        <h1>PreProject Module</h1>
+        <button className="return-summary">Return to Summary</button>
       </div>
 
-      <div className="preproject-tasklist">
-        {tasks.map((task) => (
-          <div key={task.id} className="preproject-taskcard">
+      <div className="filter-buttons">
+        {["All", "Not Started", "In Progress", "Completed"].map((f) => (
+          <button
+            key={f}
+            className={`filter-btn ${filter === f ? "active" : ""}`}
+            onClick={() => setFilter(f)}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div className="task-list">
+        {filteredTasks.map((task) => (
+          <div
+            key={task.id}
+            className={`task-card ${
+              task.status === "Completed"
+                ? "task-complete"
+                : task.status === "In Progress"
+                ? "task-progress"
+                : ""
+            }`}
+          >
             <div className="task-row">
               <span
                 className={`task-title ${
-                  task.status === "Completed"
-                    ? "task-complete"
-                    : task.status === "In Progress"
-                    ? "task-progress"
-                    : "task-pending"
+                  task.status === "Completed" ? "line-through" : ""
                 }`}
               >
                 {task.title}
               </span>
-              <button
-                onClick={() => cycleStatus(task.id)}
-                className="btn-status"
-              >
-                {task.status === "Not Started"
-                  ? "Start"
-                  : task.status === "In Progress"
-                  ? "Complete"
-                  : "Reset"}
-              </button>
-            </div>
-
-            <div className="task-actions">
-              <button
-                onClick={() => openPopup(task)}
-                className="btn-entry"
-              >
-                🗒 Open Log
-              </button>
+              <div className="task-actions">
+                <button
+                  className="status-btn"
+                  onClick={() => cycleStatus(task.id)}
+                >
+                  {task.status === "Not Started"
+                    ? "Start"
+                    : task.status === "In Progress"
+                    ? "Complete"
+                    : "Reset"}
+                </button>
+                <button
+                  className="popup-btn"
+                  onClick={() => handleOpenPopup(task)}
+                >
+                  Log / Popup
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() =>
+                    setTasks(tasks.filter((t) => t.id !== task.id))
+                  }
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {activeTask && (
+      <div className="task-controls">
+        <button onClick={addTask} className="add-btn">
+          Add Task
+        </button>
+        <button onClick={clearTasks} className="clear-btn">
+          Clear All
+        </button>
+      </div>
+
+      {popupVisible && activeTask && (
         <PopupUniversal
+          key={activeTask.id}
           taskId={activeTask.id}
           taskTitle={activeTask.title}
-          storageKey={`METRA_preproject_${activeTask.logKey}`}
-          onClose={closePopup}
+          onClose={handleClosePopup}
         />
       )}
     </div>

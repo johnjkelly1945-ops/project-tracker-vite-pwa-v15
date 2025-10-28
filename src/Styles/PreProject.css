@@ -1,120 +1,270 @@
-.preproject-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  background: #f8f9fa;
-  min-height: 100vh;
-}
+/* =============================================================
+   METRA – PreProject Phase 2 Integration Styling (v2.1)
+   Branch: feature-preproject-popup-integration-phase2
+   Baseline target: baseline-2025-10-30-preproject-popup-integration-phase2-v2.1
+   -------------------------------------------------------------
+   • Restores full PreProject layout (header, filters, white cards)
+   • Integrates universal popup overlay (Close / Save / Reset)
+   • Fixes z-index & pointer events so background cannot be clicked
+   ============================================================= */
 
-.preproject-container {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  padding: 20px;
-  width: 90%;
-  max-width: 950px;
-  margin-top: 20px;
+/* === Page Wrapper === */
+.preproject-wrapper {
+  background: #f8f9fb;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 40px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 1.4rem;
-}
-
-.add-task-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
+/* === Header Bar === */
+.preproject-header {
   width: 100%;
-  margin-bottom: 20px;
+  background: #0a2b5c;
+  color: #fff;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
 }
 
-.add-task-row input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
+.preproject-header .logo {
+  color: #ffdb58;
+  font-size: 1.3rem;
+  font-style: italic;
 }
 
-.add-task-row button {
-  background-color: #4caf50;
+.return-summary {
+  background: #004aad;
   color: white;
   border: none;
-  padding: 10px 16px;
   border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.return-summary:hover {
+  background: #002f75;
+}
+
+/* === Filter Buttons === */
+.filter-buttons {
+  margin: 18px 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  background: #e3e7ef;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.filter-btn.active {
+  background: #004aad;
+  color: #fff;
+}
+
+/* === Task List === */
+.task-list {
+  width: 90%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.task-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.task-progress {
+  border-left: 6px solid #ffce33;
+}
+
+.task-complete {
+  border-left: 6px solid #6fdc6f;
+  opacity: 0.85;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-title {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.task-title.line-through {
+  text-decoration: line-through;
+  color: #3b763d;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.status-btn,
+.popup-btn,
+.delete-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
-.add-task-row button:hover {
-  background-color: #43a047;
+.status-btn {
+  background: #004aad;
+  color: #fff;
+}
+.status-btn:hover {
+  background: #003580;
 }
 
-.task-scroll-container {
-  width: 100%;
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 6px;
+.popup-btn {
+  background: #f3f5fa;
+  color: #004aad;
 }
-
-.task-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-}
-
-.task-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-}
-
-.task-text {
-  flex: 1;
-  margin-right: 10px;
-}
-
-.task-status {
-  margin-right: 10px;
-  color: #333;
-}
-
-.task-time {
-  margin-right: 10px;
-  font-size: 0.85rem;
-  color: #666;
+.popup-btn:hover {
+  background: #dde4f2;
 }
 
 .delete-btn {
-  background: #e74c3c;
-  color: white;
+  background: #f8d7da;
+  color: #a40000;
+}
+.delete-btn:hover {
+  background: #f1b0b7;
+}
+
+/* === Footer Controls === */
+.task-controls {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.add-btn,
+.clear-btn {
   border: none;
-  padding: 8px 12px;
   border-radius: 6px;
+  padding: 8px 18px;
+  color: #fff;
   cursor: pointer;
 }
 
-.delete-btn:hover {
-  background: #c0392b;
+.add-btn {
+  background: #0066cc;
+}
+.add-btn:hover {
+  background: #004c99;
 }
 
-/* Scrollbar styling */
-.task-scroll-container::-webkit-scrollbar {
-  width: 8px;
+.clear-btn {
+  background: #999;
 }
-.task-scroll-container::-webkit-scrollbar-thumb {
-  background-color: #bbb;
-  border-radius: 4px;
+.clear-btn:hover {
+  background: #777;
+}
+
+/* =============================================================
+   UNIVERSAL POPUP STYLING (v2.1)
+   ============================================================= */
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+.popup-container {
+  background: #ffffff;
+  width: 90%;
+  max-width: 700px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 10001;
+}
+
+.popup-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0a2b5c;
+  text-align: left;
+}
+
+.popup-textarea {
+  min-height: 220px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  z-index: 10002;
+}
+
+.popup-btn-save {
+  background: #0078d4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.popup-btn-save:hover {
+  background: #005ea6;
+}
+
+.popup-btn-reset {
+  background: #ffe08a;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.popup-btn-reset:hover {
+  background: #ffd65c;
+}
+
+.popup-btn-close {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.popup-btn-close:hover {
+  background: #b52b27;
 }
