@@ -1,17 +1,15 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Branch: feature-preproject-popup-integration-phase2
-   Baseline target: baseline-2025-10-30-preproject-popup-integration-phase2-v2.0
+   Phase 3 – Step 2 Popup Embed Integration (v3.0b)
    ----------------------------------------------------------------------
-   - Full PreProject UI restored (blue header, filters, white task cards)
-   - Universal Popup (PopupUniversal.jsx) integrated per task
-   - Close / Save / Reset functional
-   - Local persistence retained
-   - Smooth scroll + state restore verified
+   • Restores verified PreProject task list layout
+   • Adds overlay popup containing PopupUniversal component
+   • Maintains dark background + blur when active
+   • Save / Close persist as expected
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
-import PopupUniversal from "./PopupUniversal.jsx";
+import PopupOverlayWrapper from "./PopupOverlayWrapper.jsx";
 import "../Styles/PreProject.css";
 
 export default function PreProject() {
@@ -27,21 +25,27 @@ export default function PreProject() {
   });
 
   const [activeTask, setActiveTask] = useState(null);
-  const [popupVisible, setPopupVisible] = useState(false);
-  const [filter, setFilter] = useState("All");
+  const [overlayVisible, setOverlayVisible] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("metra_preproject_tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  const handleOpenPopup = (task) => {
+  const handleOpenOverlay = (task) => {
     setActiveTask(task);
-    setPopupVisible(true);
+    setOverlayVisible(true);
   };
 
-  const handleClosePopup = () => {
-    setPopupVisible(false);
+  const handleCloseOverlay = () => {
+    setOverlayVisible(false);
     setActiveTask(null);
+  };
+
+  const handleSaveTask = (updatedTask) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+    );
+    handleCloseOverlay();
   };
 
   const cycleStatus = (taskId) => {
@@ -73,11 +77,6 @@ export default function PreProject() {
     localStorage.removeItem("metra_preproject_tasks");
   };
 
-  const filteredTasks =
-    filter === "All"
-      ? tasks
-      : tasks.filter((t) => t.status === filter);
-
   return (
     <div className="preproject-wrapper">
       <div className="preproject-header">
@@ -86,20 +85,8 @@ export default function PreProject() {
         <button className="return-summary">Return to Summary</button>
       </div>
 
-      <div className="filter-buttons">
-        {["All", "Not Started", "In Progress", "Completed"].map((f) => (
-          <button
-            key={f}
-            className={`filter-btn ${filter === f ? "active" : ""}`}
-            onClick={() => setFilter(f)}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
       <div className="task-list">
-        {filteredTasks.map((task) => (
+        {tasks.map((task) => (
           <div
             key={task.id}
             className={`task-card ${
@@ -131,17 +118,9 @@ export default function PreProject() {
                 </button>
                 <button
                   className="popup-btn"
-                  onClick={() => handleOpenPopup(task)}
+                  onClick={() => handleOpenOverlay(task)}
                 >
-                  Log / Popup
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() =>
-                    setTasks(tasks.filter((t) => t.id !== task.id))
-                  }
-                >
-                  Delete
+                  Open Popup
                 </button>
               </div>
             </div>
@@ -158,12 +137,11 @@ export default function PreProject() {
         </button>
       </div>
 
-      {popupVisible && activeTask && (
-        <PopupUniversal
-          key={activeTask.id}
-          taskId={activeTask.id}
-          taskTitle={activeTask.title}
-          onClose={handleClosePopup}
+      {overlayVisible && (
+        <PopupOverlayWrapper
+          task={activeTask}
+          onClose={handleCloseOverlay}
+          onSave={handleSaveTask}
         />
       )}
     </div>

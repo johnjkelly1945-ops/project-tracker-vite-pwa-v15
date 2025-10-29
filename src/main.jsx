@@ -1,17 +1,14 @@
-/* === METRA – Direct Component Mount Diagnostic ===
-   Phase 9.4 – Root-Level Hydration Verification
-   ----------------------------------------------
-   Purpose: Ensure PreProjectChangeTest mounts directly to React root,
-   bypassing App.jsx routing or stale import layers.
+/* === METRA – Root Mount (Phase 3.0b Integration) ===
+   Switches from overlay test to full PreProject module
 */
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import PreProjectChangeTest from "./components/PreProjectChangeTest.jsx";
+import PreProject from "./components/PreProject.jsx";
 
-console.log("🚀 Direct mount test starting...");
+console.log("🚀 METRA: PreProject Phase 3 – Embedded Popup Test starting...");
 
 const root = document.getElementById("root");
-console.log("Root element found:", root);
+console.log("Root element located:", root);
 
-ReactDOM.createRoot(root).render(<PreProjectChangeTest />);
+ReactDOM.createRoot(root).render(<PreProject />);

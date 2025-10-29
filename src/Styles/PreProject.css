@@ -1,178 +1,123 @@
-/* =============================================================
-   METRA – PreProject Phase 2 Integration Styling (v2.1)
-   Branch: feature-preproject-popup-integration-phase2
-   Baseline target: baseline-2025-10-30-preproject-popup-integration-phase2-v2.1
-   -------------------------------------------------------------
-   • Restores full PreProject layout (header, filters, white cards)
-   • Integrates universal popup overlay (Close / Save / Reset)
-   • Fixes z-index & pointer events so background cannot be clicked
-   ============================================================= */
+/* ======================================================================
+   METRA – PreProject.css
+   Phase 3 – Step 2 Popup Embed Integration (v3.0b)
+   ----------------------------------------------------------------------
+   • Retains PreProject visual theme
+   • Overlay dim + blur active above all elements
+   ====================================================================== */
 
-/* === Page Wrapper === */
-.preproject-wrapper {
-  background: #f8f9fb;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 40px;
+:root {
+  --header-blue: #0a2b5c;
+  --bg-gray: #f9f9f9;
+  --add-blue: #0078d4;
+  --add-blue-hover: #005ea6;
+  --danger-red: #d9534f;
+  --danger-red-hover: #b52b27;
 }
 
-/* === Header Bar === */
+.preproject-wrapper {
+  background-color: var(--bg-gray);
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #222;
+}
+
+/* Header */
 .preproject-header {
-  width: 100%;
-  background: #0a2b5c;
-  color: #fff;
-  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 600;
+  background-color: var(--header-blue);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
 }
-
-.preproject-header .logo {
-  color: #ffdb58;
-  font-size: 1.3rem;
-  font-style: italic;
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
 }
-
+.preproject-header h1 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 1.5rem;
+}
 .return-summary {
-  background: #004aad;
-  color: white;
+  background: #fff;
+  color: var(--header-blue);
   border: none;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
-  padding: 6px 14px;
   cursor: pointer;
+  font-weight: 500;
 }
 .return-summary:hover {
-  background: #002f75;
+  background: #e6e6e6;
 }
 
-/* === Filter Buttons === */
-.filter-buttons {
-  margin: 18px 0;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-btn {
-  background: #e3e7ef;
-  color: #333;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-.filter-btn.active {
-  background: #004aad;
-  color: #fff;
-}
-
-/* === Task List === */
+/* Tasks */
 .task-list {
-  width: 90%;
-  max-width: 900px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0.8rem;
 }
-
 .task-card {
-  background: white;
+  background: #fff;
   border-radius: 10px;
-  padding: 14px 18px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
-
-.task-progress {
-  border-left: 6px solid #ffce33;
-}
-
-.task-complete {
-  border-left: 6px solid #6fdc6f;
-  opacity: 0.85;
-}
-
 .task-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-
 .task-title {
-  font-size: 1rem;
   font-weight: 500;
+  color: #333;
 }
-
 .task-title.line-through {
   text-decoration: line-through;
-  color: #3b763d;
+  color: #888;
 }
-
 .task-actions {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
+/* Buttons */
 .status-btn,
 .popup-btn,
-.delete-btn {
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.status-btn {
-  background: #004aad;
-  color: #fff;
-}
-.status-btn:hover {
-  background: #003580;
-}
-
-.popup-btn {
-  background: #f3f5fa;
-  color: #004aad;
-}
-.popup-btn:hover {
-  background: #dde4f2;
-}
-
-.delete-btn {
-  background: #f8d7da;
-  color: #a40000;
-}
-.delete-btn:hover {
-  background: #f1b0b7;
-}
-
-/* === Footer Controls === */
-.task-controls {
-  margin-top: 24px;
-  display: flex;
-  gap: 12px;
-}
-
 .add-btn,
 .clear-btn {
   border: none;
   border-radius: 6px;
-  padding: 8px 18px;
-  color: #fff;
   cursor: pointer;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  color: #fff;
 }
-
+.status-btn {
+  background: var(--header-blue);
+}
+.status-btn:hover {
+  background: #103a74;
+}
+.popup-btn {
+  background: #0080ff;
+}
+.popup-btn:hover {
+  background: #005ec2;
+}
 .add-btn {
-  background: #0066cc;
+  background: var(--add-blue);
 }
 .add-btn:hover {
-  background: #004c99;
+  background: var(--add-blue-hover);
 }
-
 .clear-btn {
   background: #999;
 }
@@ -180,91 +125,37 @@
   background: #777;
 }
 
-/* =============================================================
-   UNIVERSAL POPUP STYLING (v2.1)
-   ============================================================= */
+/* Task Colour Borders */
+.task-complete {
+  border-left: 5px solid #2ecc71;
+}
+.task-progress {
+  border-left: 5px solid #f1c40f;
+}
 
-.popup-overlay {
+/* Overlay */
+.overlay-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
-  pointer-events: auto;
+  z-index: 99999;
 }
-
-.popup-container {
-  background: #ffffff;
-  width: 90%;
-  max-width: 700px;
+.overlay-container {
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
-  z-index: 10001;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  padding: 24px 28px;
+  width: 80%;
+  max-width: 600px;
+  text-align: center;
+  z-index: 100000;
+  animation: fadeIn 0.25s ease-out;
 }
-
-.popup-header {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #0a2b5c;
-  text-align: left;
-}
-
-.popup-textarea {
-  min-height: 220px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 1rem;
-  resize: vertical;
-}
-
-.popup-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
-  z-index: 10002;
-}
-
-.popup-btn-save {
-  background: #0078d4;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
-  cursor: pointer;
-}
-.popup-btn-save:hover {
-  background: #005ea6;
-}
-
-.popup-btn-reset {
-  background: #ffe08a;
-  color: #000;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
-  cursor: pointer;
-}
-.popup-btn-reset:hover {
-  background: #ffd65c;
-}
-
-.popup-btn-close {
-  background: #d9534f;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
-  cursor: pointer;
-}
-.popup-btn-close:hover {
-  background: #b52b27;
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
