@@ -1,28 +1,52 @@
 // ======================================================================
-// METRA – auditHandler.js
-// Phase 3.5 – Governance & Template Link Support
+// METRA – auditHandler.js (extended for Governance Queue routing)
+// Phase 3.6
 // ======================================================================
 
-const auditCache = {}; // { auditRef: [events] }
-const linkRegistry = {}; // { auditRef: { templateRef, governanceLink } }
+import { addGovernanceRecord } from "./governanceQueueHandler";
 
-export function logAuditEvent({ actionType, entityType, entityId, auditRef, linkedRef = null }) {
+const auditCache = {};
+const linkRegistry = {};
+
+export function logAuditEvent({
+  actionType,
+  entityType,
+  entityId,
+  auditRef,
+  linkedRef = null,
+  governanceLink = null,
+  type = "Change",
+}) {
   const entry = {
     actionType,
     entityType,
     entityId,
     auditRef,
     linkedRef,
+    governanceLink,
     timestamp: new Date().toISOString(),
   };
+
   console.log(
     `[AUDIT] ${actionType} | ${entityType}:${entityId} | Ref:${auditRef}` +
-      (linkedRef ? ` | Link:${linkedRef}` : "") +
+      (governanceLink ? ` | GOV:${governanceLink}` : "") +
       ` | ${entry.timestamp}`
   );
 
   if (!auditCache[auditRef]) auditCache[auditRef] = [];
   auditCache[auditRef].push(entry);
+
+  // ---- Governance routing ----
+  if (governanceLink) {
+    addGovernanceRecord({
+      type,
+      title: `${entityType} – ${actionType}`,
+      description: `Auto-logged via auditRef ${auditRef}`,
+      auditRef,
+      governanceLink,
+      templateRef: linkedRef || null,
+    });
+  }
 }
 
 export function getAuditCache(auditRef) {
