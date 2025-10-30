@@ -1,12 +1,12 @@
-// ======================================================================
-// METRA – GovernanceQueuePreview.jsx
-// Phase 3.7b – Governance Queue Toolbar Integration
-// ----------------------------------------------------------------------
-// • Adds Export / Clear toolbar controls
-// • Displays total records + last-saved timestamp
-// • Compact readable card layout
-// • Reads directly from governanceQueueHandler.js
-// ======================================================================
+/* ======================================================================
+   METRA – GovernanceQueuePreview.jsx
+   Phase 3.9 – Governance Queue Auto-Refresh Integration
+   ----------------------------------------------------------------------
+   • Adds live refresh when governance queue changes in localStorage
+   • Retains clean Phase 3.7b layout and toolbar
+   • No new UI elements or notifications
+   • Silent background update using "storage" event
+   ====================================================================== */
 
 import React, { useEffect, useState } from "react";
 import {
@@ -20,16 +20,38 @@ export default function GovernanceQueuePreview() {
   const [records, setRecords] = useState([]);
   const [lastSaved, setLastSaved] = useState(null);
 
+  // ------------------------------------------------------------
+  // Load queue on mount
+  // ------------------------------------------------------------
   useEffect(() => {
     refreshQueue();
+
+    // === Live-refresh listener ===
+    const handleStorageChange = (event) => {
+      if (event.key === "metra_governance_queue_v1") {
+        console.log("[PREVIEW] Detected governance queue update → refreshing…");
+        refreshQueue();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  // ------------------------------------------------------------
+  // Refresh function for re-render after actions
+  // ------------------------------------------------------------
   function refreshQueue() {
-    setRecords(listGovernanceRecords());
+    const data = listGovernanceRecords();
+    setRecords(data);
     setLastSaved(getLastSavedTimestamp());
   }
 
+  // ------------------------------------------------------------
+  // Button handlers
+  // ------------------------------------------------------------
   const handleExport = () => exportGovernanceQueue();
+
   const handleClear = () => {
     if (window.confirm("Clear all governance records? This cannot be undone.")) {
       clearGovernanceQueue();
@@ -37,6 +59,9 @@ export default function GovernanceQueuePreview() {
     }
   };
 
+  // ------------------------------------------------------------
+  // Simple inline styles (retained from 3.7b)
+  // ------------------------------------------------------------
   const containerStyle = {
     background: "#f9fafc",
     border: "1px solid #ccd",
@@ -83,6 +108,9 @@ export default function GovernanceQueuePreview() {
     fontSize: "0.9rem",
   };
 
+  // ------------------------------------------------------------
+  // Render
+  // ------------------------------------------------------------
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>🧭 Governance Queue Preview</div>
