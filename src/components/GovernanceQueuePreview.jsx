@@ -20,28 +20,16 @@ export default function GovernanceQueuePreview() {
   const [records, setRecords] = useState([]);
   const [lastSaved, setLastSaved] = useState(null);
 
-  // ------------------------------------------------------------
-  // Load queue on mount
-  // ------------------------------------------------------------
   useEffect(() => {
     refreshQueue();
   }, []);
 
-  // ------------------------------------------------------------
-  // Refresh function for re-render after actions
-  // ------------------------------------------------------------
   function refreshQueue() {
     setRecords(listGovernanceRecords());
     setLastSaved(getLastSavedTimestamp());
   }
 
-  // ------------------------------------------------------------
-  // Button handlers
-  // ------------------------------------------------------------
-  const handleExport = () => {
-    exportGovernanceQueue();
-  };
-
+  const handleExport = () => exportGovernanceQueue();
   const handleClear = () => {
     if (window.confirm("Clear all governance records? This cannot be undone.")) {
       clearGovernanceQueue();
@@ -49,9 +37,6 @@ export default function GovernanceQueuePreview() {
     }
   };
 
-  // ------------------------------------------------------------
-  // Simple styles
-  // ------------------------------------------------------------
   const containerStyle = {
     background: "#f9fafc",
     border: "1px solid #ccd",
@@ -98,9 +83,6 @@ export default function GovernanceQueuePreview() {
     fontSize: "0.9rem",
   };
 
-  // ------------------------------------------------------------
-  // Render
-  // ------------------------------------------------------------
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>🧭 Governance Queue Preview</div>

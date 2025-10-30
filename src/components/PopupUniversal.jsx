@@ -1,17 +1,17 @@
 /* ======================================================================
    METRA – PopupUniversal.jsx
-   Phase 3.5 – Governance Bridge & Template Audit Integration (Corrected)
+   Phase 3.8 – Audit ↔ Governance Link Integration
    ----------------------------------------------------------------------
-   • Inherits full Phase 3.4 logic
-   • Adds templateRef and governanceLink fields
-   • Fixes note storage to plain text
-   • Registers linked entity metadata in audit chain
-   • Retains silent 5-minute edit window and UI layout
+   • Inherits 3.3 audit logic (silent 5-minute edit window)
+   • Adds silent governance queue linkage on Save
+   • Uses addGovernanceRecord() from governanceQueueHandler.js
+   • No visual indicators or alerts – fully background process
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
 import { metraConfig } from "../config/metraConfig";
-import { logAuditEvent, registerLinkedEntity } from "../utils/auditHandler";
+import { logAuditEvent } from "../utils/auditHandler";
+import { addGovernanceRecord } from "../utils/governanceQueueHandler";
 import "../Styles/PreProject.css";
 
 // Utility: create unique audit reference when none exists
@@ -26,35 +26,35 @@ export default function PopupUniversal({
   onClose,
   onSave,
   parentAuditRef = null,
-  templateRef = null,
-  governanceLink = null,
 }) {
-  // ------------------------------------------------------------
+  // ----------------------------
   // Local state
-  // ------------------------------------------------------------
+  // ----------------------------
   const storageKey = `metra_preproject_task_${task?.id || "temp"}`;
-
-  // Load saved note text as plain string
-  const [text, setText] = useState(() => localStorage.getItem(storageKey) || "");
+  const [text, setText] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : "";
+  });
 
   const [auditRef, setAuditRef] = useState(
     task?.auditRef || parentAuditRef || generateAuditRef()
   );
-  const [editableUntil, setEditableUntil] = useState(task?.editableUntil || null);
+
+  const [editableUntil, setEditableUntil] = useState(
+    task?.editableUntil || null
+  );
   const [isLocked, setIsLocked] = useState(false);
 
-  // ------------------------------------------------------------
-  // Persist notes to localStorage (plain text)
-  // ------------------------------------------------------------
+  // ----------------------------
+  // Local persistence (notes only)
+  // ----------------------------
   useEffect(() => {
-    if (typeof text === "string") {
-      localStorage.setItem(storageKey, text);
-    }
+    localStorage.setItem(storageKey, JSON.stringify(text));
   }, [text, storageKey]);
 
-  // ------------------------------------------------------------
-  // Silent timer for edit lock
-  // ------------------------------------------------------------
+  // ----------------------------
+  // Silent timer check (no UI output)
+  // ----------------------------
   useEffect(() => {
     if (!metraConfig.enableEditGracePeriod) {
       setIsLocked(true);
@@ -65,13 +65,13 @@ export default function PopupUniversal({
     const checkLockStatus = () => {
       if (Date.now() >= editableUntil) setIsLocked(true);
     };
-    const interval = setInterval(checkLockStatus, 10000); // every 10 s
+    const interval = setInterval(checkLockStatus, 10000); // check every 10 s
     return () => clearInterval(interval);
   }, [editableUntil]);
 
-  // ------------------------------------------------------------
-  // Save handler
-  // ------------------------------------------------------------
+  // ----------------------------
+  // Save handler (includes audit + governance log)
+  // ----------------------------
   const handleSave = () => {
     const now = Date.now();
     let newEditableUntil = null;
@@ -86,33 +86,32 @@ export default function PopupUniversal({
 
     const updated = {
       ...task,
-      notes: text, // store as plain text
+      notes: text,
       timestamp: now,
       auditRef,
-      parentAuditRef: parentAuditRef || null,
-      templateRef: templateRef || task?.templateRef || null,
-      governanceLink: governanceLink || task?.governanceLink || null,
       editableUntil: newEditableUntil,
     };
 
     const isNew = !task?.auditRef;
     const eventType = isNew ? "CREATE" : isLocked ? "UPDATE" : "EDIT";
 
-    // Log audit event
+    // 1️⃣ Log audit event
     logAuditEvent({
       actionType: eventType,
       entityType: "Task",
       entityId: updated.id || "unassigned",
       auditRef,
-      linkedRef: templateRef || governanceLink || null,
     });
 
-    // Register cross-link silently
-    registerLinkedEntity(auditRef, {
-      templateRef: templateRef || null,
-      governanceLink: governanceLink || null,
+    // 2️⃣ Add governance record silently (background only)
+    addGovernanceRecord({
+      auditRef,
+      type: "Change",
+      title: task?.title || "Untitled Task",
+      timestamp: now,
     });
 
+    // 3️⃣ Commit to parent save
     onSave(updated);
   };
 
@@ -122,14 +121,12 @@ export default function PopupUniversal({
 
   const canEdit = metraConfig.enableEditGracePeriod ? !isLocked : false;
 
-  // ------------------------------------------------------------
-  // Render
-  // ------------------------------------------------------------
+  // ----------------------------
+  // Render (identical visual structure)
+  // ----------------------------
   return (
     <div className="popup-universal">
-      <h2 className="popup-title">
-        Log Entry – {task.title || "Untitled Task"}
-      </h2>
+      <h2 className="popup-title">Log Entry – {task.title || "Untitled Task"}</h2>
 
       <textarea
         className="popup-textarea"

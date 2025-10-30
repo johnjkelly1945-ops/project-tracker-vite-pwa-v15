@@ -1,80 +1,147 @@
-import React, { useState, useEffect } from "react";
-import PopupOverlayWrapper from "./PopupOverlayWrapper.jsx";
+/* ======================================================================
+   METRA – PreProject.jsx
+   Phase 3.7b – Governance Queue Toolbar Integration
+   ----------------------------------------------------------------------
+   • Standard PreProject task list (Define, Stakeholders, Feasibility)
+   • PopupUniversal for log entries
+   • Integrated 🧭 GovernanceQueuePreview panel (Export / Clear toolbar)
+   ====================================================================== */
 
-// 🔹 Force CSS to load properly
+import React, { useState } from "react";
+import PopupOverlayWrapper from "./PopupOverlayWrapper.jsx";
+import GovernanceQueuePreview from "./GovernanceQueuePreview.jsx";
 import "../Styles/PreProject.css";
-import "../Styles/PreProject.css?inline";
 
 export default function PreProject() {
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("metra_preproject_tasks_v3");
-    return saved ? JSON.parse(saved) : [
-      { id: 1, name: "Define project objectives", status: "Not Started" },
-      { id: 2, name: "Identify key stakeholders", status: "Not Started" },
-      { id: 3, name: "Prepare feasibility summary", status: "Not Started" },
-    ];
-  });
+  const [tasks, setTasks] = useState([
+    { id: 1, name: "Define project objectives", status: "Not Started" },
+    { id: 2, name: "Identify key stakeholders", status: "Not Started" },
+    { id: 3, name: "Prepare feasibility summary", status: "Not Started" },
+  ]);
 
-  const [activeTask, setActiveTask] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
 
-  // 🔹 Save to localStorage whenever tasks change
-  useEffect(() => {
-    localStorage.setItem("metra_preproject_tasks_v3", JSON.stringify(tasks));
-  }, [tasks]);
+  // ------------------------------------------------------------------
+  // Handlers
+  // ------------------------------------------------------------------
+  const handleOpenPopup = (task) => setSelectedTask(task);
+  const handleClosePopup = () => setSelectedTask(null);
 
-  // 🔹 Add a new task
-  const addTask = () => {
-    const newTask = { id: Date.now(), name: "New Entry", status: "Not Started" };
-    setTasks((prev) => [...prev, newTask]);
+  const handleSavePopup = (updatedTask) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+    );
+    setSelectedTask(null);
   };
 
-  // 🔹 Clear all tasks
-  const clearTasks = () => {
-    if (window.confirm("Clear all tasks?")) {
-      setTasks([]);
-      localStorage.removeItem("metra_preproject_tasks_v3");
-    }
+  const handleAddTask = () => {
+    const newId = tasks.length + 1;
+    const newTask = { id: newId, name: `New Task ${newId}`, status: "Not Started" };
+    setTasks([...tasks, newTask]);
   };
 
-  // 🔹 Toggle popup open
-  const openPopup = (task) => setActiveTask(task);
-  const closePopup = () => setActiveTask(null);
+  const handleClearAll = () => {
+    if (window.confirm("Clear all tasks?")) setTasks([]);
+  };
 
+  // ------------------------------------------------------------------
+  // Styling
+  // ------------------------------------------------------------------
+  const pageStyle = {
+    backgroundColor: "#f9f9f9",
+    fontFamily: "Segoe UI, system-ui, sans-serif",
+    padding: "1.5rem",
+  };
+
+  const headerStyle = {
+    background: "#0a2b5c",
+    color: "#fff",
+    padding: "0.75rem 1rem",
+    borderRadius: "12px",
+    marginBottom: "1rem",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  };
+
+  const taskCardStyle = {
+    background: "#fff",
+    padding: "1rem",
+    borderRadius: "10px",
+    marginBottom: "0.8rem",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  };
+
+  const buttonStyle = {
+    background: "#0a2b5c",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "0.4rem 0.8rem",
+    marginLeft: "0.5rem",
+    cursor: "pointer",
+    fontWeight: "600",
+  };
+
+  const footerStyle = {
+    marginTop: "1.5rem",
+    display: "flex",
+    gap: "1rem",
+  };
+
+  const addBtn = { ...buttonStyle, background: "#0078d4" };
+  const clearBtn = { ...buttonStyle, background: "#6c6c6c" };
+
+  // ------------------------------------------------------------------
+  // Render
+  // ------------------------------------------------------------------
   return (
-    <div className="preproject-container" style={{ padding: "2rem" }}>
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--header-blue)", color: "white", padding: "1rem 2rem", borderRadius: "12px", marginBottom: "2rem" }}>
-        <h1 style={{ margin: 0 }}>PreProject Module</h1>
-        <button style={{ background: "white", color: "var(--header-blue)", padding: "0.5rem 1rem", border: "none", borderRadius: "6px", fontWeight: 600 }}>
-          Return to Summary
-        </button>
+    <div style={pageStyle}>
+      <header style={headerStyle}>
+        <div>PreProject Phase</div>
+        <button style={buttonStyle}>Return to Summary</button>
       </header>
 
       {tasks.map((task) => (
-        <div key={task.id} className="bg-white" style={{ padding: "1rem 1.5rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: "1.1rem", fontWeight: 500 }}>{task.name}</span>
+        <div key={task.id} style={taskCardStyle}>
+          <strong>{task.name}</strong>
           <div>
-            <button style={{ marginRight: "0.5rem", background: "#0a2b5c", color: "white", padding: "0.4rem 0.8rem", borderRadius: "6px", border: "none" }}>
-              {task.status === "Not Started" ? "Start" : "Complete"}
-            </button>
-            <button onClick={() => openPopup(task)} style={{ background: "#0078ff", color: "white", padding: "0.4rem 0.8rem", borderRadius: "6px", border: "none" }}>
+            <button style={buttonStyle}>Start</button>
+            <button
+              style={{ ...buttonStyle, background: "#357edd" }}
+              onClick={() => handleOpenPopup(task)}
+            >
               Open Popup
             </button>
           </div>
         </div>
       ))}
 
-      <div style={{ marginTop: "1rem" }}>
-        <button onClick={addTask} style={{ background: "#0078ff", color: "white", padding: "0.5rem 1rem", borderRadius: "6px", border: "none", marginRight: "0.5rem" }}>Add Task</button>
-        <button onClick={clearTasks} style={{ background: "gray", color: "white", padding: "0.5rem 1rem", borderRadius: "6px", border: "none" }}>Clear All</button>
+      <div style={footerStyle}>
+        <button style={addBtn} onClick={handleAddTask}>
+          Add Task
+        </button>
+        <button style={clearBtn} onClick={handleClearAll}>
+          Clear All
+        </button>
       </div>
 
-      {/* 🔹 Popup Overlay */}
-      {activeTask && (
+      {/* Popup Overlay */}
+      {selectedTask && (
         <PopupOverlayWrapper
-          task={activeTask}
-          onClose={closePopup}
+          task={selectedTask}
+          onClose={handleClosePopup}
+          onSave={handleSavePopup}
         />
       )}
+
+      {/* Governance Queue Preview */}
+      <div style={{ marginTop: "2rem" }}>
+        <GovernanceQueuePreview />
+      </div>
     </div>
   );
 }
