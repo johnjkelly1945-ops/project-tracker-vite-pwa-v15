@@ -1,147 +1,78 @@
-/* ======================================================================
-   METRA – PreProject.jsx
-   Phase 3 – Step 2 Popup Embed Integration (v3.0b)
-   ----------------------------------------------------------------------
-   • Restores verified PreProject task list layout
-   • Adds overlay popup containing PopupUniversal component
-   • Maintains dark background + blur when active
-   • Save / Close persist as expected
-   ====================================================================== */
-
 import React, { useState, useEffect } from "react";
 import PopupOverlayWrapper from "./PopupOverlayWrapper.jsx";
+
+// 🔹 Force CSS to load properly
 import "../Styles/PreProject.css";
+import "../Styles/PreProject.css?inline";
 
 export default function PreProject() {
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("metra_preproject_tasks");
-    return saved
-      ? JSON.parse(saved)
-      : [
-          { id: 1, title: "Define project objectives", status: "In Progress" },
-          { id: 2, title: "Identify key stakeholders", status: "Not Started" },
-          { id: 3, title: "Prepare feasibility summary", status: "Not Started" },
-        ];
+    const saved = localStorage.getItem("metra_preproject_tasks_v3");
+    return saved ? JSON.parse(saved) : [
+      { id: 1, name: "Define project objectives", status: "Not Started" },
+      { id: 2, name: "Identify key stakeholders", status: "Not Started" },
+      { id: 3, name: "Prepare feasibility summary", status: "Not Started" },
+    ];
   });
 
   const [activeTask, setActiveTask] = useState(null);
-  const [overlayVisible, setOverlayVisible] = useState(false);
 
+  // 🔹 Save to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem("metra_preproject_tasks", JSON.stringify(tasks));
+    localStorage.setItem("metra_preproject_tasks_v3", JSON.stringify(tasks));
   }, [tasks]);
 
-  const handleOpenOverlay = (task) => {
-    setActiveTask(task);
-    setOverlayVisible(true);
-  };
-
-  const handleCloseOverlay = () => {
-    setOverlayVisible(false);
-    setActiveTask(null);
-  };
-
-  const handleSaveTask = (updatedTask) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
-    );
-    handleCloseOverlay();
-  };
-
-  const cycleStatus = (taskId) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id !== taskId) return task;
-        const next =
-          task.status === "Not Started"
-            ? "In Progress"
-            : task.status === "In Progress"
-            ? "Completed"
-            : "Not Started";
-        return { ...task, status: next };
-      })
-    );
-  };
-
+  // 🔹 Add a new task
   const addTask = () => {
-    const newTask = {
-      id: Date.now(),
-      title: "New Pre-Project Task",
-      status: "Not Started",
-    };
-    setTasks([...tasks, newTask]);
+    const newTask = { id: Date.now(), name: "New Entry", status: "Not Started" };
+    setTasks((prev) => [...prev, newTask]);
   };
 
+  // 🔹 Clear all tasks
   const clearTasks = () => {
-    setTasks([]);
-    localStorage.removeItem("metra_preproject_tasks");
+    if (window.confirm("Clear all tasks?")) {
+      setTasks([]);
+      localStorage.removeItem("metra_preproject_tasks_v3");
+    }
   };
+
+  // 🔹 Toggle popup open
+  const openPopup = (task) => setActiveTask(task);
+  const closePopup = () => setActiveTask(null);
 
   return (
-    <div className="preproject-wrapper">
-      <div className="preproject-header">
-        <div className="logo">METRA</div>
-        <h1>PreProject Module</h1>
-        <button className="return-summary">Return to Summary</button>
-      </div>
+    <div className="preproject-container" style={{ padding: "2rem" }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--header-blue)", color: "white", padding: "1rem 2rem", borderRadius: "12px", marginBottom: "2rem" }}>
+        <h1 style={{ margin: 0 }}>PreProject Module</h1>
+        <button style={{ background: "white", color: "var(--header-blue)", padding: "0.5rem 1rem", border: "none", borderRadius: "6px", fontWeight: 600 }}>
+          Return to Summary
+        </button>
+      </header>
 
-      <div className="task-list">
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            className={`task-card ${
-              task.status === "Completed"
-                ? "task-complete"
-                : task.status === "In Progress"
-                ? "task-progress"
-                : ""
-            }`}
-          >
-            <div className="task-row">
-              <span
-                className={`task-title ${
-                  task.status === "Completed" ? "line-through" : ""
-                }`}
-              >
-                {task.title}
-              </span>
-              <div className="task-actions">
-                <button
-                  className="status-btn"
-                  onClick={() => cycleStatus(task.id)}
-                >
-                  {task.status === "Not Started"
-                    ? "Start"
-                    : task.status === "In Progress"
-                    ? "Complete"
-                    : "Reset"}
-                </button>
-                <button
-                  className="popup-btn"
-                  onClick={() => handleOpenOverlay(task)}
-                >
-                  Open Popup
-                </button>
-              </div>
-            </div>
+      {tasks.map((task) => (
+        <div key={task.id} className="bg-white" style={{ padding: "1rem 1.5rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: "1.1rem", fontWeight: 500 }}>{task.name}</span>
+          <div>
+            <button style={{ marginRight: "0.5rem", background: "#0a2b5c", color: "white", padding: "0.4rem 0.8rem", borderRadius: "6px", border: "none" }}>
+              {task.status === "Not Started" ? "Start" : "Complete"}
+            </button>
+            <button onClick={() => openPopup(task)} style={{ background: "#0078ff", color: "white", padding: "0.4rem 0.8rem", borderRadius: "6px", border: "none" }}>
+              Open Popup
+            </button>
           </div>
-        ))}
+        </div>
+      ))}
+
+      <div style={{ marginTop: "1rem" }}>
+        <button onClick={addTask} style={{ background: "#0078ff", color: "white", padding: "0.5rem 1rem", borderRadius: "6px", border: "none", marginRight: "0.5rem" }}>Add Task</button>
+        <button onClick={clearTasks} style={{ background: "gray", color: "white", padding: "0.5rem 1rem", borderRadius: "6px", border: "none" }}>Clear All</button>
       </div>
 
-      <div className="task-controls">
-        <button onClick={addTask} className="add-btn">
-          Add Task
-        </button>
-        <button onClick={clearTasks} className="clear-btn">
-          Clear All
-        </button>
-      </div>
-
-      {overlayVisible && (
+      {/* 🔹 Popup Overlay */}
+      {activeTask && (
         <PopupOverlayWrapper
           task={activeTask}
-          onClose={handleCloseOverlay}
-          onSave={handleSaveTask}
+          onClose={closePopup}
         />
       )}
     </div>

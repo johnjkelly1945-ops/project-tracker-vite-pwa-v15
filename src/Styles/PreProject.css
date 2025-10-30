@@ -1,161 +1,65 @@
 /* ======================================================================
    METRA – PreProject.css
-   Phase 3 – Step 2 Popup Embed Integration (v3.0b)
-   ----------------------------------------------------------------------
-   • Retains PreProject visual theme
-   • Overlay dim + blur active above all elements
+   Verified rebuild for Vite compatibility
    ====================================================================== */
 
 :root {
   --header-blue: #0a2b5c;
   --bg-gray: #f9f9f9;
-  --add-blue: #0078d4;
-  --add-blue-hover: #005ea6;
-  --danger-red: #d9534f;
-  --danger-red-hover: #b52b27;
 }
 
-.preproject-wrapper {
+body {
   background-color: var(--bg-gray);
-  min-height: 100vh;
-  padding: 2rem;
   font-family: "Segoe UI", system-ui, sans-serif;
-  color: #222;
-}
-
-/* Header */
-.preproject-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--header-blue);
-  color: #fff;
-  padding: 1rem 1.5rem;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
-}
-.logo {
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-.preproject-header h1 {
-  flex: 1;
-  text-align: center;
   margin: 0;
-  font-size: 1.5rem;
+  padding: 0;
 }
-.return-summary {
-  background: #fff;
+
+/* ===== Page Header ===== */
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--header-blue);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-.return-summary:hover {
-  background: #e6e6e6;
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
-/* Tasks */
-.task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-.task-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 1rem;
-  border: 1px solid #e5e5e5;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-.task-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.task-title {
-  font-weight: 500;
-  color: #333;
-}
-.task-title.line-through {
-  text-decoration: line-through;
-  color: #888;
-}
-.task-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Buttons */
-.status-btn,
-.popup-btn,
-.add-btn,
-.clear-btn {
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  color: #fff;
-}
-.status-btn {
-  background: var(--header-blue);
-}
-.status-btn:hover {
-  background: #103a74;
-}
-.popup-btn {
-  background: #0080ff;
-}
-.popup-btn:hover {
-  background: #005ec2;
-}
-.add-btn {
-  background: var(--add-blue);
-}
-.add-btn:hover {
-  background: var(--add-blue-hover);
-}
-.clear-btn {
-  background: #999;
-}
-.clear-btn:hover {
-  background: #777;
-}
-
-/* Task Colour Borders */
-.task-complete {
-  border-left: 5px solid #2ecc71;
-}
-.task-progress {
-  border-left: 5px solid #f1c40f;
-}
-
-/* Overlay */
-.overlay-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-}
-.overlay-container {
+/* ===== Task Card ===== */
+.bg-white {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  padding: 24px 28px;
-  width: 80%;
-  max-width: 600px;
-  text-align: center;
-  z-index: 100000;
-  animation: fadeIn 0.25s ease-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+
+/* ===== Buttons ===== */
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:hover {
+  filter: brightness(0.95);
+}
+
+/* ===== Popup Overlay ===== */
+.overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.overlay-container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }

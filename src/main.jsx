@@ -5,6 +5,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import PreProject from "./components/PreProject.jsx";
+import "./Styles/PreProject.css";
 
 console.log("🚀 METRA: PreProject Phase 3 – Embedded Popup Test starting...");
 

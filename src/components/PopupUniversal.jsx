@@ -1,73 +1,154 @@
 /* ======================================================================
    METRA – PopupUniversal.jsx
-   Branch: feature-preproject-popup-integration-phase2
-   Baseline target: baseline-2025-10-30-preproject-popup-integration-phase2-v2.1
+   Phase 3.5 – Governance Bridge & Template Audit Integration (Corrected)
    ----------------------------------------------------------------------
-   - Fully persistent popup with Close / Save / Reset
-   - Data stored in localStorage per task (key: metra_popup_<id>)
-   - Clean onClose handoff to parent (PreProject)
-   - Minimal styling for clarity and focus
+   • Inherits full Phase 3.4 logic
+   • Adds templateRef and governanceLink fields
+   • Fixes note storage to plain text
+   • Registers linked entity metadata in audit chain
+   • Retains silent 5-minute edit window and UI layout
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
+import { metraConfig } from "../config/metraConfig";
+import { logAuditEvent, registerLinkedEntity } from "../utils/auditHandler";
 import "../Styles/PreProject.css";
 
-export default function PopupUniversal({ taskId, taskTitle, onClose }) {
-  const storageKey = `metra_popup_${taskId}`;
-  const [text, setText] = useState("");
+// Utility: create unique audit reference when none exists
+const generateAuditRef = () =>
+  "AUD-" +
+  Date.now().toString(36) +
+  "-" +
+  Math.random().toString(36).substring(2, 8);
 
-  // === Load saved text for this task ===
-  useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) setText(saved);
-  }, [storageKey]);
+export default function PopupUniversal({
+  task,
+  onClose,
+  onSave,
+  parentAuditRef = null,
+  templateRef = null,
+  governanceLink = null,
+}) {
+  // ------------------------------------------------------------
+  // Local state
+  // ------------------------------------------------------------
+  const storageKey = `metra_preproject_task_${task?.id || "temp"}`;
 
-  // === Persist text on change ===
+  // Load saved note text as plain string
+  const [text, setText] = useState(() => localStorage.getItem(storageKey) || "");
+
+  const [auditRef, setAuditRef] = useState(
+    task?.auditRef || parentAuditRef || generateAuditRef()
+  );
+  const [editableUntil, setEditableUntil] = useState(task?.editableUntil || null);
+  const [isLocked, setIsLocked] = useState(false);
+
+  // ------------------------------------------------------------
+  // Persist notes to localStorage (plain text)
+  // ------------------------------------------------------------
   useEffect(() => {
-    localStorage.setItem(storageKey, text);
+    if (typeof text === "string") {
+      localStorage.setItem(storageKey, text);
+    }
   }, [text, storageKey]);
 
-  const handleSave = () => {
-    localStorage.setItem(storageKey, text);
-    alert("Saved successfully.");
-  };
-
-  const handleReset = () => {
-    if (window.confirm("Clear this entry?")) {
-      setText("");
-      localStorage.removeItem(storageKey);
+  // ------------------------------------------------------------
+  // Silent timer for edit lock
+  // ------------------------------------------------------------
+  useEffect(() => {
+    if (!metraConfig.enableEditGracePeriod) {
+      setIsLocked(true);
+      return;
     }
+    if (!editableUntil) return;
+
+    const checkLockStatus = () => {
+      if (Date.now() >= editableUntil) setIsLocked(true);
+    };
+    const interval = setInterval(checkLockStatus, 10000); // every 10 s
+    return () => clearInterval(interval);
+  }, [editableUntil]);
+
+  // ------------------------------------------------------------
+  // Save handler
+  // ------------------------------------------------------------
+  const handleSave = () => {
+    const now = Date.now();
+    let newEditableUntil = null;
+
+    if (metraConfig.enableEditGracePeriod) {
+      newEditableUntil = now + metraConfig.editGracePeriodMinutes * 60000;
+      setEditableUntil(newEditableUntil);
+      setIsLocked(false);
+    } else {
+      setIsLocked(true);
+    }
+
+    const updated = {
+      ...task,
+      notes: text, // store as plain text
+      timestamp: now,
+      auditRef,
+      parentAuditRef: parentAuditRef || null,
+      templateRef: templateRef || task?.templateRef || null,
+      governanceLink: governanceLink || task?.governanceLink || null,
+      editableUntil: newEditableUntil,
+    };
+
+    const isNew = !task?.auditRef;
+    const eventType = isNew ? "CREATE" : isLocked ? "UPDATE" : "EDIT";
+
+    // Log audit event
+    logAuditEvent({
+      actionType: eventType,
+      entityType: "Task",
+      entityId: updated.id || "unassigned",
+      auditRef,
+      linkedRef: templateRef || governanceLink || null,
+    });
+
+    // Register cross-link silently
+    registerLinkedEntity(auditRef, {
+      templateRef: templateRef || null,
+      governanceLink: governanceLink || null,
+    });
+
+    onSave(updated);
   };
 
-  const handleClose = () => {
-    onClose?.(); // Safely trigger parent close if provided
-  };
+  const handleReset = () => setText("");
 
+  if (!task) return null;
+
+  const canEdit = metraConfig.enableEditGracePeriod ? !isLocked : false;
+
+  // ------------------------------------------------------------
+  // Render
+  // ------------------------------------------------------------
   return (
-    <div className="popup-overlay">
-      <div className="popup-container">
-        <h2 className="popup-header">
-          Log Entry – {taskTitle || "Untitled Task"}
-        </h2>
+    <div className="popup-universal">
+      <h2 className="popup-title">
+        Log Entry – {task.title || "Untitled Task"}
+      </h2>
 
-        <textarea
-          className="popup-textarea"
-          placeholder="Enter your notes, communications, or audit text here..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
+      <textarea
+        className="popup-textarea"
+        placeholder="Type notes here…"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        disabled={!canEdit}
+      />
 
-        <div className="popup-actions">
-          <button className="popup-btn-save" onClick={handleSave}>
-            💾 Save
-          </button>
-          <button className="popup-btn-reset" onClick={handleReset}>
-            ♻️ Reset
-          </button>
-          <button className="popup-btn-close" onClick={handleClose}>
-            ✖ Close
-          </button>
-        </div>
+      <div className="popup-buttons">
+        <button className="popup-btn-save" onClick={handleSave}>
+          💾 Save
+        </button>
+        <button className="popup-btn-reset" onClick={handleReset}>
+          ↺ Reset
+        </button>
+        <button className="popup-btn-close" onClick={onClose}>
+          ✖ Close
+        </button>
       </div>
     </div>
   );
