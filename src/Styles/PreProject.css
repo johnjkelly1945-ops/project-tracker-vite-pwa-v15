@@ -1,8 +1,7 @@
-/* ==========================================================
-   METRA – PreProject Layout (Phase 4.3B Stable)
-   ----------------------------------------------------------
-   Restores full-width layout and adds role-toggle styling.
-   ========================================================== */
+/* ======================================================================
+   METRA – PreProject Layout & Role Framework
+   Consolidated through Phase 4.3 D .2
+   ====================================================================== */
 
 :root {
   --header-blue: #0a2b5c;
@@ -11,7 +10,7 @@
   --add-blue-hover: #005ea2;
 }
 
-/* ===== Core Container ===== */
+/* ===== Container ===== */
 .preproject-container {
   width: 100vw;
   min-height: 100vh;
@@ -26,7 +25,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.25rem;
   border-bottom: 2px solid var(--header-blue);
   margin-bottom: 1rem;
 }
@@ -35,12 +33,35 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--header-blue);
-  margin: 0;
+  margin: 0 0 0.25rem 0;
 }
 
-.role-status {
+/* ===== Role Switcher ===== */
+.role-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.role-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.role-select {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
   font-size: 0.9rem;
   color: #333;
+}
+
+.role-select:focus {
+  border-color: var(--add-blue);
+  outline: none;
 }
 
 /* ===== Toggle Button ===== */
@@ -69,7 +90,7 @@
   box-sizing: border-box;
 }
 
-/* ===== Global Reinforcement for Full Width ===== */
+/* ===== Global Full-Width Reinforcement ===== */
 html,
 body,
 #root,
@@ -82,3 +103,180 @@ body,
   max-width: none;
   overflow-x: hidden;
 }
+
+/* ======================================================================
+   GOVERNANCE QUEUE – Phase 4.3 D .1
+   ====================================================================== */
+
+.governance-queue-container {
+  background-color: #eef3fa;
+  border: 1px solid #aac1e8;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  color: #0a2b5c !important;
+}
+
+.gov-header {
+  color: var(--header-blue, #0a2b5c);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.gov-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gov-filter-label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.gov-filter-select {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+.gov-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gov-item {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1.2fr 1fr 1fr;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #cfd8ea;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  color: #0a2b5c !important;
+}
+
+.gov-type {
+  font-weight: 600;
+  color: #0a2b5c;
+}
+
+.gov-status.status-pending {
+  color: #c27c0e;
+  font-weight: 600;
+}
+.gov-status.status-approved {
+  color: #2e7d32;
+  font-weight: 600;
+}
+.gov-status.status-in\ review {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.gov-empty {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+/* Contrast / Visibility reinforcement */
+.governance-queue-container,
+.gov-header,
+.gov-item,
+.gov-controls,
+.gov-list,
+.gov-item div {
+  opacity: 1 !important;
+}
+
+/* ======================================================================
+   AUDIT PANEL – Phase 4.3 D .2
+   ====================================================================== */
+
+.audit-panel-container {
+  background-color: #ffffff;
+  border: 1px solid #cfd8ea;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.audit-header {
+  color: var(--header-blue, #0a2b5c);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.audit-actions {
+  margin-bottom: 0.75rem;
+}
+
+.audit-add-btn {
+  background-color: var(--add-blue, #0078d4);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.audit-add-btn:hover {
+  background-color: var(--add-blue-hover, #005ea2);
+}
+
+.audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.audit-item {
+  display: grid;
+  grid-template-columns: 160px 140px 1fr;
+  align-items: start;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #e2e6ef;
+  border-radius: 6px;
+  background-color: #f9fbff;
+  font-size: 0.9rem;
+}
+
+.audit-time {
+  font-weight: 600;
+  color: #555;
+}
+
+.audit-user {
+  font-weight: 600;
+  color: #0a2b5c;
+}
+
+.audit-action {
+  color: #222;
+}
+
+.audit-empty {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* ======================================================================
+   END OF FILE
+   ====================================================================== */
