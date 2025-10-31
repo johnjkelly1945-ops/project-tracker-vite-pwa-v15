@@ -60,3 +60,21 @@ export function registerLinkedEntity(auditRef, links) {
 export function getLinkedEntity(auditRef) {
   return linkRegistry[auditRef] || {};
 }
+// ======================================================================
+// METRA – auditHandler.js
+// Phase 4.0 Step 1 – Add listAuditEvents() helper
+// ----------------------------------------------------------------------
+// Enables retrieval of audit entries for a given entityId (task ID).
+// ----------------------------------------------------------------------
+
+export function listAuditEvents(entityId) {
+  try {
+    const raw = localStorage.getItem("metra_audit_log_v1");
+    if (!raw) return [];
+    const all = JSON.parse(raw);
+    return all.filter((e) => e.entityId === entityId);
+  } catch (err) {
+    console.error("[AUDIT] listAuditEvents() error:", err);
+    return [];
+  }
+}

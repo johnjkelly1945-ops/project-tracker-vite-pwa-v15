@@ -1,17 +1,16 @@
 /* ======================================================================
    METRA – PopupUniversal.jsx
-   Phase 3.8 – Audit ↔ Governance Link Integration
+   Phase 4.0 Step 3 – Visible Audit Panel Integration
    ----------------------------------------------------------------------
-   • Inherits 3.3 audit logic (silent 5-minute edit window)
-   • Adds silent governance queue linkage on Save
-   • Uses addGovernanceRecord() from governanceQueueHandler.js
-   • No visual indicators or alerts – fully background process
+   • Adds 📜 View Audit Trail toggle button
+   • Displays compact scrollable audit panel within popup
+   • Reads task-specific audit events from auditHandler.js
+   • No PMO exposure; panel hidden by default
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
 import { metraConfig } from "../config/metraConfig";
-import { logAuditEvent } from "../utils/auditHandler";
-import { addGovernanceRecord } from "../utils/governanceQueueHandler";
+import { logAuditEvent, listAuditEvents } from "../utils/auditHandler";
 import "../Styles/PreProject.css";
 
 // Utility: create unique audit reference when none exists
@@ -26,7 +25,10 @@ export default function PopupUniversal({
   onClose,
   onSave,
   parentAuditRef = null,
+  isSubPopup = false,
 }) {
+  if (!task) return null;
+
   // ----------------------------
   // Local state
   // ----------------------------
@@ -40,10 +42,22 @@ export default function PopupUniversal({
     task?.auditRef || parentAuditRef || generateAuditRef()
   );
 
-  const [editableUntil, setEditableUntil] = useState(
-    task?.editableUntil || null
-  );
+  const [editableUntil, setEditableUntil] = useState(task?.editableUntil || null);
   const [isLocked, setIsLocked] = useState(false);
+
+  // ============================================================
+  // Audit toggle + load logic
+  // ============================================================
+  const [showAudit, setShowAudit] = useState(false);
+  const [auditEvents, setAuditEvents] = useState([]);
+
+  useEffect(() => {
+    if (showAudit && task?.id) {
+      const events = listAuditEvents(task.id);
+      setAuditEvents(events);
+      console.log(`[AUDIT] Loaded ${events.length} entries for Task ${task.id}`);
+    }
+  }, [showAudit, task]);
 
   // ----------------------------
   // Local persistence (notes only)
@@ -65,12 +79,12 @@ export default function PopupUniversal({
     const checkLockStatus = () => {
       if (Date.now() >= editableUntil) setIsLocked(true);
     };
-    const interval = setInterval(checkLockStatus, 10000); // check every 10 s
+    const interval = setInterval(checkLockStatus, 10000); // every 10 s
     return () => clearInterval(interval);
   }, [editableUntil]);
 
   // ----------------------------
-  // Save handler (includes audit + governance log)
+  // Save handler
   // ----------------------------
   const handleSave = () => {
     const now = Date.now();
@@ -95,7 +109,6 @@ export default function PopupUniversal({
     const isNew = !task?.auditRef;
     const eventType = isNew ? "CREATE" : isLocked ? "UPDATE" : "EDIT";
 
-    // 1️⃣ Log audit event
     logAuditEvent({
       actionType: eventType,
       entityType: "Task",
@@ -103,26 +116,15 @@ export default function PopupUniversal({
       auditRef,
     });
 
-    // 2️⃣ Add governance record silently (background only)
-    addGovernanceRecord({
-      auditRef,
-      type: "Change",
-      title: task?.title || "Untitled Task",
-      timestamp: now,
-    });
-
-    // 3️⃣ Commit to parent save
     onSave(updated);
   };
 
   const handleReset = () => setText("");
 
-  if (!task) return null;
-
   const canEdit = metraConfig.enableEditGracePeriod ? !isLocked : false;
 
   // ----------------------------
-  // Render (identical visual structure)
+  // Render
   // ----------------------------
   return (
     <div className="popup-universal">
@@ -146,7 +148,28 @@ export default function PopupUniversal({
         <button className="popup-btn-close" onClick={onClose}>
           ✖ Close
         </button>
+        <button
+          className="popup-btn-audit"
+          onClick={() => setShowAudit(!showAudit)}
+        >
+          📜 {showAudit ? "Hide Audit Trail" : "View Audit Trail"}
+        </button>
       </div>
+
+      {showAudit && (
+        <div className="popup-audit-panel">
+          {auditEvents.length === 0 ? (
+            <p style={{ color: "#777" }}>No audit records for this task.</p>
+          ) : (
+            auditEvents.map((ev, idx) => (
+              <div key={idx} className="popup-audit-line">
+                <b>{new Date(ev.timestamp).toLocaleTimeString()}</b> –{" "}
+                {ev.actionType} ({ev.entityType})
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
