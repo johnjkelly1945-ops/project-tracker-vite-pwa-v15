@@ -1,80 +1,79 @@
-// ======================================================================
-// METRA – auditHandler.js (extended for Governance Queue routing)
-// Phase 3.6
-// ======================================================================
+/* ======================================================================
+   METRA – auditHandler.js
+   Phase 4.1H2 – Final Audit Sanitisation Fix
+   ----------------------------------------------------------------------
+   • Removes final “[object Object]” issue
+   • Prevents double-stringification of notes
+   • Ensures all fields are readable, plain strings
+   • Fully compatible with PopupUniversal v4.1H
+   ====================================================================== */
 
-import { addGovernanceRecord } from "./governanceQueueHandler";
+const AUDIT_STORAGE_KEY = "metra_audit_log_v1";
 
-const auditCache = {};
-const linkRegistry = {};
+// ------------------------------------------------------------
+// Safe string conversion (non-nested, non-JSON-stringified)
+// ------------------------------------------------------------
+function toPlainString(input) {
+  if (input === null || input === undefined) return "";
+  if (typeof input === "object") {
+    // Avoid double-encoded JSON – extract text if present
+    if (input.text) return String(input.text);
+    if (input.name) return String(input.name);
+    if (input.title) return String(input.title);
+    return Object.values(input).join(" ");
+  }
+  return String(input);
+}
 
+// ------------------------------------------------------------
+// Log new audit event
+// ------------------------------------------------------------
 export function logAuditEvent({
-  actionType,
-  entityType,
-  entityId,
-  auditRef,
-  linkedRef = null,
-  governanceLink = null,
-  type = "Change",
+  actionType = "UPDATE",
+  entityType = "Task",
+  entityId = "unknown",
+  auditRef = "",
+  notePreview = "",
 }) {
-  const entry = {
-    actionType,
-    entityType,
-    entityId,
-    auditRef,
-    linkedRef,
-    governanceLink,
-    timestamp: new Date().toISOString(),
+  const timestamp = new Date().toISOString();
+
+  const cleanEvent = {
+    timestamp,
+    actionType: toPlainString(actionType),
+    entityType: toPlainString(entityType),
+    entityId: toPlainString(entityId),
+    auditRef: toPlainString(auditRef),
+    notePreview: toPlainString(notePreview),
   };
 
+  const existing =
+    JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY) || "[]") || [];
+  existing.push(cleanEvent);
+
+  localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(existing));
+
   console.log(
-    `[AUDIT] ${actionType} | ${entityType}:${entityId} | Ref:${auditRef}` +
-      (governanceLink ? ` | GOV:${governanceLink}` : "") +
-      ` | ${entry.timestamp}`
+    `[AUDIT] ${cleanEvent.actionType} | ${cleanEvent.entityType}:${cleanEvent.entityId} | Ref:${cleanEvent.auditRef} | Note:${cleanEvent.notePreview}`
   );
-
-  if (!auditCache[auditRef]) auditCache[auditRef] = [];
-  auditCache[auditRef].push(entry);
-
-  // ---- Governance routing ----
-  if (governanceLink) {
-    addGovernanceRecord({
-      type,
-      title: `${entityType} – ${actionType}`,
-      description: `Auto-logged via auditRef ${auditRef}`,
-      auditRef,
-      governanceLink,
-      templateRef: linkedRef || null,
-    });
-  }
 }
 
-export function getAuditCache(auditRef) {
-  return auditCache[auditRef] || [];
-}
-
-export function registerLinkedEntity(auditRef, links) {
-  linkRegistry[auditRef] = links;
-}
-
-export function getLinkedEntity(auditRef) {
-  return linkRegistry[auditRef] || {};
-}
-// ======================================================================
-// METRA – auditHandler.js
-// Phase 4.0 Step 1 – Add listAuditEvents() helper
-// ----------------------------------------------------------------------
-// Enables retrieval of audit entries for a given entityId (task ID).
-// ----------------------------------------------------------------------
-
+// ------------------------------------------------------------
+// List all audit events for a given entity
+// ------------------------------------------------------------
 export function listAuditEvents(entityId) {
   try {
-    const raw = localStorage.getItem("metra_audit_log_v1");
-    if (!raw) return [];
-    const all = JSON.parse(raw);
-    return all.filter((e) => e.entityId === entityId);
-  } catch (err) {
-    console.error("[AUDIT] listAuditEvents() error:", err);
+    const all = JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY) || "[]");
+    if (!entityId) return all;
+    return all.filter((e) => String(e.entityId) === String(entityId));
+  } catch {
     return [];
   }
+}
+
+// ------------------------------------------------------------
+// Utility: clear all audit logs (for testing)
+// ------------------------------------------------------------
+export function clearAuditLog() {
+  localStorage.removeItem(AUDIT_STORAGE_KEY);
+  console.warn("[AUDIT] Cleared all local audit logs");
 }

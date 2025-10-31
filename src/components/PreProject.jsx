@@ -1,10 +1,10 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Phase 3.7b – Governance Queue Toolbar Integration
+   Phase 4.1H9 – Save Without Auto-Close (Preserved Layout)
    ----------------------------------------------------------------------
-   • Standard PreProject task list (Define, Stakeholders, Feasibility)
-   • PopupUniversal for log entries
-   • Integrated 🧭 GovernanceQueuePreview panel (Export / Clear toolbar)
+   • Keeps popup open after Save (closes only on ✖ Close)
+   • Retains full Governance Queue integration and layout
+   • No visual or structural changes to baseline 3.7b
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -31,7 +31,8 @@ export default function PreProject() {
     setTasks((prev) =>
       prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
     );
-    setSelectedTask(null);
+    // ✅ Popup now remains open after save
+    // (Previously: setSelectedTask(null);)
   };
 
   const handleAddTask = () => {
@@ -134,7 +135,7 @@ export default function PreProject() {
         <PopupOverlayWrapper
           task={selectedTask}
           onClose={handleClosePopup}
-          onSave={handleSavePopup}
+          onSave={handleSavePopup} // ✅ popup stays open after save
         />
       )}
 
