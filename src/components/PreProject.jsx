@@ -1,132 +1,55 @@
-/* ======================================================================
-   METRA – PreProject.jsx
-   Phase 4.2A.4 – Stable Simplified Restore
-   ----------------------------------------------------------------------
-   • Standard PreProject task list (Define, Stakeholders, Feasibility)
-   • PopupUniversal for log entries
-   • Integrated GovernanceQueuePreview
-   • No Reset Local Data button (simple layout)
-   ====================================================================== */
+/* ==========================================================
+   METRA – PreProject (Phase 4.3B)
+   ----------------------------------------------------------
+   Integrates Role Context to control visibility of the
+   Governance Queue and “Show Governance View” toggle.
+   Maintains full-width layout.
+   ========================================================== */
 
-import React, { useState } from "react";
-import PopupOverlayWrapper from "./PopupOverlayWrapper.jsx";
-import GovernanceQueuePreview from "./GovernanceQueuePreview.jsx";
-import "../Styles/PreProject.css";
+import React from "react";
+import { useRole } from "../context/RoleContext.jsx";
+import "../styles/PreProject.css";
+
+// 🧩 Dummy placeholders for existing sub-components
+// (keep your real imports if already in place)
+import GovernanceQueue from "./GovernanceQueue.jsx";
+import AuditPanel from "./AuditPanel.jsx";
 
 export default function PreProject() {
-  const [tasks, setTasks] = useState([
-    { id: 1, name: "Define project objectives", status: "Not Started" },
-    { id: 2, name: "Identify key stakeholders", status: "Not Started" },
-    { id: 3, name: "Prepare feasibility summary", status: "Not Started" },
-  ]);
-
-  const [selectedTask, setSelectedTask] = useState(null);
-
-  const handleOpenPopup = (task) => setSelectedTask(task);
-  const handleClosePopup = () => setSelectedTask(null);
-  const handleSavePopup = (updatedTask) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
-    );
-    setSelectedTask(null);
-  };
-
-  const handleAddTask = () => {
-    const newId = tasks.length + 1;
-    const newTask = { id: newId, name: `New Task ${newId}`, status: "Not Started" };
-    setTasks([...tasks, newTask]);
-  };
-
-  const handleClearAll = () => {
-    if (window.confirm("Clear all tasks?")) setTasks([]);
-  };
-
-  const pageStyle = {
-    backgroundColor: "#f9f9f9",
-    fontFamily: "Segoe UI, system-ui, sans-serif",
-    padding: "1.5rem",
-  };
-
-  const headerStyle = {
-    background: "#0a2b5c",
-    color: "#fff",
-    padding: "0.75rem 1rem",
-    borderRadius: "12px",
-    marginBottom: "1rem",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
-
-  const taskCardStyle = {
-    background: "#fff",
-    padding: "1rem",
-    borderRadius: "10px",
-    marginBottom: "0.8rem",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
-
-  const buttonStyle = {
-    background: "#0a2b5c",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    padding: "0.4rem 0.8rem",
-    marginLeft: "0.5rem",
-    cursor: "pointer",
-    fontWeight: "600",
-  };
-
-  const footerStyle = {
-    marginTop: "1.5rem",
-    display: "flex",
-    gap: "1rem",
-  };
-
-  const addBtn = { ...buttonStyle, background: "#0078d4" };
-  const clearBtn = { ...buttonStyle, background: "#6c6c6c" };
+  const { role, showGovernance, toggleGovernance, permissions } = useRole();
 
   return (
-    <div style={pageStyle}>
-      <header style={headerStyle}>
-        <div>PreProject Phase</div>
-        <button style={buttonStyle}>Return to Summary</button>
+    <div className="preproject-container">
+      {/* ===== Header Section ===== */}
+      <header className="preproject-header">
+        <h1>METRA – PreProject</h1>
+        <p className="role-status">Current Role: <strong>{role}</strong></p>
       </header>
 
-      {tasks.map((task) => (
-        <div key={task.id} style={taskCardStyle}>
-          <strong>{task.name}</strong>
-          <div>
-            <button style={buttonStyle}>Start</button>
-            <button
-              style={{ ...buttonStyle, background: "#357edd" }}
-              onClick={() => handleOpenPopup(task)}
-            >
-              Open Popup
-            </button>
-          </div>
+      {/* ===== Role-based Toggle (visible for Admin / PMO / PM) ===== */}
+      {permissions.canToggleGovernance && (
+        <div className="governance-toggle">
+          <button
+            onClick={toggleGovernance}
+            className="toggle-btn"
+            aria-label="Toggle Governance View"
+          >
+            {showGovernance ? "Hide Governance View" : "Show Governance View"}
+          </button>
         </div>
-      ))}
-
-      <div style={footerStyle}>
-        <button style={addBtn} onClick={handleAddTask}>Add Task</button>
-        <button style={clearBtn} onClick={handleClearAll}>Clear All</button>
-      </div>
-
-      {selectedTask && (
-        <PopupOverlayWrapper
-          task={selectedTask}
-          onClose={handleClosePopup}
-          onSave={handleSavePopup}
-        />
       )}
 
-      <div style={{ marginTop: "2rem" }}>
-        <GovernanceQueuePreview />
-      </div>
+      {/* ===== Governance Queue (hidden by default for non-Admin / PMO) ===== */}
+      {(permissions.canViewGovernance || showGovernance) && (
+        <section className="governance-queue-section">
+          <GovernanceQueue />
+        </section>
+      )}
+
+      {/* ===== Audit Panel – always visible ===== */}
+      <section className="audit-panel-section">
+        <AuditPanel />
+      </section>
     </div>
   );
 }
