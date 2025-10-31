@@ -1,10 +1,11 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Phase 4.1H9 – Save Without Auto-Close (Preserved Layout)
+   Phase 4.2A.4 – Stable Simplified Restore
    ----------------------------------------------------------------------
-   • Keeps popup open after Save (closes only on ✖ Close)
-   • Retains full Governance Queue integration and layout
-   • No visual or structural changes to baseline 3.7b
+   • Standard PreProject task list (Define, Stakeholders, Feasibility)
+   • PopupUniversal for log entries
+   • Integrated GovernanceQueuePreview
+   • No Reset Local Data button (simple layout)
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -21,18 +22,13 @@ export default function PreProject() {
 
   const [selectedTask, setSelectedTask] = useState(null);
 
-  // ------------------------------------------------------------------
-  // Handlers
-  // ------------------------------------------------------------------
   const handleOpenPopup = (task) => setSelectedTask(task);
   const handleClosePopup = () => setSelectedTask(null);
-
   const handleSavePopup = (updatedTask) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
     );
-    // ✅ Popup now remains open after save
-    // (Previously: setSelectedTask(null);)
+    setSelectedTask(null);
   };
 
   const handleAddTask = () => {
@@ -45,9 +41,6 @@ export default function PreProject() {
     if (window.confirm("Clear all tasks?")) setTasks([]);
   };
 
-  // ------------------------------------------------------------------
-  // Styling
-  // ------------------------------------------------------------------
   const pageStyle = {
     backgroundColor: "#f9f9f9",
     fontFamily: "Segoe UI, system-ui, sans-serif",
@@ -96,9 +89,6 @@ export default function PreProject() {
   const addBtn = { ...buttonStyle, background: "#0078d4" };
   const clearBtn = { ...buttonStyle, background: "#6c6c6c" };
 
-  // ------------------------------------------------------------------
-  // Render
-  // ------------------------------------------------------------------
   return (
     <div style={pageStyle}>
       <header style={headerStyle}>
@@ -122,24 +112,18 @@ export default function PreProject() {
       ))}
 
       <div style={footerStyle}>
-        <button style={addBtn} onClick={handleAddTask}>
-          Add Task
-        </button>
-        <button style={clearBtn} onClick={handleClearAll}>
-          Clear All
-        </button>
+        <button style={addBtn} onClick={handleAddTask}>Add Task</button>
+        <button style={clearBtn} onClick={handleClearAll}>Clear All</button>
       </div>
 
-      {/* Popup Overlay */}
       {selectedTask && (
         <PopupOverlayWrapper
           task={selectedTask}
           onClose={handleClosePopup}
-          onSave={handleSavePopup} // ✅ popup stays open after save
+          onSave={handleSavePopup}
         />
       )}
 
-      {/* Governance Queue Preview */}
       <div style={{ marginTop: "2rem" }}>
         <GovernanceQueuePreview />
       </div>

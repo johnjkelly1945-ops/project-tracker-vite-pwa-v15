@@ -1,26 +1,24 @@
 /* ======================================================================
    METRA – auditHandler.js
-   Phase 4.1H2 – Final Audit Sanitisation Fix
+   Phase 4.2-B – Parent Audit Reference Support
    ----------------------------------------------------------------------
-   • Removes final “[object Object]” issue
-   • Prevents double-stringification of notes
-   • Ensures all fields are readable, plain strings
-   • Fully compatible with PopupUniversal v4.1H
+   • Adds parentAuditRef storage and filtering
+   • Retains safe string handling and backwards compatibility
    ====================================================================== */
 
-const AUDIT_STORAGE_KEY = "metra_audit_log_v1";
+const AUDIT_STORAGE_KEY = "metra_audit_log_v2";
 
 // ------------------------------------------------------------
-// Safe string conversion (non-nested, non-JSON-stringified)
+// Utility: safe string conversion
 // ------------------------------------------------------------
 function toPlainString(input) {
   if (input === null || input === undefined) return "";
   if (typeof input === "object") {
-    // Avoid double-encoded JSON – extract text if present
-    if (input.text) return String(input.text);
-    if (input.name) return String(input.name);
-    if (input.title) return String(input.title);
-    return Object.values(input).join(" ");
+    try {
+      return JSON.stringify(input);
+    } catch {
+      return String(input);
+    }
   }
   return String(input);
 }
@@ -33,6 +31,7 @@ export function logAuditEvent({
   entityType = "Task",
   entityId = "unknown",
   auditRef = "",
+  parentAuditRef = "",
   notePreview = "",
 }) {
   const timestamp = new Date().toISOString();
@@ -43,6 +42,7 @@ export function logAuditEvent({
     entityType: toPlainString(entityType),
     entityId: toPlainString(entityId),
     auditRef: toPlainString(auditRef),
+    parentAuditRef: toPlainString(parentAuditRef),
     notePreview: toPlainString(notePreview),
   };
 
@@ -51,9 +51,8 @@ export function logAuditEvent({
   existing.push(cleanEvent);
 
   localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(existing));
-
   console.log(
-    `[AUDIT] ${cleanEvent.actionType} | ${cleanEvent.entityType}:${cleanEvent.entityId} | Ref:${cleanEvent.auditRef} | Note:${cleanEvent.notePreview}`
+    `[AUDIT] ${cleanEvent.actionType} | ${cleanEvent.entityType}:${cleanEvent.entityId} | Ref:${cleanEvent.auditRef} ${cleanEvent.parentAuditRef ? `(Parent:${cleanEvent.parentAuditRef})` : ""}`
   );
 }
 
@@ -61,13 +60,17 @@ export function logAuditEvent({
 // List all audit events for a given entity
 // ------------------------------------------------------------
 export function listAuditEvents(entityId) {
-  try {
-    const all = JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY) || "[]");
-    if (!entityId) return all;
-    return all.filter((e) => String(e.entityId) === String(entityId));
-  } catch {
-    return [];
-  }
+  const all = JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY) || "[]");
+  return all.filter((e) => e.entityId === String(entityId));
+}
+
+// ------------------------------------------------------------
+// List audit events by parent reference (hierarchical view)
+// ------------------------------------------------------------
+export function listAuditEventsByParent(parentAuditRef) {
+  if (!parentAuditRef) return [];
+  const all = JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY) || "[]");
+  return all.filter((e) => e.parentAuditRef === String(parentAuditRef));
 }
 
 // ------------------------------------------------------------
