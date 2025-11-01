@@ -276,6 +276,47 @@ body,
   color: #666;
   font-style: italic;
 }
+/* === Working-Window Discipline Styles (Phase 4.4A.2) === */
+
+.working-window {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+}
+
+.working-window textarea {
+  width: 100%;
+  min-height: 150px;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  resize: vertical;
+}
+
+.working-window.locked textarea {
+  background-color: #f8f8f8;
+  color: #666;
+}
+
+.action-buttons {
+  margin-top: 0.5rem;
+}
+
+.action-buttons button {
+  background-color: var(--add-blue);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.action-buttons button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
 
 /* ======================================================================
    END OF FILE
