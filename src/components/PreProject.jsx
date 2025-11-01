@@ -1,10 +1,9 @@
 /* ==========================================================
-   METRA – PreProject (Phase 4.4A.2C – Silent Timer Discipline)
+   METRA – PreProject (Phase 4.5A.0 Layout Sync Ready)
    ----------------------------------------------------------
-   • Unified 5-minute working-window & audit discipline
-   • Silent operation (no alerts, popups, or countdowns)
-   • Save triggers timer only if content changed
-   • Locks automatically after 5 minutes of inactivity
+   • No CSS declarations inside this file
+   • Imports PreProject.css for layout styling
+   • Fully aligned with Phase 4.4A.2D logic
    ========================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -27,22 +26,19 @@ export default function PreProject() {
      ---------------------------------------------------------- */
   const handleSave = () => {
     const text = recordText.trim();
-    if (!text) return; // ignore blank entries
-
-    // skip if no changes since last save
-    if (text === lastSavedText) return;
+    if (!text || text === lastSavedText) return;
 
     const now = Date.now();
-    const visibleAfter = now + 5 * 60 * 1000; // 5 minutes
+    const visibleAfter = now + 5 * 60 * 1000; // 5-minute window
 
     setLastSavedText(text);
     setLastSavedTime(now);
     setLocked(false);
 
-    // queue audit entry silently
+    // Queue audit entry silently
     addAuditEntry(`PreProject record saved by ${role}`, "preproject");
 
-    // persist timer information for session continuity
+    // Persist timer for continuity
     localStorage.setItem(
       "metra_preproject_timer",
       JSON.stringify({ start: now, visibleAfter })
@@ -50,28 +46,24 @@ export default function PreProject() {
   };
 
   /* ----------------------------------------------------------
-     AUTO-LOCK after 5 minutes of inactivity
+     AUTO-LOCK after 5 minutes with no edits
      ---------------------------------------------------------- */
   useEffect(() => {
-    const timerData = localStorage.getItem("metra_preproject_timer");
+    const data = localStorage.getItem("metra_preproject_timer");
     let visibleAfter = null;
-
-    if (timerData) {
-      const parsed = JSON.parse(timerData);
-      visibleAfter = parsed.visibleAfter;
-    }
+    if (data) visibleAfter = JSON.parse(data).visibleAfter;
 
     const checkLock = () => {
       if (visibleAfter && Date.now() >= visibleAfter) setLocked(true);
     };
 
-    checkLock(); // run once on mount
-    const interval = setInterval(checkLock, 10000); // every 10 s
+    checkLock();
+    const interval = setInterval(checkLock, 10000);
     return () => clearInterval(interval);
   }, [lastSavedTime]);
 
   /* ----------------------------------------------------------
-     EDIT HANDLER – resets lock when editing resumes
+     EDIT HANDLER – unlocks when typing resumes
      ---------------------------------------------------------- */
   const handleEdit = (e) => {
     setRecordText(e.target.value);
@@ -85,8 +77,7 @@ export default function PreProject() {
         Current Role: <strong>{role}</strong>
       </p>
 
-      {/* Governance toggle for authorised roles */}
-      {(role === "Admin" || role === "PMO" || role === "ProjectManager") && (
+      {(role === "Admin" || role === "PMO") && (
         <button
           className="gov-toggle"
           onClick={() => setShowGovernance(!showGovernance)}
@@ -95,19 +86,16 @@ export default function PreProject() {
         </button>
       )}
 
-      {/* Governance Queue */}
       {showGovernance && (
         <div className="gov-section">
           <GovernanceQueue />
         </div>
       )}
 
-      {/* ------------------------------------------------------
-          WORKING WINDOW (5-minute discipline)
-          ------------------------------------------------------ */}
+      {/* Working window under timed discipline */}
       <div
         className={`working-window ${locked ? "locked" : "editable"}`}
-        style={{ backgroundColor: locked ? "#f0f0f0" : "#ffffff" }}
+        style={{ backgroundColor: locked ? "#f0f0f0" : "#fff" }}
       >
         <textarea
           value={recordText}
@@ -126,7 +114,6 @@ export default function PreProject() {
         </div>
       </div>
 
-      {/* Audit Trail (read-only, selectable) */}
       <AuditPanel />
     </div>
   );
