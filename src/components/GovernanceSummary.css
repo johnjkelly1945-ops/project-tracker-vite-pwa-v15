@@ -1,31 +1,60 @@
 /* ======================================================================
    METRA – GovernanceSummary.css
-   Phase 4.6 A.3C – Data Integration Styling
-   ----------------------------------------------------------------------
-   Visual layout and styling for the Governance Summary Dashboard.
-   Matches the JSX class structure exactly.
+   Phase 4.6 A.4 – Absolute Scroll Guarantee (Safari & Chrome)
    ====================================================================== */
 
-/* ===== Root Layout ===== */
-.governance-summary {
+/* ===== Global Reset ===== */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f9fafb;
+  overflow: hidden; /* root doesn't scroll, content will */
   font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* ===== Root Container ===== */
+.governance-summary {
+  position: relative;
+  min-height: 100vh;
   background-color: #f9fafb;
   color: #111;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* ===== Scroll Region ===== */
+.scroll-wrapper {
+  position: absolute;
+  top: 140px;             /* leave room for header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 2rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ===== Header ===== */
 .governance-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background-color: #0a2b5c;
   color: #ffffff;
   padding: 1.25rem 1.75rem;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  margin-bottom: 2rem;
+  margin: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.governance-header h1 {
+.header-left h1 {
   font-size: 1.9rem;
   font-weight: 700;
   margin: 0 0 0.25rem 0;
@@ -34,6 +63,46 @@
 .update-time {
   font-size: 0.9rem;
   opacity: 0.9;
+}
+
+/* ===== Header Controls ===== */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.refresh-btn {
+  background-color: #ffffff;
+  border: 1px solid #0a2b5c;
+  color: #0a2b5c;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.refresh-btn:hover {
+  background-color: #0a2b5c;
+  color: #ffffff;
+}
+
+/* --- Green Pulse Dot --- */
+.pulse-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #18a558;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 rgba(24, 165, 88, 0.4);
+  animation: pulse 5s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(24, 165, 88, 0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(24, 165, 88, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(24, 165, 88, 0); }
 }
 
 /* ===== Metrics Grid ===== */
@@ -86,18 +155,38 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== RoleSummaryBar Internal Grid ===== */
-.role-summary-bar h3 {
+/* ===== Activity Stream Section ===== */
+.activity-section {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.activity-section h3 {
   margin-top: 0;
   color: #0a2b5c;
+  margin-bottom: 0.75rem;
 }
 
-.role-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.5rem 1rem;
-  margin-top: 0.5rem;
+.activity-line {
+  border-bottom: 1px solid #eee;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #222;
 }
 
-.role-item {
-  fo
+.activity-line:last-child {
+  border-bottom: none;
+}
+
+.activity-line .timestamp { color: #666; }
+.activity-line .user      { font-weight: 600; color: #0a2b5c; }
+.activity-line .action    { color: #222; }
+.activity-line .type      { color: #2c5282; }
+.activity-line .ref       { color: #999; }
+
+/* ======================================================================
+   End of File
+   ====================================================================== */
