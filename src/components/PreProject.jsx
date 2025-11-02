@@ -1,120 +1,102 @@
-/* ==========================================================
-   METRA – PreProject (Phase 4.5A.0 Layout Sync Ready)
-   ----------------------------------------------------------
-   • No CSS declarations inside this file
-   • Imports PreProject.css for layout styling
-   • Fully aligned with Phase 4.4A.2D logic
-   ========================================================== */
+/* =====================================================================
+   METRA – PreProject.jsx
+   Phase 4.6 A.1 · Governance Role View Integration (corrected JSX)
+   ===================================================================== */
 
 import React, { useState, useEffect } from "react";
-import { useRole } from "../context/RoleContext.jsx";
-import GovernanceQueue from "./GovernanceQueue.jsx";
-import AuditPanel from "./AuditPanel.jsx";
+import { addAuditEntry, getEntriesByKeyRef } from "../utils/AuditUtils";
+import GovernanceQueue from "./GovernanceQueue";
 import "../Styles/PreProject.css";
-import { addAuditEntry } from "../utils/AuditUtils.js";
 
 export default function PreProject() {
-  const { role } = useRole();
-  const [showGovernance, setShowGovernance] = useState(false);
-  const [recordText, setRecordText] = useState("");
-  const [lastSavedText, setLastSavedText] = useState("");
-  const [lastSavedTime, setLastSavedTime] = useState(null);
-  const [locked, setLocked] = useState(false);
+  // === Current user role (defaults to ProjectManager if none stored) ===
+  const [currentRole, setCurrentRole] = useState(
+    localStorage.getItem("metra_user_role") || "ProjectManager"
+  );
 
-  /* ----------------------------------------------------------
-     SAVE HANDLER – silent, triggers only on change
-     ---------------------------------------------------------- */
-  const handleSave = () => {
-    const text = recordText.trim();
-    if (!text || text === lastSavedText) return;
+  // === Working input field and audit log state ===
+  const [details, setDetails] = useState("");
+  const [auditEntries, setAuditEntries] = useState([]);
 
-    const now = Date.now();
-    const visibleAfter = now + 5 * 60 * 1000; // 5-minute window
-
-    setLastSavedText(text);
-    setLastSavedTime(now);
-    setLocked(false);
-
-    // Queue audit entry silently
-    addAuditEntry(`PreProject record saved by ${role}`, "preproject");
-
-    // Persist timer for continuity
-    localStorage.setItem(
-      "metra_preproject_timer",
-      JSON.stringify({ start: now, visibleAfter })
-    );
-  };
-
-  /* ----------------------------------------------------------
-     AUTO-LOCK after 5 minutes with no edits
-     ---------------------------------------------------------- */
+  // === Load existing audit trail on mount ===
   useEffect(() => {
-    const data = localStorage.getItem("metra_preproject_timer");
-    let visibleAfter = null;
-    if (data) visibleAfter = JSON.parse(data).visibleAfter;
+    const existing = getEntriesByKeyRef("PreProject");
+    setAuditEntries(existing.reverse());
+  }, []);
 
-    const checkLock = () => {
-      if (visibleAfter && Date.now() >= visibleAfter) setLocked(true);
+  // === Save handler for PreProject working window ===
+  const handleSave = () => {
+    if (!details.trim()) return;
+
+    const entry = {
+      keyRef: "PreProject",
+      user: currentRole,
+      action: "PreProject record saved by " + currentRole,
+      isEscalated: currentRole === "Admin" || currentRole === "PMO",
     };
 
-    checkLock();
-    const interval = setInterval(checkLock, 10000);
-    return () => clearInterval(interval);
-  }, [lastSavedTime]);
+    addAuditEntry(entry);
 
-  /* ----------------------------------------------------------
-     EDIT HANDLER – unlocks when typing resumes
-     ---------------------------------------------------------- */
-  const handleEdit = (e) => {
-    setRecordText(e.target.value);
-    if (locked) setLocked(false);
+    const updated = getEntriesByKeyRef("PreProject").reverse();
+    setAuditEntries(updated);
+    setDetails("");
   };
 
+  // === Manual save for testing ===
+  const handleManualSave = () => {
+    const entry = {
+      keyRef: "PreProject",
+      user: currentRole,
+      action: "Manual save by " + currentRole,
+      isEscalated: currentRole === "Admin" || currentRole === "PMO",
+    };
+    addAuditEntry(entry);
+    const updated = getEntriesByKeyRef("PreProject").reverse();
+    setAuditEntries(updated);
+  };
+
+  // === UI ===
   return (
     <div className="preproject-container">
       <h1>METRA – PreProject</h1>
-      <p className="role-indicator">
-        Current Role: <strong>{role}</strong>
+      <p>
+        <strong>Current Role:</strong> {currentRole}
       </p>
 
-      {(role === "Admin" || role === "PMO") && (
-        <button
-          className="gov-toggle"
-          onClick={() => setShowGovernance(!showGovernance)}
-        >
-          {showGovernance ? "Hide Governance View" : "Show Governance View"}
-        </button>
-      )}
+      {/* Input area */}
+      <textarea
+        placeholder="Enter PreProject details here..."
+        value={details}
+        onChange={(e) => setDetails(e.target.value)}
+      />
 
-      {showGovernance && (
-        <div className="gov-section">
-          <GovernanceQueue />
-        </div>
-      )}
-
-      {/* Working window under timed discipline */}
-      <div
-        className={`working-window ${locked ? "locked" : "editable"}`}
-        style={{ backgroundColor: locked ? "#f0f0f0" : "#fff" }}
-      >
-        <textarea
-          value={recordText}
-          onChange={handleEdit}
-          disabled={locked}
-          placeholder={
-            locked
-              ? "Locked after 5 minutes – entry recorded in audit trail."
-              : "Enter PreProject details here..."
-          }
-        />
-        <div className="action-buttons">
-          <button onClick={handleSave} disabled={locked}>
-            Save
-          </button>
-        </div>
+      {/* Buttons */}
+      <div style={{ marginTop: "0.5rem" }}>
+        <button onClick={handleSave}>Save</button>{" "}
+        <button onClick={handleManualSave}>Manual Save</button>
       </div>
 
-      <AuditPanel />
+      {/* Audit trail list */}
+      <h3 style={{ marginTop: "1.2rem" }}>Audit Trail</h3>
+      <div className="audit-trail">
+        {auditEntries.length === 0 && (
+          <p style={{ color: "#666" }}>No audit entries yet.</p>
+        )}
+        {auditEntries.map((entry, idx) => (
+          <div key={idx} className="audit-entry">
+            <div>{entry.action}</div>
+            <div className="audit-meta">
+              {entry.user} ·{" "}
+              {entry.timestampCreated
+                ? new Date(entry.timestampCreated).toLocaleString()
+                : "Invalid Date"}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Governance Queue for Admin / PMO */}
+      <GovernanceQueue role={currentRole} />
     </div>
   );
 }

@@ -1,323 +1,93 @@
-/* ======================================================================
-   METRA – PreProject Layout & Role Framework
-   Consolidated through Phase 4.3 D .2
-   ====================================================================== */
+/* =====================================================================
+   METRA – PreProject.css
+   Phase 4.6 A.2 · Governance Queue Filter + Badge Styling
+   ===================================================================== */
 
 :root {
   --header-blue: #0a2b5c;
   --bg-gray: #f9f9f9;
-  --add-blue: #0078d4;
-  --add-blue-hover: #005ea2;
+  --border-gray: #d0d7de;
+  --badge-blue: #2563eb;
+  --light-blue: #eaf1ff;
 }
 
-/* ===== Container ===== */
-.preproject-container {
-  width: 100vw;
-  min-height: 100vh;
+body {
   background-color: var(--bg-gray);
-  box-sizing: border-box;
-  padding: 1rem 2rem;
-  margin: 0;
-}
-
-/* ===== Header ===== */
-.preproject-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  border-bottom: 2px solid var(--header-blue);
-  margin-bottom: 1rem;
-}
-
-.preproject-header h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--header-blue);
-  margin: 0 0 0.25rem 0;
-}
-
-/* ===== Role Switcher ===== */
-.role-line {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.role-label {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.role-select {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.role-select:focus {
-  border-color: var(--add-blue);
-  outline: none;
-}
-
-/* ===== Toggle Button ===== */
-.governance-toggle {
-  margin: 1rem 0;
-}
-
-.toggle-btn {
-  background-color: var(--add-blue);
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.toggle-btn:hover {
-  background-color: var(--add-blue-hover);
-}
-
-/* ===== Panels ===== */
-.governance-queue-section,
-.audit-panel-section {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* ===== Global Full-Width Reinforcement ===== */
-html,
-body,
-#root,
-#root > div {
-  width: 100vw;
-  height: 100%;
+  font-family: "Segoe UI", system-ui, sans-serif;
   margin: 0;
   padding: 0;
-  display: block;
-  max-width: none;
-  overflow-x: hidden;
 }
 
-/* ======================================================================
-   GOVERNANCE QUEUE – Phase 4.3 D .1
-   ====================================================================== */
+/* ===== Governance Queue ===== */
 
-.governance-queue-container {
-  background-color: #eef3fa;
-  border: 1px solid #aac1e8;
-  border-radius: 10px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  color: #0a2b5c !important;
+.governance-queue {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-gray);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.gov-header {
-  color: var(--header-blue, #0a2b5c);
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem 0;
-}
-
-.gov-controls {
+.filter-bar {
+  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
 }
 
-.gov-filter-label {
-  font-size: 0.9rem;
-  color: #333;
+.gov-group {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--border-gray);
+  padding-top: 0.5rem;
 }
 
-.gov-filter-select {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.9rem;
+.gov-group-header {
+  font-weight: 600;
+  color: var(--header-blue);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--light-blue);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.gov-group-header:hover {
+  background: #dbeafe;
+}
+
+.gov-badge {
+  background: var(--badge-blue);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  margin-left: 0.4rem;
 }
 
 .gov-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  list-style: none;
+  margin: 0.5rem 0 0 0;
+  padding: 0;
 }
 
 .gov-item {
-  display: grid;
-  grid-template-columns: 1.5fr 2fr 1.2fr 1fr 1fr;
-  align-items: center;
-  background-color: #fff;
-  border: 1px solid #cfd8ea;
+  background: #fff;
+  border: 1px solid #ececec;
   border-radius: 6px;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.9rem;
-  color: #0a2b5c !important;
+  margin-bottom: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  transition: background 0.2s;
 }
 
-.gov-type {
-  font-weight: 600;
-  color: #0a2b5c;
+.gov-item:hover {
+  background: #f3f4f6;
 }
 
-.gov-status.status-pending {
-  color: #c27c0e;
-  font-weight: 600;
-}
-.gov-status.status-approved {
-  color: #2e7d32;
-  font-weight: 600;
-}
-.gov-status.status-in\ review {
-  color: #1976d2;
-  font-weight: 600;
-}
-
-.gov-empty {
-  text-align: center;
-  color: #666;
-  font-style: italic;
-  margin-top: 0.5rem;
-}
-
-/* Contrast / Visibility reinforcement */
-.governance-queue-container,
-.gov-header,
-.gov-item,
-.gov-controls,
-.gov-list,
-.gov-item div {
-  opacity: 1 !important;
-}
-
-/* ======================================================================
-   AUDIT PANEL – Phase 4.3 D .2
-   ====================================================================== */
-
-.audit-panel-container {
-  background-color: #ffffff;
-  border: 1px solid #cfd8ea;
-  border-radius: 10px;
-  padding: 1rem 1.5rem;
-  margin-top: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.audit-header {
-  color: var(--header-blue, #0a2b5c);
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem 0;
-}
-
-.audit-actions {
-  margin-bottom: 0.75rem;
-}
-
-.audit-add-btn {
-  background-color: var(--add-blue, #0078d4);
-  color: #fff;
-  border: none;
-  padding: 0.4rem 0.9rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.audit-add-btn:hover {
-  background-color: var(--add-blue-hover, #005ea2);
-}
-
-.audit-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.audit-item {
-  display: grid;
-  grid-template-columns: 160px 140px 1fr;
-  align-items: start;
-  padding: 0.4rem 0.75rem;
-  border: 1px solid #e2e6ef;
-  border-radius: 6px;
-  background-color: #f9fbff;
-  font-size: 0.9rem;
-}
-
-.audit-time {
-  font-weight: 600;
+.gov-timestamp {
+  font-size: 0.8rem;
   color: #555;
 }
-
-.audit-user {
-  font-weight: 600;
-  color: #0a2b5c;
-}
-
-.audit-action {
-  color: #222;
-}
-
-.audit-empty {
-  text-align: center;
-  color: #666;
-  font-style: italic;
-}
-/* === Working-Window Discipline Styles (Phase 4.4A.2) === */
-
-.working-window {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 0.5rem;
-}
-
-.working-window textarea {
-  width: 100%;
-  min-height: 150px;
-  font-size: 1rem;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  resize: vertical;
-}
-
-.working-window.locked textarea {
-  background-color: #f8f8f8;
-  color: #666;
-}
-
-.action-buttons {
-  margin-top: 0.5rem;
-}
-
-.action-buttons button {
-  background-color: var(--add-blue);
-  color: #fff;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-}
-
-.action-buttons button:disabled {
-  background-color: #999;
-  cursor: not-allowed;
-}
-
-/* ======================================================================
-   END OF FILE
-   ====================================================================== */

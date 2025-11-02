@@ -1,103 +1,117 @@
-/* ==========================================================
-   METRA – GovernanceQueue (Phase 4.3D.1)
-   ----------------------------------------------------------
-   Restores live Governance Queue component logic.
-   Integrated with RoleContext for role-based visibility.
-   Displays queue items and audit triggers.
-   ========================================================== */
+/* =====================================================================
+   METRA – GovernanceQueue.jsx
+   Phase 4.6 A.2 · Filter & Badge Counter Fix (Live Count Refresh)
+   ===================================================================== */
 
-import React, { useEffect, useState } from "react";
-import { useRole } from "../context/RoleContext.jsx";
-import "../Styles/PreProject.css";
+import React, { useState, useEffect } from "react";
+import { getAllAuditEntries, formatLocalTime } from "../utils/AuditUtils";
 
-/* ----------------------------------------------------------
-   Simulated queue data (replace later with live fetch)
-   ---------------------------------------------------------- */
-const initialGovernanceItems = [
-  {
-    id: 1,
-    type: "Change Control",
-    project: "Infrastructure Upgrade",
-    status: "Pending",
-    owner: "PMO",
-    date: "2025-10-25",
-  },
-  {
-    id: 2,
-    type: "Template Update",
-    project: "Policy Review",
-    status: "Approved",
-    owner: "Admin",
-    date: "2025-10-22",
-  },
-  {
-    id: 3,
-    type: "Quality Review",
-    project: "Site Audit",
-    status: "In Review",
-    owner: "PMO",
-    date: "2025-10-30",
-  },
-];
+export default function GovernanceQueue({ role }) {
+  const [viewMode, setViewMode] = useState("all");
+  const [grouped, setGrouped] = useState({});
+  const [tick, setTick] = useState(0); // refresh trigger
 
-export default function GovernanceQueue() {
-  const { role } = useRole();
-  const [queueItems, setQueueItems] = useState(initialGovernanceItems);
-  const [filter, setFilter] = useState("all");
+  // --- Refresh grouped audit data ---
+  const refresh = () => {
+    const all = getAllAuditEntries();
+    const sections = ["PreProject", "Change Control", "Risk", "Issue"];
+    const result = {};
 
-  /* ----------------------------------------------------------
-     Filter logic – later can be extended for search/sort
-     ---------------------------------------------------------- */
-  const filteredItems =
-    filter === "all"
-      ? queueItems
-      : queueItems.filter((item) => item.status === filter);
+    sections.forEach((section) => {
+      const entries = all.filter((e) => {
+        const isGovRole = role === "Admin" || role === "PMO";
+        const isEscalated =
+          e.isEscalated === true ||
+          e.user === "Admin" ||
+          e.user === "PMO" ||
+          (isGovRole && e.keyRef === section);
+        return e.keyRef === section && isEscalated;
+      });
+      result[section] = entries.reverse();
+    });
+    setGrouped(result);
+  };
 
-  /* ----------------------------------------------------------
-     Demo audit trigger (simulated persistence)
-     ---------------------------------------------------------- */
+  // --- Periodic refresh for live updates ---
   useEffect(() => {
-    console.log(`✅ GovernanceQueue mounted for role: ${role}`);
-  }, [role]);
+    if (role === "Admin" || role === "PMO") {
+      refresh();
+      const interval = setInterval(() => {
+        refresh();
+        setTick((t) => t + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [role, viewMode]);
+
+  if (!(role === "Admin" || role === "PMO")) return null;
+
+  // --- Apply filters ---
+  const getFilteredGroups = () => {
+    if (viewMode === "all") return grouped;
+    const filtered = {};
+    Object.keys(grouped).forEach((key) => {
+      if (viewMode === "phase" && key === "PreProject") filtered[key] = grouped[key];
+      if (viewMode === "category" && key !== "PreProject") filtered[key] = grouped[key];
+    });
+    return filtered;
+  };
+
+  const filteredGroups = getFilteredGroups();
 
   return (
-    <div className="governance-queue-container">
-      <h2 className="gov-header">Governance Queue</h2>
+    <div className="governance-queue">
+      <h2>Governance Queue</h2>
 
-      <div className="gov-controls">
-        <label htmlFor="filter" className="gov-filter-label">
-          Filter by Status:
-        </label>
-        <select
-          id="filter"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="gov-filter-select"
-        >
+      <div className="filter-bar">
+        <label>View:&nbsp;</label>
+        <select value={viewMode} onChange={(e) => setViewMode(e.target.value)}>
           <option value="all">All</option>
-          <option value="Pending">Pending</option>
-          <option value="In Review">In Review</option>
-          <option value="Approved">Approved</option>
+          <option value="phase">By Phase</option>
+          <option value="category">By Category</option>
         </select>
       </div>
 
-      <div className="gov-list">
-        {filteredItems.map((item) => (
-          <div key={item.id} className="gov-item">
-            <div className="gov-type">{item.type}</div>
-            <div className="gov-project">{item.project}</div>
-            <div className={`gov-status status-${item.status.toLowerCase()}`}>
-              {item.status}
-            </div>
-            <div className="gov-owner">{item.owner}</div>
-            <div className="gov-date">{item.date}</div>
-          </div>
-        ))}
+      {Object.keys(filteredGroups).map((key) =>
+        filteredGroups[key].length ? (
+          <GovernanceGroup
+            key={key}
+            title={key}
+            entries={filteredGroups[key]}
+            tick={tick}
+          />
+        ) : null
+      )}
+    </div>
+  );
+}
 
-        {filteredItems.length === 0 && (
-          <p className="gov-empty">No items match this filter.</p>
-        )}
+function GovernanceGroup({ title, entries }) {
+  const [open, setOpen] = useState(true);
+  const count = entries ? entries.length : 0;
+
+  return (
+    <div className="gov-group">
+      <div className="gov-group-header" onClick={() => setOpen(!open)}>
+        <span>
+          {title}
+          <span className="gov-badge">{count}</span>
+        </span>
+        <span>{open ? "▾" : "▸"}</span>
       </div>
+
+      {open && (
+        <ul className="gov-list">
+          {entries.map((e, idx) => (
+            <li key={idx} className="gov-item">
+              <div>
+                <strong>{e.user}</strong> – {e.action}
+              </div>
+              <div className="gov-timestamp">{formatLocalTime(e.timestampCreated)}</div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
