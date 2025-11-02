@@ -1,9 +1,8 @@
 /* ======================================================================
    METRA – RoleFilterBar.jsx
-   Phase 4.6 A.5 – Step 2C (Non-Native Safari-Safe Buttons)
+   Phase 4.6 A.5 – Step 3 (Role Selection Logic)
    ----------------------------------------------------------------------
-   Renders role selectors as styled div elements to bypass macOS accent
-   overrides. Active role persists to localStorage.
+   Emits activeRole state changes upward for data filtering.
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -17,14 +16,14 @@ export default function RoleFilterBar({ onRoleChange }) {
     const savedRole = localStorage.getItem("userRole");
     if (savedRole && roles.includes(savedRole)) {
       setActiveRole(savedRole);
-      if (onRoleChange) onRoleChange(savedRole);
+      onRoleChange && onRoleChange(savedRole);
     }
   }, []);
 
   const handleSelect = (role) => {
     setActiveRole(role);
     localStorage.setItem("userRole", role);
-    if (onRoleChange) onRoleChange(role);
+    onRoleChange && onRoleChange(role);
   };
 
   return (

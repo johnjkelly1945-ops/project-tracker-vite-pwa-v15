@@ -1,11 +1,10 @@
 /* ======================================================================
    METRA – GovernanceSummary.css
-   Phase 4.6 A.5 – Step 2D (Enhanced Contrast Active Blue)
+   Phase 4.6 A.5 – Step 3 (Role-Based Filtering Logic)
    ----------------------------------------------------------------------
-   Adjusts active and hover colours for clearer visibility across displays.
+   Retains royal blue accent and enhanced hover contrast.
    ====================================================================== */
 
-/* ===== Root Layout ===== */
 .governance-summary {
   background-color: #f9fafb !important;
   color: #111 !important;
@@ -22,7 +21,7 @@
 .governance-summary-header h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1d4ed8; /* brighter blue for heading consistency */
+  color: #1d4ed8;
   margin: 0;
 }
 
@@ -34,7 +33,6 @@
   flex-wrap: wrap;
 }
 
-/* --- Button Look-Alike --- */
 .role-btn {
   user-select: none;
   background-color: #ffffff;
@@ -43,21 +41,19 @@
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 0.9rem;
-  font-family: "Segoe UI", system-ui, sans-serif;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
 .role-btn:hover {
-  background-color: #dbe8ff;  /* lighter, clearer hover */
+  background-color: #dbe8ff;
   border-color: #1d4ed8;
   color: #1d4ed8;
 }
 
-/* --- Active Role --- */
 .role-btn.active {
-  background-color: #1d4ed8;  /* bright royal blue */
+  background-color: #1d4ed8;
   color: #ffffff;
   border-color: #1d4ed8;
   box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
