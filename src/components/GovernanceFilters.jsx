@@ -1,5 +1,6 @@
 /* ======================================================================
    METRA – GovernanceFilters.jsx
+   Phase 4.6 A.3B – Styling & Polish
    ====================================================================== */
 import React from "react";
 
@@ -7,7 +8,7 @@ export default function GovernanceFilters() {
   return (
     <div className="governance-filters">
       <label>
-        Project 
+        Project
         <select>
           <option>All Projects</option>
           <option>Project A</option>
@@ -16,7 +17,7 @@ export default function GovernanceFilters() {
       </label>
 
       <label>
-        Type 
+        Type
         <select>
           <option>All</option>
           <option>Change Control</option>
@@ -28,7 +29,7 @@ export default function GovernanceFilters() {
       </label>
 
       <label>
-        Status 
+        Status
         <select>
           <option>All</option>
           <option>Active</option>

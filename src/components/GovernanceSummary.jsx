@@ -1,14 +1,14 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.3 Skeleton Layout
+   Phase 4.6 A.3B – Styling & Polish
    ====================================================================== */
-import "./GovernanceSummary.css";
 
 import React, { useState } from "react";
 import MetricCard from "./MetricCard";
 import RoleSummaryBar from "./RoleSummaryBar";
 import ActivityStream from "./ActivityStream";
 import GovernanceFilters from "./GovernanceFilters";
+import "./GovernanceSummary.css";
 
 export default function GovernanceSummary() {
   const [lastUpdated] = useState("02 Nov 2025 09:45");
@@ -43,7 +43,13 @@ export default function GovernanceSummary() {
 
       <section className="metric-section">
         {dummyMetrics.map((m, i) => (
-          <MetricCard key={i} type={m.type} count={m.count} lastEntryTime={m.lastEntryTime} />
+          <MetricCard
+            key={i}
+            type={m.type}
+            count={m.count}
+            lastEntryTime={m.lastEntryTime}
+            className={i === 0 ? "metric-pulse" : ""}
+          />
         ))}
       </section>
 
@@ -55,7 +61,7 @@ export default function GovernanceSummary() {
       </section>
 
       <footer className="gov-footer">
-        Data updated {lastUpdated} · Source: Local Governance Store · 
+        Data updated {lastUpdated} · Source: Local Governance Store ·
         <button>Export CSV</button>
       </footer>
     </div>
