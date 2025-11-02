@@ -1,69 +1,83 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.3B – Styling & Polish
+   Phase 4.6 A.3C – Data Integration (Styled Layout)
+   ----------------------------------------------------------------------
+   Combines Governance metrics, role summary, and recent audit stream
+   into a unified dashboard layout.
    ====================================================================== */
 
-import React, { useState } from "react";
-import MetricCard from "./MetricCard";
-import RoleSummaryBar from "./RoleSummaryBar";
-import ActivityStream from "./ActivityStream";
-import GovernanceFilters from "./GovernanceFilters";
+import React, { useState, useEffect } from "react";
+import { getGovernanceMetrics, getRoleVisibilityStats } from "../utils/GovernanceUtils";
+import { getRecentAuditEntries } from "../utils/AuditUtils";
+import GovernanceStore from "../data/GovernanceStore";
+import AuditTrailStore from "../data/AuditTrailStore";
 import "./GovernanceSummary.css";
+import RoleSummaryBar from "./RoleSummaryBar";
 
 export default function GovernanceSummary() {
-  const [lastUpdated] = useState("02 Nov 2025 09:45");
+  const [metrics, setMetrics] = useState({});
+  const [roles, setRoles] = useState({});
+  const [audits, setAudits] = useState([]);
+  const [timestamp, setTimestamp] = useState("");
 
-  const dummyMetrics = [
-    { type: "Change Control", count: 7, lastEntryTime: "09:42" },
-    { type: "Risk", count: 3, lastEntryTime: "09:40" },
-    { type: "Issue", count: 8, lastEntryTime: "09:35" },
-    { type: "Quality", count: 5, lastEntryTime: "09:30" },
-    { type: "Template Review", count: 2, lastEntryTime: "09:25" },
-  ];
-
-  const dummyRoles = { admin: 24, pmo: 15, pm: 10, user: 6 };
-
-  const dummyAudit = [
-    { ts: "02 Nov 2025 09:18", user: "Admin JM", action: "Closed Risk R-024", type: "Risk", ref: "#R-024" },
-    { ts: "02 Nov 2025 09:10", user: "PM AD", action: "Added Issue I-017", type: "Issue", ref: "#I-017" },
-    { ts: "02 Nov 2025 09:05", user: "Admin JM", action: "Approved Template", type: "Template", ref: "#T-013" },
-  ];
+  // On mount: compute summary data
+  useEffect(() => {
+    setMetrics(getGovernanceMetrics(GovernanceStore));
+    setRoles(getRoleVisibilityStats(GovernanceStore));
+    setAudits(getRecentAuditEntries(5, AuditTrailStore));
+    setTimestamp(new Date().toLocaleString());
+  }, []);
 
   return (
-    <div className="governance-summary-container">
-      <header className="gov-header">
-        <h2>Governance Summary Dashboard</h2>
-        <div className="gov-header-buttons">
-          <button>⟳ Refresh</button>
-          <button>⌄ Filter</button>
-        </div>
-      </header>
+    <div className="governance-summary">
+      {/* ===== Header ===== */}
+      <div className="governance-header">
+        <h1>Governance Summary Dashboard</h1>
+        <div className="update-time">Last updated: {timestamp}</div>
+      </div>
 
-      <GovernanceFilters />
-
-      <section className="metric-section">
-        {dummyMetrics.map((m, i) => (
-          <MetricCard
-            key={i}
-            type={m.type}
-            count={m.count}
-            lastEntryTime={m.lastEntryTime}
-            className={i === 0 ? "metric-pulse" : ""}
-          />
+      {/* ===== Metrics Grid ===== */}
+      <div className="metrics-grid">
+        {Object.entries(metrics).map(([type, info]) => (
+          <div key={type} className="metric-card">
+            <div className="metric-title">{type}</div>
+            <div className="metric-count">{info.count}</div>
+            <div className="metric-last">
+              Last entry <strong>{info.lastEntryTime}</strong>
+            </div>
+          </div>
         ))}
-      </section>
+      </div>
 
-      <RoleSummaryBar roleStats={dummyRoles} />
+      {/* ===== Role Summary ===== */}
+      <div className="roles-section">
+        <RoleSummaryBar roles={roles} />
+      </div>
 
-      <section className="activity-section">
-        <h3>Latest Activity</h3>
-        <ActivityStream auditEntries={dummyAudit} />
-      </section>
-
-      <footer className="gov-footer">
-        Data updated {lastUpdated} · Source: Local Governance Store ·
-        <button>Export CSV</button>
-      </footer>
+      {/* ===== Activity Stream ===== */}
+      <div className="activity-section">
+        <h3>Recent Governance Activity</h3>
+        {audits.length === 0 ? (
+          <div className="activity-line">No recent activity.</div>
+        ) : (
+          audits.map((a) => (
+            <div key={a.id} className="activity-line">
+              <span className="timestamp">{new Date(a.timestampCreated).toLocaleString()}</span>
+              {" — "}
+              <span className="user">{a.user}</span> <span className="action">{a.action}</span>{" "}
+              (<span className="type">{a.governanceType}</span>,{" "}
+              <span className="ref">{a.refID}</span>)
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
+
+/* ======================================================================
+   Notes:
+   • Fully styled using GovernanceSummary.css.
+   • Safe with missing data (all utilities use fallbacks).
+   • Displays metrics, roles, and recent audit entries.
+   ====================================================================== */

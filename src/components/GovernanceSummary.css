@@ -1,0 +1,103 @@
+/* ======================================================================
+   METRA – GovernanceSummary.css
+   Phase 4.6 A.3C – Data Integration Styling
+   ----------------------------------------------------------------------
+   Visual layout and styling for the Governance Summary Dashboard.
+   Matches the JSX class structure exactly.
+   ====================================================================== */
+
+/* ===== Root Layout ===== */
+.governance-summary {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background-color: #f9fafb;
+  color: #111;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+/* ===== Header ===== */
+.governance-header {
+  background-color: #0a2b5c;
+  color: #ffffff;
+  padding: 1.25rem 1.75rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  margin-bottom: 2rem;
+}
+
+.governance-header h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.update-time {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* ===== Metrics Grid ===== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.metric-title {
+  font-weight: 600;
+  color: #0a2b5c;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
+
+.metric-count {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+
+.metric-last {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* ===== Role Summary Section ===== */
+.roles-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== RoleSummaryBar Internal Grid ===== */
+.role-summary-bar h3 {
+  margin-top: 0;
+  color: #0a2b5c;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+}
+
+.role-item {
+  fo
