@@ -107,3 +107,12 @@
   text-align: center;
   margin-top: 1rem;
 }
+/* --- Assigned user label --- */
+.assigned-user {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: #333;
+}
+.assigned-user strong {
+  color: #1d4ed8;
+}

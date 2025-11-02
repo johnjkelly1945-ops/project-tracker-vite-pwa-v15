@@ -1,9 +1,8 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.5 – Step 4 (Data Mapping & Role-Tag Enrichment)
+   Phase 4.6 A.5 – Step 5 (Personnel Integration Prep)
    ----------------------------------------------------------------------
-   Seeds localStorage with sample Governance data containing role tags
-   so that role-based filtering can be visually tested.
+   Links Governance Summary demo items to mock Personnel records.
    ====================================================================== */
 
 import React, { useEffect, useState } from "react";
@@ -12,10 +11,20 @@ import RoleFilterBar from "./RoleFilterBar";
 
 export default function GovernanceSummary() {
   const [governanceData, setGovernanceData] = useState([]);
+  const [personnelData, setPersonnelData] = useState([]);
   const [activeRole, setActiveRole] = useState("Solo");
 
-  // === Demo Governance Data ==================================================
-  const demoData = [
+  // === Mock Personnel Data ============================================
+  const demoPersonnel = [
+    { userId: "alice", displayName: "Alice Grant", role: "PMO", projectAssignments: ["P-001"] },
+    { userId: "bob", displayName: "Bob Lang", role: "Project Manager", projectAssignments: ["P-002"] },
+    { userId: "carol", displayName: "Carol West", role: "Project User", projectAssignments: ["P-002"] },
+    { userId: "david", displayName: "David Stone", role: "Admin", projectAssignments: ["SYS-01"] },
+  ];
+  // ====================================================================
+
+  // === Demo Governance Data ===========================================
+  const demoGovernance = [
     {
       title: "Budget Approval",
       description: "Finance committee sign-off required before project start.",
@@ -53,43 +62,39 @@ export default function GovernanceSummary() {
       roleTags: ["Admin"],
     },
   ];
-  // ===========================================================================
+  // ====================================================================
 
   useEffect(() => {
-    // Seed demo data to localStorage if none exists
-    let stored = JSON.parse(localStorage.getItem("governanceSummary"));
-    if (!stored || stored.length === 0) {
-      localStorage.setItem("governanceSummary", JSON.stringify(demoData));
-      stored = demoData;
+    // Seed data once
+    let storedGov = JSON.parse(localStorage.getItem("governanceSummary"));
+    if (!storedGov || storedGov.length === 0) {
+      localStorage.setItem("governanceSummary", JSON.stringify(demoGovernance));
+      storedGov = demoGovernance;
     }
-    setGovernanceData(stored);
+    setGovernanceData(storedGov);
+    setPersonnelData(demoPersonnel);
 
     const savedRole = localStorage.getItem("userRole");
     if (savedRole) setActiveRole(savedRole);
   }, []);
 
-  // === Role-Based Filtering ==================================================
+  // === Role-based filter ==============================================
   const filteredData = governanceData.filter((item) => {
-    if (activeRole === "Admin" || activeRole === "PMO" || activeRole === "Solo")
-      return true;
-
-    if (activeRole === "Project Manager") {
-      return (
-        item.roleTags?.includes("PM") ||
-        item.assignedRole === "Project Manager"
-      );
-    }
-
-    if (activeRole === "Project User") {
-      return (
-        item.roleTags?.includes("User") ||
-        item.assignedRole === "Project User"
-      );
-    }
-
+    if (["Admin", "PMO", "Solo"].includes(activeRole)) return true;
+    if (activeRole === "Project Manager")
+      return item.roleTags?.includes("PM") || item.assignedRole === "Project Manager";
+    if (activeRole === "Project User")
+      return item.roleTags?.includes("User") || item.assignedRole === "Project User";
     return true;
   });
-  // ===========================================================================
+  // ====================================================================
+
+  // === Helper: find personnel name ====================================
+  const getUserDisplayName = (userId) => {
+    const user = personnelData.find((u) => u.userId === userId);
+    return user ? user.displayName : "Unassigned";
+  };
+  // ====================================================================
 
   return (
     <div className="governance-summary">
@@ -113,6 +118,9 @@ export default function GovernanceSummary() {
                 <small>
                   {item.category} · Role: {item.assignedRole}
                 </small>
+                <p className="assigned-user">
+                  Assigned To: <strong>{getUserDisplayName(item.assignedUser)}</strong>
+                </p>
               </div>
             ))}
           </div>
