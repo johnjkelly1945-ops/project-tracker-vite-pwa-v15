@@ -1,113 +1,49 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.4 – Scroll Wrapper Integration (Safari Scroll Fix)
+   Phase 4.6 A.5 – Step 2C (Safari-Safe Role Filter Integration)
    ----------------------------------------------------------------------
-   Adds internal scroll-wrapper div to ensure vertical scrolling works
-   even when Safari ignores 100vh containers.
+   Uses div-based RoleFilterBar to ensure consistent blue active state.
    ====================================================================== */
 
-import React, { useState, useEffect } from "react";
-import { getGovernanceMetrics, getRoleVisibilityStats } from "../utils/GovernanceUtils";
-import { getRecentAuditEntries } from "../utils/AuditUtils";
-import GovernanceStore from "../data/GovernanceStore";
-import AuditTrailStore from "../data/AuditTrailStore";
+import React, { useEffect, useState } from "react";
 import "./GovernanceSummary.css";
-import RoleSummaryBar from "./RoleSummaryBar";
+import RoleFilterBar from "./RoleFilterBar";
 
 export default function GovernanceSummary() {
-  const [metrics, setMetrics] = useState({});
-  const [roles, setRoles] = useState({});
-  const [audits, setAudits] = useState([]);
-  const [timestamp, setTimestamp] = useState("");
-
-  const handleRefresh = () => {
-    try {
-      setMetrics(getGovernanceMetrics(GovernanceStore));
-      setRoles(getRoleVisibilityStats(GovernanceStore));
-      setAudits(getRecentAuditEntries(5, AuditTrailStore));
-      setTimestamp(new Date().toLocaleString());
-    } catch (err) {
-      console.error("Governance refresh error:", err);
-    }
-  };
+  const [governanceData, setGovernanceData] = useState([]);
+  const [activeRole, setActiveRole] = useState("Solo");
 
   useEffect(() => {
-    handleRefresh();
-    const timer = setInterval(() => {
-      handleRefresh();
-      const pulse = document.querySelector(".pulse-indicator");
-      if (pulse) {
-        pulse.classList.add("pulse-active");
-        setTimeout(() => pulse.classList.remove("pulse-active"), 1200);
-      }
-    }, 300000); // every 5 minutes
-    return () => clearInterval(timer);
+    const storedData = JSON.parse(localStorage.getItem("governanceSummary")) || [];
+    setGovernanceData(storedData);
+
+    const savedRole = localStorage.getItem("userRole");
+    if (savedRole) setActiveRole(savedRole);
   }, []);
 
   return (
     <div className="governance-summary">
-      {/* ===== Header with controls ===== */}
-      <div className="governance-header">
-        <div className="header-left">
-          <h1>Governance Summary Dashboard</h1>
-          <div className="update-time">Last updated: {timestamp}</div>
-        </div>
+      <header className="governance-summary-header">
+        <h1>Governance Summary Dashboard</h1>
+      </header>
 
-        <div className="header-controls">
-          <button className="refresh-btn" onClick={handleRefresh}>
-            🔄 Refresh
-          </button>
-          <div className="pulse-indicator" title="Auto-update active"></div>
-        </div>
-      </div>
+      <RoleFilterBar onRoleChange={setActiveRole} />
 
-      {/* ===== Scrollable Wrapper ===== */}
-      <div className="scroll-wrapper">
-        {/* ===== Metrics Grid ===== */}
-        <div className="metrics-grid">
-          {Object.entries(metrics).map(([type, info]) => (
-            <div key={type} className="metric-card">
-              <div className="metric-title">{type}</div>
-              <div className="metric-count">{info.count}</div>
-              <div className="metric-last">
-                Last entry <strong>{info.lastEntryTime}</strong>
+      <section className="governance-summary-content">
+        {governanceData.length === 0 ? (
+          <p className="empty-state">No governance data available.</p>
+        ) : (
+          <div className="governance-cards">
+            {governanceData.map((item, index) => (
+              <div key={index} className="governance-card">
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+                <small>{item.category}</small>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ===== Role Summary ===== */}
-        <div className="roles-section">
-          <RoleSummaryBar roles={roles} />
-        </div>
-
-        {/* ===== Activity Stream ===== */}
-        <div className="activity-section">
-          <h3>Recent Governance Activity</h3>
-          {audits.length === 0 ? (
-            <div className="activity-line">No recent activity.</div>
-          ) : (
-            audits.map((a) => (
-              <div key={a.id} className="activity-line">
-                <span className="timestamp">
-                  {new Date(a.timestampCreated).toLocaleString()}
-                </span>{" "}
-                — <span className="user">{a.user}</span>{" "}
-                <span className="action">{a.action}</span>{" "}
-                (<span className="type">{a.governanceType}</span>,{" "}
-                <span className="ref">{a.refID}</span>)
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-
-/* ======================================================================
-   Notes:
-   • Internal .scroll-wrapper ensures Safari scrolling always works.
-   • All styling hooks preserved from GovernanceSummary.css.
-   • Header remains at top; content scrolls independently below.
-   ====================================================================== */

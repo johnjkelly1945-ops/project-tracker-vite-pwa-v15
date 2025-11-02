@@ -1,192 +1,113 @@
 /* ======================================================================
    METRA – GovernanceSummary.css
-   Phase 4.6 A.4 – Absolute Scroll Guarantee (Safari & Chrome)
+   Phase 4.6 A.5 – Step 2D (Enhanced Contrast Active Blue)
+   ----------------------------------------------------------------------
+   Adjusts active and hover colours for clearer visibility across displays.
    ====================================================================== */
 
-/* ===== Global Reset ===== */
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: #f9fafb;
-  overflow: hidden; /* root doesn't scroll, content will */
-  font-family: "Segoe UI", system-ui, sans-serif;
-}
-
-/* ===== Root Container ===== */
+/* ===== Root Layout ===== */
 .governance-summary {
-  position: relative;
-  min-height: 100vh;
-  background-color: #f9fafb;
-  color: #111;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-/* ===== Scroll Region ===== */
-.scroll-wrapper {
-  position: absolute;
-  top: 140px;             /* leave room for header */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 2rem;
-  -webkit-overflow-scrolling: touch;
+  background-color: #f9fafb !important;
+  color: #111 !important;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  padding: 1.5rem;
 }
 
 /* ===== Header ===== */
-.governance-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: #0a2b5c;
-  color: #ffffff;
-  padding: 1.25rem 1.75rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  margin: 0 2rem;
+.governance-summary-header {
+  border-bottom: 1px solid #dce3eb;
+  margin-bottom: 1rem;
+}
+
+.governance-summary-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1d4ed8; /* brighter blue for heading consistency */
+  margin: 0;
+}
+
+/* ===== Role Filter Bar ===== */
+.role-filter-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1.25rem 0;
   flex-wrap: wrap;
 }
 
-.header-left h1 {
-  font-size: 1.9rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem 0;
-}
-
-.update-time {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-/* ===== Header Controls ===== */
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.refresh-btn {
+/* --- Button Look-Alike --- */
+.role-btn {
+  user-select: none;
   background-color: #ffffff;
-  border: 1px solid #0a2b5c;
-  color: #0a2b5c;
+  color: #1d4ed8;
+  border: 1px solid #ccd3e0;
   border-radius: 8px;
-  padding: 0.4rem 0.9rem;
+  padding: 6px 12px;
   font-size: 0.9rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
   cursor: pointer;
-  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
-.refresh-btn:hover {
-  background-color: #0a2b5c;
+.role-btn:hover {
+  background-color: #dbe8ff;  /* lighter, clearer hover */
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+}
+
+/* --- Active Role --- */
+.role-btn.active {
+  background-color: #1d4ed8;  /* bright royal blue */
   color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
 }
 
-/* --- Green Pulse Dot --- */
-.pulse-indicator {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: #18a558;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 0 rgba(24, 165, 88, 0.4);
-  animation: pulse 5s infinite;
+/* ===== Summary Content ===== */
+.governance-summary-content {
+  margin-top: 1rem;
 }
 
-@keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(24, 165, 88, 0.5); }
-  70%  { box-shadow: 0 0 0 10px rgba(24, 165, 88, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(24, 165, 88, 0); }
-}
-
-/* ===== Metrics Grid ===== */
-.metrics-grid {
+.governance-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
 }
 
-.metric-card {
-  background: #ffffff;
+.governance-card {
+  background-color: #fff;
+  border: 1px solid #e2e7f0;
   border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 1rem 1.25rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.governance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.governance-card h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.05rem;
+  color: #1d4ed8;
+}
+
+.governance-card p {
+  margin: 0.25rem 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.governance-card small {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.empty-state {
+  color: #666;
+  font-style: italic;
   text-align: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-top: 1rem;
 }
-
-.metric-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-.metric-title {
-  font-weight: 600;
-  color: #0a2b5c;
-  margin-bottom: 0.25rem;
-  font-size: 1rem;
-}
-
-.metric-count {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.25rem;
-}
-
-.metric-last {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-/* ===== Role Summary Section ===== */
-.roles-section {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* ===== Activity Stream Section ===== */
-.activity-section {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.activity-section h3 {
-  margin-top: 0;
-  color: #0a2b5c;
-  margin-bottom: 0.75rem;
-}
-
-.activity-line {
-  border-bottom: 1px solid #eee;
-  padding: 0.5rem 0;
-  font-size: 0.9rem;
-  color: #222;
-}
-
-.activity-line:last-child {
-  border-bottom: none;
-}
-
-.activity-line .timestamp { color: #666; }
-.activity-line .user      { font-weight: 600; color: #0a2b5c; }
-.activity-line .action    { color: #222; }
-.activity-line .type      { color: #2c5282; }
-.activity-line .ref       { color: #999; }
-
-/* ======================================================================
-   End of File
-   ====================================================================== */
