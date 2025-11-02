@@ -1,8 +1,8 @@
 /* ======================================================================
    METRA – RoleFilterBar.jsx
-   Phase 4.6 A.5 – Step 3 (Role Selection Logic)
+   Phase 4.6 A.5 – Step 4 (Continuity)
    ----------------------------------------------------------------------
-   Emits activeRole state changes upward for data filtering.
+   Emits activeRole changes upward for filtering.
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -16,14 +16,14 @@ export default function RoleFilterBar({ onRoleChange }) {
     const savedRole = localStorage.getItem("userRole");
     if (savedRole && roles.includes(savedRole)) {
       setActiveRole(savedRole);
-      onRoleChange && onRoleChange(savedRole);
+      if (onRoleChange) onRoleChange(savedRole);
     }
   }, []);
 
   const handleSelect = (role) => {
     setActiveRole(role);
     localStorage.setItem("userRole", role);
-    onRoleChange && onRoleChange(role);
+    if (onRoleChange) onRoleChange(role);
   };
 
   return (

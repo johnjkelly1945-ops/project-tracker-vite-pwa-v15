@@ -1,8 +1,9 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.5 – Step 3 (Role-Based Filtering Logic)
+   Phase 4.6 A.5 – Step 4 (Data Mapping & Role-Tag Enrichment)
    ----------------------------------------------------------------------
-   Displays governance data filtered by active user role.
+   Seeds localStorage with sample Governance data containing role tags
+   so that role-based filtering can be visually tested.
    ====================================================================== */
 
 import React, { useEffect, useState } from "react";
@@ -13,33 +14,82 @@ export default function GovernanceSummary() {
   const [governanceData, setGovernanceData] = useState([]);
   const [activeRole, setActiveRole] = useState("Solo");
 
-  // Load base data once
+  // === Demo Governance Data ==================================================
+  const demoData = [
+    {
+      title: "Budget Approval",
+      description: "Finance committee sign-off required before project start.",
+      category: "Finance",
+      assignedRole: "PMO",
+      assignedUser: "alice",
+      projectId: "P-001",
+      roleTags: ["PMO", "Admin"],
+    },
+    {
+      title: "Feasibility Report",
+      description: "Project Manager to upload feasibility study.",
+      category: "Pre-Project",
+      assignedRole: "Project Manager",
+      assignedUser: "bob",
+      projectId: "P-002",
+      roleTags: ["PM", "User"],
+    },
+    {
+      title: "Stakeholder Review",
+      description: "Project User to gather stakeholder feedback.",
+      category: "Engagement",
+      assignedRole: "Project User",
+      assignedUser: "carol",
+      projectId: "P-002",
+      roleTags: ["User"],
+    },
+    {
+      title: "Audit Trail Verification",
+      description: "Admin verifies audit log consistency.",
+      category: "Governance",
+      assignedRole: "Admin",
+      assignedUser: "david",
+      projectId: "SYS-01",
+      roleTags: ["Admin"],
+    },
+  ];
+  // ===========================================================================
+
   useEffect(() => {
-    const storedData =
-      JSON.parse(localStorage.getItem("governanceSummary")) || [];
-    setGovernanceData(storedData);
+    // Seed demo data to localStorage if none exists
+    let stored = JSON.parse(localStorage.getItem("governanceSummary"));
+    if (!stored || stored.length === 0) {
+      localStorage.setItem("governanceSummary", JSON.stringify(demoData));
+      stored = demoData;
+    }
+    setGovernanceData(stored);
 
     const savedRole = localStorage.getItem("userRole");
     if (savedRole) setActiveRole(savedRole);
   }, []);
 
-  // === Role Filter Logic ===
+  // === Role-Based Filtering ==================================================
   const filteredData = governanceData.filter((item) => {
     if (activeRole === "Admin" || activeRole === "PMO" || activeRole === "Solo")
       return true;
 
     if (activeRole === "Project Manager") {
-      // Example: item.projectManager or item.roleTags includes "PM"
-      return item.roleTags?.includes("PM") || item.assignedRole === "PM";
+      return (
+        item.roleTags?.includes("PM") ||
+        item.assignedRole === "Project Manager"
+      );
     }
 
     if (activeRole === "Project User") {
-      // Example: match by userId or roleTags includes "User"
-      return item.roleTags?.includes("User") || item.assignedRole === "User";
+      return (
+        item.roleTags?.includes("User") ||
+        item.assignedRole === "Project User"
+      );
     }
 
     return true;
   });
+  // ===========================================================================
 
   return (
     <div className="governance-summary">
@@ -61,7 +111,7 @@ export default function GovernanceSummary() {
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 <small>
-                  {item.category} · Role: {item.assignedRole || "N/A"}
+                  {item.category} · Role: {item.assignedRole}
                 </small>
               </div>
             ))}
