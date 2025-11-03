@@ -1,46 +1,128 @@
 /* ======================================================================
    METRA – GovernanceSummary.css
-   Phase 4.6 A.5 Step 6 – Personnel Link Integration
+   Phase 4.6 A.6 Step 3B – Fixed Header + Guaranteed Scroll (Safari Final)
    ----------------------------------------------------------------------
-   Extends Step 5 styling with role badges & personnel section.
+   • Header fixed (no flicker)
+   • Filter bar sticky under header
+   • Main content scrolls freely across all browsers
    ====================================================================== */
 
+/* ===== Root Wrapper ===== */
 .governance-summary {
-  background-color: #f9fafb !important;
-  color: #111 !important;
-  padding: 1rem 2rem;
+  background: #f9fafb;
+  color: #111;
   font-family: "Segoe UI", system-ui, sans-serif;
+  height: 100vh;
+  overflow-y: auto; /* ✅ scroll on the main container */
+  scroll-behavior: smooth;
 }
 
-/* ===== Header ===== */
+/* ===== Fixed Header ===== */
 .gov-header {
-  font-size: 1.6rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  z-index: 30;
+  padding: 0 1.25rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #0a2b5c;
-  margin-bottom: 1rem;
-  text-align: left;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-/* ===== Card Layout ===== */
+/* ===== Sticky Filter Bar ===== */
+.role-filter-bar {
+  position: sticky;
+  top: 3.5rem; /* sits below header */
+  background: #f9fafb;
+  z-index: 20;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Filter Buttons */
+.role-filter-bar button {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #0a2b5c;
+  padding: 0.4rem 0.9rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-filter-bar button:hover {
+  background: #e2e8f0;
+}
+
+.role-filter-bar button.active {
+  background: #0a2b5c;
+  color: #fff;
+  border-color: #0a2b5c;
+}
+
+/* ===== Scrollable Area Padding ===== */
+.gov-content-scroll {
+  padding: 6rem 1rem 1rem; /* clears header + filter bar */
+}
+
+/* ===== Project Group Sections ===== */
+.gov-project-section {
+  margin-top: 1.5rem;
+  border-top: 2px solid #e5e7eb;
+  padding-top: 0.8rem;
+}
+
+.gov-project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0a2b5c;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.gov-project-id {
+  font-size: 1rem;
+}
+
+.gov-toggle {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* ===== Governance Cards ===== */
 .gov-card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
 
 .gov-card {
   background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  padding: 1rem 1.2rem;
-  transition: transform 0.15s ease;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.gov-card:hover {
-  transform: translateY(-3px);
-}
-
-/* ===== Header with Role Badge ===== */
 .gov-card-header {
   display: flex;
   justify-content: space-between;
@@ -48,28 +130,47 @@
   margin-bottom: 0.5rem;
 }
 
+/* ===== Role Badge Colours ===== */
 .role-badge {
-  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 0.5rem;
-  font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
 }
 
-/* Role colours */
-.role-admin { background-color: #005fcc; }
-.role-pmo { background-color: #0077b6; }
-.role-manager { background-color: #38a169; }
-.role-user { background-color: #718096; }
-.role-none { background-color: #ccc; }
+.role-admin {
+  background: #1e3a8a;
+}
 
-/* ===== Personnel Info ===== */
-.gov-personnel {
-  margin-top: 0.5rem;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 0.4rem;
-  font-size: 0.85rem;
+.role-pmo {
+  background: #2563eb;
+}
+
+.role-manager {
+  background: #16a34a;
+}
+
+.role-user {
+  background: #6b7280;
+}
+
+.role-none {
+  background: #9ca3af;
+}
+
+/* ===== Card Text & Metadata ===== */
+.gov-description {
+  flex-grow: 1;
   color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.gov-personnel {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .gov-person-name {
@@ -78,15 +179,27 @@
 }
 
 .gov-person-email {
-  display: block;
-  color: #0077b6;
+  color: #2563eb;
 }
 
-/* ===== Meta ===== */
 .gov-meta {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.6rem;
-  font-size: 0.8rem;
-  color: #666;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* ===== Scrollbar Styling ===== */
+.governance-summary::-webkit-scrollbar {
+  width: 8px;
+}
+
+.governance-summary::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 6px;
+}
+
+.governance-summary::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
