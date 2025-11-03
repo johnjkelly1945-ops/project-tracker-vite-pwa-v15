@@ -1,12 +1,25 @@
-/* ==============================================
+/* ======================================================================
    METRA – App.jsx
-   Sandbox Redirect for Change Request Test
-   ============================================== */
+   Phase 4.6 A.7 Step 1 – Programme Roll-Up Dashboard Integration
+   ----------------------------------------------------------------------
+   This App file temporarily mounts the new Programme Roll-Up Dashboard
+   for standalone verification of layout, scroll behaviour, and styling.
+   Later phases will reintegrate it into the Governance navigation flow.
+   ====================================================================== */
 
-console.log("🔍 Active App.jsx: Sandbox redirect loaded");
+import React from "react";
+import GovernanceProgrammeDashboard from "./components/GovernanceProgrammeDashboard";
+import "./styles/GovernanceProgrammeDashboard.css";
 
-import PreProjectChangeTest from "./components/PreProjectChangeTest";
-
-export default function App() {
-  return <PreProjectChangeTest />;
+/* ======================================================================
+   Root Application Mount
+   ====================================================================== */
+function App() {
+  return (
+    <div className="metra-root">
+      <GovernanceProgrammeDashboard />
+    </div>
+  );
 }
+
+export default App;

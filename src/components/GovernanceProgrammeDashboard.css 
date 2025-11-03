@@ -1,0 +1,100 @@
+/* ======================================================================
+   METRA – GovernanceProgrammeDashboard.css
+   Phase 4.6 A.7 Step 1 – Static Layout Framework
+   ----------------------------------------------------------------------
+   Visual structure for the Programme Roll-Up Dashboard.
+   ====================================================================== */
+
+.programme-dashboard {
+  background-color: #f9fafb;
+  color: #111;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  padding: 1.5rem;
+  min-height: 100vh;
+}
+
+/* ===== Header ===== */
+.programme-header {
+  position: sticky;
+  top: 0;
+  background-color: #f9fafb;
+  z-index: 10;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.programme-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0a2b5c;
+  margin: 0;
+}
+
+.programme-subtitle {
+  font-size: 0.95rem;
+  color: #444;
+  margin-top: 0.25rem;
+}
+
+/* ===== Summary Grid ===== */
+.programme-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+}
+
+.summary-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.summary-title {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.rag-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* Colour Variants */
+.blue .summary-value { color: #0a2b5c; }
+.green .summary-value { color: #007a33; }
+.amber .summary-value { color: #d97706; }
+.red .summary-value { color: #b91c1c; }
+
+.green .rag-dot { background-color: #007a33; }
+.amber .rag-dot { background-color: #d97706; }
+.red .rag-dot { background-color: #b91c1c; }
+.blue .rag-dot { background-color: #0a2b5c; }
+
+/* ===== Placeholder ===== */
+.programme-placeholder {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  color: #555;
+}
