@@ -1,33 +1,32 @@
-/* ==========================================================
-   METRA – Root Mount (Phase 4.3A Integration)
-   ----------------------------------------------------------
-   Wraps the entire app in the RoleProvider so that
-   PreProject and all future modules can access role data.
-   ========================================================== */
+/* ======================================================================
+   METRA – Root Mount (Phase 4.6 A.3C Governance Summary Test)
+   ----------------------------------------------------------------------
+   Temporarily mounts the Governance Summary Dashboard in place of
+   PreProject so the live data integration can be verified.
+   ====================================================================== */
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import PreProject from "./components/PreProject.jsx";
-import { RoleProvider } from "./context/RoleContext.jsx"; // 🆕 Global role context
-import "./index.css"; // (keep if already in use for global styles)
+import { RoleProvider } from "./context/RoleContext.jsx";   // Global role context
+import GovernanceSummary from "./components/GovernanceSummary.jsx"; // 🆕 New dashboard
+import "./index.css"; // Keep existing global styles
 
-// -----------------------------------------------------------
-// 🟩 Root Render
-// -----------------------------------------------------------
+// ----------------------------------------------------------------------
+// 🟩 Root Render (Governance Summary Test Mount)
+// ----------------------------------------------------------------------
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <RoleProvider>
-      <PreProject />
+      <GovernanceSummary />
     </RoleProvider>
   </React.StrictMode>
 );
 
-// -----------------------------------------------------------
+// ----------------------------------------------------------------------
 // 🧩 Notes
-// -----------------------------------------------------------
-// 1️⃣ RoleProvider provides {role, showGovernance, toggleGovernance, permissions} globally.
-// 2️⃣ Default role = "ProjectManager" (for testing).
-// 3️⃣ In Phase 4.3B, PreProject will read this context to
-//     hide Governance Queue for non-Admin/PMO users.
-// 4️⃣ Future: Role will link to Personnel / Login modules.
-// ==========================================================
+// ----------------------------------------------------------------------
+// • This temporarily replaces <PreProject /> with <GovernanceSummary />.
+// • Use it to verify that the live dashboard renders correctly in Safari,
+//   updates metrics, and refreshes automatically every 5 minutes.
+// • When verified and baselined, restore <PreProject /> as root mount.
+// ======================================================================

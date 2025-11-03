@@ -1,131 +1,128 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.5 – Step 5 (Personnel Integration Prep)
+   Phase 4.6 A.5 Step 6 – Personnel Link Integration
    ----------------------------------------------------------------------
-   Links Governance Summary demo items to mock Personnel records.
+   Adds live personnel linkage, role badges, and email line.
+   Includes seeded governance data aligned to personnel list.
    ====================================================================== */
 
 import React, { useEffect, useState } from "react";
 import "./GovernanceSummary.css";
 import RoleFilterBar from "./RoleFilterBar";
+import usePersonnelData from "../hooks/usePersonnelData";
 
 export default function GovernanceSummary() {
   const [governanceData, setGovernanceData] = useState([]);
-  const [personnelData, setPersonnelData] = useState([]);
-  const [activeRole, setActiveRole] = useState("Solo");
+  const [filteredData, setFilteredData] = useState([]);
+  const [activeRole, setActiveRole] = useState("All");
 
-  // === Mock Personnel Data ============================================
-  const demoPersonnel = [
-    { userId: "alice", displayName: "Alice Grant", role: "PMO", projectAssignments: ["P-001"] },
-    { userId: "bob", displayName: "Bob Lang", role: "Project Manager", projectAssignments: ["P-002"] },
-    { userId: "carol", displayName: "Carol West", role: "Project User", projectAssignments: ["P-002"] },
-    { userId: "david", displayName: "David Stone", role: "Admin", projectAssignments: ["SYS-01"] },
-  ];
-  // ====================================================================
+  // Shared personnel data hook
+  const personnel = usePersonnelData();
 
-  // === Demo Governance Data ===========================================
-  const demoGovernance = [
-    {
-      title: "Budget Approval",
-      description: "Finance committee sign-off required before project start.",
-      category: "Finance",
-      assignedRole: "PMO",
-      assignedUser: "alice",
-      projectId: "P-001",
-      roleTags: ["PMO", "Admin"],
-    },
-    {
-      title: "Feasibility Report",
-      description: "Project Manager to upload feasibility study.",
-      category: "Pre-Project",
-      assignedRole: "Project Manager",
-      assignedUser: "bob",
-      projectId: "P-002",
-      roleTags: ["PM", "User"],
-    },
-    {
-      title: "Stakeholder Review",
-      description: "Project User to gather stakeholder feedback.",
-      category: "Engagement",
-      assignedRole: "Project User",
-      assignedUser: "carol",
-      projectId: "P-002",
-      roleTags: ["User"],
-    },
-    {
-      title: "Audit Trail Verification",
-      description: "Admin verifies audit log consistency.",
-      category: "Governance",
-      assignedRole: "Admin",
-      assignedUser: "david",
-      projectId: "SYS-01",
-      roleTags: ["Admin"],
-    },
-  ];
-  // ====================================================================
-
+  /* ---------------------------------------------------------------
+     Seed local governance data for Step 6 demo.
+     These entries align with the mock personnel names.
+     --------------------------------------------------------------- */
   useEffect(() => {
-    // Seed data once
-    let storedGov = JSON.parse(localStorage.getItem("governanceSummary"));
-    if (!storedGov || storedGov.length === 0) {
-      localStorage.setItem("governanceSummary", JSON.stringify(demoGovernance));
-      storedGov = demoGovernance;
-    }
-    setGovernanceData(storedGov);
-    setPersonnelData(demoPersonnel);
+    const sampleGovernance = [
+      {
+        id: 1,
+        title: "Budget Approval",
+        description: "Finance committee sign-off required before project start.",
+        roleTags: ["PMO"],
+        assignedTo: "David Ng",
+        status: "Pending",
+        timestamp: "2025-11-03 09:30",
+      },
+      {
+        id: 2,
+        title: "Feasibility Report",
+        description: "Project Manager to upload feasibility study.",
+        roleTags: ["Manager"],
+        assignedTo: "Maria Santos",
+        status: "In Progress",
+        timestamp: "2025-11-03 09:31",
+      },
+      {
+        id: 3,
+        title: "Stakeholder Review",
+        description: "Project User to gather stakeholder feedback.",
+        roleTags: ["User"],
+        assignedTo: "Liam Turner",
+        status: "Open",
+        timestamp: "2025-11-03 09:32",
+      },
+      {
+        id: 4,
+        title: "Audit Trail Verification",
+        description: "Admin verifies audit log consistency.",
+        roleTags: ["Admin"],
+        assignedTo: "Alice Robertson",
+        status: "Complete",
+        timestamp: "2025-11-03 09:33",
+      },
+    ];
 
-    const savedRole = localStorage.getItem("userRole");
-    if (savedRole) setActiveRole(savedRole);
+    localStorage.setItem("governanceSummary", JSON.stringify(sampleGovernance));
+    setGovernanceData(sampleGovernance);
   }, []);
 
-  // === Role-based filter ==============================================
-  const filteredData = governanceData.filter((item) => {
-    if (["Admin", "PMO", "Solo"].includes(activeRole)) return true;
-    if (activeRole === "Project Manager")
-      return item.roleTags?.includes("PM") || item.assignedRole === "Project Manager";
-    if (activeRole === "Project User")
-      return item.roleTags?.includes("User") || item.assignedRole === "Project User";
-    return true;
-  });
-  // ====================================================================
+  // Filter logic by role
+  useEffect(() => {
+    if (activeRole === "All") {
+      setFilteredData(governanceData);
+    } else {
+      const result = governanceData.filter(
+        (item) => item.roleTags && item.roleTags.includes(activeRole)
+      );
+      setFilteredData(result);
+    }
+  }, [activeRole, governanceData]);
 
-  // === Helper: find personnel name ====================================
-  const getUserDisplayName = (userId) => {
-    const user = personnelData.find((u) => u.userId === userId);
-    return user ? user.displayName : "Unassigned";
-  };
-  // ====================================================================
+  // Match governance entries to personnel
+  const findPersonnel = (assignedTo) =>
+    personnel.find((p) => p.name === assignedTo);
 
+  /* ---------------------------------------------------------------
+     Render Section
+     --------------------------------------------------------------- */
   return (
     <div className="governance-summary">
-      <header className="governance-summary-header">
-        <h1>Governance Summary Dashboard</h1>
-      </header>
+      <h2 className="gov-header">Governance Summary Dashboard</h2>
 
-      <RoleFilterBar onRoleChange={setActiveRole} />
+      <RoleFilterBar activeRole={activeRole} setActiveRole={setActiveRole} />
 
-      <section className="governance-summary-content">
-        {filteredData.length === 0 ? (
-          <p className="empty-state">
-            No governance data visible for the selected role.
-          </p>
-        ) : (
-          <div className="governance-cards">
-            {filteredData.map((item, index) => (
-              <div key={index} className="governance-card">
+      <div className="gov-card-container">
+        {filteredData.map((item) => {
+          const person = findPersonnel(item.assignedTo);
+          return (
+            <div className="gov-card" key={item.id}>
+              <div className="gov-card-header">
+                <span
+                  className={`role-badge role-${person?.role?.toLowerCase() || "none"}`}
+                >
+                  {person?.role || "Unassigned"}
+                </span>
                 <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <small>
-                  {item.category} · Role: {item.assignedRole}
-                </small>
-                <p className="assigned-user">
-                  Assigned To: <strong>{getUserDisplayName(item.assignedUser)}</strong>
-                </p>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+
+              <p className="gov-description">{item.description}</p>
+
+              {person && (
+                <div className="gov-personnel">
+                  <span className="gov-person-name">{person.name}</span>
+                  <span className="gov-person-email">{person.email}</span>
+                </div>
+              )}
+
+              <div className="gov-meta">
+                <span className="gov-status">{item.status}</span>
+                <span className="gov-timestamp">{item.timestamp}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

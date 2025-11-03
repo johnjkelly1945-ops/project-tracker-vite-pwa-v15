@@ -1,178 +1,174 @@
 /* ======================================================================
-   METRA – Governance Summary Dashboard
-   Phase 4.6 A.3B · Styling & Polish
+   METRA – GovernanceSummary.css
+   Phase 4.6 A.4 – Scroll-Enabled Interactive Layout
+   ----------------------------------------------------------------------
+   Adds Safari-safe vertical scrolling and interactive header styling
+   (Refresh button + pulse indicator) while retaining A.3 C visuals.
    ====================================================================== */
 
-:root {
-  --metra-blue-dark: #0a2b5c;
-  --metra-blue-light: #143d80;
-  --metra-gray-bg: #f9f9f9;
-  --metra-light-blue: #e9eef7;
-  --metra-shadow: rgba(0, 0, 0, 0.1);
-  --card-radius: 12px;
-  --font-main: "Segoe UI", system-ui, sans-serif;
+/* ===== Global unlock ===== */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: visible !important;
+  background-color: #f9fafb;
 }
 
-/* ===== Layout Container ===== */
-.governance-summary-container {
-  font-family: var(--font-main);
-  background: var(--metra-gray-bg);
-  padding: 1rem 1.5rem 2rem 1.5rem;
-  color: var(--metra-blue-dark);
+/* ===== Root Layout ===== */
+.governance-summary {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background-color: #f9fafb;
+  color: #111;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* ===== Header Bar ===== */
-.gov-header {
+/* ===== Scroll Wrapper ===== */
+.scroll-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 2rem;
+  -webkit-overflow-scrolling: touch; /* Safari momentum scroll */
+}
+
+/* ===== Header ===== */
+.governance-header {
+  background-color: #0a2b5c;
+  color: #ffffff;
+  padding: 1.25rem 1.75rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  margin: 1.5rem 2rem 1.75rem 2rem;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, var(--metra-blue-dark), var(--metra-blue-light));
-  color: #fff;
-  padding: 0.9rem 1.4rem;
-  border-radius: var(--card-radius);
-  box-shadow: 0 3px 8px var(--metra-shadow);
-  margin-bottom: 1.25rem;
-  animation: fadeIn 0.6s ease;
-}
-
-.gov-header h2 { font-size: 1.6rem; font-weight: 700; margin: 0; }
-
-.gov-header-buttons button {
-  margin-left: 0.5rem;
-  background-color: #fff;
-  color: var(--metra-blue-dark);
-  border: none;
-  padding: 0.35rem 0.8rem;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.gov-header-buttons button:hover {
-  background-color: #d9e3f3;
-  transform: translateY(-1px);
-}
-button:active { animation: rotateOnce 0.4s linear; }
-
-/* ===== Filters ===== */
-.governance-filters {
-  display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  background: #fff;
-  border-radius: var(--card-radius);
-  box-shadow: 0 1px 4px var(--metra-shadow);
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.5rem;
-  animation: fadeIn 0.8s ease;
-}
-.governance-filters label { font-weight: 600; color: var(--metra-blue-dark); }
-.governance-filters select {
-  display: block;
-  margin-top: 0.25rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-size: 0.9rem;
-  transition: box-shadow 0.2s ease;
-}
-.governance-filters select:focus {
-  box-shadow: 0 0 0 2px #d3e0fa;
-  outline: none;
 }
 
-/* ===== Metric Cards ===== */
-.metric-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
+.header-left h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
 }
+
+.update-time {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* ===== Header Controls (Refresh + Pulse) ===== */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.refresh-btn {
+  background-color: #ffffff;
+  border: 1px solid #0a2b5c;
+  color: #0a2b5c;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.refresh-btn:hover {
+  background-color: #0a2b5c;
+  color: #ffffff;
+}
+
+.pulse-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #18a558;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 rgba(24, 165, 88, 0.4);
+  animation: pulse 5s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(24, 165, 88, 0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(24, 165, 88, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(24, 165, 88, 0); }
+}
+
+/* ===== Metrics Grid ===== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
 .metric-card {
-  background: #fff;
-  border-radius: var(--card-radius);
-  box-shadow: 0 1px 4px var(--metra-shadow);
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1rem;
   text-align: center;
-  transition: all 0.25s ease;
-  animation: fadeIn 0.6s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.metric-card:hover { transform: scale(1.02); box-shadow: 0 3px 8px var(--metra-shadow); }
-.metric-card.metric-pulse { animation: pulse 1.5s infinite; }
-.metric-card h4 { font-size: 1rem; margin-bottom: 0.25rem; color: var(--metra-blue-dark); }
-.metric-count { font-size: 2.2rem; font-weight: 700; margin: 0.4rem 0; }
-.metric-card small { display: block; font-size: 0.8rem; color: #666; }
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.metric-title {
+  font-weight: 600;
+  color: #0a2b5c;
+  margin-bottom: 0.5rem;
+}
+
+.metric-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+}
 
 /* ===== Role Summary Bar ===== */
-.role-summary-bar {
-  display: flex;
-  justify-content: space-around;
-  border-radius: var(--card-radius);
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 4px var(--metra-shadow);
+.roles-section {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-.role-block {
-  flex: 1;
-  text-align: center;
-  color: #fff;
-  font-weight: 600;
-  padding: 0.6rem 0;
-  transition: opacity 0.2s ease;
-}
-.role-block:hover { opacity: 0.85; }
-.role-block[data-role="admin"] { background: linear-gradient(135deg, #163f6e, #1f4d85); }
-.role-block[data-role="pmo"]   { background: linear-gradient(135deg, #1a588c, #2d6ca1); }
-.role-block[data-role="pm"]    { background: linear-gradient(135deg, #3b75b0, #5186bc); }
-.role-block[data-role="user"]  { background: linear-gradient(135deg, #7fa7d4, #97b9de); }
 
 /* ===== Activity Stream ===== */
-.activity-section h3 {
-  font-size: 1.2rem; font-weight: 600;
-  color: var(--metra-blue-dark); margin-bottom: 0.5rem;
+.activity-section {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 2rem;
 }
-.activity-stream {
-  background: #fff;
-  border-radius: var(--card-radius);
-  padding: 0.75rem 1rem;
-  max-height: 220px;
-  overflow-y: auto;
-  box-shadow: 0 1px 4px var(--metra-shadow);
-  animation: fadeIn 0.6s ease;
-}
-.activity-line { padding: 0.3rem 0; font-size: 0.9rem; border-bottom: 1px solid #f0f0f0; }
-.activity-line:last-child { border-bottom: none; }
-.activity-stream::-webkit-scrollbar { width: 6px; }
-.activity-stream::-webkit-scrollbar-thumb { background: #bfc8dc; border-radius: 6px; }
-.activity-stream::-webkit-scrollbar-thumb:hover { background: #8ea0c6; }
 
-/* ===== Footer ===== */
-.gov-footer { margin-top: 1.25rem; font-size: 0.85rem; color: #555; text-align: center; }
-.gov-footer button {
-  margin-left: 0.5rem; padding: 0.25rem 0.6rem;
-  border: none; border-radius: 6px;
-  background: linear-gradient(135deg, var(--metra-blue-dark), var(--metra-blue-light));
-  color: #fff; cursor: pointer; font-weight: 600; transition: background 0.2s ease;
+.activity-line {
+  border-bottom: 1px solid #eee;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
 }
-.gov-footer button:hover { background: #123e83; }
 
-/* ===== Animations ===== */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.activity-line:last-child {
+  border-bottom: none;
 }
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(20,61,128,0.4); }
-  70% { box-shadow: 0 0 0 12px rgba(20,61,128,0); }
-  100% { box-shadow: 0 0 0 0 rgba(20,61,128,0); }
-}
-@keyframes rotateOnce { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .gov-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-  .role-summary-bar { flex-wrap: wrap; }
-  .role-block { flex: 0 0 50%; }
-}
+.activity-line .timestamp { color: #666; }
+.activity-line .user      { font-weight: 600; color: #0a2b5c; }
+.activity-line .action    { color: #333; }
+.activity-line .type      { color: #2c5282; }
+.activity-line .ref       { color: #888; }
+
+/* ======================================================================
+   End of File
+   ====================================================================== */

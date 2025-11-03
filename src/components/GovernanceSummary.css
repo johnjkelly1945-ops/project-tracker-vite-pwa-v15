@@ -1,118 +1,92 @@
 /* ======================================================================
    METRA – GovernanceSummary.css
-   Phase 4.6 A.5 – Step 3 (Role-Based Filtering Logic)
+   Phase 4.6 A.5 Step 6 – Personnel Link Integration
    ----------------------------------------------------------------------
-   Retains royal blue accent and enhanced hover contrast.
+   Extends Step 5 styling with role badges & personnel section.
    ====================================================================== */
 
 .governance-summary {
   background-color: #f9fafb !important;
   color: #111 !important;
+  padding: 1rem 2rem;
   font-family: "Segoe UI", system-ui, sans-serif;
-  padding: 1.5rem;
 }
 
 /* ===== Header ===== */
-.governance-summary-header {
-  border-bottom: 1px solid #dce3eb;
-  margin-bottom: 1rem;
-}
-
-.governance-summary-header h1 {
-  font-size: 1.5rem;
+.gov-header {
+  font-size: 1.6rem;
   font-weight: 700;
-  color: #1d4ed8;
-  margin: 0;
+  color: #0a2b5c;
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
-/* ===== Role Filter Bar ===== */
-.role-filter-bar {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.75rem 0 1.25rem 0;
-  flex-wrap: wrap;
-}
-
-.role-btn {
-  user-select: none;
-  background-color: #ffffff;
-  color: #1d4ed8;
-  border: 1px solid #ccd3e0;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-}
-
-.role-btn:hover {
-  background-color: #dbe8ff;
-  border-color: #1d4ed8;
-  color: #1d4ed8;
-}
-
-.role-btn.active {
-  background-color: #1d4ed8;
-  color: #ffffff;
-  border-color: #1d4ed8;
-  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
-}
-
-/* ===== Summary Content ===== */
-.governance-summary-content {
-  margin-top: 1rem;
-}
-
-.governance-cards {
+/* ===== Card Layout ===== */
+.gov-card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
 }
 
-.governance-card {
-  background-color: #fff;
-  border: 1px solid #e2e7f0;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.gov-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.2rem;
+  transition: transform 0.15s ease;
 }
 
-.governance-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+.gov-card:hover {
+  transform: translateY(-3px);
 }
 
-.governance-card h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.05rem;
-  color: #1d4ed8;
+/* ===== Header with Role Badge ===== */
+.gov-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.governance-card p {
-  margin: 0.25rem 0 0.5rem 0;
-  font-size: 0.9rem;
-  color: #333;
+.role-badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
 }
 
-.governance-card small {
-  color: #666;
-  font-size: 0.8rem;
-}
+/* Role colours */
+.role-admin { background-color: #005fcc; }
+.role-pmo { background-color: #0077b6; }
+.role-manager { background-color: #38a169; }
+.role-user { background-color: #718096; }
+.role-none { background-color: #ccc; }
 
-.empty-state {
-  color: #666;
-  font-style: italic;
-  text-align: center;
-  margin-top: 1rem;
-}
-/* --- Assigned user label --- */
-.assigned-user {
-  margin-top: 0.4rem;
+/* ===== Personnel Info ===== */
+.gov-personnel {
+  margin-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.4rem;
   font-size: 0.85rem;
   color: #333;
 }
-.assigned-user strong {
-  color: #1d4ed8;
+
+.gov-person-name {
+  display: block;
+  font-weight: 600;
+}
+
+.gov-person-email {
+  display: block;
+  color: #0077b6;
+}
+
+/* ===== Meta ===== */
+.gov-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  color: #666;
 }

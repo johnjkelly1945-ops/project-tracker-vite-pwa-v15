@@ -1,3 +1,4 @@
+
 /* === METRA – Full-Width Layout Correction (Phase 4.3A.2) === */
 html, body, #root, #root > div {
   width: 100vw;
@@ -13,7 +14,22 @@ html, body, #root, #root > div {
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
+  font-weight: 400;/* ======================================================================
+   METRA – Global Scroll Unlock
+   Ensures that module-level scroll containers (e.g. GovernanceSummary)
+   can scroll independently in Safari and Chrome.
+   ====================================================================== */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: visible !important;   /* 🔓 allow inner scroll wrappers */
+  background-color: #f9fafb;
+}
+
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -77,4 +93,17 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+/* ======================================================================
+   METRA – Light Mode Override (Governance Dashboard)
+   Ensures consistent white-background rendering even if dark mode is active.
+   ====================================================================== */
+
+html, body {
+  background-color: #f9fafb !important;
+  color: #111 !important;
+}
+
+#root {
+  background-color: #f9fafb !important;
 }
