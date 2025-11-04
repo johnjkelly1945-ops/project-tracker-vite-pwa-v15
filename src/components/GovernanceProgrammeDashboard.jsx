@@ -1,25 +1,25 @@
 /* ======================================================================
    METRA – GovernanceProgrammeDashboard.jsx
-   Phase 4.6 A.9 Step 2 – RAG Accent Integration (Scroll-Stable)
+   Phase 4.6 A.9 Step 3A – Filter Animation Layer Stabilised (Safari Verified)
    ----------------------------------------------------------------------
-   Adds left status accent bar to each programme card.
-   Colour logic: Green=On Track, Amber=At Risk, Red=Off Track.
+   Cross-fade transitions for filtered cards with scroll-safe containment.
+   Prevents Safari top-page bounce using layoutScroll and layout="position".
    ====================================================================== */
 
 import React, { useEffect, useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import FilterBar from "./FilterBar";
 import { getGovernanceData } from "../utils/GovernanceDataBridge";
 import "./GovernanceProgrammeDashboard.css";
 
 // === RAG Colour Helper ===
 const getStatusColor = (status) => {
-  if (!status) return "#cbd5e1"; // neutral grey fallback
+  if (!status) return "#cbd5e1";
   const s = status.toLowerCase();
-  if (s.includes("on")) return "#16a34a";      // green
-  if (s.includes("risk")) return "#f59e0b";    // amber
-  if (s.includes("off")) return "#dc2626";     // red
-  return "#94a3b8";                            // default grey-blue
+  if (s.includes("on")) return "#16a34a";
+  if (s.includes("risk")) return "#f59e0b";
+  if (s.includes("off")) return "#dc2626";
+  return "#94a3b8";
 };
 
 const GovernanceProgrammeDashboard = () => {
@@ -45,6 +45,7 @@ const GovernanceProgrammeDashboard = () => {
 
   return (
     <div className="governance-dashboard">
+      {/* ===== Header + Filter Section ===== */}
       <div className="dashboard-header-wrapper">
         <h2 className="dashboard-header">
           Programme Roll-Up Dashboard · Live Governance Feed
@@ -56,39 +57,50 @@ const GovernanceProgrammeDashboard = () => {
         />
       </div>
 
-      <div className="dashboard-scroll-area">
-        <div className="programme-card-grid">
-          {filteredProgrammes.length > 0 ? (
-            filteredProgrammes.map((p, i) => (
-              <motion.div
-                key={p.id}
-                className="programme-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: i * 0.1,
-                  ease: "easeOut",
-                }}
-                style={{
-                  transformOrigin: "top center",
-                  willChange: "transform, opacity",
-                  borderLeft: `6px solid ${getStatusColor(p.status)}`,
-                }}
-                layout="position"
-              >
-                <h3>{p.name}</h3>
-                <p><strong>Status:</strong> {p.status}</p>
-                <p><strong>Actions:</strong> {p.actions}</p>
-                <p><strong>Owner:</strong> {p.owner}</p>
-                <p><strong>Period:</strong> {p.period}</p>
-              </motion.div>
-            ))
-          ) : (
-            <div className="no-results">No programmes match current filters.</div>
-          )}
-        </div>
-      </div>
+      {/* ===== Scrollable Content ===== */}
+      <motion.div className="dashboard-scroll-area" layoutScroll>
+        <LayoutGroup>
+          <motion.div layout="position" className="programme-card-grid">
+            <AnimatePresence mode="wait">
+              {filteredProgrammes.length > 0 ? (
+                filteredProgrammes.map((p) => (
+                  <motion.div
+                    key={p.id}
+                    className="programme-card"
+                    layout="position"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    style={{
+                      borderLeft: `6px solid ${getStatusColor(p.status)}`,
+                      transformOrigin: "top center",
+                      willChange: "transform, opacity",
+                    }}
+                  >
+                    <h3>{p.name}</h3>
+                    <p><strong>Status:</strong> {p.status}</p>
+                    <p><strong>Actions:</strong> {p.actions}</p>
+                    <p><strong>Owner:</strong> {p.owner}</p>
+                    <p><strong>Period:</strong> {p.period}</p>
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div
+                  key="noresults"
+                  className="no-results"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  No programmes match current filters.
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </LayoutGroup>
+      </motion.div>
     </div>
   );
 };

@@ -97,3 +97,7 @@
   border-left-width: 6px !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
 }
+/* ===== Filter Animation Stability (Phase 4.6 A.9 Step 3A) ===== */
+.dashboard-scroll-area {
+  overscroll-behavior: contain; /* Prevents Safari top/bottom bounce */
+}
