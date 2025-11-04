@@ -1,0 +1,29 @@
+[
+  {
+    "programme": "Digital Transformation",
+    "owner": "Alice Brown",
+    "status": "Green",
+    "projects": [
+      { "name": "Website Revamp" },
+      { "name": "CRM Upgrade" }
+    ]
+  },
+  {
+    "programme": "Infrastructure Renewal",
+    "owner": "David Chen",
+    "status": "Amber",
+    "projects": [
+      { "name": "Server Migration" },
+      { "name": "Cloud Backup" }
+    ]
+  },
+  {
+    "programme": "Policy Reform",
+    "owner": "Emma Patel",
+    "status": "Red",
+    "projects": [
+      { "name": "Regulatory Review" },
+      { "name": "Stakeholder Survey" }
+    ]
+  }
+]

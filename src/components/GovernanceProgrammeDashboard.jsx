@@ -1,37 +1,33 @@
 /* ======================================================================
    METRA – GovernanceProgrammeDashboard.jsx
-   Phase 4.6 A.7 Step 2F – Scroll-Guaranteed Layout (Safari Confirmed)
+   Phase 4.6 A.8 Step 2 – Live Data Integration + Safe Metrics Mapping
+   ----------------------------------------------------------------------
+   Supports both legacy sampleData (project/items) and live data feed
+   (programme/owner/status/projects).
    ====================================================================== */
 
 import React, { useMemo } from "react";
 import "../styles/GovernanceProgrammeDashboard.css";
 
-const GovernanceProgrammeDashboard = ({ governanceData }) => {
-  const sampleData = [
-    {
-      project: "Project Orion",
-      items: [
-        { status: "Pending" },
-        { status: "Completed" },
-        { status: "In Progress" },
-      ],
-    },
-    {
-      project: "Project Atlas",
-      items: [
-        { status: "Overdue" },
-        { status: "Completed" },
-        { status: "Completed" },
-      ],
-    },
-    {
-      project: "Project Nova",
-      items: [{ status: "Completed" }, { status: "Completed" }],
-    },
-  ];
+export default function GovernanceProgrammeDashboard({ governanceData }) {
+  // Normalise structure between sample and live data
+  const data = Array.isArray(governanceData)
+    ? governanceData.map((d) => {
+        if (d.programme) {
+          // Live data format
+          return {
+            project: d.programme,
+            items: (d.projects || []).map((p) => ({
+              status: d.status || "Unknown",
+              name: p.name,
+            })),
+          };
+        }
+        return d; // fallback to existing format
+      })
+    : [];
 
-  const data = governanceData || sampleData;
-
+  // --- Calculate summary metrics ---
   const metrics = useMemo(() => {
     const totalProjects = data.length;
     let totalActions = 0;
@@ -42,8 +38,10 @@ const GovernanceProgrammeDashboard = ({ governanceData }) => {
       p.items.forEach((i) => {
         totalActions++;
         const s = i.status.toLowerCase();
-        if (s.includes("overdue") || s.includes("escalated")) overdueCount++;
-        if (s.includes("completed") || s.includes("on track")) onTrackCount++;
+        if (s.includes("red") || s.includes("overdue") || s.includes("escalated"))
+          overdueCount++;
+        if (s.includes("green") || s.includes("completed") || s.includes("on track"))
+          onTrackCount++;
       })
     );
 
@@ -55,9 +53,9 @@ const GovernanceProgrammeDashboard = ({ governanceData }) => {
 
   const projectRAG = (items) => {
     const statuses = items.map((i) => i.status.toLowerCase());
-    if (statuses.some((s) => s.includes("overdue") || s.includes("escalated")))
+    if (statuses.some((s) => s.includes("red") || s.includes("overdue") || s.includes("escalated")))
       return "red";
-    if (statuses.some((s) => s.includes("pending") || s.includes("in progress")))
+    if (statuses.some((s) => s.includes("amber") || s.includes("pending") || s.includes("in progress")))
       return "amber";
     return "green";
   };
@@ -67,24 +65,24 @@ const GovernanceProgrammeDashboard = ({ governanceData }) => {
       <header className="programme-header">
         <h1>Programme Roll-Up Dashboard</h1>
         <p className="programme-subtitle">
-          Aggregated metrics from all governance projects
+          Live Governance Feed (Phase 4.6 A.8)
         </p>
       </header>
 
-      {/* Scrollable content container */}
       <main className="programme-scroll">
+        {/* ===== Summary Cards ===== */}
         <section className="programme-summary-grid">
           <div className="summary-card blue">
             <div className="summary-value">{metrics.totalProjects}</div>
-            <div className="summary-title">Total Projects</div>
+            <div className="summary-title">Total Programmes</div>
           </div>
           <div className="summary-card amber">
             <div className="summary-value">{metrics.totalActions}</div>
-            <div className="summary-title">Total Actions</div>
+            <div className="summary-title">Total Projects</div>
           </div>
           <div className="summary-card red">
             <div className="summary-value">{metrics.overdueCount}</div>
-            <div className="summary-title">Overdue</div>
+            <div className="summary-title">Red / Overdue</div>
           </div>
           <div className="summary-card green">
             <div className="summary-value">{metrics.onTrackPercent}%</div>
@@ -92,6 +90,7 @@ const GovernanceProgrammeDashboard = ({ governanceData }) => {
           </div>
         </section>
 
+        {/* ===== Programme Rows ===== */}
         <section className="programme-projects">
           {data.map((project, idx) => {
             const rag = projectRAG(project.items);
@@ -109,7 +108,9 @@ const GovernanceProgrammeDashboard = ({ governanceData }) => {
                           .toLowerCase()
                           .replace(/\s+/g, "-")}`}
                       >
-                        {item.status}
+                        {item.name
+                          ? `${item.name} – ${item.status}`
+                          : item.status}
                       </span>
                     </li>
                   ))}
@@ -121,6 +122,4 @@ const GovernanceProgrammeDashboard = ({ governanceData }) => {
       </main>
     </div>
   );
-};
-
-export default GovernanceProgrammeDashboard;
+}
