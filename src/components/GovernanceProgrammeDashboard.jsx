@@ -1,15 +1,16 @@
 /* ======================================================================
    METRA – GovernanceProgrammeDashboard.jsx
-   Phase 4.6 A.8 Step 3 – Stage 2 (Prop Flow & Live Filtering)
+   Phase 4.6 A.9 Step 1A – Animation Layer Stabilised (Safari Verified)
    ----------------------------------------------------------------------
-   Receives filter values from FilterBar and filters programme dataset
-   accordingly. Maintains layout and scroll stability.
+   Adds fade + slide-up animation for programme cards with layout-safe
+   transforms to prevent Safari scroll bounce at end of list.
    ====================================================================== */
 
 import React, { useEffect, useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import FilterBar from "./FilterBar";
 import { getGovernanceData } from "../utils/GovernanceDataBridge";
-import "../Styles/GovernanceProgrammeDashboard.css";
+import "./GovernanceProgrammeDashboard.css";
 
 const GovernanceProgrammeDashboard = () => {
   const [programmes, setProgrammes] = useState([]);
@@ -17,14 +18,18 @@ const GovernanceProgrammeDashboard = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
 
-  // === Load baseline dataset ===
+  // === Load data once ===
   useEffect(() => {
     const data = getGovernanceData();
-    console.log("GovernanceDataBridge → loaded", data.length, "programme records");
+    console.log(
+      "GovernanceDataBridge → loaded",
+      data.length,
+      "programme records"
+    );
     setProgrammes(data);
   }, []);
 
-  // === Memoised filtered dataset ===
+  // === Apply filters ===
   const filteredProgrammes = useMemo(() => {
     return programmes.filter((p) => {
       const matchRole = roleFilter ? p.owner === roleFilter : true;
@@ -34,42 +39,62 @@ const GovernanceProgrammeDashboard = () => {
     });
   }, [programmes, roleFilter, statusFilter, periodFilter]);
 
-  // === Debug output ===
-  useEffect(() => {
-    console.log(
-      `Active Filters → Role: ${roleFilter || "All"}, Status: ${statusFilter || "All"}, Period: ${periodFilter || "All"}`
-    );
-    console.log("Visible records:", filteredProgrammes.length);
-  }, [roleFilter, statusFilter, periodFilter, filteredProgrammes.length]);
-
   return (
     <div className="governance-dashboard">
-      <h2 className="dashboard-header">
-        Programme Roll-Up Dashboard · Live Governance Feed (Phase 4.6 A.8)
-      </h2>
+      {/* ===== Fixed header + filter section ===== */}
+      <div className="dashboard-header-wrapper">
+        <h2 className="dashboard-header">
+          Programme Roll-Up Dashboard · Live Governance Feed
+        </h2>
+        <FilterBar
+          onRoleChange={setRoleFilter}
+          onStatusChange={setStatusFilter}
+          onPeriodChange={setPeriodFilter}
+        />
+      </div>
 
-      {/* === FILTER BAR === */}
-      <FilterBar
-        onRoleChange={setRoleFilter}
-        onStatusChange={setStatusFilter}
-        onPeriodChange={setPeriodFilter}
-      />
-
-      {/* === PROGRAMME CARDS === */}
-      <div className="programme-card-grid">
-        {filteredProgrammes.length > 0 ? (
-          filteredProgrammes.map((p) => (
-            <div key={p.id} className="programme-card">
-              <h3>{p.name}</h3>
-              <p><strong>Status:</strong> {p.status}</p>
-              <p><strong>Actions:</strong> {p.actions}</p>
-              <p><strong>Owner:</strong> {p.owner}</p>
-              <p><strong>Period:</strong> {p.period}</p>
+      {/* ===== Scrollable content section ===== */}
+      <div className="dashboard-scroll-area">
+        <div className="programme-card-grid">
+          {filteredProgrammes.length > 0 ? (
+            filteredProgrammes.map((p, i) => (
+              <motion.div
+                key={p.id}
+                className="programme-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  delay: i * 0.1,
+                  ease: "easeOut",
+                }}
+                style={{
+                  transformOrigin: "top center",
+                  willChange: "transform, opacity",
+                }}
+                layout="position" // prevents reflow bounce in Safari
+              >
+                <h3>{p.name}</h3>
+                <p>
+                  <strong>Status:</strong> {p.status}
+                </p>
+                <p>
+                  <strong>Actions:</strong> {p.actions}
+                </p>
+                <p>
+                  <strong>Owner:</strong> {p.owner}
+                </p>
+                <p>
+                  <strong>Period:</strong> {p.period}
+                </p>
+              </motion.div>
+            ))
+          ) : (
+            <div className="no-results">
+              No programmes match current filters.
             </div>
-          ))
-        ) : (
-          <div className="no-results">No programmes match current filters.</div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

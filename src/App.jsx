@@ -8,7 +8,7 @@
 
 import React from "react";
 import GovernanceProgrammeDashboard from "./components/GovernanceProgrammeDashboard";
-import "./Styles/GovernanceProgrammeDashboard.css";
+
 
 const App = () => {
   return (
