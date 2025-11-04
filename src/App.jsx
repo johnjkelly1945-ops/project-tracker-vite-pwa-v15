@@ -1,29 +1,21 @@
 /* ======================================================================
    METRA – App.jsx
-   Phase 4.6 A.8 Step 2 – Verified Live Governance Feed (Stable Baseline)
+   Phase 4.6 A.8 Step 3 – Verified Integration
    ----------------------------------------------------------------------
-   Connects the Governance Programme Dashboard to the live data feed.
-   Verified for Safari 18.5 – stable scroll and filter layout.
+   Entry point loading the GovernanceProgrammeDashboard.
+   Removes legacy useGovernanceDataBridge hook.
    ====================================================================== */
 
 import React from "react";
 import GovernanceProgrammeDashboard from "./components/GovernanceProgrammeDashboard";
-import { useGovernanceDataBridge } from "./utils/GovernanceDataBridge"; // ✅ corrected path
-import "./App.css";
+import "./Styles/GovernanceProgrammeDashboard.css";
 
-/* ======================================================================
-   Component Definition
-   ====================================================================== */
-export default function App() {
-  // 🔹 Get live data every 10 seconds
-  const governanceData = useGovernanceDataBridge(10000);
-
+const App = () => {
   return (
-    <div className="metra-root">
-      {/* ---------------------------------------------------------------
-         METRA – Governance Programme Roll-Up Dashboard
-         --------------------------------------------------------------- */}
-      <GovernanceProgrammeDashboard governanceData={governanceData} />
+    <div className="app-container">
+      <GovernanceProgrammeDashboard />
     </div>
   );
-}
+};
+
+export default App;
