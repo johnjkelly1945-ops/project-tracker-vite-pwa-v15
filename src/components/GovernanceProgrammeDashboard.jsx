@@ -1,9 +1,9 @@
 /* ======================================================================
    METRA – GovernanceProgrammeDashboard.jsx
-   Phase 4.6 A.9 Step 1A – Animation Layer Stabilised (Safari Verified)
+   Phase 4.6 A.9 Step 2 – RAG Accent Integration (Scroll-Stable)
    ----------------------------------------------------------------------
-   Adds fade + slide-up animation for programme cards with layout-safe
-   transforms to prevent Safari scroll bounce at end of list.
+   Adds left status accent bar to each programme card.
+   Colour logic: Green=On Track, Amber=At Risk, Red=Off Track.
    ====================================================================== */
 
 import React, { useEffect, useState, useMemo } from "react";
@@ -12,24 +12,28 @@ import FilterBar from "./FilterBar";
 import { getGovernanceData } from "../utils/GovernanceDataBridge";
 import "./GovernanceProgrammeDashboard.css";
 
+// === RAG Colour Helper ===
+const getStatusColor = (status) => {
+  if (!status) return "#cbd5e1"; // neutral grey fallback
+  const s = status.toLowerCase();
+  if (s.includes("on")) return "#16a34a";      // green
+  if (s.includes("risk")) return "#f59e0b";    // amber
+  if (s.includes("off")) return "#dc2626";     // red
+  return "#94a3b8";                            // default grey-blue
+};
+
 const GovernanceProgrammeDashboard = () => {
   const [programmes, setProgrammes] = useState([]);
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
 
-  // === Load data once ===
   useEffect(() => {
     const data = getGovernanceData();
-    console.log(
-      "GovernanceDataBridge → loaded",
-      data.length,
-      "programme records"
-    );
+    console.log("GovernanceDataBridge → loaded", data.length, "programme records");
     setProgrammes(data);
   }, []);
 
-  // === Apply filters ===
   const filteredProgrammes = useMemo(() => {
     return programmes.filter((p) => {
       const matchRole = roleFilter ? p.owner === roleFilter : true;
@@ -41,7 +45,6 @@ const GovernanceProgrammeDashboard = () => {
 
   return (
     <div className="governance-dashboard">
-      {/* ===== Fixed header + filter section ===== */}
       <div className="dashboard-header-wrapper">
         <h2 className="dashboard-header">
           Programme Roll-Up Dashboard · Live Governance Feed
@@ -53,7 +56,6 @@ const GovernanceProgrammeDashboard = () => {
         />
       </div>
 
-      {/* ===== Scrollable content section ===== */}
       <div className="dashboard-scroll-area">
         <div className="programme-card-grid">
           {filteredProgrammes.length > 0 ? (
@@ -71,28 +73,19 @@ const GovernanceProgrammeDashboard = () => {
                 style={{
                   transformOrigin: "top center",
                   willChange: "transform, opacity",
+                  borderLeft: `6px solid ${getStatusColor(p.status)}`,
                 }}
-                layout="position" // prevents reflow bounce in Safari
+                layout="position"
               >
                 <h3>{p.name}</h3>
-                <p>
-                  <strong>Status:</strong> {p.status}
-                </p>
-                <p>
-                  <strong>Actions:</strong> {p.actions}
-                </p>
-                <p>
-                  <strong>Owner:</strong> {p.owner}
-                </p>
-                <p>
-                  <strong>Period:</strong> {p.period}
-                </p>
+                <p><strong>Status:</strong> {p.status}</p>
+                <p><strong>Actions:</strong> {p.actions}</p>
+                <p><strong>Owner:</strong> {p.owner}</p>
+                <p><strong>Period:</strong> {p.period}</p>
               </motion.div>
             ))
           ) : (
-            <div className="no-results">
-              No programmes match current filters.
-            </div>
+            <div className="no-results">No programmes match current filters.</div>
           )}
         </div>
       </div>

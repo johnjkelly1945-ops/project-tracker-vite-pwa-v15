@@ -92,3 +92,8 @@
 .dashboard-scroll-area::-webkit-scrollbar-thumb:hover {
   background-color: #8090a0;
 }
+/* ===== RAG Accent Enhancement (Phase 4.6 A.9 Step 2) ===== */
+.programme-card {
+  border-left-width: 6px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+}
