@@ -101,3 +101,32 @@
 .dashboard-scroll-area {
   overscroll-behavior: contain; /* Prevents Safari top/bottom bounce */
 }
+/* ===== Summary Metrics Bar (Phase 4.6 A.9 Step 4 Safe Init) ===== */
+.dashboard-summary-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background-color: #e8eefc;
+  border-bottom: 2px solid #cdd6f4;
+  color: #0a2b5c;
+  font-weight: 600;
+}
+
+.summary-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.summary-label {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.summary-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}

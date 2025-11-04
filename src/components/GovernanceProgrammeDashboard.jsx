@@ -1,9 +1,9 @@
 /* ======================================================================
    METRA – GovernanceProgrammeDashboard.jsx
-   Phase 4.6 A.9 Step 3A – Filter Animation Layer Stabilised (Safari Verified)
+   Phase 4.6 A.9 Step 4 – Dynamic Summary Metrics (Safe Init)
    ----------------------------------------------------------------------
-   Cross-fade transitions for filtered cards with scroll-safe containment.
-   Prevents Safari top-page bounce using layoutScroll and layout="position".
+   Adds live summary metrics bar below FilterBar (no animation yet).
+   Keeps scroll stability and verified animation from Step 3A.
    ====================================================================== */
 
 import React, { useEffect, useState, useMemo } from "react";
@@ -43,18 +43,40 @@ const GovernanceProgrammeDashboard = () => {
     });
   }, [programmes, roleFilter, statusFilter, periodFilter]);
 
+  // === Basic Summary Metrics ===
+  const totalProjects = filteredProgrammes.length;
+  const totalActions = filteredProgrammes.reduce((sum, p) => sum + (p.actions || 0), 0);
+  const onTrack = filteredProgrammes.filter(
+    (p) => p.status && p.status.toLowerCase().includes("on")
+  ).length;
+  const onTrackPercent = totalProjects > 0 ? Math.round((onTrack / totalProjects) * 100) : 0;
+
   return (
     <div className="governance-dashboard">
       {/* ===== Header + Filter Section ===== */}
       <div className="dashboard-header-wrapper">
-        <h2 className="dashboard-header">
-          Programme Roll-Up Dashboard · Live Governance Feed
-        </h2>
+        <h2 className="dashboard-header">Programme Roll-Up Dashboard · Live Governance Feed</h2>
         <FilterBar
           onRoleChange={setRoleFilter}
           onStatusChange={setStatusFilter}
           onPeriodChange={setPeriodFilter}
         />
+
+        {/* ===== Summary Metrics Bar ===== */}
+        <div className="dashboard-summary-bar">
+          <div className="summary-item">
+            <span className="summary-label">Total Projects:</span>
+            <span className="summary-value">{totalProjects}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Total Actions:</span>
+            <span className="summary-value">{totalActions}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">% On Track:</span>
+            <span className="summary-value">{onTrackPercent}%</span>
+          </div>
+        </div>
       </div>
 
       {/* ===== Scrollable Content ===== */}
