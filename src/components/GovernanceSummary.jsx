@@ -1,155 +1,96 @@
 /* ======================================================================
    METRA – GovernanceSummary.jsx
-   Phase 4.6 A.6 Step 1 – Project Grouping Layout
+   Phase 4.6 B Step 1 – Governance Summary Linkage Init
    ----------------------------------------------------------------------
-   Groups governance items by projectId with collapsible sections.
-   Maintains role badges, personnel linkage, and filters.
+   • Builds on Phase 4.6 A.9 Step 4B (Animated Metrics Refresh Verified)
+   • Adds click-to-drill-down linkage between metrics and programme cards
+   • Maintains fade + slide animation from previous phase
+   • Highlights active metric; toggles back to full view on second click
    ====================================================================== */
 
 import React, { useEffect, useState } from "react";
-import "./GovernanceSummary.css";
-import RoleFilterBar from "./RoleFilterBar";
-import usePersonnelData from "../hooks/usePersonnelData";
+import { motion, AnimatePresence } from "framer-motion";
+import { getGovernanceMetrics } from "../utils/GovernanceDataBridge";
+import "../styles/GovernanceSummary.css";
 
-export default function GovernanceSummary() {
-  const [governanceData, setGovernanceData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [activeRole, setActiveRole] = useState("All");
-  const [openProjects, setOpenProjects] = useState({});
-  const personnel = usePersonnelData();
+const GovernanceSummary = ({ filters, onMetricSelect }) => {
+  // Metrics state
+  const [metrics, setMetrics] = useState({
+    totalProjects: 0,
+    totalActions: 0,
+    onTrackPercent: 0,
+  });
 
-  // --- Seed grouped demo data ---
+  // Active metric tracking for highlight + drill-down toggle
+  const [activeMetric, setActiveMetric] = useState(null);
+
+  // Key to trigger animation refresh
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // === Update metrics when filters change ===
   useEffect(() => {
-    const sampleGovernance = [
-      {
-        id: 1,
-        projectId: "P-001",
-        projectName: "Project Orion",
-        title: "Budget Approval",
-        description: "Finance committee sign-off required.",
-        roleTags: ["PMO"],
-        assignedTo: "David Ng",
-        status: "Pending",
-        timestamp: "2026-01-12 09:00",
-      },
-      {
-        id: 2,
-        projectId: "P-001",
-        projectName: "Project Orion",
-        title: "Feasibility Report",
-        description: "Manager to upload feasibility study.",
-        roleTags: ["Manager"],
-        assignedTo: "Maria Santos",
-        status: "In Progress",
-        timestamp: "2026-01-12 09:10",
-      },
-      {
-        id: 3,
-        projectId: "P-002",
-        projectName: "Project Atlas",
-        title: "Stakeholder Review",
-        description: "User to gather stakeholder feedback.",
-        roleTags: ["User"],
-        assignedTo: "Liam Turner",
-        status: "Open",
-        timestamp: "2026-01-12 09:15",
-      },
-      {
-        id: 4,
-        projectId: "P-002",
-        projectName: "Project Atlas",
-        title: "Audit Trail Verification",
-        description: "Admin verifies audit log consistency.",
-        roleTags: ["Admin"],
-        assignedTo: "Alice Robertson",
-        status: "Complete",
-        timestamp: "2026-01-12 09:20",
-      },
-    ];
-    localStorage.setItem("governanceSummary", JSON.stringify(sampleGovernance));
-    setGovernanceData(sampleGovernance);
-  }, []);
+    const data = getGovernanceMetrics(filters);
+    setMetrics(data);
+    setRefreshKey((prev) => prev + 1);
+    setActiveMetric(null); // reset highlight on filter change
+  }, [filters]);
 
-  // --- Role filter ---
-  useEffect(() => {
-    if (activeRole === "All") setFilteredData(governanceData);
-    else {
-      setFilteredData(
-        governanceData.filter(
-          (item) => item.roleTags && item.roleTags.includes(activeRole)
-        )
-      );
+  // === Handle metric click ===
+  const handleMetricClick = (metricKey) => {
+    // Toggle behaviour: deselect if same metric clicked again
+    const newActive = activeMetric === metricKey ? null : metricKey;
+    setActiveMetric(newActive);
+    if (onMetricSelect) {
+      onMetricSelect(newActive); // notify parent dashboard
     }
-  }, [activeRole, governanceData]);
+  };
 
-  const findPersonnel = (assignedTo) =>
-    personnel.find((p) => p.name === assignedTo);
+  // === Framer Motion fade / slide variants ===
+  const fadeSlide = {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -8 },
+    transition: { duration: 0.3, ease: "easeOut" },
+  };
 
-  // --- Group by projectId ---
-  const grouped = filteredData.reduce((acc, item) => {
-    const key = item.projectId;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(item);
-    return acc;
-  }, {});
-
-  const toggleProject = (id) =>
-    setOpenProjects((prev) => ({ ...prev, [id]: !prev[id] }));
+  // === Conditional class for active metric highlight ===
+  const getClass = (key) =>
+    `metric-item ${activeMetric === key ? "metric-active" : ""}`;
 
   return (
     <div className="governance-summary">
-      <h2 className="gov-header">Governance Summary – Project Grouping</h2>
-      <RoleFilterBar activeRole={activeRole} setActiveRole={setActiveRole} />
-
-      {Object.entries(grouped).map(([projectId, items]) => {
-        const projectName = items[0]?.projectName || projectId;
-        const isOpen = openProjects[projectId] ?? true;
-        return (
-          <section key={projectId} className="gov-project-section">
-            <div
-              className="gov-project-header"
-              onClick={() => toggleProject(projectId)}
+      <div className="metrics-bar">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={refreshKey}
+            className="metrics-inner"
+            {...fadeSlide}
+          >
+            <span
+              className={getClass("projects")}
+              onClick={() => handleMetricClick("projects")}
             >
-              <span className="gov-project-id">{projectName}</span>
-              <span className="gov-toggle">{isOpen ? "−" : "+"}</span>
-            </div>
+              <strong>Total Projects:</strong> {metrics.totalProjects}
+            </span>
 
-            {isOpen && (
-              <div className="gov-card-container">
-                {items.map((item) => {
-                  const person = findPersonnel(item.assignedTo);
-                  return (
-                    <div className="gov-card" key={item.id}>
-                      <div className="gov-card-header">
-                        <span
-                          className={`role-badge role-${person?.role?.toLowerCase() || "none"}`}
-                        >
-                          {person?.role || "Unassigned"}
-                        </span>
-                        <h3>{item.title}</h3>
-                      </div>
+            <span
+              className={getClass("actions")}
+              onClick={() => handleMetricClick("actions")}
+            >
+              <strong>Total Actions:</strong> {metrics.totalActions}
+            </span>
 
-                      <p className="gov-description">{item.description}</p>
-
-                      {person && (
-                        <div className="gov-personnel">
-                          <span className="gov-person-name">{person.name}</span>
-                          <span className="gov-person-email">{person.email}</span>
-                        </div>
-                      )}
-
-                      <div className="gov-meta">
-                        <span className="gov-status">{item.status}</span>
-                        <span className="gov-timestamp">{item.timestamp}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        );
-      })}
+            <span
+              className={getClass("onTrack")}
+              onClick={() => handleMetricClick("onTrack")}
+            >
+              <strong>% On Track:</strong> {metrics.onTrackPercent}%
+            </span>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
-}
+};
+
+export default GovernanceSummary;

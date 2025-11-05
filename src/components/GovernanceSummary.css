@@ -209,3 +209,15 @@
   font-size: 0.85rem;
   color: #555;
 }
+/* === Metric Interaction Styling (Phase 4.6 B Step 1) === */
+.metric-item {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+.metric-item.metric-active {
+  color: #004b9a; /* Royal blue emphasis */
+  border-bottom: 2px solid #004b9a;
+  font-weight: 600;
+}
