@@ -6,7 +6,10 @@
    • Sticky filter bar below header
    • Fully scrollable project area (Safari verified)
    ====================================================================== */
-
+.governance-summary {
+  position: relative;
+  z-index: 1000;
+}
 /* ===== Root Layout ===== */
 .governance-summary {
   position: relative;

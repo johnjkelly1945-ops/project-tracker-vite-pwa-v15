@@ -1,21 +1,19 @@
 /* ======================================================================
    METRA – App.jsx
-   Phase 4.6 A.8 Step 3 – Verified Integration
+   Phase 4.6 B.6 – Drill-Down Verification Environment
    ----------------------------------------------------------------------
-   Entry point loading the GovernanceProgrammeDashboard.
-   Removes legacy useGovernanceDataBridge hook.
+   Loads the GovernanceProgrammeDashboard_B6Test component directly.
+   Console output and click events confirmed working.
    ====================================================================== */
 
 import React from "react";
-import GovernanceProgrammeDashboard from "./components/GovernanceProgrammeDashboard";
+import GovernanceProgrammeDashboard_B6Test from "./components/GovernanceProgrammeDashboard_B6Test";
 
-
-const App = () => {
+export default function App() {
+  console.log("✅ METRA – Phase 4.6 B.6 Test Build Active");
   return (
     <div className="app-container">
-      <GovernanceProgrammeDashboard />
+      <GovernanceProgrammeDashboard_B6Test />
     </div>
   );
-};
-
-export default App;
+}

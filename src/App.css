@@ -1,3 +1,22 @@
+/* ======================================================================
+   GLOBAL POINTER RESTORE – PHASE 4.6 B.6
+   ----------------------------------------------------------------------
+   Ensures React click/touch events are never suppressed globally.
+   ====================================================================== */
+html, body, #root, * {
+  pointer-events: auto !important;
+  overflow: visible !important;
+}
+
+/* ======================================================================
+   GLOBAL POINTER RESTORE – PHASE 4.6 B.6
+   ----------------------------------------------------------------------
+   Ensures React click/touch events are never suppressed globally.
+   ====================================================================== */
+
+html, body, #root, * {
+  pointer-events: auto !important;
+}
 /* =========================================
    METRA App.css – Restored baseline
    ========================================= */
@@ -42,4 +61,14 @@ h1 {
 p {
   margin-bottom: 1.5rem;
   color: #333;
+}
+/* === GLOBAL FIX: re-enable pointer events for all elements === */
+html, body, #root, * {
+  pointer-events: auto !important;
+}
+/* === FIX: Restore interactivity inside main app container === */
+.app-container {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 1 !important;
 }

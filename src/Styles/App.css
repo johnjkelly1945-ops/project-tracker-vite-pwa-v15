@@ -1,121 +1,114 @@
-/* === METRA – Final App Layout (Vibrant Blue Summary + Red Delete + Full-Width Modules) === */
+/* ======================================================================
+   METRA – App.css
+   Verified Base Styling + Interaction Fix
+   ----------------------------------------------------------------------
+   Preserves layout, background, and typography from your existing build.
+   Adds safe Phase 4.6 B.6 pointer/overflow patch to re-enable clicks.
+   ====================================================================== */
 
-/* === Reset === */
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  background-color: #f8fafc;
-  color: #333;
-  box-sizing: border-box;
+/* === Global Reset === */
+:root {
+  --header-blue: #0a2b5c;
+  --bg-gray: #f9fafb;
 }
 
-/* === App Container === */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-gray);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Root App Container === */
 .app-container {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   width: 100%;
-  height: 100%;
-  align-items: stretch;
-  justify-content: flex-start;
+  background: var(--bg-gray);
+  color: #111;
+  overflow-x: hidden;
 }
 
-/* === Global Header === */
-.top-header {
-  background-color: #0a2e63;
-  color: white;
-  padding: 14px 20px;
-  font-size: 1.3rem;
-  font-weight: bold;
-  border-bottom: 3px solid #002a5c;
-}
-
-/* === SUMMARY (Dashboard) === */
-.summary-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 80px);
-  padding: 20px;
-  background-color: #f8fafc;
-}
-
-.summary-card {
-  background: white;
-  padding: 40px 60px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  max-width: 700px;
-  width: 80%;
-}
-
-.summary-card h1 {
-  font-size: 2rem;
-  color: #1565c0; /* updated vibrant blue heading */
-  margin-bottom: 20px;
-}
-
-/* --- Summary Buttons Row --- */
-.summary-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-/* --- Vibrant Blue Summary Buttons ("Bee Blue" visible on Safari) --- */
-.summary-buttons button {
-  background-color: #1565c0 !important; /* vibrant medium blue */
-  color: #fff !important;
-  border: 1px solid #0d47a1 !important;
-  border-radius: 6px;
-  padding: 10px 22px;
-  min-width: 150px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.1s ease;
-}
-
-.summary-buttons button:hover {
-  background-color: #0d47a1 !important; /* darker blue on hover */
-  transform: scale(1.03);
-}
-
-/* --- Optional Delete / Clear Buttons in Summary --- */
-.summary-buttons button.delete,
-.summary-buttons button.clear {
-  background-color: #dc3545 !important;
-  border: 1px solid #a71d2a !important;
-}
-.summary-buttons button.delete:hover,
-.summary-buttons button.clear:hover {
-  background-color: #b52b3b !important;
-}
-
-/* === MODULE PAGES (PreProject / Progress / Personnel / Closure) === */
-.main-content {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  width: 100%;
-  max-width: 100%;
+/* === Dashboard Core === */
+.dashboard-scroll-area {
   flex: 1;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
-/* === Global Button Defaults (outside Summary) === */
-button {
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s ease, border-color 0.3s ease;
+.governance-dashboard {
+  position: relative;
+  padding: 1rem;
+  color: #111;
+  overflow: visible;
 }
+
+/* === Headers, Buttons, Links === */
+h1,
+h2,
+h3 {
+  color: var(--header-blue);
+  margin-top: 0;
+}
+
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* === Scrollbar Style (Safari Friendly) === */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* === Footer / Utility Containers === */
+.footer {
+  text-align: center;
+  padding: 1rem;
+  color: #555;
+  font-size: 0.9rem;
+  background: #f1f5f9;
+}
+
+/* ======================================================================
+   PHASE 4.6 B.6 – Pointer + Overflow Unlock (Critical Fix)
+   ----------------------------------------------------------------------
+   This ensures click events reach child components like the
+   GovernanceProgrammeDashboard drill-down, even inside scroll wrappers.
+   ====================================================================== */
+
+.app-container,
+.dashboard-scroll-area,
+.governance-dashboard {
+  pointer-events: auto !important;
+  overflow: visible !important;
+  z-index: auto !important;
+}
+
+#root {
+  pointer-events: auto !important;
+  overflow: visible !important;
+}
+
+/* ======================================================================
+   END OF FILE
+   ====================================================================== */

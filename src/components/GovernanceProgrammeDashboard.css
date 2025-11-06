@@ -130,3 +130,12 @@
   font-size: 1.05rem;
   font-weight: 700;
 }
+/* === User Feedback: Clickable Metric Items === */
+.summary-item {
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.3s ease;
+}
+
+.summary-item:hover {
+  transform: scale(1.05);
+}

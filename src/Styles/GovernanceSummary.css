@@ -168,6 +168,13 @@ body,
 .activity-line .action    { color: #333; }
 .activity-line .type      { color: #2c5282; }
 .activity-line .ref       { color: #888; }
+/* Ensure metrics bar can receive clicks */
+.governance-summary,
+.governance-summary * {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 9999;
+}
 
 /* ======================================================================
    End of File
