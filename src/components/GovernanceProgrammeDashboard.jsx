@@ -1,9 +1,10 @@
 /* ======================================================================
    METRA – GovernanceProgrammeDashboard.jsx
-   Phase 4.6 A.9 Step 4 – Dynamic Summary Metrics (Safe Init)
+   Phase 4.6 B.5 – Interactive Metrics (Base Restore)
    ----------------------------------------------------------------------
-   Adds live summary metrics bar below FilterBar (no animation yet).
-   Keeps scroll stability and verified animation from Step 3A.
+   • Fully restored functional dashboard (diagnostics removed)
+   • Pointer events confirmed active
+   • Prepares for next phase – metric interactivity
    ====================================================================== */
 
 import React, { useEffect, useState, useMemo } from "react";
@@ -34,6 +35,7 @@ const GovernanceProgrammeDashboard = () => {
     setProgrammes(data);
   }, []);
 
+  // === Filtering logic ===
   const filteredProgrammes = useMemo(() => {
     return programmes.filter((p) => {
       const matchRole = roleFilter ? p.owner === roleFilter : true;
@@ -43,19 +45,28 @@ const GovernanceProgrammeDashboard = () => {
     });
   }, [programmes, roleFilter, statusFilter, periodFilter]);
 
-  // === Basic Summary Metrics ===
+  // === Summary Metrics ===
   const totalProjects = filteredProgrammes.length;
   const totalActions = filteredProgrammes.reduce((sum, p) => sum + (p.actions || 0), 0);
   const onTrack = filteredProgrammes.filter(
     (p) => p.status && p.status.toLowerCase().includes("on")
   ).length;
-  const onTrackPercent = totalProjects > 0 ? Math.round((onTrack / totalProjects) * 100) : 0;
+  const onTrackPercent =
+    totalProjects > 0 ? Math.round((onTrack / totalProjects) * 100) : 0;
+
+  // === Placeholder for next phase (metric clicks) ===
+  const handleMetricClick = (metric) => {
+    console.log(`🟢 Metric clicked: ${metric}`);
+  };
 
   return (
     <div className="governance-dashboard">
       {/* ===== Header + Filter Section ===== */}
       <div className="dashboard-header-wrapper">
-        <h2 className="dashboard-header">Programme Roll-Up Dashboard · Live Governance Feed</h2>
+        <h2 className="dashboard-header">
+          Programme Roll-Up Dashboard · Live Governance Feed
+        </h2>
+
         <FilterBar
           onRoleChange={setRoleFilter}
           onStatusChange={setStatusFilter}
@@ -64,15 +75,27 @@ const GovernanceProgrammeDashboard = () => {
 
         {/* ===== Summary Metrics Bar ===== */}
         <div className="dashboard-summary-bar">
-          <div className="summary-item">
+          <div
+            className="summary-item"
+            onClick={() => handleMetricClick("Total Projects")}
+            style={{ cursor: "pointer" }}
+          >
             <span className="summary-label">Total Projects:</span>
             <span className="summary-value">{totalProjects}</span>
           </div>
-          <div className="summary-item">
+          <div
+            className="summary-item"
+            onClick={() => handleMetricClick("Total Actions")}
+            style={{ cursor: "pointer" }}
+          >
             <span className="summary-label">Total Actions:</span>
             <span className="summary-value">{totalActions}</span>
           </div>
-          <div className="summary-item">
+          <div
+            className="summary-item"
+            onClick={() => handleMetricClick("% On Track")}
+            style={{ cursor: "pointer" }}
+          >
             <span className="summary-label">% On Track:</span>
             <span className="summary-value">{onTrackPercent}%</span>
           </div>
