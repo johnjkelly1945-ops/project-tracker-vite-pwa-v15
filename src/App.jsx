@@ -1,19 +1,20 @@
 /* ======================================================================
    METRA – App.jsx
-   Phase 4.6 B.6 – Drill-Down Verification Environment
+   Phase 4.6 B.12 Step 2 – PreProject Visual Verification
    ----------------------------------------------------------------------
-   Loads the GovernanceProgrammeDashboard_B6Test component directly.
-   Console output and click events confirmed working.
+   Switches the root view from Governance Dashboard to PreProject workspace
+   to confirm royal-blue Summary Task styling.
    ====================================================================== */
 
 import React from "react";
-import GovernanceProgrammeDashboard_B6Test from "./components/GovernanceProgrammeDashboard_B6Test";
+import PreProject from "./components/PreProject";
 
-export default function App() {
-  console.log("✅ METRA – Phase 4.6 B.6 Test Build Active");
+const App = () => {
   return (
     <div className="app-container">
-      <GovernanceProgrammeDashboard_B6Test />
+      <PreProject />
     </div>
   );
-}
+};
+
+export default App;
