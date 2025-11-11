@@ -1,26 +1,11 @@
 import React from "react";
-import PreProject from "./components/PreProject";
-import Personnel from "./components/Personnel";
-import Progress from "./components/Progress";
-import Closure from "./components/Closure";
-import "./Styles/App.v2.css";
 
-function App() {
+export default function App() {
+  console.log("🧩 Fresh isolated App.jsx loaded at runtime");
   return (
-    <div className="app-container">
-      {/* Header */}
-      <div className="header">
-        <h1>Welcome to METRA</h1>
-        <p>Your personal project tracker</p>
-      </div>
-
-      {/* Modules in order */}
-      <PreProject />
-      <Personnel />
-      <Progress />
-      <Closure />
+    <div style={{padding:"2rem",textAlign:"center"}}>
+      <h1>Isolated App.jsx Render</h1>
+      <p>If you can see this text, Vite is now reading the new file.</p>
     </div>
   );
 }
-
-export default App;
