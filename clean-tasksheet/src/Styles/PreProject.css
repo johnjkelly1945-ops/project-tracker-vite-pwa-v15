@@ -1,6 +1,7 @@
 /* =====================================================================
-   METRA – PreProject.css (Step 6C – Personnel Overlay Activation)
+   METRA – PreProject.css
    High-contrast, clean styles for overlay + task list
+   Includes Step 6C–6G updates and scroll-safe popup behaviour.
    ===================================================================== */
 
 :root {
@@ -82,6 +83,8 @@ h1 {
   font-weight: 400;
   color: #555;
   margin-left: 6px;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 /* ===== Status Dots ===== */
@@ -109,12 +112,12 @@ h1 {
 
 /* ===== Assign Button ===== */
 .assign-btn {
-  background: none;
+  background: var(--header-blue);
+  color: white;
   border: none;
-  color: var(--header-blue);
-  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  text-decoration: underline;
 }
 
 /* ===== Overlay Backdrop ===== */
@@ -131,21 +134,25 @@ h1 {
   z-index: 999;
 }
 
-/* ===== Overlay Card ===== */
+/* =====================================================================
+   UPDATED — Scroll-Safe Overlay Card
+   Prevents Chrome overflow and ensures Close button always reachable.
+   ===================================================================== */
 .overlay-card {
   background: white;
   padding: 20px;
   border-radius: 10px;
   width: 280px;
+  max-width: 450px;
+
+  /* NEW */
+  max-height: 80vh;
+  overflow-y: auto;
+
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.overlay-card h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
-}
-
+/* ===== Person List ===== */
 .person-list {
   display: flex;
   flex-direction: column;
@@ -162,11 +169,44 @@ h1 {
   cursor: pointer;
 }
 
+/* ===== Close Button ===== */
 .close-btn {
   padding: 8px;
   border-radius: 6px;
   width: 100%;
   border: 1px solid var(--light-border);
   background: #ececec;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+/* =====================================================================
+   Step 6G — Editable Personnel Inputs
+   ===================================================================== */
+.metra-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--light-border);
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* ===== Active / Inactive Toggle Buttons ===== */
+.active-btn {
+  background: var(--header-blue);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.inactive-btn {
+  background: #ccc;
+  color: #222;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
 }
