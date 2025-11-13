@@ -210,3 +210,15 @@ h1 {
   border-radius: 6px;
   cursor: pointer;
 }
+/* ===== Popup Z-Index Layers ===== */
+.z-task {
+  z-index: 1000 !important;
+}
+
+.z-personnel {
+  z-index: 1100 !important;
+}
+
+.z-governance {
+  z-index: 1200 !important;
+}
