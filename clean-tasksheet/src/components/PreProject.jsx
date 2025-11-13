@@ -1,78 +1,74 @@
-/* ======================================================================
-   METRA – PreProject.jsx
-   Phase 4.6B.13 Step 6A – Clean Task Sheet (Standalone Baseline – Fixed Seed)
-   ----------------------------------------------------------------------
-   • Ensures demo tasks seed on first load even if localStorage empty
-   • Renders task list with 5-filter bar
-   • Includes "Assign Person" button (inactive placeholder)
-   ====================================================================== */
-
 import React, { useState, useEffect } from "react";
+import PersonnelOverlay from "./PersonnelOverlay";
 import "../Styles/PreProject.css";
 
 export default function PreProject() {
-  const [tasks, setTasks] = useState([]);
-  const [filterStatus, setFilterStatus] = useState(
-    localStorage.getItem("filterStatus") || "All"
-  );
+  // ===== Default tasks for first-time load =====
+  const defaultTasks = [
+    { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
+    { id: 2, title: "Initial Risk Scan", status: "Not Started" },
+    { id: 3, title: "Stakeholder Mapping", status: "Not Started" }
+  ];
 
-  // Always ensure tasks are present
+  // ===== LocalStorage initial load =====
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks_v2");
+    return saved ? JSON.parse(saved) : defaultTasks;
+  });
+
+  const [filter, setFilter] = useState(() => {
+    const saved = localStorage.getItem("task_filter_v2");
+    return saved || "All";
+  });
+
+  // ===== Overlay State =====
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+  // ===== Persist tasks on any change =====
   useEffect(() => {
-    const saved = localStorage.getItem("metraTasks");
-    if (saved && JSON.parse(saved).length > 0) {
-      setTasks(JSON.parse(saved));
-    } else {
-      const seed = [
-        { id: 1, title: "Define project objectives", status: "Not Started" },
-        { id: 2, title: "Draft initial plan", status: "In Progress" },
-        { id: 3, title: "Check risk register", status: "Flagged" },
-        { id: 4, title: "Approve funding", status: "Completed" },
-      ];
-      setTasks(seed);
-      localStorage.setItem("metraTasks", JSON.stringify(seed));
-    }
-  }, []);
+    localStorage.setItem("tasks_v2", JSON.stringify(tasks));
+  }, [tasks]);
 
   useEffect(() => {
-    localStorage.setItem("metraTasks", JSON.stringify(tasks));
-    localStorage.setItem("filterStatus", filterStatus);
-  }, [tasks, filterStatus]);
+    localStorage.setItem("task_filter_v2", filter);
+  }, [filter]);
 
-  const handleAssignPerson = (id) => {
-    alert(`Assign Person clicked for task ${id} (inactive in clean build)`);
+  // ===== Filters =====
+  const filteredTasks = tasks.filter((t) => {
+    if (filter === "All") return true;
+    return t.status === filter;
+  });
+
+  // ===== Handle assigning a person =====
+  const handleAssignPerson = (taskId) => {
+    setSelectedTaskId(taskId);
+    setOverlayOpen(true);
   };
 
-  const filteredTasks =
-    filterStatus === "All"
-      ? tasks
-      : tasks.filter((t) => t.status === filterStatus);
-
-  const statusColor = (status) => {
-    switch (status) {
-      case "In Progress":
-        return "#facc15";
-      case "Completed":
-        return "#16a34a";
-      case "Flagged":
-        return "#dc2626";
-      default:
-        return "#cbd5e1";
-    }
+  const applyPersonToTask = (personName) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === selectedTaskId
+          ? { ...t, assigned: personName, status: "In Progress" }
+          : t
+      )
+    );
+    setOverlayOpen(false);
   };
 
   return (
-    <div className="preproject-container">
-      <header className="preproject-header">
-        <h1>PreProject – Task Workspace</h1>
-      </header>
+    <div className="preproject-wrapper">
+      <h1>PreProject – Clean Task Sheet (Step 6C)</h1>
 
+      {/* ===== Filter Bar ===== */}
       <div className="filter-bar">
-        {["All", "Not Started", "In Progress", "Flagged", "Completed"].map(
+        {["All", "Not Started", "In Progress", "Completed", "On Hold"].map(
           (f) => (
             <button
               key={f}
-              className={filterStatus === f ? "filter-btn active" : "filter-btn"}
-              onClick={() => setFilterStatus(f)}
+              className={filter === f ? "filter-active" : "filter-btn"}
+              onClick={() => setFilter(f)}
             >
               {f}
             </button>
@@ -80,17 +76,24 @@ export default function PreProject() {
         )}
       </div>
 
+      {/* ===== Task List ===== */}
       <div className="task-list">
-        {filteredTasks.length === 0 ? (
-          <p className="no-tasks">No tasks match this filter.</p>
-        ) : (
-          filteredTasks.map((task) => (
-            <div key={task.id} className="task-card">
-              <div
-                className="status-dot"
-                style={{ backgroundColor: statusColor(task.status) }}
-              ></div>
-              <span className="task-title">{task.title}</span>
+        {filteredTasks.map((task) => (
+          <div key={task.id} className="task-item">
+            <div className="task-left">
+              <span
+                className={`status-dot ${task.status.replace(/ /g, "-")}`}
+              ></span>
+
+              <span className="task-title">
+                {task.title}
+                {task.assigned && (
+                  <span className="assigned-name"> — {task.assigned}</span>
+                )}
+              </span>
+            </div>
+
+            <div className="task-right">
               <button
                 className="assign-btn"
                 onClick={() => handleAssignPerson(task.id)}
@@ -98,9 +101,17 @@ export default function PreProject() {
                 Assign Person
               </button>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
+
+      {/* ===== Personnel Overlay ===== */}
+      {overlayOpen && (
+        <PersonnelOverlay
+          onClose={() => setOverlayOpen(false)}
+          onSelect={applyPersonToTask}
+        />
+      )}
     </div>
   );
 }
