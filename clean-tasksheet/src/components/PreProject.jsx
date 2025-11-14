@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Step 7 – Correct Click Behaviour (Title Only)
+   Step 7B – 7 Dummy Tasks + Popup + Passive Assigned Name (Italic + Soft)
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -9,16 +9,22 @@ import PersonnelDetail from "./PersonnelDetail";
 import TaskWorkingWindow from "./TaskWorkingWindow";
 import "../Styles/PreProject.css";
 
-/* ===== Default Tasks ===== */
+/* ======================================================================
+   RESTORED 7 DUMMY TASKS
+   ====================================================================== */
 const defaultTasks = [
   { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
   { id: 2, title: "Initial Risk Scan", status: "Not Started" },
-  { id: 3, title: "Stakeholder Mapping", status: "Not Started" }
+  { id: 3, title: "Stakeholder Mapping", status: "Not Started" },
+  { id: 4, title: "Identify Dependencies", status: "Not Started" },
+  { id: 5, title: "Review Governance Requirements", status: "Not Started" },
+  { id: 6, title: "Draft Initiation Brief", status: "Not Started" },
+  { id: 7, title: "Validate Stakeholder List", status: "Not Started" }
 ];
 
 export default function PreProject() {
 
-  /* ===== Load Persisted Tasks ===== */
+  /* ===== Task Persistence ===== */
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks_v3");
     return saved ? JSON.parse(saved) : defaultTasks;
@@ -29,15 +35,6 @@ export default function PreProject() {
     return saved || "All";
   });
 
-  /* ===== Popup States ===== */
-  const [showAssignOverlay, setShowAssignOverlay] = useState(false);
-  const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
-  const [showWorkingWindow, setShowWorkingWindow] = useState(false);
-
-  const [activeTaskId, setActiveTaskId] = useState(null);
-  const activeTask = tasks.find(t => t.id === activeTaskId);
-
-  /* ===== Persist Changes ===== */
   useEffect(() => {
     localStorage.setItem("tasks_v3", JSON.stringify(tasks));
   }, [tasks]);
@@ -46,7 +43,26 @@ export default function PreProject() {
     localStorage.setItem("task_filter_v3", filter);
   }, [filter]);
 
-  /* ===== Open Windows ===== */
+  /* ===== Active task & popups ===== */
+  const [activeTaskId, setActiveTaskId] = useState(null);
+  const [showAssignOverlay, setShowAssignOverlay] = useState(false);
+  const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
+  const [showWorkingWindow, setShowWorkingWindow] = useState(false);
+
+  const activeTask = tasks.find((t) => t.id === activeTaskId);
+
+  /* ======================================================================
+     FILTERING
+     ====================================================================== */
+  const filteredTasks = tasks.filter((t) => {
+    if (filter === "All") return true;
+    if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
+    return t.status === filter;
+  });
+
+  /* ======================================================================
+     OPEN POPUPS
+     ====================================================================== */
   const openTaskWindow = (taskId) => {
     setActiveTaskId(taskId);
     setShowWorkingWindow(true);
@@ -61,7 +77,9 @@ export default function PreProject() {
     setShowPersonnelDetail(true);
   };
 
-  /* ===== Assign Person ===== */
+  /* ======================================================================
+     ASSIGN PERSON
+     ====================================================================== */
   const applyPersonToTask = (personName) => {
     setTasks(prev =>
       prev.map(t =>
@@ -73,7 +91,9 @@ export default function PreProject() {
     setShowAssignOverlay(false);
   };
 
-  /* ===== Notes ===== */
+  /* ======================================================================
+     NOTES
+     ====================================================================== */
   const saveNotes = (taskId, entry) => {
     setTasks(prev =>
       prev.map(t =>
@@ -84,24 +104,25 @@ export default function PreProject() {
     );
   };
 
-  /* ===== Archive ===== */
+  /* ======================================================================
+     ARCHIVE TASK
+     ====================================================================== */
   const archiveTask = (taskId) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
-    setShowWorkingWindow(false);
+    setTasks(prev => prev.filter((t) => t.id !== taskId));
   };
 
-  /* ===== Flags ===== */
-  const applyInternalFlag = (taskId) => {
+  /* ======================================================================
+     FLAGS / ESCALATIONS
+     ====================================================================== */
+  const applyInternalFlag = (taskId) =>
     setTasks(prev =>
-      prev.map(t => (t.id === taskId ? { ...t, flag: "orange" } : t))
+      prev.map(t => t.id === taskId ? { ...t, flag: "orange" } : t)
     );
-  };
 
-  const applyExternalFlag = (taskId) => {
+  const applyExternalFlag = (taskId) =>
     setTasks(prev =>
-      prev.map(t => (t.id === taskId ? { ...t, flag: "red" } : t))
+      prev.map(t => t.id === taskId ? { ...t, flag: "red" } : t)
     );
-  };
 
   const invokeCC = (taskId) => {
     saveNotes(taskId, "[CC – Internal]");
@@ -118,22 +139,17 @@ export default function PreProject() {
     applyExternalFlag(taskId);
   };
 
-  /* ===== Filtered Tasks ===== */
-  const filteredTasks = tasks.filter(t => {
-    if (filter === "All") return true;
-    if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
-    return t.status === filter;
-  });
-
-  /* ===== UI ===== */
+  /* ======================================================================
+     UI RENDER
+     ====================================================================== */
   return (
     <div className="preproject-wrapper">
       <h1>PreProject – Task Sheet</h1>
 
-      {/* Filter Bar */}
+      {/* FILTERS */}
       <div className="filter-bar">
         {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"]
-          .map(f => (
+          .map((f) => (
             <button
               key={f}
               className={filter === f ? "filter-active" : "filter-btn"}
@@ -144,16 +160,19 @@ export default function PreProject() {
           ))}
       </div>
 
-      {/* Task List */}
+      {/* TASK LIST */}
       <div className="task-list">
-        {filteredTasks.map(task => (
+        {filteredTasks.map((task) => (
           <div key={task.id} className="task-item">
 
-            {/* ONLY TITLE clicks to open popup */}
-            <div className="task-left">
+            {/* Whole left area opens popup */}
+            <div
+              className="task-left"
+              onClick={() => openTaskWindow(task.id)}
+            >
               <span className={`status-dot ${task.status.replace(/ /g, "-")}`} />
 
-              {/* Flag Icons */}
+              {/* Flags */}
               {task.flag === "orange" && (
                 <span className="flag-icon flag-orange">⚑</span>
               )}
@@ -161,21 +180,28 @@ export default function PreProject() {
                 <span className="flag-icon flag-red">⚑</span>
               )}
 
-              {/* Title – only clickable part */}
-              <span
-                className="task-title clickable-title"
-                onClick={() => openTaskWindow(task.id)}
-              >
+              {/* Title + assigned name (PASSIVE, NOT CLICKABLE) */}
+              <span className="task-title">
                 {task.title}
-              </span>
 
-              {/* Assigned name (NOT clickable) */}
-              {task.assigned && (
-                <span className="assigned-name-nonclick"> — {task.assigned}</span>
-              )}
+                {task.assigned && (
+                  <span
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      fontStyle: "italic",
+                      color: "#555",
+                      cursor: "default",
+                      pointerEvents: "auto",
+                      marginLeft: "4px"
+                    }}
+                  >
+                    — {task.assigned}
+                  </span>
+                )}
+              </span>
             </div>
 
-            {/* Assign Button */}
+            {/* Assign Person */}
             <button
               className="assign-btn"
               onClick={() => startAssignPerson(task.id)}
@@ -187,7 +213,7 @@ export default function PreProject() {
         ))}
       </div>
 
-      {/* Assign Overlay */}
+      {/* ASSIGN OVERLAY */}
       {showAssignOverlay && (
         <PersonnelOverlay
           onSelect={applyPersonToTask}
@@ -195,7 +221,7 @@ export default function PreProject() {
         />
       )}
 
-      {/* Personnel Detail */}
+      {/* PERSONNEL DETAIL */}
       {showPersonnelDetail && activeTask && (
         <PersonnelDetail
           personName={activeTask.assigned}
@@ -204,7 +230,7 @@ export default function PreProject() {
         />
       )}
 
-      {/* Task Popup */}
+      {/* TASK POPUP */}
       {showWorkingWindow && activeTask && (
         <TaskWorkingWindow
           task={activeTask}
