@@ -1,32 +1,38 @@
 /* ======================================================================
    METRA – PersonnelOverlay.jsx
-   Restored Stable Version (Step 6H + Micro-Fixes)
-   ----------------------------------------------------------------------
-   • Select personnel for a task
-   • Passes selection back to PreProject.jsx
-   • Clean centred modal, Safari-safe
+   Step 7 – Stable Assign-Person Modal (Layered Under PersonnelDetail)
    ====================================================================== */
 
 import React from "react";
 import "../Styles/PersonnelOverlay.css";
 
 export default function PersonnelOverlay({ onSelect, onClose }) {
-  const people = ["Alice Morgan", "David Chen", "Priya Patel"];
+  
+  /* In future we may load this list dynamically from Personnel module */
+  const people = [
+    "Alice Morgan",
+    "James Walker",
+    "Robert Mills",
+    "Sarah Connor",
+    "Emily Clarke",
+    "David Harris"
+  ];
 
   return (
     <div className="po-backdrop">
       <div className="po-card">
 
-        <h2 className="po-title">Select Personnel</h2>
+        <h2 className="po-title">Assign Person</h2>
 
+        {/* Person List */}
         <div className="po-list">
-          {people.map((name) => (
+          {people.map((p, i) => (
             <div
-              key={name}
+              key={i}
               className="po-person"
-              onClick={() => onSelect(name)}
+              onClick={() => onSelect(p)}
             >
-              {name}
+              {p}
             </div>
           ))}
         </div>

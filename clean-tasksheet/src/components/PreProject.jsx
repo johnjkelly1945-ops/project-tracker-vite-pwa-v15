@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Stable Version – Task Popup + Flags + Personnel Detail (in-popup only)
+   Step 7 – Correct Click Behaviour (Title Only)
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -9,6 +9,7 @@ import PersonnelDetail from "./PersonnelDetail";
 import TaskWorkingWindow from "./TaskWorkingWindow";
 import "../Styles/PreProject.css";
 
+/* ===== Default Tasks ===== */
 const defaultTasks = [
   { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
   { id: 2, title: "Initial Risk Scan", status: "Not Started" },
@@ -17,7 +18,7 @@ const defaultTasks = [
 
 export default function PreProject() {
 
-  /* ===== Load persisted tasks ===== */
+  /* ===== Load Persisted Tasks ===== */
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks_v3");
     return saved ? JSON.parse(saved) : defaultTasks;
@@ -28,14 +29,15 @@ export default function PreProject() {
     return saved || "All";
   });
 
-  /* ===== Popups ===== */
+  /* ===== Popup States ===== */
   const [showAssignOverlay, setShowAssignOverlay] = useState(false);
   const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
   const [showWorkingWindow, setShowWorkingWindow] = useState(false);
 
   const [activeTaskId, setActiveTaskId] = useState(null);
+  const activeTask = tasks.find(t => t.id === activeTaskId);
 
-  /* ===== Persist ===== */
+  /* ===== Persist Changes ===== */
   useEffect(() => {
     localStorage.setItem("tasks_v3", JSON.stringify(tasks));
   }, [tasks]);
@@ -44,16 +46,7 @@ export default function PreProject() {
     localStorage.setItem("task_filter_v3", filter);
   }, [filter]);
 
-  const activeTask = tasks.find((t) => t.id === activeTaskId);
-
-  /* ===== Filters ===== */
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "All") return true;
-    if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
-    return t.status === filter;
-  });
-
-  /* ===== Open windows ===== */
+  /* ===== Open Windows ===== */
   const openTaskWindow = (taskId) => {
     setActiveTaskId(taskId);
     setShowWorkingWindow(true);
@@ -93,17 +86,21 @@ export default function PreProject() {
 
   /* ===== Archive ===== */
   const archiveTask = (taskId) => {
-    setTasks(prev => prev.filter((t) => t.id !== taskId));
+    setTasks(prev => prev.filter(t => t.id !== taskId));
     setShowWorkingWindow(false);
   };
 
-  /* ===== Internal/External Flags ===== */
+  /* ===== Flags ===== */
   const applyInternalFlag = (taskId) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, flag: "orange" } : t));
+    setTasks(prev =>
+      prev.map(t => (t.id === taskId ? { ...t, flag: "orange" } : t))
+    );
   };
 
   const applyExternalFlag = (taskId) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, flag: "red" } : t));
+    setTasks(prev =>
+      prev.map(t => (t.id === taskId ? { ...t, flag: "red" } : t))
+    );
   };
 
   const invokeCC = (taskId) => {
@@ -121,15 +118,22 @@ export default function PreProject() {
     applyExternalFlag(taskId);
   };
 
+  /* ===== Filtered Tasks ===== */
+  const filteredTasks = tasks.filter(t => {
+    if (filter === "All") return true;
+    if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
+    return t.status === filter;
+  });
+
   /* ===== UI ===== */
   return (
     <div className="preproject-wrapper">
       <h1>PreProject – Task Sheet</h1>
 
-      {/* FilterBar */}
+      {/* Filter Bar */}
       <div className="filter-bar">
         {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"]
-          .map((f) => (
+          .map(f => (
             <button
               key={f}
               className={filter === f ? "filter-active" : "filter-btn"}
@@ -142,26 +146,36 @@ export default function PreProject() {
 
       {/* Task List */}
       <div className="task-list">
-        {filteredTasks.map((task) => (
+        {filteredTasks.map(task => (
           <div key={task.id} className="task-item">
 
-            {/* Entire left side opens task popup */}
-            <div className="task-left" onClick={() => openTaskWindow(task.id)}>
+            {/* ONLY TITLE clicks to open popup */}
+            <div className="task-left">
               <span className={`status-dot ${task.status.replace(/ /g, "-")}`} />
 
-              {/* Flag icons */}
-              {task.flag === "orange" && <span className="flag-icon flag-orange">⚑</span>}
-              {task.flag === "red" && <span className="flag-icon flag-red">⚑</span>}
+              {/* Flag Icons */}
+              {task.flag === "orange" && (
+                <span className="flag-icon flag-orange">⚑</span>
+              )}
+              {task.flag === "red" && (
+                <span className="flag-icon flag-red">⚑</span>
+              )}
 
-              {/* Assigned name is NOT clickable here */}
-              <span className="task-title">
+              {/* Title – only clickable part */}
+              <span
+                className="task-title clickable-title"
+                onClick={() => openTaskWindow(task.id)}
+              >
                 {task.title}
-                {task.assigned && (
-                  <span className="assigned-name-nonclick"> — {task.assigned}</span>
-                )}
               </span>
+
+              {/* Assigned name (NOT clickable) */}
+              {task.assigned && (
+                <span className="assigned-name-nonclick"> — {task.assigned}</span>
+              )}
             </div>
 
+            {/* Assign Button */}
             <button
               className="assign-btn"
               onClick={() => startAssignPerson(task.id)}
@@ -181,7 +195,7 @@ export default function PreProject() {
         />
       )}
 
-      {/* Personnel Detail (from inside popup only) */}
+      {/* Personnel Detail */}
       {showPersonnelDetail && activeTask && (
         <PersonnelDetail
           personName={activeTask.assigned}
