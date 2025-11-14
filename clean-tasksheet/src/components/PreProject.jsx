@@ -1,148 +1,178 @@
+/* ======================================================================
+   METRA – PreProject.jsx
+   Step 6H + Option B Enhanced Popup Integration
+   ====================================================================== */
+
 import React, { useState, useEffect } from "react";
-import PersonnelOverlay from "./PersonnelOverlay.jsx";
-import PersonnelDetail from "./PersonnelDetail.jsx";
-import { PersonnelBridge } from "./Bridge/PersonnelBridge.js";
+import PersonnelOverlay from "./PersonnelOverlay";
+import PersonnelDetail from "./PersonnelDetail";
+import TaskWorkingWindow from "./TaskWorkingWindow";
 import "../Styles/PreProject.css";
 
-export default function PreProject() {
-  // ===== Default tasks =====
-  const defaultTasks = [
-    { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
-    { id: 2, title: "Initial Risk Scan", status: "Not Started" },
-    { id: 3, title: "Stakeholder Mapping", status: "Not Started" }
-  ];
+const defaultTasks = [
+  { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
+  { id: 2, title: "Initial Risk Scan", status: "Not Started" },
+  { id: 3, title: "Stakeholder Mapping", status: "Not Started" }
+];
 
-  // ===== LocalStorage initial load =====
+export default function PreProject() {
+
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("tasks_v2");
+    const saved = localStorage.getItem("tasks_v3");
     return saved ? JSON.parse(saved) : defaultTasks;
   });
 
   const [filter, setFilter] = useState(() => {
-    const saved = localStorage.getItem("task_filter_v2");
+    const saved = localStorage.getItem("task_filter_v3");
     return saved || "All";
   });
 
-  // ===== Overlay states =====
-  const [assignOverlayOpen, setAssignOverlayOpen] = useState(false);
-  const [detailOverlayOpen, setDetailOverlayOpen] = useState(false);
+  const [showAssignOverlay, setShowAssignOverlay] = useState(false);
+  const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
+  const [showWorkingWindow, setShowWorkingWindow] = useState(false);
 
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [selectedPersonId, setSelectedPersonId] = useState(null);
+  const [activeTaskId, setActiveTaskId] = useState(null);
 
-  // ===== Persist tasks =====
   useEffect(() => {
-    localStorage.setItem("tasks_v2", JSON.stringify(tasks));
+    localStorage.setItem("tasks_v3", JSON.stringify(tasks));
   }, [tasks]);
 
   useEffect(() => {
-    localStorage.setItem("task_filter_v2", filter);
+    localStorage.setItem("task_filter_v3", filter);
   }, [filter]);
 
-  // ===== Filter tasks =====
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "All") return true;
-    return t.status === filter;
-  });
+  const activeTask = tasks.find((t) => t.id === activeTaskId);
 
-  // ===== Assignment handlers =====
-  const handleAssignPerson = (taskId) => {
-    setSelectedTaskId(taskId);
-    setAssignOverlayOpen(true);
+  const filteredTasks = tasks.filter((t) =>
+    filter === "All" ? true : t.status === filter
+  );
+
+  const openTaskWindow = (taskId) => {
+    setActiveTaskId(taskId);
+    setShowWorkingWindow(true);
+  };
+
+  const startAssignPerson = (taskId) => {
+    setActiveTaskId(taskId);
+    setShowAssignOverlay(true);
+  };
+
+  const openPersonnelDetail = (taskId) => {
+    setActiveTaskId(taskId);
+    setShowPersonnelDetail(true);
   };
 
   const applyPersonToTask = (personName) => {
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === selectedTaskId
+        t.id === activeTaskId
           ? { ...t, assigned: personName, status: "In Progress" }
           : t
       )
     );
-    setAssignOverlayOpen(false);
+    setShowAssignOverlay(false);
   };
 
-  // ===== Show personnel detail =====
-  const openPersonDetail = (personName) => {
-    const match = PersonnelBridge.getPersonnel().find(
-      (p) => p.name === personName
+  const saveNotes = (taskId, entry) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, notes: t.notes ? [...t.notes, entry] : [entry] }
+          : t
+      )
     );
+  };
 
-    if (match) {
-      setSelectedPersonId(match.id);
-      setDetailOverlayOpen(true);
-    }
+  const archiveTask = (taskId) => {
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    setShowWorkingWindow(false);
+  };
+
+  const invokeCC = (taskId, type) => {
+    saveNotes(taskId, `[CC – ${type}]`);
+  };
+
+  const invokeQC = (taskId, type) => {
+    saveNotes(taskId, `[QC – ${type}]`);
   };
 
   return (
     <div className="preproject-wrapper">
-      <h1>PreProject – Clean Task Sheet (Step 6F)</h1>
+      <h1>PreProject – Task Sheet</h1>
 
-      {/* ===== Filter Bar ===== */}
       <div className="filter-bar">
-        {["All", "Not Started", "In Progress", "Completed", "On Hold"].map(
-          (f) => (
-            <button
-              key={f}
-              className={filter === f ? "filter-active" : "filter-btn"}
-              onClick={() => setFilter(f)}
-            >
-              {f}
-            </button>
-          )
-        )}
+        {["All", "Not Started", "In Progress", "Completed", "On Hold"].map((f) => (
+          <button
+            key={f}
+            className={filter === f ? "filter-active" : "filter-btn"}
+            onClick={() => setFilter(f)}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
-      {/* ===== Task List ===== */}
       <div className="task-list">
         {filteredTasks.map((task) => (
           <div key={task.id} className="task-item">
-            <div className="task-left">
-              <span
-                className={`status-dot ${task.status.replace(/ /g, "-")}`}
-              ></span>
+
+            <div className="task-left" onClick={() => openTaskWindow(task.id)}>
+              <span className={`status-dot ${task.status.replace(/ /g, "-")}`} />
 
               <span className="task-title">
                 {task.title}
+
                 {task.assigned && (
                   <span
                     className="assigned-name"
-                    style={{ cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => openPersonDetail(task.assigned)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openPersonnelDetail(task.id);
+                    }}
                   >
-                    {" — "}{task.assigned}
+                    — {task.assigned}
                   </span>
                 )}
               </span>
             </div>
 
-            <div className="task-right">
-              <button
-                className="assign-btn"
-                onClick={() => handleAssignPerson(task.id)}
-              >
-                Assign Person
-              </button>
-            </div>
+            <button
+              className="assign-btn"
+              onClick={() => startAssignPerson(task.id)}
+            >
+              Assign Person
+            </button>
+
           </div>
         ))}
       </div>
 
-      {/* ===== Assign Personnel Overlay ===== */}
-      {assignOverlayOpen && (
+      {showAssignOverlay && (
         <PersonnelOverlay
-          onClose={() => setAssignOverlayOpen(false)}
           onSelect={applyPersonToTask}
+          onClose={() => setShowAssignOverlay(false)}
         />
       )}
 
-      {/* ===== Personnel Detail Popup ===== */}
-      {detailOverlayOpen && (
+      {showPersonnelDetail && activeTask && (
         <PersonnelDetail
-          personId={selectedPersonId}
-          onClose={() => setDetailOverlayOpen(false)}
+          personName={activeTask.assigned}
+          allTasks={tasks}
+          onClose={() => setShowPersonnelDetail(false)}
         />
       )}
+
+      {showWorkingWindow && activeTask && (
+        <TaskWorkingWindow
+          task={activeTask}
+          onClose={() => setShowWorkingWindow(false)}
+          onSaveNotes={saveNotes}
+          onArchiveTask={archiveTask}
+          onInvokeCC={invokeCC}
+          onInvokeQC={invokeQC}
+        />
+      )}
+
     </div>
   );
 }

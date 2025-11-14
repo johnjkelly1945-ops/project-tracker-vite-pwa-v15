@@ -1,179 +1,151 @@
 /* ======================================================================
    METRA – PersonnelDetail.jsx
-   Phase 4.6B.13 Step 6G – Editable Personnel Detail Popup
-   ----------------------------------------------------------------------
-   Adds editable fields, save/cancel, and active/inactive toggle.
-   Uses METRA classic layout + blue action buttons.
+   FINAL FIXED VERSION — StrictMode-Safe, Always Loads Notes Correctly
+   + DEBUG BLOCK ADDED FOR VISIBILITY
    ====================================================================== */
 
-import React, { useState } from "react";
-import { PersonnelBridge } from "./Bridge/PersonnelBridge.js";
-import "../Styles/PreProject.css";
+import React, { useState, useEffect } from "react";
+import "../Styles/PersonnelOverlay.css";
 
-export default function PersonnelDetail({ personId, onClose }) {
-  const original = PersonnelBridge.getPersonnel().find(p => p.id === personId);
-  if (!original) return null;
+export default function PersonnelDetail({ personName, allTasks, onClose }) {
 
-  const [editMode, setEditMode] = useState(false);
+  console.log("RENDER: personName =", personName);
 
-  const [form, setForm] = useState({
-    name: original.name,
-    role: original.role || "",
-    organisation: original.organisation || "",
-    department: original.department || "",
-    telephone: original.telephone || "",
-    email: original.email || "",
-    active: original.active
-  });
+  /* ========== Defensive Guard ========== */
+  if (!personName || typeof personName !== "string") {
+    return (
+      <div className="po-backdrop">
+        <div className="po-card">
+          <h2>No person selected</h2>
+          <button className="po-close-btn" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    );
+  }
 
-  const updateField = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+  const person = {
+    name: personName,
+    role: "Project Contributor",
   };
 
-  const saveChanges = () => {
-    PersonnelBridge.updatePerson(personId, form);
-    setEditMode(false);
+  /* ========== STORAGE KEY ========== */
+  const storageKey = `person_notes_${person.name.replace(/ /g, "_")}`;
+
+  /* ========== LOAD NOTES EVERY TIME PANEL OPENS ========== */
+  const [personNotes, setPersonNotes] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey);
+    console.log("LOAD from localStorage key =", storageKey, "value =", saved);
+
+    if (saved) {
+      try {
+        setPersonNotes(JSON.parse(saved));
+      } catch {
+        console.warn("Failed to parse saved notes for", storageKey);
+        setPersonNotes([]);
+      }
+    } else {
+      setPersonNotes([]);
+    }
+  }, [storageKey]);
+
+  /* ========== SAVE NOTES ON DEMAND ========== */
+  const [noteInput, setNoteInput] = useState("");
+
+  const addPersonNote = () => {
+    if (!noteInput.trim()) return;
+
+    const entry = `${new Date().toLocaleString("en-GB")} — ${noteInput}`;
+    const updated = [...personNotes, entry];
+
+    console.log("SAVE to", storageKey, "=", updated);
+
+    setPersonNotes(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+
+    setNoteInput("");
   };
 
+  /* ========== Assigned Tasks ========== */
+  const assignedTasks = allTasks.filter((t) => t.assigned === person.name);
+
+  /* ========== UI ========== */
   return (
-    <div className="overlay-backdrop">
-      <div className="overlay-card" style={{ maxWidth: "450px" }}>
-        <h2>Personnel Details</h2>
+    <div className="po-backdrop">
+      <div className="po-card personnel-detail-card">
 
-        {/* =======================
-            VIEW MODE (READ-ONLY)
-           ======================= */}
-        {!editMode && (
-          <div style={{ lineHeight: "1.6", fontSize: "1rem" }}>
-            <strong>Name:</strong><br />
-            {form.name}<br /><br />
+        <h2 className="po-title">Personnel Detail</h2>
 
-            {form.role && (
-              <>
-                <strong>Role:</strong><br />
-                {form.role}<br /><br />
-              </>
-            )}
+        <div className="pd-section">
+          <div className="pd-label">Name:</div>
+          <div className="pd-value">{person.name}</div>
+        </div>
 
-            {form.organisation && (
-              <>
-                <strong>Organisation:</strong><br />
-                {form.organisation}<br /><br />
-              </>
-            )}
+        <div className="pd-section">
+          <div className="pd-label">Role:</div>
+          <div className="pd-value">{person.role}</div>
+        </div>
 
-            {form.department && (
-              <>
-                <strong>Department:</strong><br />
-                {form.department}<br /><br />
-              </>
-            )}
+        <h3 className="pd-subtitle">Profile Notes</h3>
 
-            {form.telephone && (
-              <>
-                <strong>Telephone:</strong><br />
-                {form.telephone}<br /><br />
-              </>
-            )}
+        {/* ============================================================
+           DEBUG BLOCK — SHOWS EXACT NOTES LOADED FROM STORAGE
+        ============================================================ */}
+        <div style={{
+          background: "yellow",
+          color: "black",
+          padding: "6px",
+          marginBottom: "10px",
+          border: "1px solid black"
+        }}>
+          DEBUG NOTES: {JSON.stringify(personNotes)}
+        </div>
 
-            {form.email && (
-              <>
-                <strong>Email:</strong><br />
-                {form.email}<br /><br />
-              </>
-            )}
+        <div className="pd-notes-display">
+          {personNotes.length === 0 ? (
+            <div className="pd-empty">No notes yet.</div>
+          ) : (
+            personNotes.map((line, idx) => (
+              <div key={idx} className="pd-note-line">{line}</div>
+            ))
+          )}
+        </div>
 
-            <strong>Status:</strong><br />
-            {form.active ? "Active" : "Inactive"}<br /><br />
+        <textarea
+          className="pd-input"
+          value={noteInput}
+          placeholder="Add a note about this person…"
+          onChange={(e) => setNoteInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addPersonNote();
+            }
+          }}
+        />
 
-            <strong>ID Reference:</strong><br />
-            {personId}<br /><br />
+        <button className="pd-add-btn" onClick={addPersonNote}>
+          Add Note
+        </button>
 
-            <button
-              className="assign-btn"
-              style={{ marginTop: "10px" }}
-              onClick={() => setEditMode(true)}
-            >
-              Edit Personnel
-            </button>
-          </div>
-        )}
+        <h3 className="pd-subtitle">Assigned Tasks</h3>
 
-        {/* =======================
-            EDIT MODE
-           ======================= */}
-        {editMode && (
-          <div style={{ lineHeight: "1.6", fontSize: "1rem" }}>
-            <strong>Name (read-only):</strong><br />
-            {form.name}<br /><br />
+        <div className="pd-task-list">
+          {assignedTasks.length === 0 ? (
+            <div className="pd-empty">No tasks assigned.</div>
+          ) : (
+            assignedTasks.map((t) => (
+              <div key={t.id} className="pd-task-item">
+                <div className="pd-task-title">{t.title}</div>
+                <div className={`pd-status-dot ${t.status.replace(/ /g, "-")}`} />
+              </div>
+            ))
+          )}
+        </div>
 
-            <strong>Role:</strong><br />
-            <input
-              className="metra-input"
-              value={form.role}
-              onChange={(e) => updateField("role", e.target.value)}
-            /><br /><br />
+        <button className="po-close-btn" onClick={onClose}>Close</button>
 
-            <strong>Organisation:</strong><br />
-            <input
-              className="metra-input"
-              value={form.organisation}
-              onChange={(e) => updateField("organisation", e.target.value)}
-            /><br /><br />
-
-            <strong>Department:</strong><br />
-            <input
-              className="metra-input"
-              value={form.department}
-              onChange={(e) => updateField("department", e.target.value)}
-            /><br /><br />
-
-            <strong>Telephone:</strong><br />
-            <input
-              className="metra-input"
-              value={form.telephone}
-              onChange={(e) => updateField("telephone", e.target.value)}
-            /><br /><br />
-
-            <strong>Email:</strong><br />
-            <input
-              className="metra-input"
-              value={form.email}
-              onChange={(e) => updateField("email", e.target.value)}
-            /><br /><br />
-
-            <strong>Status:</strong><br />
-            <button
-              className={form.active ? "active-btn" : "inactive-btn"}
-              onClick={() => updateField("active", !form.active)}
-            >
-              {form.active ? "Active" : "Inactive"}
-            </button>
-            <br /><br />
-
-            <button
-              className="assign-btn"
-              onClick={saveChanges}
-              style={{ marginRight: "10px" }}
-            >
-              Save Personnel
-            </button>
-
-            <button
-              className="close-btn"
-              onClick={() => setEditMode(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-
-        {/* Close popup */}
-        {!editMode && (
-          <button className="close-btn" onClick={onClose}>
-            Close
-          </button>
-        )}
       </div>
     </div>
   );

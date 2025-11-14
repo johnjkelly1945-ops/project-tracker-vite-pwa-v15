@@ -1,8 +1,7 @@
-/* =====================================================================
+/* ======================================================================
    METRA – PreProject.css
-   High-contrast, clean styles for overlay + task list
-   Includes Step 6C–6G updates and scroll-safe popup behaviour.
-   ===================================================================== */
+   Phase 4.6B.13 – Step 6H (Verified Stable)
+   ====================================================================== */
 
 :root {
   --header-blue: #0a2b5c;
@@ -15,24 +14,22 @@
 }
 
 body {
-  background-color: var(--bg-gray);
-  font-family: "Segoe UI", system-ui, sans-serif;
   margin: 0;
   padding: 0;
+  background: var(--bg-gray);
+  font-family: "Segoe UI", system-ui, sans-serif;
 }
 
-/* ===== Wrapper ===== */
 .preproject-wrapper {
   padding: 20px;
 }
 
 h1 {
-  font-size: 1.6rem;
   color: var(--header-blue);
+  font-size: 1.6rem;
   margin-bottom: 20px;
 }
 
-/* ===== Filter Bar ===== */
 .filter-bar {
   margin-bottom: 20px;
 }
@@ -52,7 +49,7 @@ h1 {
   color: white;
 }
 
-/* ===== Task List ===== */
+/* ===== Tasks ===== */
 .task-list {
   display: flex;
   flex-direction: column;
@@ -64,14 +61,32 @@ h1 {
   justify-content: space-between;
   padding: 12px;
   background: white;
-  border-radius: 8px;
   border: 1px solid var(--light-border);
+  border-radius: 8px;
 }
 
 .task-left {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.Not-Started { background: var(--dot-gray); }
+.In-Progress { background: var(--dot-yellow); }
+.Completed { background: var(--dot-green); }
+
+.flag-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--dot-red);
 }
 
 .task-title {
@@ -80,133 +95,95 @@ h1 {
 }
 
 .assigned-name {
-  font-weight: 400;
-  color: #555;
   margin-left: 6px;
+  color: #333;
+}
+
+/* Assign button */
+.assign-btn {
+  background: none;
+  border: none;
+  color: var(--header-blue);
+  font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
 }
 
-/* ===== Status Dots ===== */
-.status-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
+/* ===== Working Window ===== */
 
-.Not-Started {
-  background: var(--dot-gray);
-}
-
-.In-Progress {
-  background: var(--dot-yellow);
-}
-
-.Completed {
-  background: var(--dot-green);
-}
-
-.On-Hold {
-  background: var(--dot-red);
-}
-
-/* ===== Assign Button ===== */
-.assign-btn {
-  background: var(--header-blue);
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* ===== Overlay Backdrop ===== */
-.overlay-backdrop {
+.ww-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.35);
+  inset: 0;
+  background: rgba(0,0,0,0.35);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 999;
+  align-items: start;
+  padding-top: 40px;
 }
 
-/* =====================================================================
-   UPDATED — Scroll-Safe Overlay Card
-   Prevents Chrome overflow and ensures Close button always reachable.
-   ===================================================================== */
-.overlay-card {
+.ww-card {
+  width: 420px;
   background: white;
   padding: 20px;
   border-radius: 10px;
-  width: 280px;
-  max-width: 450px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
 
-  /* NEW */
-  max-height: 80vh;
+.ww-header h2 {
+  margin: 0;
+  color: var(--header-blue);
+}
+
+.ww-assigned {
+  margin-top: 4px;
+}
+
+.ww-notes-display {
+  max-height: 150px;
   overflow-y: auto;
-
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  background: #fafafa;
+  padding: 8px;
+  border: 1px solid var(--light-border);
+  margin: 10px 0;
 }
 
-/* ===== Person List ===== */
-.person-list {
+.ww-note-line {
+  margin-bottom: 5px;
+}
+
+.ww-input {
+  width: 100%;
+  height: 50px;
+  border-radius: 6px;
+  border: 1px solid var(--light-border);
+  padding: 6px;
+}
+
+.ww-actions-row {
+  margin-top: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 15px;
+  justify-content: space-between;
 }
 
-.person-btn {
-  padding: 10px;
+.ww-actions-row button {
+  width: 75px;
+  height: 36px;
   border-radius: 6px;
-  background: var(--header-blue);
+  cursor: pointer;
+  border: 1px solid var(--light-border);
+}
+
+.ww-actions-row .delete {
+  background: var(--dot-red);
   color: white;
   border: none;
-  cursor: pointer;
 }
 
-/* ===== Close Button ===== */
-.close-btn {
-  padding: 8px;
-  border-radius: 6px;
+.ww-close-btn {
   width: 100%;
-  border: 1px solid var(--light-border);
-  background: #ececec;
-  cursor: pointer;
   margin-top: 20px;
-}
-
-/* =====================================================================
-   Step 6G — Editable Personnel Inputs
-   ===================================================================== */
-.metra-input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid var(--light-border);
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-/* ===== Active / Inactive Toggle Buttons ===== */
-.active-btn {
-  background: var(--header-blue);
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.inactive-btn {
-  background: #ccc;
-  color: #222;
-  border: none;
-  padding: 8px 14px;
+  padding: 10px;
+  background: #ececec;
   border-radius: 6px;
   cursor: pointer;
 }

@@ -1,60 +1,40 @@
-import React from "react";
-import { PersonnelBridge } from "./Bridge/PersonnelBridge.js";
-import "../Styles/PreProject.css";
+/* ======================================================================
+   METRA – PersonnelOverlay.jsx
+   Restored Stable Version (Step 6H + Micro-Fixes)
+   ----------------------------------------------------------------------
+   • Select personnel for a task
+   • Passes selection back to PreProject.jsx
+   • Clean centred modal, Safari-safe
+   ====================================================================== */
 
-export default function PersonnelOverlay({ onClose, onSelect }) {
-  // Load personnel and filter active users
-  const people = PersonnelBridge.getPersonnel().filter(p => p.active);
+import React from "react";
+import "../Styles/PersonnelOverlay.css";
+
+export default function PersonnelOverlay({ onSelect, onClose }) {
+  const people = ["Alice Morgan", "David Chen", "Priya Patel"];
 
   return (
-    <div className="overlay-backdrop">
-      <div className="overlay-card">
-        <h2>Select Personnel</h2>
+    <div className="po-backdrop">
+      <div className="po-card">
 
-        <div className="person-list">
-          {people.map((p) => {
-            const line1 = p.role || p.organisation || p.department
-              ? [p.role, p.organisation, p.department].filter(Boolean).join(" • ")
-              : null;
+        <h2 className="po-title">Select Personnel</h2>
 
-            const line2 = p.telephone || p.email
-              ? [p.telephone, p.email].filter(Boolean).join(" • ")
-              : null;
-
-            return (
-              <button
-                key={p.id}
-                className="person-btn"
-                onClick={() => onSelect(p.name)}
-                style={{ textAlign: "left", lineHeight: "1.4" }}
-              >
-                <strong>{p.name}</strong>
-
-                {line1 && (
-                  <>
-                    <br />
-                    <span style={{ fontSize: "0.85rem", opacity: 0.9 }}>
-                      {line1}
-                    </span>
-                  </>
-                )}
-
-                {line2 && (
-                  <>
-                    <br />
-                    <span style={{ fontSize: "0.75rem", opacity: 0.75 }}>
-                      {line2}
-                    </span>
-                  </>
-                )}
-              </button>
-            );
-          })}
+        <div className="po-list">
+          {people.map((name) => (
+            <div
+              key={name}
+              className="po-person"
+              onClick={() => onSelect(name)}
+            >
+              {name}
+            </div>
+          ))}
         </div>
 
-        <button className="close-btn" onClick={onClose}>
-          Cancel
+        <button className="po-close-btn" onClick={onClose}>
+          Close
         </button>
+
       </div>
     </div>
   );
