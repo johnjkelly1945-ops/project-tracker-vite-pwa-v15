@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – PreProject.css
-   Phase 4.6B.13 – Step 6H (Verified Stable)
+   Phase 4.6B.13 – Complete Stable File (with Flag System)
    ====================================================================== */
 
 :root {
@@ -30,6 +30,9 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* ============================
+   Filter Bar
+   ============================ */
 .filter-bar {
   margin-bottom: 20px;
 }
@@ -49,7 +52,10 @@ h1 {
   color: white;
 }
 
-/* ===== Tasks ===== */
+/* ============================
+   Task List
+   ============================ */
+
 .task-list {
   display: flex;
   flex-direction: column;
@@ -78,25 +84,47 @@ h1 {
   border-radius: 50%;
 }
 
-.Not-Started { background: var(--dot-gray); }
-.In-Progress { background: var(--dot-yellow); }
-.Completed { background: var(--dot-green); }
+.Not-Started {
+  background: var(--dot-gray);
+}
 
-.flag-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+.In-Progress {
+  background: var(--dot-yellow);
+}
+
+.Completed {
+  background: var(--dot-green);
+}
+
+.On-Hold {
   background: var(--dot-red);
 }
 
+/* ========== FLAG ICONS ========== */
+.flag-icon {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.flag-orange {
+  color: orange;
+}
+
+.flag-red {
+  color: red;
+}
+
+/* Task title */
 .task-title {
   font-size: 1rem;
   font-weight: 600;
 }
 
+/* Assigned name */
 .assigned-name {
   margin-left: 6px;
   color: #333;
+  cursor: pointer;
 }
 
 /* Assign button */
@@ -109,7 +137,9 @@ h1 {
   text-decoration: underline;
 }
 
-/* ===== Working Window ===== */
+/* ============================
+   Working Window
+   ============================ */
 
 .ww-backdrop {
   position: fixed;
@@ -119,6 +149,7 @@ h1 {
   justify-content: center;
   align-items: start;
   padding-top: 40px;
+  z-index: 900;
 }
 
 .ww-card {
@@ -129,48 +160,66 @@ h1 {
   box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
-.ww-header h2 {
+/* Header */
+.ww-title {
   margin: 0;
   color: var(--header-blue);
+  font-size: 1.3rem;
+  font-weight: 700;
 }
 
 .ww-assigned {
   margin-top: 4px;
+  font-size: 0.95rem;
+  color: #333;
 }
 
+/* Notes display */
 .ww-notes-display {
   max-height: 150px;
   overflow-y: auto;
   background: #fafafa;
   padding: 8px;
   border: 1px solid var(--light-border);
-  margin: 10px 0;
+  margin: 12px 0;
+  border-radius: 6px;
 }
 
 .ww-note-line {
   margin-bottom: 5px;
 }
 
+.ww-note-empty {
+  color: #777;
+  font-style: italic;
+}
+
+/* Input box */
 .ww-input {
   width: 100%;
   height: 50px;
   border-radius: 6px;
   border: 1px solid var(--light-border);
   padding: 6px;
+  font-size: 0.95rem;
 }
 
+/* Action Row */
 .ww-actions-row {
-  margin-top: 12px;
+  margin-top: 14px;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .ww-actions-row button {
-  width: 75px;
+  flex: 1 0 30%;
   height: 36px;
   border-radius: 6px;
   cursor: pointer;
   border: 1px solid var(--light-border);
+  background: white;
 }
 
 .ww-actions-row .delete {
@@ -179,11 +228,13 @@ h1 {
   border: none;
 }
 
+/* Close button */
 .ww-close-btn {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 18px;
   padding: 10px;
   background: #ececec;
   border-radius: 6px;
   cursor: pointer;
+  border: 1px solid var(--light-border);
 }
