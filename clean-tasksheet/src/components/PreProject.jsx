@@ -1,6 +1,7 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Step 7B – 7 Dummy Tasks + Popup + Passive Assigned Name (Italic + Soft)
+   Step 7C – Add Task Button + Repository Integration
+   (7 Dummy Tasks + Popup + Passive Assigned Name maintained)
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -22,7 +23,7 @@ const defaultTasks = [
   { id: 7, title: "Validate Stakeholder List", status: "Not Started" }
 ];
 
-export default function PreProject() {
+export default function PreProject({ setScreen, injectedTasks, clearInjectedTasks }) {
 
   /* ===== Task Persistence ===== */
   const [tasks, setTasks] = useState(() => {
@@ -42,6 +43,16 @@ export default function PreProject() {
   useEffect(() => {
     localStorage.setItem("task_filter_v3", filter);
   }, [filter]);
+
+  /* ================================================================
+     MERGE TASKS RETURNED FROM REPOSITORY (Step 7C)
+     ================================================================ */
+  useEffect(() => {
+    if (injectedTasks && injectedTasks.length > 0) {
+      setTasks(prev => [...prev, ...injectedTasks]);
+      clearInjectedTasks();
+    }
+  }, [injectedTasks, clearInjectedTasks]);
 
   /* ===== Active task & popups ===== */
   const [activeTaskId, setActiveTaskId] = useState(null);
@@ -211,6 +222,16 @@ export default function PreProject() {
 
           </div>
         ))}
+      </div>
+
+      {/* + ADD TASK BUTTON (Step 7C) */}
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button
+          className="add-task-btn"
+          onClick={() => setScreen("repository")}
+        >
+          + Add Task
+        </button>
       </div>
 
       {/* ASSIGN OVERLAY */}
