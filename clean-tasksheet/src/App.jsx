@@ -1,67 +1,42 @@
 /* ======================================================================
    METRA – App.jsx
-   Module Switching Framework (PreProject ↔ Repository)
-   ----------------------------------------------------------------------
-   This file controls which main screen is displayed.
-   No routing library required — simple manual screen switching.
+   Updated to use RepositoryModule (new filename to break Safari cache)
    ====================================================================== */
 
 import React, { useState } from "react";
-
-// Main modules
 import PreProject from "./components/PreProject";
-import Repository from "./components/Repository";   // NEW MODULE
-
-// Global styles (unchanged)
+import RepositoryModule from "./components/RepositoryModule";
 import "./Styles/PreProject.css";
-import "./Styles/Repository.css";                   // NEW CSS (file will follow)
 
 export default function App() {
-
-  /* ============================================
-     Master screen controller
-     --------------------------------------------
-     screen = "preproject"  → Workspace (current)
-     screen = "repository"  → Full screen Repository Module
-  ============================================ */
   const [screen, setScreen] = useState("preproject");
 
-  /* ============================================
-     Task injection from Repository → PreProject
-     --------------------------------------------
-     When user downloads selected tasks from Repository,
-     this callback receives an array of new tasks and
-     forwards them into PreProject.
-  ============================================ */
-  const [injectedTasks, setInjectedTasks] = useState([]);
-
-  const handleRepositoryDownload = (tasksFromRepo) => {
-    setInjectedTasks(tasksFromRepo);
+  /* ================================================================
+     Handle tasks returned from Repository (Summaries + Tasks)
+     ================================================================ */
+  const handleDownload = (newTasks) => {
+    // Store downloaded tasks so PreProject can retrieve them
+    localStorage.setItem("repo_downloaded_tasks", JSON.stringify(newTasks));
     setScreen("preproject");
   };
 
-
-  /* ============================================
-     RENDER SCREENS
-  ============================================ */
+  /* ================================================================
+     SCREEN ROUTER
+     ================================================================ */
   return (
-    <div className="metra-app-shell">
-
+    <>
       {screen === "preproject" && (
         <PreProject
           setScreen={setScreen}
-          injectedTasks={injectedTasks}
-          clearInjectedTasks={() => setInjectedTasks([])}
         />
       )}
 
       {screen === "repository" && (
-        <Repository
+        <RepositoryModule
           setScreen={setScreen}
-          onDownload={handleRepositoryDownload}
+          onDownload={handleDownload}
         />
       )}
-
-    </div>
+    </>
   );
 }

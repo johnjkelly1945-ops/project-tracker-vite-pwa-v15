@@ -1,14 +1,7 @@
 /* ======================================================================
    METRA – Repository.css
-   Step 7D – Full Styling (Governance-aligned module)
-   ----------------------------------------------------------------------
-   • Blue header bar
-   • Clean white background
-   • Three-column structure
-   • White list panels
-   • Blue-dot summaries
-   • Selectable tasks
-   • Templates passive
+   Fixed Header Text Visibility
+   Forces white header text and ensures render on all browsers.
    ====================================================================== */
 
 /* ===== Full-page wrapper ===== */
@@ -22,12 +15,12 @@
   font-family: system-ui, Arial, sans-serif;
 }
 
-/* ===== Blue header bar ===== */
+/* ===== Blue header ===== */
 .repo-header {
   width: 100%;
   height: 70px;
-  background: #1e3a8a; /* deep governance blue */
-  color: white;
+  background: #1e3a8a;        /* deep METRA blue */
+  color: #ffffff !important;   /* FORCE visible text */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,38 +28,63 @@
   box-sizing: border-box;
 }
 
+/* ===== FORCE the header text to appear ===== */
 .repo-header h1 {
+  color: #ffffff !important;   /* override any inherited colour */
   font-size: 22px;
   font-weight: 600;
   margin: 0;
+  z-index: 5;
 }
 
 /* ===== Close button ===== */
 .repo-close {
-  background: transparent;
+  background: none;
   border: none;
-  color: white;
-  font-size: 26px;
+  color: #ffffff !important;   /* ensure visible */
+  font-size: 28px;
   cursor: pointer;
-  padding: 5px;
+  z-index: 6;
 }
 
-/* ===== Action row ===== */
-.repo-actions {
-  height: 60px;
-  background: #eef2ff; /* soft blue-grey */
+/* ===== Unified Filter Bar ===== */
+.filter-bar-unified {
+  width: 100%;
+  background: #eef2ff;
+  padding: 15px 30px;
   display: flex;
+  gap: 20px;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 30px;
   box-sizing: border-box;
-  border-bottom: 1px solid #dbe1f0;
+  border-bottom: 1px solid #d0d7e2;
 }
 
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #1e3a8a;
+}
+
+.filter-group select {
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+/* ===== Download button ===== */
 .download-btn {
-  background: #1e3a8a;
-  color: white;
+  margin-left: auto;
   padding: 10px 18px;
+  background: #1e3a8a;
+  color: white !important;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -74,85 +92,61 @@
 }
 
 .download-btn:hover {
-  background: #2548a8;
+  opacity: 0.85;
 }
 
-/* ===== Three-column layout ===== */
+/* ===== 3-column layout ===== */
 .repo-columns {
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 25px;
-  padding: 25px;
+  display: flex;
+  gap: 20px;
+  padding: 20px 30px;
+  overflow-y: auto;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
-/* ===== Each column ===== */
 .repo-col {
+  flex: 1;
   background: white;
-  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
 }
 
 .repo-col h2 {
-  margin: 0;
-  margin-bottom: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: #1e293b;
+  margin-bottom: 12px;
+  color: #1e3a8a;
 }
 
-/* ===== Scrollable list area ===== */
+/* ===== Lists ===== */
 .repo-list {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.repo-item,
 .repo-item-selectable {
-  padding: 10px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 15px;
   display: flex;
   align-items: center;
-  color: #334155;
-}
-
-/* ===== Blue dot for summaries ===== */
-.blue-dot {
-  font-size: 12px;
-  color: #1e3a8a;
-  margin-right: 8px;
-}
-
-/* ===== Selectable tasks (checkbox) ===== */
-.repo-item-selectable input {
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-.repo-item-selectable:hover {
-  background: #f8fafc;
-}
-
-/* ===== New Summary Button ===== */
-.new-summary-btn {
-  margin-top: 12px;
-  padding: 10px;
-  border: 1px solid #1e3a8a;
+  gap: 8px;
+  padding: 8px;
   border-radius: 6px;
-  background: white;
-  color: #1e3a8a;
   cursor: pointer;
-  font-size: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
-.new-summary-btn:hover {
-  background: #f0f4ff;
+.blue-dot {
+  color: #1d4ed8;
+  font-size: 12px;
+}
+
+.repo-item {
+  padding: 8px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }

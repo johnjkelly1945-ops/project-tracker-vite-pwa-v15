@@ -23,7 +23,12 @@ const defaultTasks = [
   { id: 7, title: "Validate Stakeholder List", status: "Not Started" }
 ];
 
-export default function PreProject({ setScreen, injectedTasks, clearInjectedTasks }) {
+export default function PreProject({
+  setScreen,
+  injectedTasks = [],
+  clearInjectedTasks = () => {}
+}) {
+
 
   /* ===== Task Persistence ===== */
   const [tasks, setTasks] = useState(() => {
