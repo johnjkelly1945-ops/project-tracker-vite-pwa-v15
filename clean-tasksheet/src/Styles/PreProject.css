@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – PreProject.css
-   Phase 4.6B.13 – Complete Stable File (with Flag System)
+   Phase 4.6B.13 – Complete Stable File (with Summary Fix)
    ====================================================================== */
 
 :root {
@@ -137,9 +137,47 @@ h1 {
   text-decoration: underline;
 }
 
-/* ============================
+/* ============================================================
+   SUMMARY TASKS (parent rows)
+   ============================================================ */
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;              /* spacing between arrow, dot, and title */
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--light-border);
+  border-radius: 8px;
+  cursor: pointer;
+  justify-content: flex-start;   /* FIXED: all left aligned */
+}
+
+.summary-arrow {
+  font-size: 16px;
+  width: 16px;
+  color: var(--header-blue);
+  text-align: center;
+}
+
+/* Smaller, elegant METRA blue dot */
+.summary-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0a60d0;
+  display: inline-block;
+  margin-top: 1px;        /* neat vertical alignment */
+}
+
+/* Child task indentation */
+.child-task-wrapper {
+  margin-left: 28px;
+}
+
+/* ============================================================
    Working Window
-   ============================ */
+   ============================================================ */
 
 .ww-backdrop {
   position: fixed;
@@ -237,4 +275,12 @@ h1 {
   border-radius: 6px;
   cursor: pointer;
   border: 1px solid var(--light-border);
+}
+/* ============================================================
+   RESTORE SCROLLING FOR TASK LIST
+   ============================================================ */
+.task-list {
+  max-height: 65vh;      /* fits above working window */
+  overflow-y: auto;      /* enables scroll */
+  padding-right: 6px;    /* avoids Safari clipping on the right */
 }

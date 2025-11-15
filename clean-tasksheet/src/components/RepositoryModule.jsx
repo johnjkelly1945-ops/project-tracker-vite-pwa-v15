@@ -1,7 +1,7 @@
 /* ======================================================================
-   METRA – RepositoryModule.jsx
-   Step 7K – TRUE CUSTOM CHECKBOXES (NO native <input>)
-   Guaranteed visibility in Safari/Chrome
+   METRA – RepositoryModule.jsx (FINAL FIX)
+   Ensures summaries ALWAYS include type: "summary"
+   Ensures tasks ALWAYS include type: "task"
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -62,28 +62,33 @@ export default function RepositoryModule({ setScreen, onDownload }) {
   const [selectedTasks, setSelectedTasks] = useState([]);
 
   const toggleSummary = (name) => {
-    setSelectedSummaries((prev) =>
-      prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]
+    setSelectedSummaries(prev =>
+      prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
     );
   };
 
   const toggleTask = (name) => {
-    setSelectedTasks((prev) =>
-      prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]
+    setSelectedTasks(prev =>
+      prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]
     );
   };
 
+  /* =====================================================================
+     FIX: ALWAYS send type: "summary" or type: "task"
+     ===================================================================== */
   const handleDownload = () => {
     const bundled = [
       ...selectedSummaries.map((name) => ({
         id: Date.now() + Math.random(),
         title: name,
-        status: "Not Started"
+        type: "summary",             // <-- THE FIX
+        expanded: false
       })),
       ...selectedTasks.map((name) => ({
         id: Date.now() + Math.random(),
         title: name,
-        status: "Not Started"
+        status: "Not Started",
+        type: "task"                 // <-- THE FIX
       }))
     ];
 
@@ -123,7 +128,10 @@ export default function RepositoryModule({ setScreen, onDownload }) {
 
         <div className="filter-group">
           <label>Detail</label>
-          <select value={detail} onChange={(e) => setDetail(e.target.value)}>
+          <select
+            value={detail}
+            onChange={(e) => setDetail(e.target.value)}
+          >
             {detailOptions[type].map((d) => (
               <option key={d}>{d}</option>
             ))}
@@ -183,7 +191,7 @@ export default function RepositoryModule({ setScreen, onDownload }) {
           ))}
         </div>
 
-        {/* TEMPLATES (Passive) */}
+        {/* TEMPLATES */}
         <div className="repo-col">
           <h2>Templates</h2>
           {templatesData.map((temp) => (

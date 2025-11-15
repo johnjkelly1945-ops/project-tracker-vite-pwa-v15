@@ -1,6 +1,6 @@
 /* ======================================================================
-   METRA – App.jsx
-   Updated to use RepositoryModule (new filename to break Safari cache)
+   METRA – App.jsx (FULL REPLACEMENT)
+   Step 7G Fix – Proper Repository → PreProject Task Injection
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -12,12 +12,23 @@ export default function App() {
   const [screen, setScreen] = useState("preproject");
 
   /* ================================================================
-     Handle tasks returned from Repository (Summaries + Tasks)
+     Hold tasks passed back from Repository
      ================================================================ */
-  const handleDownload = (newTasks) => {
-    // Store downloaded tasks so PreProject can retrieve them
-    localStorage.setItem("repo_downloaded_tasks", JSON.stringify(newTasks));
-    setScreen("preproject");
+  const [repoTasks, setRepoTasks] = useState([]);
+
+  /* ================================================================
+     Receive tasks from Repository and return to PreProject
+     ================================================================ */
+  const handleDownload = (items) => {
+    setRepoTasks(items);     // store tasks for PreProject
+    setScreen("preproject"); // return to workspace
+  };
+
+  /* ================================================================
+     Clear after PreProject has merged them
+     ================================================================ */
+  const clearInjectedTasks = () => {
+    setRepoTasks([]);
   };
 
   /* ================================================================
@@ -28,6 +39,8 @@ export default function App() {
       {screen === "preproject" && (
         <PreProject
           setScreen={setScreen}
+          injectedTasks={repoTasks}
+          clearInjectedTasks={clearInjectedTasks}
         />
       )}
 

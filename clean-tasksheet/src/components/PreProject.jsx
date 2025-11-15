@@ -1,7 +1,6 @@
 /* ======================================================================
-   METRA – PreProject.jsx
-   Step 7C – Add Task Button + Repository Integration
-   (7 Dummy Tasks + Popup + Passive Assigned Name maintained)
+   METRA – PreProject.jsx (FINAL – Summary Sorting + Robust Dedupe)
+   Works with new RepositoryModule
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -11,17 +10,76 @@ import TaskWorkingWindow from "./TaskWorkingWindow";
 import "../Styles/PreProject.css";
 
 /* ======================================================================
-   RESTORED 7 DUMMY TASKS
+   Toast Confirm Component
+   ====================================================================== */
+function ToastConfirm({ message, onConfirm, onCancel }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: "20px",
+        right: "20px",
+        background: "white",
+        padding: "14px 18px",
+        borderRadius: "8px",
+        boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
+        zIndex: 9999,
+        width: "260px",
+        border: "1px solid #d0d0d0"
+      }}
+    >
+      <div style={{ marginBottom: "12px", fontWeight: 600 }}>{message}</div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+        <button
+          onClick={onCancel}
+          style={{
+            padding: "6px 12px",
+            borderRadius: "6px",
+            background: "#eee",
+            border: "1px solid #ccc",
+            cursor: "pointer"
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          style={{
+            padding: "6px 12px",
+            borderRadius: "6px",
+            background: "#dc2626",
+            color: "white",
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ======================================================================
+   Default Tasks (stay as normal tasks)
    ====================================================================== */
 const defaultTasks = [
-  { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
-  { id: 2, title: "Initial Risk Scan", status: "Not Started" },
-  { id: 3, title: "Stakeholder Mapping", status: "Not Started" },
-  { id: 4, title: "Identify Dependencies", status: "Not Started" },
-  { id: 5, title: "Review Governance Requirements", status: "Not Started" },
-  { id: 6, title: "Draft Initiation Brief", status: "Not Started" },
-  { id: 7, title: "Validate Stakeholder List", status: "Not Started" }
+  { id: 1, title: "Prepare Scope Summary", status: "Not Started", type: "task" },
+  { id: 2, title: "Initial Risk Scan", status: "Not Started", type: "task" },
+  { id: 3, title: "Stakeholder Mapping", status: "Not Started", type: "task" },
+  { id: 4, title: "Identify Dependencies", status: "Not Started", type: "task" },
+  { id: 5, title: "Review Governance Requirements", status: "Not Started", type: "task" },
+  { id: 6, title: "Draft Initiation Brief", status: "Not Started", type: "task" },
+  { id: 7, title: "Validate Stakeholder List", status: "Not Started", type: "task" }
 ];
+
+/* ======================================================================
+   Title normalisation for dedupe
+   ====================================================================== */
+function normalise(str) {
+  return str.toLowerCase().trim().replace(/\s+/g, " ");
+}
 
 export default function PreProject({
   setScreen,
@@ -29,8 +87,9 @@ export default function PreProject({
   clearInjectedTasks = () => {}
 }) {
 
-
-  /* ===== Task Persistence ===== */
+  /* ======================================================================
+     Load tasks or defaults
+     ====================================================================== */
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks_v3");
     return saved ? JSON.parse(saved) : defaultTasks;
@@ -49,35 +108,46 @@ export default function PreProject({
     localStorage.setItem("task_filter_v3", filter);
   }, [filter]);
 
-  /* ================================================================
-     MERGE TASKS RETURNED FROM REPOSITORY (Step 7C)
-     ================================================================ */
+  /* ======================================================================
+     MERGE INJECTED TASKS WITH DEDUPE (title + type)
+     ====================================================================== */
   useEffect(() => {
     if (injectedTasks && injectedTasks.length > 0) {
-      setTasks(prev => [...prev, ...injectedTasks]);
+      setTasks(prev => {
+        const existing = new Set(prev.map(t => normalise(t.title) + "::" + t.type));
+        const clean = injectedTasks.filter(
+          t => !existing.has(normalise(t.title) + "::" + t.type)
+        );
+        return [...prev, ...clean];
+      });
       clearInjectedTasks();
     }
   }, [injectedTasks, clearInjectedTasks]);
 
-  /* ===== Active task & popups ===== */
+  /* ======================================================================
+     Popup State
+     ====================================================================== */
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [showAssignOverlay, setShowAssignOverlay] = useState(false);
   const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
   const [showWorkingWindow, setShowWorkingWindow] = useState(false);
 
-  const activeTask = tasks.find((t) => t.id === activeTaskId);
+  const activeTask = tasks.find(t => t.id === activeTaskId);
 
   /* ======================================================================
-     FILTERING
+     SUMMARY DELETE (Toast)
      ====================================================================== */
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "All") return true;
-    if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
-    return t.status === filter;
-  });
+  const [summaryToDelete, setSummaryToDelete] = useState(null);
+
+  const deleteSummaryNow = () => {
+    setTasks(prev =>
+      prev.filter(t => String(t.id) !== String(summaryToDelete))
+    );
+    setSummaryToDelete(null);
+  };
 
   /* ======================================================================
-     OPEN POPUPS
+     Actions
      ====================================================================== */
   const openTaskWindow = (taskId) => {
     setActiveTaskId(taskId);
@@ -89,13 +159,8 @@ export default function PreProject({
     setShowAssignOverlay(true);
   };
 
-  const openPersonnelDetail = () => {
-    setShowPersonnelDetail(true);
-  };
+  const openPersonnelDetail = () => setShowPersonnelDetail(true);
 
-  /* ======================================================================
-     ASSIGN PERSON
-     ====================================================================== */
   const applyPersonToTask = (personName) => {
     setTasks(prev =>
       prev.map(t =>
@@ -107,9 +172,6 @@ export default function PreProject({
     setShowAssignOverlay(false);
   };
 
-  /* ======================================================================
-     NOTES
-     ====================================================================== */
   const saveNotes = (taskId, entry) => {
     setTasks(prev =>
       prev.map(t =>
@@ -120,25 +182,15 @@ export default function PreProject({
     );
   };
 
-  /* ======================================================================
-     ARCHIVE TASK
-     ====================================================================== */
   const archiveTask = (taskId) => {
-    setTasks(prev => prev.filter((t) => t.id !== taskId));
+    setTasks(prev => prev.filter(t => t.id !== taskId));
   };
 
-  /* ======================================================================
-     FLAGS / ESCALATIONS
-     ====================================================================== */
   const applyInternalFlag = (taskId) =>
-    setTasks(prev =>
-      prev.map(t => t.id === taskId ? { ...t, flag: "orange" } : t)
-    );
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, flag: "orange" } : t));
 
   const applyExternalFlag = (taskId) =>
-    setTasks(prev =>
-      prev.map(t => t.id === taskId ? { ...t, flag: "red" } : t)
-    );
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, flag: "red" } : t));
 
   const invokeCC = (taskId) => {
     saveNotes(taskId, "[CC – Internal]");
@@ -155,17 +207,46 @@ export default function PreProject({
     applyExternalFlag(taskId);
   };
 
+  const toggleSummary = (taskId) => {
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === taskId ? { ...t, expanded: !t.expanded } : t
+      )
+    );
+  };
+
   /* ======================================================================
-     UI RENDER
+     SORTING BEFORE RENDER:
+     1. All summaries at top
+     2. All tasks below
+     ====================================================================== */
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.type === "summary" && b.type !== "summary") return -1;
+    if (a.type !== "summary" && b.type === "summary") return 1;
+    return a.title.localeCompare(b.title);
+  });
+
+  /* ======================================================================
+     FILTERING AFTER SORT (preserves summary visibility)
+     ====================================================================== */
+  const visibleTasks = sortedTasks.filter((t) => {
+    if (t.type === "summary") return true; 
+    if (filter === "All") return true;
+    if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
+    return t.status === filter;
+  });
+
+  /* ======================================================================
+     RENDER
      ====================================================================== */
   return (
     <div className="preproject-wrapper">
       <h1>PreProject – Task Sheet</h1>
 
-      {/* FILTERS */}
+      {/* FILTER BAR */}
       <div className="filter-bar">
         {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"]
-          .map((f) => (
+          .map(f => (
             <button
               key={f}
               className={filter === f ? "filter-active" : "filter-btn"}
@@ -178,68 +259,116 @@ export default function PreProject({
 
       {/* TASK LIST */}
       <div className="task-list">
-        {filteredTasks.map((task) => (
-          <div key={task.id} className="task-item">
+        {visibleTasks.map((t) => {
 
-            {/* Whole left area opens popup */}
-            <div
-              className="task-left"
-              onClick={() => openTaskWindow(task.id)}
-            >
-              <span className={`status-dot ${task.status.replace(/ /g, "-")}`} />
-
-              {/* Flags */}
-              {task.flag === "orange" && (
-                <span className="flag-icon flag-orange">⚑</span>
-              )}
-              {task.flag === "red" && (
-                <span className="flag-icon flag-red">⚑</span>
-              )}
-
-              {/* Title + assigned name (PASSIVE, NOT CLICKABLE) */}
-              <span className="task-title">
-                {task.title}
-
-                {task.assigned && (
+          /* ================================================================
+             SUMMARY ROW
+             ================================================================ */
+          if (t.type === "summary") {
+            return (
+              <div key={t.id}>
+                <div className="summary-row">
                   <span
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      fontStyle: "italic",
-                      color: "#555",
-                      cursor: "default",
-                      pointerEvents: "auto",
-                      marginLeft: "4px"
-                    }}
+                    className="summary-arrow"
+                    onClick={() => toggleSummary(t.id)}
                   >
-                    — {task.assigned}
+                    {t.expanded ? "▼" : "▶"}
                   </span>
+
+                  <span className="summary-dot"></span>
+
+                  <span
+                    className="task-title"
+                    onClick={() => toggleSummary(t.id)}
+                  >
+                    {t.title}
+                  </span>
+
+                  {/* DELETE SUMMARY */}
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      cursor: "pointer",
+                      color: "#444",
+                      fontSize: "18px",
+                      padding: "2px 6px"
+                    }}
+                    onClick={() => setSummaryToDelete(t.id)}
+                  >
+                    ✕
+                  </span>
+                </div>
+
+                {t.expanded && (
+                  <div className="child-task-wrapper">
+                    {/* future child tasks */}
+                  </div>
                 )}
-              </span>
+              </div>
+            );
+          }
+
+          /* ================================================================
+             NORMAL TASK ROW
+             ================================================================ */
+          return (
+            <div key={t.id} className="task-item">
+              <div className="task-left" onClick={() => openTaskWindow(t.id)}>
+
+                <span className={`status-dot ${t.status.replace(/ /g, "-")}`}></span>
+
+                {t.flag === "orange" && (
+                  <span className="flag-icon flag-orange">⚑</span>
+                )}
+                {t.flag === "red" && (
+                  <span className="flag-icon flag-red">⚑</span>
+                )}
+
+                <span className="task-title">
+                  {t.title}
+                  {t.assigned && (
+                    <span
+                      style={{
+                        fontStyle: "italic",
+                        color: "#555",
+                        marginLeft: "4px"
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      — {t.assigned}
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              <button
+                className="assign-btn"
+                onClick={() => startAssignPerson(t.id)}
+              >
+                Assign Person
+              </button>
             </div>
-
-            {/* Assign Person */}
-            <button
-              className="assign-btn"
-              onClick={() => startAssignPerson(task.id)}
-            >
-              Assign Person
-            </button>
-
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* + ADD TASK BUTTON (Step 7C) */}
+      {/* ADD TASK */}
       <div style={{ textAlign: "center", marginTop: "20px" }}>
-        <button
-          className="add-task-btn"
-          onClick={() => setScreen("repository")}
-        >
+        <button className="add-task-btn" onClick={() => setScreen("repository")}>
           + Add Task
         </button>
       </div>
 
-      {/* ASSIGN OVERLAY */}
+      {/* TOAST DELETE */}
+      {summaryToDelete && (
+        <ToastConfirm
+          message="Delete this summary?"
+          onConfirm={deleteSummaryNow}
+          onCancel={() => setSummaryToDelete(null)}
+        />
+      )}
+
+      {/* POPUPS */}
       {showAssignOverlay && (
         <PersonnelOverlay
           onSelect={applyPersonToTask}
@@ -247,7 +376,6 @@ export default function PreProject({
         />
       )}
 
-      {/* PERSONNEL DETAIL */}
       {showPersonnelDetail && activeTask && (
         <PersonnelDetail
           personName={activeTask.assigned}
@@ -256,7 +384,6 @@ export default function PreProject({
         />
       )}
 
-      {/* TASK POPUP */}
       {showWorkingWindow && activeTask && (
         <TaskWorkingWindow
           task={activeTask}
@@ -269,7 +396,6 @@ export default function PreProject({
           onOpenPersonnelDetail={openPersonnelDetail}
         />
       )}
-
     </div>
   );
 }
