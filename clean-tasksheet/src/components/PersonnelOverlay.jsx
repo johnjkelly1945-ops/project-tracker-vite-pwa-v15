@@ -1,46 +1,62 @@
 /* ======================================================================
-   METRA – PersonnelOverlay.jsx
-   Step 7 – Stable Assign-Person Modal (Layered Under PersonnelDetail)
+   METRA – PersonnelOverlay.jsx (FINAL WORKING VERSION)
+   Sends full person object → PreProject receives { id, name }
+   Assignment works: Chrome + Safari
    ====================================================================== */
 
 import React from "react";
-import "../Styles/PersonnelOverlay.css";
+import "../Styles/PreProject.css";
 
 export default function PersonnelOverlay({ onSelect, onClose }) {
-  
-  /* In future we may load this list dynamically from Personnel module */
+
   const people = [
-    "Alice Morgan",
-    "James Walker",
-    "Robert Mills",
-    "Sarah Connor",
-    "Emily Clarke",
-    "David Harris"
+    { id: "pers-alice-robertson", name: "Alice Robertson" },
+    { id: "pers-bob-mckenzie", name: "Bob McKenzie" },
+    { id: "pers-charlie-nguyen", name: "Charlie Nguyen" },
+    { id: "pers-dana-patel", name: "Dana Patel" }
   ];
 
   return (
-    <div className="po-backdrop">
-      <div className="po-card">
+    <div className="ww-backdrop">
+      <div
+        style={{
+          width: "320px",
+          background: "white",
+          padding: "20px",
+          borderRadius: "10px",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.25)"
+        }}
+      >
+        <h3 style={{ marginTop: 0, marginBottom: "12px" }}>Assign Person</h3>
 
-        <h2 className="po-title">Assign Person</h2>
+        {people.map((p) => (
+          <div
+            key={p.id}
+            onClick={() => onSelect(p)}   // <-- SEND FULL PERSON OBJECT
+            style={{
+              padding: "10px",
+              borderBottom: "1px solid #ddd",
+              cursor: "pointer"
+            }}
+          >
+            {p.name}
+          </div>
+        ))}
 
-        {/* Person List */}
-        <div className="po-list">
-          {people.map((p, i) => (
-            <div
-              key={i}
-              className="po-person"
-              onClick={() => onSelect(p)}
-            >
-              {p}
-            </div>
-          ))}
-        </div>
-
-        <button className="po-close-btn" onClick={onClose}>
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: "14px",
+            width: "100%",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            background: "#f2f2f2",
+            cursor: "pointer"
+          }}
+        >
           Close
         </button>
-
       </div>
     </div>
   );

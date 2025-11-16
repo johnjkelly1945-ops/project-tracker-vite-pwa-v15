@@ -1,11 +1,13 @@
 /* ======================================================================
-   METRA – TaskWorkingWindow.jsx
-   Step 7B – Compact Layout + Two-Step Delete + Dual Toast System
+   METRA – TaskWorkingWindow.jsx (FULL BASELINE RESTORE)
+   Stable delete, notes, completed, and toast system.
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
 
-/* ===== GLOBAL TOAST (bottom-centre) ===== */
+/* ======================================================================
+   GLOBAL TOAST (bottom-centre)
+   ====================================================================== */
 function GlobalToast({ message }) {
   if (!message) return null;
 
@@ -16,7 +18,7 @@ function GlobalToast({ message }) {
         bottom: "28px",
         left: "50%",
         transform: "translateX(-50%)",
-        background: "rgba(255,255,255,0.95)",
+        background: "rgba(255,255,255,0.98)",
         padding: "10px 18px",
         borderRadius: "8px",
         fontSize: "0.95rem",
@@ -29,6 +31,10 @@ function GlobalToast({ message }) {
   );
 }
 
+/* ======================================================================
+   MAIN COMPONENT
+   ====================================================================== */
+
 export default function TaskWorkingWindow({
   task,
   onClose,
@@ -37,18 +43,20 @@ export default function TaskWorkingWindow({
   onInvokeCC,
   onInvokeQC,
   onInvokeEscalate,
-  onOpenPersonnelDetail
+  onOpenPersonnelDetail,
+  onMarkCompleted
 }) {
-
   /* ===== Notes ===== */
   const [noteInput, setNoteInput] = useState("");
 
-  /* ===== Toast & delete states ===== */
-  const [localToast, setLocalToast] = useState("");        // Toast above popup
-  const [globalToast, setGlobalToast] = useState("");      // Toast bottom-centre
+  /* ===== Toasts ===== */
+  const [localToast, setLocalToast] = useState("");    // Above popup
+  const [globalToast, setGlobalToast] = useState("");  // Bottom-centre
   const [deleteArmed, setDeleteArmed] = useState(false);
 
-  /* Timestamp helper */
+  /* ======================================================================
+     TIMESTAMP HELPER
+     ====================================================================== */
   const timestamp = () => {
     const now = new Date();
     return now.toLocaleString("en-GB", {
@@ -60,54 +68,67 @@ export default function TaskWorkingWindow({
     });
   };
 
-  /* Add note */
+  /* ======================================================================
+     ADD NOTE
+     ====================================================================== */
   const addNote = () => {
     if (!noteInput.trim()) return;
+
     const entry = `[${timestamp()}] ${noteInput}`;
     onSaveNotes(task.id, entry);
     setNoteInput("");
   };
 
-  /* ===== DELETE (TWO-STEP) ===== */
-  const handleDeleteClick = () => {
+  /* ======================================================================
+     DELETE (TWO-STEP SAFETY)
+     ====================================================================== */
+  const handleDelete = () => {
     if (!deleteArmed) {
-      /* FIRST CLICK — warn user */
       setDeleteArmed(true);
       setLocalToast("Click delete again to confirm");
       return;
     }
 
-    /* SECOND CLICK — confirm delete */
     onArchiveTask(task.id);
-
-    /* FINAL TOAST (outside popup) */
     setGlobalToast("Task archived");
 
-    /* Close popup after short delay */
     setTimeout(() => {
       onClose();
-    }, 800);
+    }, 700);
   };
 
-  /* Fade away global toast */
+  /* ======================================================================
+     MARK COMPLETED
+     ====================================================================== */
+  const handleMarkCompleted = () => {
+    onMarkCompleted(task.id);
+    setLocalToast("Marked as Completed");
+  };
+
+  /* ======================================================================
+     TOAST FADE LOGIC
+     ====================================================================== */
   useEffect(() => {
     if (globalToast) {
-      const t = setTimeout(() => setGlobalToast(""), 2500);
+      const t = setTimeout(() => setGlobalToast(""), 2200);
       return () => clearTimeout(t);
     }
   }, [globalToast]);
 
-  /* Fade away local popup toast */
   useEffect(() => {
     if (localToast) {
-      const t = setTimeout(() => setLocalToast(""), 2000);
+      const t = setTimeout(() => setLocalToast(""), 1600);
       return () => clearTimeout(t);
     }
   }, [localToast]);
 
+  /* ======================================================================
+     RENDER
+     ====================================================================== */
+
   return (
     <>
-      {/* GLOBAL TOAST (fixed bottom centre) */}
+      {/* GLOBAL TOAST */}
       <GlobalToast message={globalToast} />
 
       <div className="ww-backdrop">
@@ -132,7 +153,9 @@ export default function TaskWorkingWindow({
             </div>
           )}
 
-          {/* ===== HEADER ===== */}
+          {/* ===============================================================
+              HEADER
+             =============================================================== */}
           <h2 className="ww-title">{task.title}</h2>
 
           {task.assigned && (
@@ -140,7 +163,8 @@ export default function TaskWorkingWindow({
               style={{
                 cursor: "pointer",
                 textDecoration: "underline",
-                marginBottom: "10px"
+                marginBottom: "10px",
+                fontSize: "0.95rem"
               }}
               onClick={onOpenPersonnelDetail}
             >
@@ -148,12 +172,14 @@ export default function TaskWorkingWindow({
             </div>
           )}
 
-          {/* ===== NOTES DISPLAY ===== */}
+          {/* ===============================================================
+              NOTES DISPLAY
+             =============================================================== */}
           <div className="ww-notes-display">
             {task.notes?.length > 0 ? (
-              task.notes.map((n, i) => (
+              task.notes.map((line, i) => (
                 <div key={i} className="ww-note-line">
-                  {n}
+                  {line}
                 </div>
               ))
             ) : (
@@ -161,7 +187,9 @@ export default function TaskWorkingWindow({
             )}
           </div>
 
-          {/* ===== NOTES INPUT ===== */}
+          {/* ===============================================================
+              NOTES INPUT
+             =============================================================== */}
           <textarea
             className="ww-input"
             value={noteInput}
@@ -174,7 +202,9 @@ export default function TaskWorkingWindow({
             }}
           />
 
-          {/* ===== ROW 1 – COMPACT ACTIONS ===== */}
+          {/* ===============================================================
+              ROW 1 — ACTION ITEMS
+             =============================================================== */}
           <div
             style={{
               display: "flex",
@@ -185,8 +215,12 @@ export default function TaskWorkingWindow({
               fontSize: "0.9rem"
             }}
           >
-            <span style={{ cursor: "pointer" }} onClick={onInvokeCC}>CC</span>
-            <span style={{ cursor: "pointer" }} onClick={onInvokeQC}>QC</span>
+            <span style={{ cursor: "pointer" }} onClick={onInvokeCC}>
+              CC
+            </span>
+            <span style={{ cursor: "pointer" }} onClick={onInvokeQC}>
+              QC
+            </span>
 
             <span
               style={{ cursor: "pointer" }}
@@ -211,23 +245,42 @@ export default function TaskWorkingWindow({
             <span style={{ cursor: "pointer" }}>Template</span>
           </div>
 
-          {/* ===== ROW 2 – DELETE + CLOSE ===== */}
+          {/* ===============================================================
+              ROW 2 — COMPLETED / DELETE / CLOSE
+             =============================================================== */}
           <div
             style={{
               display: "flex",
               gap: "24px",
               marginBottom: "16px",
-              fontSize: "0.9rem",
-              fontWeight: deleteArmed ? "600" : "400"
+              fontSize: "0.9rem"
             }}
           >
+            {/* MARK COMPLETED */}
             <span
-              style={{ cursor: "pointer", color: "#b91c1c" }}
-              onClick={handleDeleteClick}
+              style={{
+                cursor: "pointer",
+                color: "#0a60d0",
+                fontWeight: "600"
+              }}
+              onClick={handleMarkCompleted}
+            >
+              Mark Completed
+            </span>
+
+            {/* DELETE */}
+            <span
+              style={{
+                cursor: "pointer",
+                color: "#b91c1c",
+                fontWeight: deleteArmed ? "700" : "400"
+              }}
+              onClick={handleDelete}
             >
               Delete
             </span>
 
+            {/* CLOSE */}
             <span style={{ cursor: "pointer" }} onClick={onClose}>
               Close
             </span>

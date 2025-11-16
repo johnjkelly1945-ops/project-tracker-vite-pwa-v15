@@ -1,6 +1,6 @@
 /* ======================================================================
-   METRA – PreProject.jsx (FINAL – Summary Sorting + Robust Dedupe)
-   Works with new RepositoryModule
+   METRA – PreProject.jsx
+   FINAL BASELINE – Clean Storage / Normalised IDs / Stable Assignment
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -9,124 +9,112 @@ import PersonnelDetail from "./PersonnelDetail";
 import TaskWorkingWindow from "./TaskWorkingWindow";
 import "../Styles/PreProject.css";
 
-/* ======================================================================
-   Toast Confirm Component
-   ====================================================================== */
-function ToastConfirm({ message, onConfirm, onCancel }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "20px",
-        right: "20px",
-        background: "white",
-        padding: "14px 18px",
-        borderRadius: "8px",
-        boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-        zIndex: 9999,
-        width: "260px",
-        border: "1px solid #d0d0d0"
-      }}
-    >
-      <div style={{ marginBottom: "12px", fontWeight: 600 }}>{message}</div>
+/* ================================================================
+   FORCE CLEAN RESET (Option B)
+   ================================================================ */
+localStorage.removeItem("task_summaries_v3");
+localStorage.removeItem("task_items_v3");
+localStorage.removeItem("task_filter_v3");
 
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-        <button
-          onClick={onCancel}
-          style={{
-            padding: "6px 12px",
-            borderRadius: "6px",
-            background: "#eee",
-            border: "1px solid #ccc",
-            cursor: "pointer"
-          }}
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          style={{
-            padding: "6px 12px",
-            borderRadius: "6px",
-            background: "#dc2626",
-            color: "white",
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ======================================================================
-   Default Tasks (stay as normal tasks)
-   ====================================================================== */
-const defaultTasks = [
-  { id: 1, title: "Prepare Scope Summary", status: "Not Started", type: "task" },
-  { id: 2, title: "Initial Risk Scan", status: "Not Started", type: "task" },
-  { id: 3, title: "Stakeholder Mapping", status: "Not Started", type: "task" },
-  { id: 4, title: "Identify Dependencies", status: "Not Started", type: "task" },
-  { id: 5, title: "Review Governance Requirements", status: "Not Started", type: "task" },
-  { id: 6, title: "Draft Initiation Brief", status: "Not Started", type: "task" },
-  { id: 7, title: "Validate Stakeholder List", status: "Not Started", type: "task" }
+/* ================================================================
+   DEFAULT SUMMARIES (all IDs as strings)
+   ================================================================ */
+const defaultSummaries = [
+  { id: "S1", title: "Project Management Summary", type: "summary", expanded: false },
+  { id: "S2", title: "Governance Summary", type: "summary", expanded: false }
 ];
 
-/* ======================================================================
-   Title normalisation for dedupe
-   ====================================================================== */
-function normalise(str) {
-  return str.toLowerCase().trim().replace(/\s+/g, " ");
-}
+/* ================================================================
+   DEFAULT NORMAL TASKS (all IDs as strings)
+   ================================================================ */
+const defaultTasks = [
+  { id: "T1", title: "Prepare Scope Summary", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
+  { id: "T2", title: "Initial Risk Scan", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
+  { id: "T3", title: "Stakeholder Mapping", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
+  { id: "T4", title: "Identify Dependencies", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
+  { id: "T5", title: "Review Governance Requirements", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
+  { id: "T6", title: "Draft Initiation Brief", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
+  { id: "T7", title: "Validate Stakeholder List", status: "Not Started", type: "task", assigned: null, notes: [], flag: null }
+];
 
-export default function PreProject({
-  setScreen,
-  injectedTasks = [],
-  clearInjectedTasks = () => {}
-}) {
+/* ================================================================
+   NORMALISERS (ensure all entries safe & complete)
+   ================================================================ */
+const normaliseTask = (t) => ({
+  id: String(t.id),
+  title: t.title || "Untitled Task",
+  type: "task",
+  status: t.status || "Not Started",
+  assigned: t.assigned || null,
+  notes: Array.isArray(t.notes) ? t.notes : [],
+  flag: t.flag || null
+});
 
-  /* ======================================================================
-     Load tasks or defaults
-     ====================================================================== */
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("tasks_v3");
-    return saved ? JSON.parse(saved) : defaultTasks;
-  });
+const normaliseSummary = (s) => ({
+  id: String(s.id),
+  title: s.title || "Untitled Summary",
+  type: "summary",
+  expanded: typeof s.expanded === "boolean" ? s.expanded : false
+});
 
-  const [filter, setFilter] = useState(() => {
-    const saved = localStorage.getItem("task_filter_v3");
-    return saved || "All";
-  });
+/* ================================================================
+   MAIN COMPONENT
+   ================================================================ */
+
+export default function PreProject({ setScreen, injectedTasks, clearInjectedTasks }) {
+
+  /* ================================================================
+     CLEAN FRESH STORAGE on first load
+     ================================================================ */
+  const [summaries, setSummaries] = useState(defaultSummaries);
+  const [tasks, setTasks] = useState(defaultTasks);
+  const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    localStorage.setItem("tasks_v3", JSON.stringify(tasks));
+    localStorage.setItem("task_summaries_v3", JSON.stringify(summaries));
+  }, [summaries]);
+
+  useEffect(() => {
+    localStorage.setItem("task_items_v3", JSON.stringify(tasks));
   }, [tasks]);
 
   useEffect(() => {
     localStorage.setItem("task_filter_v3", filter);
   }, [filter]);
 
-  /* ======================================================================
-     MERGE INJECTED TASKS WITH DEDUPE (title + type)
-     ====================================================================== */
+  /* ================================================================
+     MERGE DOWNLOADED TASKS (IDs always strings)
+     ================================================================ */
   useEffect(() => {
-    if (injectedTasks && injectedTasks.length > 0) {
-      setTasks(prev => {
-        const existing = new Set(prev.map(t => normalise(t.title) + "::" + t.type));
-        const clean = injectedTasks.filter(
-          t => !existing.has(normalise(t.title) + "::" + t.type)
-        );
-        return [...prev, ...clean];
-      });
-      clearInjectedTasks();
+    if (!injectedTasks || injectedTasks.length === 0) return;
+
+    const incomingSummaries = injectedTasks.filter(t => t.type === "summary");
+    const incomingTasks = injectedTasks.filter(t => t.type === "task");
+
+    if (incomingSummaries.length > 0) {
+      setSummaries(prev => [
+        ...prev,
+        ...incomingSummaries
+          .filter(ns => !prev.some(s => s.title === ns.title))
+          .map(normaliseSummary)
+      ]);
     }
+
+    if (incomingTasks.length > 0) {
+      setTasks(prev => [
+        ...prev,
+        ...incomingTasks
+          .filter(nt => !prev.some(t => t.title === nt.title))
+          .map(normaliseTask)
+      ]);
+    }
+
+    clearInjectedTasks();
   }, [injectedTasks, clearInjectedTasks]);
 
-  /* ======================================================================
-     Popup State
-     ====================================================================== */
+  /* ================================================================
+     POPUP & PERSONNEL LOGIC
+     ================================================================ */
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [showAssignOverlay, setShowAssignOverlay] = useState(false);
   const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
@@ -134,244 +122,186 @@ export default function PreProject({
 
   const activeTask = tasks.find(t => t.id === activeTaskId);
 
-  /* ======================================================================
-     SUMMARY DELETE (Toast)
-     ====================================================================== */
-  const [summaryToDelete, setSummaryToDelete] = useState(null);
-
-  const deleteSummaryNow = () => {
-    setTasks(prev =>
-      prev.filter(t => String(t.id) !== String(summaryToDelete))
-    );
-    setSummaryToDelete(null);
-  };
-
-  /* ======================================================================
-     Actions
-     ====================================================================== */
-  const openTaskWindow = (taskId) => {
-    setActiveTaskId(taskId);
+  const openTaskPopup = (id) => {
+    setActiveTaskId(String(id));
     setShowWorkingWindow(true);
   };
 
-  const startAssignPerson = (taskId) => {
-    setActiveTaskId(taskId);
+  const startAssign = (id) => {
+    setActiveTaskId(String(id));
     setShowAssignOverlay(true);
   };
 
-  const openPersonnelDetail = () => setShowPersonnelDetail(true);
-
-  const applyPersonToTask = (personName) => {
+  const applyAssign = (personObj) => {
     setTasks(prev =>
       prev.map(t =>
         t.id === activeTaskId
-          ? { ...t, assigned: personName, status: "In Progress" }
+          ? normaliseTask({ ...t, assigned: personObj.name, status: "In Progress" })
           : t
       )
     );
     setShowAssignOverlay(false);
   };
 
-  const saveNotes = (taskId, entry) => {
+  const markCompleted = (id) => {
     setTasks(prev =>
       prev.map(t =>
-        t.id === taskId
-          ? { ...t, notes: t.notes ? [...t.notes, entry] : [entry] }
+        t.id === id
+          ? normaliseTask({ ...t, status: "Completed" })
           : t
       )
     );
   };
 
-  const archiveTask = (taskId) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
+  const archiveTask = (id) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  const applyInternalFlag = (taskId) =>
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, flag: "orange" } : t));
-
-  const applyExternalFlag = (taskId) =>
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, flag: "red" } : t));
-
-  const invokeCC = (taskId) => {
-    saveNotes(taskId, "[CC – Internal]");
-    applyInternalFlag(taskId);
-  };
-
-  const invokeQC = (taskId) => {
-    saveNotes(taskId, "[QC – Internal QC]");
-    applyInternalFlag(taskId);
-  };
-
-  const invokeEscalate = (taskId) => {
-    saveNotes(taskId, "[Escalated – PMO External]");
-    applyExternalFlag(taskId);
-  };
-
-  const toggleSummary = (taskId) => {
+  const saveNotes = (id, entry) => {
     setTasks(prev =>
       prev.map(t =>
-        t.id === taskId ? { ...t, expanded: !t.expanded } : t
+        t.id === id
+          ? normaliseTask({ ...t, notes: [...(t.notes || []), entry] })
+          : t
       )
     );
   };
 
-  /* ======================================================================
-     SORTING BEFORE RENDER:
-     1. All summaries at top
-     2. All tasks below
-     ====================================================================== */
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.type === "summary" && b.type !== "summary") return -1;
-    if (a.type !== "summary" && b.type === "summary") return 1;
-    return a.title.localeCompare(b.title);
-  });
+  /* ================================================================
+     SUMMARY EXPANSION
+     ================================================================ */
+  const toggleSummary = (id) => {
+    setSummaries(prev =>
+      prev.map(s => (s.id === id ? { ...s, expanded: !s.expanded } : s))
+    );
+  };
 
-  /* ======================================================================
-     FILTERING AFTER SORT (preserves summary visibility)
-     ====================================================================== */
-  const visibleTasks = sortedTasks.filter((t) => {
-    if (t.type === "summary") return true; 
+  /* ================================================================
+     FILTERING ((Task ONLY))
+     ================================================================ */
+  const filteredTasks = tasks.filter(t => {
     if (filter === "All") return true;
     if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
     return t.status === filter;
   });
 
-  /* ======================================================================
+  /* ================================================================
      RENDER
-     ====================================================================== */
+     ================================================================ */
+
   return (
     <div className="preproject-wrapper">
+
       <h1>PreProject – Task Sheet</h1>
 
       {/* FILTER BAR */}
       <div className="filter-bar">
-        {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"]
-          .map(f => (
-            <button
-              key={f}
-              className={filter === f ? "filter-active" : "filter-btn"}
-              onClick={() => setFilter(f)}
-            >
-              {f}
-            </button>
-          ))}
+        {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"].map(f => (
+          <button
+            key={f}
+            className={filter === f ? "filter-active" : "filter-btn"}
+            onClick={() => setFilter(f)}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
-      {/* TASK LIST */}
-      <div className="task-list">
-        {visibleTasks.map((t) => {
+      {/* ============================================================
+         SUMMARIES (always visible)
+         ============================================================ */}
+      {summaries.map(summary => (
+        <div key={summary.id}>
+          <div
+            className="summary-row"
+            onClick={() => toggleSummary(summary.id)}
+          >
+            <span className="summary-dot" />
+            <span className="task-title">{summary.title}</span>
+            <span className="summary-arrow">
+              {summary.expanded ? "▼" : "►"}
+            </span>
+          </div>
 
-          /* ================================================================
-             SUMMARY ROW
-             ================================================================ */
-          if (t.type === "summary") {
-            return (
-              <div key={t.id}>
-                <div className="summary-row">
-                  <span
-                    className="summary-arrow"
-                    onClick={() => toggleSummary(t.id)}
-                  >
-                    {t.expanded ? "▼" : "▶"}
-                  </span>
+          {/* CHILD TASKS */}
+          {summary.expanded && (
+            <div>
+              {filteredTasks.map(t => (
+                <div key={t.id} className="task-item">
+                  <div className="task-left" onClick={() => openTaskPopup(t.id)}>
+                    <span className={`status-dot ${t.status.replace(/ /g, "-")}`} />
 
-                  <span className="summary-dot"></span>
+                    {/* TITLE ONLY triggers popup */}
+                    <span className="task-title">{t.title}</span>
 
-                  <span
-                    className="task-title"
-                    onClick={() => toggleSummary(t.id)}
-                  >
-                    {t.title}
-                  </span>
+                    {/* ASSIGNED NAME (NOT clickable) */}
+                    {t.assigned && (
+                      <span
+                        style={{
+                          marginLeft: 6,
+                          fontStyle: "italic",
+                          color: "#555",
+                          cursor: "default"
+                        }}
+                      >
+                        — {t.assigned}
+                      </span>
+                    )}
+                  </div>
 
-                  {/* DELETE SUMMARY */}
+                  <button className="assign-btn" onClick={() => startAssign(t.id)}>
+                    Assign Person
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* ============================================================
+         NORMAL TASK LIST (only if no summary expanded)
+         ============================================================ */}
+      {!summaries.some(s => s.expanded) && (
+        <div className="task-list">
+          {filteredTasks.map(t => (
+            <div key={t.id} className="task-item">
+              <div className="task-left" onClick={() => openTaskPopup(t.id)}>
+                <span className={`status-dot ${t.status.replace(/ /g, "-")}`} />
+                <span className="task-title">{t.title}</span>
+                {t.assigned && (
                   <span
                     style={{
-                      marginLeft: "auto",
-                      cursor: "pointer",
-                      color: "#444",
-                      fontSize: "18px",
-                      padding: "2px 6px"
+                      marginLeft: 6,
+                      fontStyle: "italic",
+                      color: "#555",
+                      cursor: "default"
                     }}
-                    onClick={() => setSummaryToDelete(t.id)}
                   >
-                    ✕
+                    — {t.assigned}
                   </span>
-                </div>
-
-                {t.expanded && (
-                  <div className="child-task-wrapper">
-                    {/* future child tasks */}
-                  </div>
                 )}
               </div>
-            );
-          }
 
-          /* ================================================================
-             NORMAL TASK ROW
-             ================================================================ */
-          return (
-            <div key={t.id} className="task-item">
-              <div className="task-left" onClick={() => openTaskWindow(t.id)}>
-
-                <span className={`status-dot ${t.status.replace(/ /g, "-")}`}></span>
-
-                {t.flag === "orange" && (
-                  <span className="flag-icon flag-orange">⚑</span>
-                )}
-                {t.flag === "red" && (
-                  <span className="flag-icon flag-red">⚑</span>
-                )}
-
-                <span className="task-title">
-                  {t.title}
-                  {t.assigned && (
-                    <span
-                      style={{
-                        fontStyle: "italic",
-                        color: "#555",
-                        marginLeft: "4px"
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      — {t.assigned}
-                    </span>
-                  )}
-                </span>
-              </div>
-
-              <button
-                className="assign-btn"
-                onClick={() => startAssignPerson(t.id)}
-              >
+              <button className="assign-btn" onClick={() => startAssign(t.id)}>
                 Assign Person
               </button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* ADD TASK */}
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
+      {/* ADD TASK BUTTON */}
+      <div style={{ textAlign: "center", marginTop: 20 }}>
         <button className="add-task-btn" onClick={() => setScreen("repository")}>
           + Add Task
         </button>
       </div>
 
-      {/* TOAST DELETE */}
-      {summaryToDelete && (
-        <ToastConfirm
-          message="Delete this summary?"
-          onConfirm={deleteSummaryNow}
-          onCancel={() => setSummaryToDelete(null)}
-        />
-      )}
-
-      {/* POPUPS */}
+      {/* OVERLAYS */}
       {showAssignOverlay && (
         <PersonnelOverlay
-          onSelect={applyPersonToTask}
+          onSelect={applyAssign}
           onClose={() => setShowAssignOverlay(false)}
         />
       )}
@@ -390,12 +320,14 @@ export default function PreProject({
           onClose={() => setShowWorkingWindow(false)}
           onSaveNotes={saveNotes}
           onArchiveTask={archiveTask}
-          onInvokeCC={() => invokeCC(activeTask.id)}
-          onInvokeQC={() => invokeQC(activeTask.id)}
-          onInvokeEscalate={() => invokeEscalate(activeTask.id)}
-          onOpenPersonnelDetail={openPersonnelDetail}
+          onInvokeCC={() => {}}
+          onInvokeQC={() => {}}
+          onInvokeEscalate={() => {}}
+          onOpenPersonnelDetail={() => setShowPersonnelDetail(true)}
+          onMarkCompleted={markCompleted}
         />
       )}
+
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /* ======================================================================
-   METRA – App.jsx (FULL REPLACEMENT)
-   Step 7G Fix – Proper Repository → PreProject Task Injection
+   METRA – App.jsx
+   Clean baseline with stable repository → preproject injection
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -10,30 +10,15 @@ import "./Styles/PreProject.css";
 
 export default function App() {
   const [screen, setScreen] = useState("preproject");
-
-  /* ================================================================
-     Hold tasks passed back from Repository
-     ================================================================ */
   const [repoTasks, setRepoTasks] = useState([]);
 
-  /* ================================================================
-     Receive tasks from Repository and return to PreProject
-     ================================================================ */
   const handleDownload = (items) => {
-    setRepoTasks(items);     // store tasks for PreProject
-    setScreen("preproject"); // return to workspace
+    setRepoTasks(items);
+    setScreen("preproject");
   };
 
-  /* ================================================================
-     Clear after PreProject has merged them
-     ================================================================ */
-  const clearInjectedTasks = () => {
-    setRepoTasks([]);
-  };
+  const clearInjectedTasks = () => setRepoTasks([]);
 
-  /* ================================================================
-     SCREEN ROUTER
-     ================================================================ */
   return (
     <>
       {screen === "preproject" && (

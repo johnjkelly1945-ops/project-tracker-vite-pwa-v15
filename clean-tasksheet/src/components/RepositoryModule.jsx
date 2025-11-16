@@ -1,7 +1,6 @@
 /* ======================================================================
-   METRA – RepositoryModule.jsx (FINAL FIX)
-   Ensures summaries ALWAYS include type: "summary"
-   Ensures tasks ALWAYS include type: "task"
+   METRA – RepositoryModule.jsx
+   Stable summary/task typing + safe download
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -12,8 +11,8 @@ export default function RepositoryModule({ setScreen, onDownload }) {
   const typeOptions = ["Management", "Development"];
 
   const detailOptions = {
-    Management: ["Generic", "PRINCE2", "Agile", "Waterfall", "Hybrid"],
-    Development: ["Generic", "Relocation", "Electrical", "Construction", "Software"]
+    Management: ["Generic"],
+    Development: ["Generic"]
   };
 
   const summariesData = {
@@ -23,13 +22,6 @@ export default function RepositoryModule({ setScreen, onDownload }) {
         "Governance Summary",
         "Change Control Summary",
         "Delivery Assurance Summary"
-      ]
-    },
-    Development: {
-      Generic: [
-        "Engineering Summary",
-        "Development Delivery Summary",
-        "Technical Requirements Summary"
       ]
     }
   };
@@ -42,9 +34,6 @@ export default function RepositoryModule({ setScreen, onDownload }) {
         "Complete Risk Scan",
         "Define Governance Path"
       ]
-    },
-    Development: {
-      Generic: ["Site Survey", "Resource Allocation", "Readiness Check"]
     }
   };
 
@@ -73,41 +62,35 @@ export default function RepositoryModule({ setScreen, onDownload }) {
     );
   };
 
-  /* =====================================================================
-     FIX: ALWAYS send type: "summary" or type: "task"
-     ===================================================================== */
   const handleDownload = () => {
-    const bundled = [
-      ...selectedSummaries.map((name) => ({
+    const bundle = [
+      ...selectedSummaries.map(name => ({
         id: Date.now() + Math.random(),
         title: name,
-        type: "summary",             // <-- THE FIX
+        type: "summary",
         expanded: false
       })),
-      ...selectedTasks.map((name) => ({
+      ...selectedTasks.map(name => ({
         id: Date.now() + Math.random(),
         title: name,
-        status: "Not Started",
-        type: "task"                 // <-- THE FIX
+        type: "task",
+        status: "Not Started"
       }))
     ];
 
-    if (bundled.length === 0) {
+    if (bundle.length === 0) {
       alert("No items selected.");
       return;
     }
 
-    onDownload(bundled);
+    onDownload(bundle);
   };
 
   return (
     <div className="repository-wrapper">
-
       <div className="repo-header">
         <h1>Repository Task Selection</h1>
-        <button className="repo-close" onClick={() => setScreen("preproject")}>
-          ✕
-        </button>
+        <button className="repo-close" onClick={() => setScreen("preproject")}>✕</button>
       </div>
 
       <div className="filter-bar-unified">
@@ -118,11 +101,11 @@ export default function RepositoryModule({ setScreen, onDownload }) {
             onChange={(e) => {
               setType(e.target.value);
               setDetail("Generic");
+              setSelectedSummaries([]);
+              setSelectedTasks([]);
             }}
           >
-            {typeOptions.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
+            {typeOptions.map(t => <option key={t}>{t}</option>)}
           </select>
         </div>
 
@@ -130,11 +113,13 @@ export default function RepositoryModule({ setScreen, onDownload }) {
           <label>Detail</label>
           <select
             value={detail}
-            onChange={(e) => setDetail(e.target.value)}
+            onChange={(e) => {
+              setDetail(e.target.value);
+              setSelectedSummaries([]);
+              setSelectedTasks([]);
+            }}
           >
-            {detailOptions[type].map((d) => (
-              <option key={d}>{d}</option>
-            ))}
+            {detailOptions[type].map(d => <option key={d}>{d}</option>)}
           </select>
         </div>
 
@@ -145,22 +130,11 @@ export default function RepositoryModule({ setScreen, onDownload }) {
 
       <div className="repo-columns">
 
-        {/* SUMMARIES */}
         <div className="repo-col">
           <h2>Summaries</h2>
-          {summariesData[type][detail].map((item) => (
-            <div
-              key={item}
-              className="repo-item-selectable"
-              onClick={() => toggleSummary(item)}
-            >
-              <div
-                className={
-                  selectedSummaries.includes(item)
-                    ? "custom-box checked"
-                    : "custom-box"
-                }
-              >
+          {summariesData[type][detail].map(item => (
+            <div key={item} className="repo-item-selectable" onClick={() => toggleSummary(item)}>
+              <div className={selectedSummaries.includes(item) ? "custom-box checked" : "custom-box"}>
                 {selectedSummaries.includes(item) && "✓"}
               </div>
               <span>{item}</span>
@@ -168,22 +142,11 @@ export default function RepositoryModule({ setScreen, onDownload }) {
           ))}
         </div>
 
-        {/* TASKS */}
         <div className="repo-col">
           <h2>Tasks</h2>
-          {tasksData[type][detail].map((item) => (
-            <div
-              key={item}
-              className="repo-item-selectable"
-              onClick={() => toggleTask(item)}
-            >
-              <div
-                className={
-                  selectedTasks.includes(item)
-                    ? "custom-box checked"
-                    : "custom-box"
-                }
-              >
+          {tasksData[type][detail].map(item => (
+            <div key={item} className="repo-item-selectable" onClick={() => toggleTask(item)}>
+              <div className={selectedTasks.includes(item) ? "custom-box checked" : "custom-box"}>
                 {selectedTasks.includes(item) && "✓"}
               </div>
               <span>{item}</span>
@@ -191,13 +154,10 @@ export default function RepositoryModule({ setScreen, onDownload }) {
           ))}
         </div>
 
-        {/* TEMPLATES */}
         <div className="repo-col">
           <h2>Templates</h2>
-          {templatesData.map((temp) => (
-            <div key={temp} className="repo-item">
-              {temp}
-            </div>
+          {templatesData.map(temp => (
+            <div key={temp} className="repo-item">{temp}</div>
           ))}
         </div>
 
