@@ -1,6 +1,8 @@
 /* ======================================================================
-   METRA – PreProject.jsx
-   FINAL BASELINE – Clean Storage / Normalised IDs / Stable Assignment
+   METRA – PreProject.jsx (v3 FIXED)
+   Flat Task List · Inline Edit · Delete Summary
+   Sticky Header · Scrollable Tasks · Unified Storage (tasks_v3)
+   FIX: Status now persists correctly after assignment
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -10,51 +12,37 @@ import TaskWorkingWindow from "./TaskWorkingWindow";
 import "../Styles/PreProject.css";
 
 /* ================================================================
-   FORCE CLEAN RESET (Option B)
+   DEFAULT ITEMS (Summaries + Tasks)
    ================================================================ */
-localStorage.removeItem("task_summaries_v3");
-localStorage.removeItem("task_items_v3");
-localStorage.removeItem("task_filter_v3");
+const defaultItems = [
+  { id: "S1", type: "summary", title: "Project Management Summary", expanded: false },
+  { id: "S2", type: "summary", title: "Governance Summary", expanded: false },
 
-/* ================================================================
-   DEFAULT SUMMARIES (all IDs as strings)
-   ================================================================ */
-const defaultSummaries = [
-  { id: "S1", title: "Project Management Summary", type: "summary", expanded: false },
-  { id: "S2", title: "Governance Summary", type: "summary", expanded: false }
+  { id: "T1", type: "task", title: "Prepare Scope Summary", status: "Not Started", assigned: null, notes: [], flag: null },
+  { id: "T2", type: "task", title: "Initial Risk Scan", status: "Not Started", assigned: null, notes: [], flag: null },
+  { id: "T3", type: "task", title: "Stakeholder Mapping", status: "Not Started", assigned: null, notes: [], flag: null },
+  { id: "T4", type: "task", title: "Identify Dependencies", status: "Not Started", assigned: null, notes: [], flag: null },
+  { id: "T5", type: "task", title: "Review Governance Requirements", status: "Not Started", assigned: null, notes: [], flag: null },
+  { id: "T6", type: "task", title: "Draft Initiation Brief", status: "Not Started", assigned: null, notes: [], flag: null },
+  { id: "T7", type: "task", title: "Validate Stakeholder List", status: "Not Started", assigned: null, notes: [], flag: null }
 ];
 
 /* ================================================================
-   DEFAULT NORMAL TASKS (all IDs as strings)
+   NORMALISER (FIXED STATUS LOGIC)
    ================================================================ */
-const defaultTasks = [
-  { id: "T1", title: "Prepare Scope Summary", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
-  { id: "T2", title: "Initial Risk Scan", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
-  { id: "T3", title: "Stakeholder Mapping", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
-  { id: "T4", title: "Identify Dependencies", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
-  { id: "T5", title: "Review Governance Requirements", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
-  { id: "T6", title: "Draft Initiation Brief", status: "Not Started", type: "task", assigned: null, notes: [], flag: null },
-  { id: "T7", title: "Validate Stakeholder List", status: "Not Started", type: "task", assigned: null, notes: [], flag: null }
-];
-
-/* ================================================================
-   NORMALISERS (ensure all entries safe & complete)
-   ================================================================ */
-const normaliseTask = (t) => ({
-  id: String(t.id),
-  title: t.title || "Untitled Task",
-  type: "task",
-  status: t.status || "Not Started",
-  assigned: t.assigned || null,
-  notes: Array.isArray(t.notes) ? t.notes : [],
-  flag: t.flag || null
-});
-
-const normaliseSummary = (s) => ({
-  id: String(s.id),
-  title: s.title || "Untitled Summary",
-  type: "summary",
-  expanded: typeof s.expanded === "boolean" ? s.expanded : false
+const normalise = (item) => ({
+  id: String(item.id),
+  type: item.type || "task",
+  title: item.title || "Untitled",
+  expanded: item.type === "summary" ? !!item.expanded : false,
+  status: item.type === "task"
+    ? (item.status != null ? item.status : "Not Started")   // FIXED
+    : undefined,
+  assigned: item.type === "task" ? item.assigned || null : undefined,
+  notes: item.type === "task"
+    ? (Array.isArray(item.notes) ? item.notes : [])
+    : undefined,
+  flag: item.type === "task" ? item.flag || null : undefined
 });
 
 /* ================================================================
@@ -63,127 +51,176 @@ const normaliseSummary = (s) => ({
 
 export default function PreProject({ setScreen, injectedTasks, clearInjectedTasks }) {
 
-  /* ================================================================
-     CLEAN FRESH STORAGE on first load
-     ================================================================ */
-  const [summaries, setSummaries] = useState(defaultSummaries);
-  const [tasks, setTasks] = useState(defaultTasks);
+  /* LOAD FROM STORAGE */
+  const loadInitial = () => {
+    const saved = localStorage.getItem("tasks_v3");
+    if (!saved) return defaultItems.map(normalise);
+
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed.map(normalise);
+      return defaultItems.map(normalise);
+    } catch {
+      return defaultItems.map(normalise);
+    }
+  };
+
+  const [items, setItems] = useState(loadInitial);
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    localStorage.setItem("task_summaries_v3", JSON.stringify(summaries));
-  }, [summaries]);
-
-  useEffect(() => {
-    localStorage.setItem("task_items_v3", JSON.stringify(tasks));
-  }, [tasks]);
-
-  useEffect(() => {
-    localStorage.setItem("task_filter_v3", filter);
-  }, [filter]);
+    localStorage.setItem("tasks_v3", JSON.stringify(items));
+  }, [items]);
 
   /* ================================================================
-     MERGE DOWNLOADED TASKS (IDs always strings)
+     MERGE INJECTED TASKS
      ================================================================ */
   useEffect(() => {
     if (!injectedTasks || injectedTasks.length === 0) return;
 
-    const incomingSummaries = injectedTasks.filter(t => t.type === "summary");
-    const incomingTasks = injectedTasks.filter(t => t.type === "task");
+    const incoming = injectedTasks.map(normalise);
 
-    if (incomingSummaries.length > 0) {
-      setSummaries(prev => [
-        ...prev,
-        ...incomingSummaries
-          .filter(ns => !prev.some(s => s.title === ns.title))
-          .map(normaliseSummary)
-      ]);
-    }
+    setItems(prev => {
+      const titles = new Set(prev.map(x => x.title));
+      const merged = [...prev];
 
-    if (incomingTasks.length > 0) {
-      setTasks(prev => [
-        ...prev,
-        ...incomingTasks
-          .filter(nt => !prev.some(t => t.title === nt.title))
-          .map(normaliseTask)
-      ]);
-    }
+      incoming.forEach(i => {
+        if (!titles.has(i.title)) merged.push(i);
+      });
+
+      return merged;
+    });
 
     clearInjectedTasks();
   }, [injectedTasks, clearInjectedTasks]);
 
   /* ================================================================
-     POPUP & PERSONNEL LOGIC
+     UI STATE
      ================================================================ */
-  const [activeTaskId, setActiveTaskId] = useState(null);
+  const [activeId, setActiveId] = useState(null);
   const [showAssignOverlay, setShowAssignOverlay] = useState(false);
   const [showPersonnelDetail, setShowPersonnelDetail] = useState(false);
   const [showWorkingWindow, setShowWorkingWindow] = useState(false);
 
-  const activeTask = tasks.find(t => t.id === activeTaskId);
+  const [editingId, setEditingId] = useState(null);
+  const [editingValue, setEditingValue] = useState("");
 
+  const activeItem = items.find(i => i.id === activeId);
+
+  /* ================================================================
+     INLINE EDIT
+     ================================================================ */
+  const startEdit = (id, title) => {
+    setEditingId(id);
+    setEditingValue(title);
+  };
+
+  const applyEdit = () => {
+    setItems(prev =>
+      prev.map(i =>
+        i.id === editingId ? { ...i, title: editingValue } : i
+      )
+    );
+    setEditingId(null);
+    setEditingValue("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingValue("");
+  };
+
+  /* ================================================================
+     TASK OPERATIONS
+     ================================================================ */
   const openTaskPopup = (id) => {
-    setActiveTaskId(String(id));
+    setActiveId(String(id));
     setShowWorkingWindow(true);
   };
 
   const startAssign = (id) => {
-    setActiveTaskId(String(id));
+    setActiveId(String(id));
     setShowAssignOverlay(true);
   };
 
   const applyAssign = (personObj) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === activeTaskId
-          ? normaliseTask({ ...t, assigned: personObj.name, status: "In Progress" })
-          : t
+    setItems(prev =>
+      prev.map(i =>
+        i.id === activeId
+          ? normalise({ ...i, assigned: personObj.name, status: "In Progress" })  // FIXED: preserved
+          : i
       )
     );
     setShowAssignOverlay(false);
   };
 
+  const saveNotes = (id, entry) => {
+    setItems(prev =>
+      prev.map(i =>
+        i.id === id
+          ? normalise({ ...i, notes: [...i.notes, entry] })
+          : i
+      )
+    );
+  };
+
   const markCompleted = (id) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === id
-          ? normaliseTask({ ...t, status: "Completed" })
-          : t
+    setItems(prev =>
+      prev.map(i =>
+        i.id === id ? normalise({ ...i, status: "Completed" }) : i
       )
     );
   };
 
   const archiveTask = (id) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
+    setItems(prev => prev.filter(i => i.id !== id));
   };
 
-  const saveNotes = (id, entry) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === id
-          ? normaliseTask({ ...t, notes: [...(t.notes || []), entry] })
-          : t
+  /* ================================================================
+     SUMMARY OPERATIONS
+     ================================================================ */
+  const toggleSummary = (id) => {
+    setItems(prev =>
+      prev.map(i =>
+        i.id === id ? { ...i, expanded: !i.expanded } : i
       )
     );
   };
 
-  /* ================================================================
-     SUMMARY EXPANSION
-     ================================================================ */
-  const toggleSummary = (id) => {
-    setSummaries(prev =>
-      prev.map(s => (s.id === id ? { ...s, expanded: !s.expanded } : s))
-    );
+  const deleteSummary = (id) => {
+    setItems(prev => prev.filter(i => i.id !== id));
   };
 
   /* ================================================================
-     FILTERING ((Task ONLY))
+     FILTERS
      ================================================================ */
+  const summaries = items.filter(i => i.type === "summary");
+  const tasks = items.filter(i => i.type === "task");
+
   const filteredTasks = tasks.filter(t => {
     if (filter === "All") return true;
     if (filter === "Flagged") return t.flag === "orange" || t.flag === "red";
     return t.status === filter;
   });
+
+  /* ================================================================
+     ADD SUMMARY / TASK
+     ================================================================ */
+  const addSummary = () => {
+    const newId = "S-" + Date.now();
+    setItems(prev => [
+      ...prev,
+      { id: newId, type: "summary", title: "New Summary", expanded: false }
+    ]);
+  };
+
+  const addTask = () => {
+    const newId = "T-" + Date.now();
+    setItems(prev => [
+      ...prev,
+      { id: newId, type: "task", title: "New Task", status: "Not Started", assigned: null, notes: [], flag: null }
+    ]);
+  };
 
   /* ================================================================
      RENDER
@@ -192,7 +229,10 @@ export default function PreProject({ setScreen, injectedTasks, clearInjectedTask
   return (
     <div className="preproject-wrapper">
 
-      <h1>PreProject – Task Sheet</h1>
+      {/* HEADER */}
+      <div className="preproject-header">
+        <h1>PreProject – Task Sheet</h1>
+      </div>
 
       {/* FILTER BAR */}
       <div className="filter-bar">
@@ -207,95 +247,119 @@ export default function PreProject({ setScreen, injectedTasks, clearInjectedTask
         ))}
       </div>
 
-      {/* ============================================================
-         SUMMARIES (always visible)
-         ============================================================ */}
-      {summaries.map(summary => (
-        <div key={summary.id}>
-          <div
-            className="summary-row"
-            onClick={() => toggleSummary(summary.id)}
-          >
-            <span className="summary-dot" />
-            <span className="task-title">{summary.title}</span>
-            <span className="summary-arrow">
-              {summary.expanded ? "▼" : "►"}
-            </span>
-          </div>
+      {/* SCROLL AREA */}
+      <div className="preproject-scroll-area">
 
-          {/* CHILD TASKS */}
-          {summary.expanded && (
-            <div>
-              {filteredTasks.map(t => (
-                <div key={t.id} className="task-item">
-                  <div className="task-left" onClick={() => openTaskPopup(t.id)}>
-                    <span className={`status-dot ${t.status.replace(/ /g, "-")}`} />
+        {/* SUMMARIES */}
+        {summaries.map(summary => (
+          <div key={summary.id} className="summary-block">
 
-                    {/* TITLE ONLY triggers popup */}
-                    <span className="task-title">{t.title}</span>
+            <div className="summary-row" onClick={() => toggleSummary(summary.id)}>
+              <span className="summary-dot" />
 
-                    {/* ASSIGNED NAME (NOT clickable) */}
-                    {t.assigned && (
-                      <span
-                        style={{
-                          marginLeft: 6,
-                          fontStyle: "italic",
-                          color: "#555",
-                          cursor: "default"
-                        }}
-                      >
-                        — {t.assigned}
-                      </span>
-                    )}
-                  </div>
+              {/* INLINE OR NORMAL TITLE */}
+              {editingId === summary.id ? (
+                <input
+                  className="inline-edit"
+                  value={editingValue}
+                  onChange={(e) => setEditingValue(e.target.value)}
+                  onBlur={applyEdit}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") applyEdit();
+                    if (e.key === "Escape") cancelEdit();
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <span
+                  className="task-title"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startEdit(summary.id, summary.title);
+                  }}
+                >
+                  {summary.title}
+                </span>
+              )}
 
-                  <button className="assign-btn" onClick={() => startAssign(t.id)}>
-                    Assign Person
-                  </button>
-                </div>
-              ))}
+              <span className="summary-arrow">
+                {summary.expanded ? "▼" : "►"}
+              </span>
+
+              <span
+                className="delete-summary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteSummary(summary.id);
+                }}
+              >
+                ✕
+              </span>
             </div>
-          )}
-        </div>
-      ))}
 
-      {/* ============================================================
-         NORMAL TASK LIST (only if no summary expanded)
-         ============================================================ */}
-      {!summaries.some(s => s.expanded) && (
+            {summary.expanded && (
+              <div className="summary-expanded-placeholder" />
+            )}
+          </div>
+        ))}
+
+        {/* TASK LIST */}
         <div className="task-list">
           {filteredTasks.map(t => (
             <div key={t.id} className="task-item">
+
               <div className="task-left" onClick={() => openTaskPopup(t.id)}>
                 <span className={`status-dot ${t.status.replace(/ /g, "-")}`} />
-                <span className="task-title">{t.title}</span>
-                {t.assigned && (
+
+                {editingId === t.id ? (
+                  <input
+                    className="inline-edit"
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onBlur={applyEdit}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") applyEdit();
+                      if (e.key === "Escape") cancelEdit();
+                    }}
+                    autoFocus
+                  />
+                ) : (
                   <span
-                    style={{
-                      marginLeft: 6,
-                      fontStyle: "italic",
-                      color: "#555",
-                      cursor: "default"
+                    className="task-title"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEdit(t.id, t.title);
                     }}
                   >
+                    {t.title}
+                  </span>
+                )}
+
+                {t.assigned && (
+                  <span style={{ marginLeft: 6, fontStyle: "italic", color: "#555" }}>
                     — {t.assigned}
                   </span>
                 )}
               </div>
 
-              <button className="assign-btn" onClick={() => startAssign(t.id)}>
+              <button
+                className="assign-btn"
+                onClick={() => startAssign(t.id)}
+              >
                 Assign Person
               </button>
+
             </div>
           ))}
         </div>
-      )}
 
-      {/* ADD TASK BUTTON */}
-      <div style={{ textAlign: "center", marginTop: 20 }}>
-        <button className="add-task-btn" onClick={() => setScreen("repository")}>
-          + Add Task
-        </button>
+      </div>
+
+      {/* BOTTOM ACTION ROW */}
+      <div className="bottom-action-row">
+        <button onClick={addSummary}>+ Add Summary</button>
+        <button onClick={addTask}>+ Add Task</button>
+        <button onClick={() => setScreen("repository")}>+ Add From Repository</button>
       </div>
 
       {/* OVERLAYS */}
@@ -306,17 +370,17 @@ export default function PreProject({ setScreen, injectedTasks, clearInjectedTask
         />
       )}
 
-      {showPersonnelDetail && activeTask && (
+      {showPersonnelDetail && activeItem && (
         <PersonnelDetail
-          personName={activeTask.assigned}
-          allTasks={tasks}
+          personName={activeItem.assigned}
+          allTasks={items}
           onClose={() => setShowPersonnelDetail(false)}
         />
       )}
 
-      {showWorkingWindow && activeTask && (
+      {showWorkingWindow && activeItem && (
         <TaskWorkingWindow
-          task={activeTask}
+          task={activeItem}
           onClose={() => setShowWorkingWindow(false)}
           onSaveNotes={saveNotes}
           onArchiveTask={archiveTask}
