@@ -1,7 +1,9 @@
 /* ======================================================================
-   METRA – PreProjectDual.jsx (v5 FINAL)
-   Side-by-side panes • Fullscreen per-pane • Independent scroll
-   Sticky header + sticky filters • Chrome + Safari verified
+   METRA – PreProjectDual.jsx (v5.1 – Scroll Fixed)
+   • Side-by-side panes
+   • Internal pane scrolling (Chrome + Safari)
+   • Fullscreen per pane
+   • Sticky header + sticky filter bar
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -70,7 +72,6 @@ export default function PreProjectDual({ setScreen }) {
   /* ---------------------------------------------------------------
      FULLSCREEN CONTROL
      --------------------------------------------------------------- */
-  // fullscreen = "mgmt", "dev", or null
   const [fullscreen, setFullscreen] = useState(null);
 
   const toggleFullscreen = (pane) => {
@@ -145,15 +146,15 @@ export default function PreProjectDual({ setScreen }) {
     const isFullscreen = fullscreen === paneKey;
 
     return (
-      <div className={`pane ${isFullscreen ? "fullscreen" : ""} ${fullscreen && fullscreen !== paneKey ? "hidden" : ""}`}>
-
-        {/* Header + fullscreen button */}
+      <div
+        className={`pane ${isFullscreen ? "fullscreen" : ""} ${
+          fullscreen && fullscreen !== paneKey ? "hidden" : ""
+        }`}
+      >
+        {/* Header */}
         <div className="pane-header">
           <h2>{title}</h2>
-          <button
-            className="fullscreen-btn"
-            onClick={() => toggleFullscreen(paneKey)}
-          >
+          <button className="fullscreen-btn" onClick={() => toggleFullscreen(paneKey)}>
             {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </button>
         </div>
@@ -171,7 +172,7 @@ export default function PreProjectDual({ setScreen }) {
           ))}
         </div>
 
-        {/* Scroll Content */}
+        {/* Scrollable Content */}
         <div className="pane-scroll">
 
           {/* Summaries */}
@@ -210,10 +211,7 @@ export default function PreProjectDual({ setScreen }) {
                   </span>
                 )}
               </div>
-              <button
-                className="assign-btn"
-                onClick={() => startAssign(paneSetter, t.id)}
-              >
+              <button className="assign-btn" onClick={() => startAssign(paneSetter, t.id)}>
                 Assign
               </button>
             </div>
@@ -221,12 +219,11 @@ export default function PreProjectDual({ setScreen }) {
 
         </div>
 
-        {/* Bottom Add Row */}
+        {/* Bottom Action Bar */}
         <div className="bottom-action-row">
           <button onClick={() => addSummary(paneSetter)}>+ Summary</button>
           <button onClick={() => addTask(paneSetter)}>+ Task</button>
         </div>
-
       </div>
     );
   };
@@ -235,28 +232,29 @@ export default function PreProjectDual({ setScreen }) {
      MAIN RETURN
      --------------------------------------------------------------- */
   return (
-    <div className="dual-wrapper">
+    <div className="preproject-wrapper">
+      <div className="dual-wrapper">
 
-      <div className="dual-header">
-        <h1>PreProject – Dual Workspace</h1>
-        <p>Management + Development Streams</p>
-      </div>
-
-      <div className="dual-scroll-area">
-
-        <div className="dual-pane-container">
-          {renderPane("mgmt", mgmtItems, mgmtFilter, setMgmtFilter, setMgmtItems, "Management Workspace")}
-          {renderPane("dev", devItems, devFilter, setDevFilter, setDevItems, "Development Workspace")}
+        <div className="dual-header">
+          <h1>PreProject – Dual Workspace</h1>
+          <p>Management + Development Streams</p>
         </div>
+
+        <div className="dual-scroll-area">
+          <div className="dual-pane-container">
+            {renderPane("mgmt", mgmtItems, mgmtFilter, setMgmtFilter, setMgmtItems, "Management Workspace")}
+            {renderPane("dev", devItems, devFilter, setDevFilter, setDevItems, "Development Workspace")}
+          </div>
+        </div>
+
+        {showAssign && (
+          <PersonnelOverlay
+            onSelect={applyAssign}
+            onClose={() => setShowAssign(false)}
+          />
+        )}
+
       </div>
-
-      {showAssign && (
-        <PersonnelOverlay
-          onSelect={applyAssign}
-          onClose={() => setShowAssign(false)}
-        />
-      )}
-
     </div>
   );
 }

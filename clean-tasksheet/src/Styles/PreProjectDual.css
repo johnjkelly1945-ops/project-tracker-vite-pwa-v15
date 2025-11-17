@@ -1,18 +1,36 @@
 /* ======================================================================
-   METRA – PreProjectDual.css (v5 FINAL)
-   Side-by-side panes • Fullscreen support • Independent scrolling
-   Chrome + Safari verified
+   METRA – PreProjectDual.css (v5.1 – Scroll Fixed)
+   • Internal pane scrolling
+   • Sticky headers + sticky filters
+   • Chrome & Safari stable
    ====================================================================== */
 
-.dual-wrapper {
-  height: 100vh;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   overflow: hidden;
   background: #f8f9fa;
-  display: flex;
-  flex-direction: column;
 }
 
-/* HEADER */
+/* ROOT WRAPPER */
+.preproject-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* MAIN DUAL WRAPPER */
+.dual-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+/* TOP HEADER */
 .dual-header {
   position: sticky;
   top: 0;
@@ -28,13 +46,7 @@
   font-weight: 600;
 }
 
-.dual-header p {
-  margin: 0;
-  font-size: 13px;
-  color: #555;
-}
-
-/* MAIN SCROLL AREA */
+/* MAIN SCROLL CONTAINER */
 .dual-scroll-area {
   flex: 1 1 auto;
   min-height: 0;
@@ -42,15 +54,14 @@
   padding: 12px;
 }
 
-/* PANE CONTAINER (SIDE-BY-SIDE) */
+/* TWO PANE LAYOUT */
 .dual-pane-container {
   display: flex;
-  flex-direction: row;
   gap: 14px;
   height: 100%;
 }
 
-/* INDIVIDUAL PANE */
+/* PANE */
 .pane {
   flex: 1;
   min-width: 48%;
@@ -60,11 +71,10 @@
   border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   overflow: hidden;
 }
 
-/* FULLSCREEN */
+/* FULLSCREEN BEHAVIOUR */
 .pane.fullscreen {
   flex: 1 !important;
   min-width: 100% !important;
@@ -72,7 +82,6 @@
   height: calc(100vh - 90px);
 }
 
-/* HIDE OTHER PANE */
 .pane.hidden {
   display: none !important;
 }
@@ -90,27 +99,6 @@
   align-items: center;
 }
 
-.pane-header h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* FULLSCREEN BUTTON */
-.fullscreen-btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.fullscreen-btn:hover {
-  background: #1d4ed8;
-}
-
 /* FILTER BAR */
 .dual-filter-bar {
   position: sticky;
@@ -124,24 +112,7 @@
   flex-wrap: wrap;
 }
 
-/* FILTER BUTTONS */
-.filter-btn,
-.filter-active {
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #d1d5db;
-  cursor: pointer;
-  font-size: 12px;
-  background: #e5e7eb;
-}
-
-.filter-active {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: white;
-}
-
-/* PANE SCROLL AREA */
+/* SCROLLABLE CONTENT */
 .pane-scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -149,7 +120,7 @@
   padding: 12px 14px 80px 14px;
 }
 
-/* SUMMARY */
+/* SUMMARY BLOCKS */
 .summary-block {
   margin-bottom: 8px;
 }
@@ -186,7 +157,7 @@
   margin-top: 4px;
 }
 
-/* TASK ITEM */
+/* TASKS */
 .task-item {
   display: flex;
   align-items: center;
@@ -203,7 +174,7 @@
   flex: 1;
 }
 
-/* Status dots */
+/* STATUS DOTS */
 .status-dot {
   width: 8px;
   height: 8px;
