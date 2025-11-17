@@ -1,0 +1,118 @@
+/* ======================================================================
+   METRA – DualPane.css
+   Styling for Dual-Pane Management/Development Workspace
+   Sticky Headers · Split Mode · Fullscreen Mode
+   ====================================================================== */
+
+/* MAIN WRAPPER */
+.dual-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+/* TOP HEADER */
+.dual-header {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid #d1d5db;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.dual-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dual-subtitle {
+  margin: 0;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #555;
+}
+
+/* MAIN CONTAINER */
+.dual-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* SPLIT MODE */
+.mode-split .pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e5e7eb;
+  min-width: 0;
+}
+
+.mode-split .dev-pane {
+  border-right: none;
+}
+
+/* FULLSCREEN LEFT (MGMT) */
+.mode-mgmt .mgmt-pane {
+  flex: 1;
+}
+
+.mode-mgmt .dev-pane {
+  display: none;
+}
+
+/* FULLSCREEN RIGHT (DEV) */
+.mode-dev .dev-pane {
+  flex: 1;
+}
+
+.mode-dev .mgmt-pane {
+  display: none;
+}
+
+/* PANE HEADERS */
+.pane-header {
+  background: #ffffff;
+  border-bottom: 1px solid #d1d5db;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 46px;
+  z-index: 10;
+}
+
+.pane-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* PANE BUTTONS */
+.pane-btn {
+  background: #2563eb;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.pane-btn:hover {
+  background: #1d4ed8;
+}
+
+/* SCROLLABLE CONTENT */
+.pane-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background: #ffffff;
+}

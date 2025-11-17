@@ -1,12 +1,15 @@
 /* ======================================================================
    METRA – App.jsx
-   Clean baseline with stable repository → preproject injection
+   Navigation Bar + Screen Switching
    ====================================================================== */
 
 import React, { useState } from "react";
-import PreProject from "./components/PreProject";
+
+import NavBar from "./components/NavBar";
+import PreProjectDual from "./components/PreProjectDual";
 import RepositoryModule from "./components/RepositoryModule";
-import "./Styles/PreProject.css";
+
+
 
 export default function App() {
   const [screen, setScreen] = useState("preproject");
@@ -20,9 +23,11 @@ export default function App() {
   const clearInjectedTasks = () => setRepoTasks([]);
 
   return (
-    <>
+    <div className="app-root">
+      <NavBar setScreen={setScreen} />
+
       {screen === "preproject" && (
-        <PreProject
+        <PreProjectDual
           setScreen={setScreen}
           injectedTasks={repoTasks}
           clearInjectedTasks={clearInjectedTasks}
@@ -35,6 +40,6 @@ export default function App() {
           onDownload={handleDownload}
         />
       )}
-    </>
+    </div>
   );
 }

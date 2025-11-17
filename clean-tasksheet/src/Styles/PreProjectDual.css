@@ -1,0 +1,244 @@
+/* ======================================================================
+   METRA – PreProjectDual.css (v5 FINAL)
+   Side-by-side panes • Fullscreen support • Independent scrolling
+   Chrome + Safari verified
+   ====================================================================== */
+
+.dual-wrapper {
+  height: 100vh;
+  overflow: hidden;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.dual-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #f8f9fa;
+  padding: 14px 18px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.dual-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dual-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+}
+
+/* MAIN SCROLL AREA */
+.dual-scroll-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* PANE CONTAINER (SIDE-BY-SIDE) */
+.dual-pane-container {
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  height: 100%;
+}
+
+/* INDIVIDUAL PANE */
+.pane {
+  flex: 1;
+  min-width: 48%;
+  max-width: 48%;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+/* FULLSCREEN */
+.pane.fullscreen {
+  flex: 1 !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: calc(100vh - 90px);
+}
+
+/* HIDE OTHER PANE */
+.pane.hidden {
+  display: none !important;
+}
+
+/* PANE HEADER */
+.pane-header {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  padding: 12px 14px;
+  border-bottom: 1px solid #d1d5db;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pane-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* FULLSCREEN BUTTON */
+.fullscreen-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.fullscreen-btn:hover {
+  background: #1d4ed8;
+}
+
+/* FILTER BAR */
+.dual-filter-bar {
+  position: sticky;
+  top: 46px;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-bottom: 1px solid #d1d5db;
+  z-index: 15;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* FILTER BUTTONS */
+.filter-btn,
+.filter-active {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  font-size: 12px;
+  background: #e5e7eb;
+}
+
+.filter-active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+/* PANE SCROLL AREA */
+.pane-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 14px 80px 14px;
+}
+
+/* SUMMARY */
+.summary-block {
+  margin-bottom: 8px;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+}
+
+.summary-dot {
+  width: 8px;
+  height: 8px;
+  background: #6b7280;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.summary-arrow {
+  margin-left: auto;
+  font-size: 11px;
+  color: #555;
+}
+
+.summary-expanded-placeholder {
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+/* TASK ITEM */
+.task-item {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  margin-bottom: 6px;
+}
+
+.task-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+/* Status dots */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-dot.Not-Started { background: #6b7280; }
+.status-dot.In-Progress { background: #ea580c; }
+.status-dot.Completed   { background: #16a34a; }
+.status-dot.On-Hold     { background: #d97706; }
+
+/* BOTTOM ACTION BAR */
+.bottom-action-row {
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  padding: 10px 14px;
+  border-top: 1px solid #d1d5db;
+  z-index: 10;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.bottom-action-row button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+  font-size: 13px;
+}
+
+.bottom-action-row button:hover {
+  background: #1d4ed8;
+}
