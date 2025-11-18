@@ -1,14 +1,16 @@
 /* ======================================================================
-   METRA – PreProjectDual.jsx (v5.1 – Scroll Fixed)
-   • Side-by-side panes
-   • Internal pane scrolling (Chrome + Safari)
-   • Fullscreen per pane
-   • Sticky header + sticky filter bar
+   METRA – PreProjectDual.jsx (v5.4 – Scroll + Sticky FIXED)
+   ----------------------------------------------------------------------
+   • Independent per-pane scrolling (Safari + Chrome)
+   • Sticky header / sticky filter bar / sticky bottom bar
+   • Fullscreen mode stable
+   • Fully synchronised with matching CSS v5.4
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
 import PersonnelOverlay from "./PersonnelOverlay";
 import "../Styles/PreProjectDual.css";
+
 
 /* ---------------------------------------------------------------
    DEFAULT DATA
@@ -39,7 +41,7 @@ const normalise = (item) => ({
 export default function PreProjectDual({ setScreen }) {
 
   /* ---------------------------------------------------------------
-     STORAGE + LOADERS
+     STORAGE
      --------------------------------------------------------------- */
   const STORAGE_MGMT = "tasks_mgmt_v1";
   const STORAGE_DEV = "tasks_dev_v1";
@@ -47,15 +49,13 @@ export default function PreProjectDual({ setScreen }) {
   const loadMgmt = () => {
     const s = localStorage.getItem(STORAGE_MGMT);
     if (!s) return defaultMgmt.map(normalise);
-    try { return JSON.parse(s).map(normalise); }
-    catch { return defaultMgmt.map(normalise); }
+    try { return JSON.parse(s).map(normalise); } catch { return defaultMgmt.map(normalise); }
   };
 
   const loadDev = () => {
     const s = localStorage.getItem(STORAGE_DEV);
     if (!s) return defaultDev.map(normalise);
-    try { return JSON.parse(s).map(normalise); }
-    catch { return defaultDev.map(normalise); }
+    try { return JSON.parse(s).map(normalise); } catch { return defaultDev.map(normalise); }
   };
 
   const [mgmtItems, setMgmtItems] = useState(loadMgmt);
@@ -70,30 +70,29 @@ export default function PreProjectDual({ setScreen }) {
   }, [devItems]);
 
   /* ---------------------------------------------------------------
-     FULLSCREEN CONTROL
+     FULLSCREEN
      --------------------------------------------------------------- */
   const [fullscreen, setFullscreen] = useState(null);
 
-  const toggleFullscreen = (pane) => {
+  const toggleFullscreen = (pane) =>
     setFullscreen(prev => (prev === pane ? null : pane));
-  };
 
   /* ---------------------------------------------------------------
-     ASSIGN OVERLAY
+     ASSIGN PERSON
      --------------------------------------------------------------- */
   const [assignTarget, setAssignTarget] = useState(null);
   const [showAssign, setShowAssign] = useState(false);
 
-  const startAssign = (paneSetter, id) => {
-    setAssignTarget({ paneSetter, id });
+  const startAssign = (setter, id) => {
+    setAssignTarget({ setter, id });
     setShowAssign(true);
   };
 
   const applyAssign = (personObj) => {
     if (!assignTarget) return;
-    const { paneSetter, id } = assignTarget;
+    const { setter, id } = assignTarget;
 
-    paneSetter(prev =>
+    setter(prev =>
       prev.map(i =>
         i.id === id
           ? { ...i, assigned: personObj.name, status: "In Progress" }
@@ -117,33 +116,31 @@ export default function PreProjectDual({ setScreen }) {
   };
 
   /* ---------------------------------------------------------------
-     Add Summary / Add Task
+     ADD SUMMARY / TASK
      --------------------------------------------------------------- */
-  const addSummary = (paneSetter) => {
-    const newId = "S-" + Date.now();
-    paneSetter(prev => [
+  const addSummary = (setter) => {
+    setter(prev => [
       ...prev,
-      { id: newId, type: "summary", title: "New Summary", expanded: false }
+      { id: "S-" + Date.now(), type: "summary", title: "New Summary", expanded: false }
     ]);
   };
 
-  const addTask = (paneSetter) => {
-    const newId = "T-" + Date.now();
-    paneSetter(prev => [
+  const addTask = (setter) => {
+    setter(prev => [
       ...prev,
-      { id: newId, type: "task", title: "New Task", status: "Not Started", assigned: null, notes: [] }
+      { id: "T-" + Date.now(), type: "task", title: "New Task", status: "Not Started", assigned: null, notes: [] }
     ]);
   };
 
   /* ---------------------------------------------------------------
      RENDER A SINGLE PANE
      --------------------------------------------------------------- */
-  const renderPane = (paneKey, items, filter, setFilter, paneSetter, title) => {
+  const renderPane = (paneKey, items, filter, setFilter, setter, title) => {
+    const isFullscreen = fullscreen === paneKey;
+
     const summaries = items.filter(i => i.type === "summary");
     const tasks = items.filter(i => i.type === "task");
-    const filteredTasks = applyFilter(tasks, filter);
-
-    const isFullscreen = fullscreen === paneKey;
+    const filtered = applyFilter(tasks, filter);
 
     return (
       <div
@@ -151,7 +148,7 @@ export default function PreProjectDual({ setScreen }) {
           fullscreen && fullscreen !== paneKey ? "hidden" : ""
         }`}
       >
-        {/* Header */}
+        {/* HEADER */}
         <div className="pane-header">
           <h2>{title}</h2>
           <button className="fullscreen-btn" onClick={() => toggleFullscreen(paneKey)}>
@@ -159,7 +156,7 @@ export default function PreProjectDual({ setScreen }) {
           </button>
         </div>
 
-        {/* Filters */}
+        {/* FILTER BAR */}
         <div className="dual-filter-bar">
           {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"].map(f => (
             <button
@@ -172,7 +169,7 @@ export default function PreProjectDual({ setScreen }) {
           ))}
         </div>
 
-        {/* Scrollable Content */}
+        {/* MAIN SCROLL AREA */}
         <div className="pane-scroll">
 
           {/* Summaries */}
@@ -181,7 +178,7 @@ export default function PreProjectDual({ setScreen }) {
               <div
                 className="summary-row"
                 onClick={() =>
-                  paneSetter(prev =>
+                  setter(prev =>
                     prev.map(i =>
                       i.id === s.id ? { ...i, expanded: !i.expanded } : i
                     )
@@ -193,14 +190,12 @@ export default function PreProjectDual({ setScreen }) {
                 <span className="summary-arrow">{s.expanded ? "▼" : "►"}</span>
               </div>
 
-              {s.expanded && (
-                <div className="summary-expanded-placeholder" />
-              )}
+              {s.expanded && <div className="summary-expanded-placeholder" />}
             </div>
           ))}
 
           {/* Tasks */}
-          {filteredTasks.map(t => (
+          {filtered.map(t => (
             <div key={t.id} className="task-item">
               <div className="task-left">
                 <span className={`status-dot ${t.status.replace(/ /g, "-")}`} />
@@ -211,7 +206,7 @@ export default function PreProjectDual({ setScreen }) {
                   </span>
                 )}
               </div>
-              <button className="assign-btn" onClick={() => startAssign(paneSetter, t.id)}>
+              <button className="assign-btn" onClick={() => startAssign(setter, t.id)}>
                 Assign
               </button>
             </div>
@@ -219,11 +214,12 @@ export default function PreProjectDual({ setScreen }) {
 
         </div>
 
-        {/* Bottom Action Bar */}
+        {/* BOTTOM ACTION BAR */}
         <div className="bottom-action-row">
-          <button onClick={() => addSummary(paneSetter)}>+ Summary</button>
-          <button onClick={() => addTask(paneSetter)}>+ Task</button>
+          <button onClick={() => addSummary(setter)}>+ Summary</button>
+          <button onClick={() => addTask(setter)}>+ Task</button>
         </div>
+
       </div>
     );
   };
@@ -242,8 +238,10 @@ export default function PreProjectDual({ setScreen }) {
 
         <div className="dual-scroll-area">
           <div className="dual-pane-container">
+
             {renderPane("mgmt", mgmtItems, mgmtFilter, setMgmtFilter, setMgmtItems, "Management Workspace")}
             {renderPane("dev", devItems, devFilter, setDevFilter, setDevItems, "Development Workspace")}
+
           </div>
         </div>
 

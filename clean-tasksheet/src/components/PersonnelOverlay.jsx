@@ -5,7 +5,7 @@
    ====================================================================== */
 
 import React from "react";
-import "../Styles/PreProject.css";
+
 
 export default function PersonnelOverlay({ onSelect, onClose }) {
 

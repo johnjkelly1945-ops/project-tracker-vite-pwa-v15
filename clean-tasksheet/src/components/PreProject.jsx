@@ -9,7 +9,7 @@ import React, { useState, useEffect } from "react";
 import PersonnelOverlay from "./PersonnelOverlay";
 import PersonnelDetail from "./PersonnelDetail";
 import TaskWorkingWindow from "./TaskWorkingWindow";
-import "../Styles/PreProject.css";
+
 
 /* ================================================================
    DEFAULT ITEMS (Summaries + Tasks)
