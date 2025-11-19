@@ -1,258 +1,251 @@
 /* ======================================================================
-   METRA – PreProjectDual.jsx (v5.4 – Scroll + Sticky FIXED)
+   METRA – PreProjectDual.jsx
+   v5 Baseline (Assigned Person Hidden in Row)
    ----------------------------------------------------------------------
-   • Independent per-pane scrolling (Safari + Chrome)
-   • Sticky header / sticky filter bar / sticky bottom bar
-   • Fullscreen mode stable
-   • Fully synchronised with matching CSS v5.4
+   ✔ Task rows no longer show assigned person
+   ✔ Assign button opens Personnel Overlay
+   ✔ Popup shows full assigned person (clickable)
+   ✔ Scrolling + fullscreen + sticky all preserved
    ====================================================================== */
 
-import React, { useState, useEffect } from "react";
-import PersonnelOverlay from "./PersonnelOverlay";
+import React, { useState } from "react";
+import TaskPopup from "./TaskPopup.jsx";
+import PersonnelDetail from "./PersonnelDetail.jsx";
+import PersonnelOverlay from "./PersonnelOverlay.jsx";
 import "../Styles/PreProjectDual.css";
 
+export default function PreProjectDual() {
 
-/* ---------------------------------------------------------------
-   DEFAULT DATA
-   --------------------------------------------------------------- */
-const defaultMgmt = [
-  { id: "MS1", type: "summary", title: "Management Summary", expanded: false },
-  { id: "MT1", type: "task", title: "Define Governance Approach", status: "Not Started", assigned: null, notes: [] },
-  { id: "MT2", type: "task", title: "Identify Stakeholders", status: "Not Started", assigned: null, notes: [] }
-];
+  /* ===========================================
+     POPUP + PERSON STATES
+     =========================================== */
+  const [popupTask, setPopupTask] = useState(null);
+  const [personDetail, setPersonDetail] = useState(null);
+  const [assignTargetTask, setAssignTargetTask] = useState(null);
 
-const defaultDev = [
-  { id: "DS1", type: "summary", title: "Development Summary", expanded: false },
-  { id: "DT1", type: "task", title: "Draft Requirements", status: "Not Started", assigned: null, notes: [] },
-  { id: "DT2", type: "task", title: "Initial Technical Assessment", status: "Not Started", assigned: null, notes: [] }
-];
+  const [leftFull, setLeftFull] = useState(false);
+  const [rightFull, setRightFull] = useState(false);
 
-const normalise = (item) => ({
-  ...item,
-  id: String(item.id),
-  expanded: item.type === "summary" ? !!item.expanded : false,
-  status: item.type === "task" ? item.status || "Not Started" : undefined,
-  assigned: item.type === "task" ? item.assigned || null : undefined,
-  notes: item.type === "task" ? item.notes || [] : undefined
-});
+  /* ===========================================
+     REAL TASK DATA
+     =========================================== */
+  const [mgmtSummaries, setMgmtSummaries] = useState([
+    { id: "mg-1", title: "Management Summary", expanded: false, tasks: [] },
+    { id: "mg-2", title: "New Summary", expanded: false, tasks: [] },
 
-/* ====================================================================== */
+    { id: "mg-3", title: "Define Governance Approach", status: "In Progress", person: "Alice Robertson", isTask: true },
+    { id: "mg-4", title: "Identify Stakeholders", status: "Not Started", person: "", isTask: true },
+    { id: "mg-5", title: "New task added", status: "Not Started", person: "", isTask: true },
+    { id: "mg-6", title: "New Task", status: "Not Started", person: "", isTask: true }
+  ]);
 
-export default function PreProjectDual({ setScreen }) {
+  const [devSummaries, setDevSummaries] = useState([
+    { id: "dv-1", title: "Development Summary", expanded: false, tasks: [] },
+    { id: "dv-2", title: "New Summary", expanded: false, tasks: [] },
 
-  /* ---------------------------------------------------------------
-     STORAGE
-     --------------------------------------------------------------- */
-  const STORAGE_MGMT = "tasks_mgmt_v1";
-  const STORAGE_DEV = "tasks_dev_v1";
+    { id: "dv-3", title: "Draft Requirements", status: "Not Started", person: "", isTask: true },
+    { id: "dv-4", title: "Initial Technical Assessment", status: "Not Started", person: "", isTask: true },
+    { id: "dv-5", title: "New Task", status: "Not Started", person: "", isTask: true }
+  ]);
 
-  const loadMgmt = () => {
-    const s = localStorage.getItem(STORAGE_MGMT);
-    if (!s) return defaultMgmt.map(normalise);
-    try { return JSON.parse(s).map(normalise); } catch { return defaultMgmt.map(normalise); }
+  /* ===========================================
+     SUMMARY EXPAND/COLLAPSE
+     =========================================== */
+  const toggleSummary = (pane, id) => {
+    const updater = (arr) =>
+      arr.map(s => s.id === id ? { ...s, expanded: !s.expanded } : s);
+
+    if (pane === "mgmt") setMgmtSummaries(prev => updater(prev));
+    else setDevSummaries(prev => updater(prev));
   };
 
-  const loadDev = () => {
-    const s = localStorage.getItem(STORAGE_DEV);
-    if (!s) return defaultDev.map(normalise);
-    try { return JSON.parse(s).map(normalise); } catch { return defaultDev.map(normalise); }
+  /* ===========================================
+     OPEN POPUP
+     =========================================== */
+  const openPopup = (task) => {
+    if (!task.isTask) return;
+    setPopupTask(task);
   };
 
-  const [mgmtItems, setMgmtItems] = useState(loadMgmt);
-  const [devItems, setDevItems] = useState(loadDev);
+  const closePopup = () => setPopupTask(null);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_MGMT, JSON.stringify(mgmtItems));
-  }, [mgmtItems]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_DEV, JSON.stringify(devItems));
-  }, [devItems]);
-
-  /* ---------------------------------------------------------------
-     FULLSCREEN
-     --------------------------------------------------------------- */
-  const [fullscreen, setFullscreen] = useState(null);
-
-  const toggleFullscreen = (pane) =>
-    setFullscreen(prev => (prev === pane ? null : pane));
-
-  /* ---------------------------------------------------------------
-     ASSIGN PERSON
-     --------------------------------------------------------------- */
-  const [assignTarget, setAssignTarget] = useState(null);
-  const [showAssign, setShowAssign] = useState(false);
-
-  const startAssign = (setter, id) => {
-    setAssignTarget({ setter, id });
-    setShowAssign(true);
+  /* ===========================================
+     ASSIGN PERSONNEL
+     =========================================== */
+  const beginAssign = (task) => {
+    setAssignTargetTask(task);
   };
 
-  const applyAssign = (personObj) => {
-    if (!assignTarget) return;
-    const { setter, id } = assignTarget;
+  const closeAssign = () => setAssignTargetTask(null);
 
-    setter(prev =>
-      prev.map(i =>
-        i.id === id
-          ? { ...i, assigned: personObj.name, status: "In Progress" }
-          : i
-      )
-    );
+  const assignPerson = (taskId, personName) => {
+    const updateTask = (arr) =>
+      arr.map(t =>
+        t.id === taskId ? { ...t, person: personName } : t
+      );
 
-    setShowAssign(false);
-    setAssignTarget(null);
+    setMgmtSummaries(prev => updateTask(prev));
+    setDevSummaries(prev => updateTask(prev));
+    closeAssign();
   };
 
-  /* ---------------------------------------------------------------
-     FILTERS
-     --------------------------------------------------------------- */
-  const [mgmtFilter, setMgmtFilter] = useState("All");
-  const [devFilter, setDevFilter] = useState("All");
+  /* ===========================================
+     PERSON DETAIL POPUP
+     =========================================== */
+  const openDetail = (name) => setPersonDetail(name);
+  const closeDetail = () => setPersonDetail(null);
 
-  const applyFilter = (items, filter) => {
-    if (filter === "All") return items;
-    return items.filter(i => i.status === filter);
-  };
+  /* ===========================================
+     RENDER ROW (NO PERSON SHOWN)
+     =========================================== */
+  const renderRow = (item, pane) => {
 
-  /* ---------------------------------------------------------------
-     ADD SUMMARY / TASK
-     --------------------------------------------------------------- */
-  const addSummary = (setter) => {
-    setter(prev => [
-      ...prev,
-      { id: "S-" + Date.now(), type: "summary", title: "New Summary", expanded: false }
-    ]);
-  };
+    if (item.isTask) {
+      return (
+        <div
+          key={item.id}
+          className="task-item"
+          onClick={() => openPopup(item)}
+        >
+          <div className="task-left">
+            <div className={`status-dot ${item.status.replace(" ", "-")}`}></div>
+            <div>{item.title}</div>
+          </div>
 
-  const addTask = (setter) => {
-    setter(prev => [
-      ...prev,
-      { id: "T-" + Date.now(), type: "task", title: "New Task", status: "Not Started", assigned: null, notes: [] }
-    ]);
-  };
-
-  /* ---------------------------------------------------------------
-     RENDER A SINGLE PANE
-     --------------------------------------------------------------- */
-  const renderPane = (paneKey, items, filter, setFilter, setter, title) => {
-    const isFullscreen = fullscreen === paneKey;
-
-    const summaries = items.filter(i => i.type === "summary");
-    const tasks = items.filter(i => i.type === "task");
-    const filtered = applyFilter(tasks, filter);
-
-    return (
-      <div
-        className={`pane ${isFullscreen ? "fullscreen" : ""} ${
-          fullscreen && fullscreen !== paneKey ? "hidden" : ""
-        }`}
-      >
-        {/* HEADER */}
-        <div className="pane-header">
-          <h2>{title}</h2>
-          <button className="fullscreen-btn" onClick={() => toggleFullscreen(paneKey)}>
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          {/* Assign button only */}
+          <button
+            className="assign-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              beginAssign(item);
+            }}
+          >
+            Assign
           </button>
         </div>
+      );
+    }
 
-        {/* FILTER BAR */}
-        <div className="dual-filter-bar">
-          {["All", "Flagged", "Not Started", "In Progress", "Completed", "On Hold"].map(f => (
-            <button
-              key={f}
-              className={filter === f ? "filter-active" : "filter-btn"}
-              onClick={() => setFilter(f)}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* MAIN SCROLL AREA */}
-        <div className="pane-scroll">
-
-          {/* Summaries */}
-          {summaries.map(s => (
-            <div key={s.id} className="summary-block">
-              <div
-                className="summary-row"
-                onClick={() =>
-                  setter(prev =>
-                    prev.map(i =>
-                      i.id === s.id ? { ...i, expanded: !i.expanded } : i
-                    )
-                  )
-                }
-              >
-                <span className="summary-dot" />
-                <span className="task-title">{s.title}</span>
-                <span className="summary-arrow">{s.expanded ? "▼" : "►"}</span>
-              </div>
-
-              {s.expanded && <div className="summary-expanded-placeholder" />}
-            </div>
-          ))}
-
-          {/* Tasks */}
-          {filtered.map(t => (
-            <div key={t.id} className="task-item">
-              <div className="task-left">
-                <span className={`status-dot ${t.status.replace(/ /g, "-")}`} />
-                <span className="task-title">{t.title}</span>
-                {t.assigned && (
-                  <span style={{ marginLeft: 6, fontStyle: "italic", color: "#555" }}>
-                    — {t.assigned}
-                  </span>
-                )}
-              </div>
-              <button className="assign-btn" onClick={() => startAssign(setter, t.id)}>
-                Assign
-              </button>
-            </div>
-          ))}
-
-        </div>
-
-        {/* BOTTOM ACTION BAR */}
-        <div className="bottom-action-row">
-          <button onClick={() => addSummary(setter)}>+ Summary</button>
-          <button onClick={() => addTask(setter)}>+ Task</button>
-        </div>
-
-      </div>
-    );
-  };
-
-  /* ---------------------------------------------------------------
-     MAIN RETURN
-     --------------------------------------------------------------- */
-  return (
-    <div className="preproject-wrapper">
-      <div className="dual-wrapper">
-
-        <div className="dual-header">
-          <h1>PreProject – Dual Workspace</h1>
-          <p>Management + Development Streams</p>
-        </div>
-
-        <div className="dual-scroll-area">
-          <div className="dual-pane-container">
-
-            {renderPane("mgmt", mgmtItems, mgmtFilter, setMgmtFilter, setMgmtItems, "Management Workspace")}
-            {renderPane("dev", devItems, devFilter, setDevFilter, setDevItems, "Development Workspace")}
-
+    return (
+      <div key={item.id} className="summary-block">
+        <div
+          className="summary-row"
+          onClick={() => toggleSummary(pane, item.id)}
+        >
+          <div className="summary-dot"></div>
+          {item.title}
+          <div className="summary-arrow">
+            {item.expanded ? "▼" : "▶"}
           </div>
         </div>
 
-        {showAssign && (
-          <PersonnelOverlay
-            onSelect={applyAssign}
-            onClose={() => setShowAssign(false)}
-          />
+        {item.expanded && (
+          <div className="summary-expanded-placeholder">
+            <em>No tasks in this summary yet…</em>
+          </div>
         )}
-
       </div>
+    );
+  };
+
+  /* ===========================================
+     MAIN RENDER
+     =========================================== */
+  return (
+    <div className="preproject-wrapper">
+
+      {/* HEADER */}
+      <div className="dual-header">
+        <h1>Dual Workspace</h1>
+        <p>Baseline Version (v5 Stable)</p>
+      </div>
+
+      <div className="dual-scroll-area">
+        <div className="dual-pane-container">
+
+          {/* LEFT PANE */}
+          <div className={`pane ${leftFull ? "fullscreen" : ""} ${rightFull ? "hidden" : ""}`}>
+
+            <div className="pane-header">
+              <strong>Management Workspace</strong>
+              <button className="fullscreen-btn" onClick={() => setLeftFull(!leftFull)}>
+                {leftFull ? "Exit Fullscreen" : "Fullscreen"}
+              </button>
+            </div>
+
+            <div className="dual-filter-bar">
+              <button className="filter-active">All</button>
+              <button className="filter-btn">Flagged</button>
+              <button className="filter-btn">Not Started</button>
+              <button className="filter-btn">In Progress</button>
+              <button className="filter-btn">Completed</button>
+              <button className="filter-btn">On Hold</button>
+            </div>
+
+            <div className="pane-scroll">
+              {mgmtSummaries.map(item => renderRow(item, "mgmt"))}
+            </div>
+
+            <div className="bottom-action-row">
+              <button>Add Summary</button>
+              <button>Add Task</button>
+            </div>
+          </div>
+
+          {/* RIGHT PANE */}
+          <div className={`pane ${rightFull ? "fullscreen" : ""} ${leftFull ? "hidden" : ""}`}>
+
+            <div className="pane-header">
+              <strong>Development Workspace</strong>
+              <button className="fullscreen-btn" onClick={() => setRightFull(!rightFull)}>
+                {rightFull ? "Exit Fullscreen" : "Fullscreen"}
+              </button>
+            </div>
+
+            <div className="dual-filter-bar">
+              <button className="filter-active">All</button>
+              <button className="filter-btn">Flagged</button>
+              <button className="filter-btn">Not Started</button>
+              <button className="filter-btn">In Progress</button>
+              <button className="filter-btn">Completed</button>
+              <button className="filter-btn">On Hold</button>
+            </div>
+
+            <div className="pane-scroll">
+              {devSummaries.map(item => renderRow(item, "dev"))}
+            </div>
+
+            <div className="bottom-action-row">
+              <button>Add Summary</button>
+              <button>Add Task</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* POPUPS */}
+      {popupTask && (
+        <TaskPopup
+          task={popupTask}
+          onClose={closePopup}
+          onOpenPerson={openDetail}
+        />
+      )}
+
+      {personDetail && (
+        <PersonnelDetail
+          personName={personDetail}
+          onClose={closeDetail}
+        />
+      )}
+
+      {assignTargetTask && (
+        <PersonnelOverlay
+          onSelect={(name) => assignPerson(assignTargetTask.id, name)}
+          onClose={closeAssign}
+        />
+      )}
+
     </div>
   );
 }
