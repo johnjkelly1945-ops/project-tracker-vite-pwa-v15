@@ -1,0 +1,47 @@
+/* ======================================================================
+   METRA – PreProject.css
+   Clean Baseline v4.6B.12
+   ====================================================================== */
+
+.preproject-container {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.header {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-row {
+  background: #f2f4f7;
+  padding: 14px 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.task-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.task-status {
+  font-size: 15px;
+  opacity: 0.7;
+}
+.preproject-inner {
+  display: block;
+  width: 100%;
+}

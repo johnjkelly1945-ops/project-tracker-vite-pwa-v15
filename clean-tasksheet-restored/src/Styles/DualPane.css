@@ -1,0 +1,52 @@
+/* ======================================================================
+   METRA – DualPane.css
+   Stage 2 – Independent Scroll + Sticky Headers (Option A)
+   50/50 split using calc(100vh - 140px)
+   ----------------------------------------------------------------------
+   This stage enables:
+   ✔ Independent scrolling in each pane
+   ✔ Sticky headers inside each pane
+   ✔ Stable Chrome + Safari behaviour
+   ====================================================================== */
+
+/* === Outer container (grid layout) === */
+.dual-pane-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 50/50 split */
+  gap: 20px;
+  width: 100%;
+  min-height: calc(100vh - 40px);
+}
+
+/* === Pane container === */
+.pane {
+  background: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 140px); /* YOUR CHOSEN OPTION */
+  overflow: hidden; /* Keep scroll inside */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* === Sticky pane headers === */
+.pane-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+  padding: 14px 18px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* === Scroll area inside each pane === */
+.pane-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  max-height: calc(100vh - 180px);  /* ← ADD THIS */
+  -webkit-overflow-scrolling: touch;
+}
+
