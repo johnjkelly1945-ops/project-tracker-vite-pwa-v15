@@ -1,28 +1,27 @@
 /* ======================================================================
    METRA – PaneMgmt.jsx
-   Stage 2 – Independent Scroll + Sticky Header
+   Stage 3.2 – Test Pane (Isolated Layout Debugging)
    ----------------------------------------------------------------------
-   Renders:
-   ✔ Sticky pane header ("Management")
-   ✔ Scrollable content region
-   ✔ PreProject placed inside scroll container
-   ✔ Standard spacing (your choice A)
+   PURPOSE:
+   ✔ Provide simple placeholder task list for layout testing
+   ✔ Avoid loading PreProject logic inside DualPane
+   ✔ Ensure clean behaviour with DualPane.css
    ====================================================================== */
 
 import React from "react";
-import PreProject from "./PreProject";
 
 export default function PaneMgmt() {
   return (
-    <div className="pane pane-mgmt">
-      
-      {/* Sticky header */}
-      <h2 className="pane-header">Management</h2>
+    <div className="task-list">
 
-      {/* Scrollable content */}
-      <div className="pane-content">
-        <PreProject />
-      </div>
+      <div className="task-item">Management Task A</div>
+      <div className="task-item">Management Task B</div>
+      <div className="task-item">Management Task C</div>
+      <div className="task-item">Management Task D</div>
+      <div className="task-item">Management Task E</div>
+      <div className="task-item">Management Task F</div>
+      <div className="task-item">Management Task G</div>
+      <div className="task-item">Management Task H</div>
 
     </div>
   );

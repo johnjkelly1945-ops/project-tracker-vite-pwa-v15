@@ -1,6 +1,9 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Clean Baseline v4.6B.12 (2025-11-10 Verified)
+   Stage 3.2 – Workspace Content View (No Internal Header)
+   ----------------------------------------------------------------------
+   Internal “METRA – PreProject” header removed because the global
+   header now sits above the dual pane layout.
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -23,8 +26,8 @@ export default function PreProject() {
   }, [tasks]);
 
   return (
-  <div className="preproject-container">
-      <h1 className="header">METRA – PreProject</h1>
+    <div className="preproject-container">
+      {/* Main title removed — now in the global header */}
 
       <div className="task-list">
         {tasks.map((task) => (
@@ -34,7 +37,6 @@ export default function PreProject() {
           </div>
         ))}
       </div>
-  </div>
-);
-
+    </div>
+  );
 }

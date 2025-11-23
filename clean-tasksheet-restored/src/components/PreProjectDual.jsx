@@ -1,20 +1,22 @@
 /* ======================================================================
    METRA – PreProjectDual.jsx
-   Stage 1 – Dual Pane Shell (50/50)
+   Stage 3.7 – Dual Pane Wrapper Restored
    ----------------------------------------------------------------------
-   Pure layout only. No routing logic yet.
-   Both panes receive the same content temporarily
-   to confirm layout stability before Stage 2 logic.
+   PURPOSE:
+   ✔ Wrap management + development panes in dual-pane-workspace
+   ✔ Ensure DualPane.css controls height + scroll
+   ✔ Restore independent scrolling for both panes
    ====================================================================== */
 
 import React from "react";
-import PaneMgmt from "./PaneMgmt";
-import PaneDev from "./PaneDev";
+import PaneMgmt from "./PaneMgmt.jsx";
+import PaneDev from "./PaneDev.jsx";
+
+import "../Styles/DualPane.css";
 
 export default function PreProjectDual() {
-
   return (
-    <div className="dual-pane-container">
+    <div className="dual-pane-workspace">
       <PaneMgmt />
       <PaneDev />
     </div>

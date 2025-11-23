@@ -1,20 +1,37 @@
 /* ======================================================================
    METRA – App.jsx
-   Stage 1 Dual Pane Shell (50/50 Layout)
+   Stage 3.2 – DualPane Active Mode (Isolated Layout Testing)
    ----------------------------------------------------------------------
-   Loads PreProjectDual, which contains the dual-pane scaffolding.
-   No logic, no filters, no scroll state yet.
+   PURPOSE:
+   ✔ Keep global header stable
+   ✔ Keep filter bar visible
+   ✔ Render DualPane.jsx for isolated scroll & layout debugging
+   ✔ DO NOT affect PreProjectDual.jsx until DualPane is verified
    ====================================================================== */
 
 import React from "react";
-import PreProjectDual from "./components/PreProjectDual";
+import DualPane from "./components/DualPane.jsx";
+import FilterBar from "./components/FilterBar.jsx";
+
 import "./Styles/App.v2.css";
 import "./Styles/DualPane.css";
+import "./Styles/FilterBar.css";
 
 export default function App() {
   return (
     <div className="app-container">
-      <PreProjectDual />
+
+      {/* === Global Main Header (sticky) === */}
+      <header className="global-header">
+        METRA – PreProject
+      </header>
+
+      {/* === Filter Bar (shared) === */}
+      <FilterBar />
+
+      {/* === DualPane scaffold (ACTIVE for Stage 3.2) === */}
+      <DualPane />
+
     </div>
   );
 }

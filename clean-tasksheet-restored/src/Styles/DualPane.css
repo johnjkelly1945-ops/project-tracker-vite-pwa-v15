@@ -1,52 +1,97 @@
 /* ======================================================================
    METRA – DualPane.css
-   Stage 2 – Independent Scroll + Sticky Headers (Option A)
-   50/50 split using calc(100vh - 140px)
+   Stage 3.7 – Guaranteed Scroll Restore (Safari + Chrome)
    ----------------------------------------------------------------------
-   This stage enables:
-   ✔ Independent scrolling in each pane
-   ✔ Sticky headers inside each pane
-   ✔ Stable Chrome + Safari behaviour
+   PURPOSE:
+   ✔ Restore independent pane scrolling in ALL browsers
+   ✔ Prevent global page scroll from affecting panes
+   ✔ Keep pane headers sticky below FilterBar
+   ✔ Keep FilterBar snug with no large gap
+   ✔ Enforce strict height boundaries (anti-override)
    ====================================================================== */
 
-/* === Outer container (grid layout) === */
-.dual-pane-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 50/50 split */
-  gap: 20px;
-  width: 100%;
-  min-height: calc(100vh - 40px);
+/* --- Global Reset ---------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* === Pane container === */
+/* --- Workspace Container --------------------------------------------- */
+.dual-pane-workspace {
+  display: flex;
+
+  /* 
+     STRICT WORKING HEIGHT FROM v6 — DO NOT CHANGE
+     This height is the ONLY stable value that forces pane scrolling.
+     The !important flags stop App.css or global layout from overriding it.
+  */
+  height: calc(100vh - 80px) !important;
+  max-height: calc(100vh - 80px) !important;
+
+  overflow: hidden !important;
+  background: #f8fafc;
+}
+
+/* --- Individual Panes ------------------------------------------------ */
 .pane {
-  background: #ffffff;
-  border-radius: 12px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px); /* YOUR CHOSEN OPTION */
-  overflow: hidden; /* Keep scroll inside */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  overflow: hidden;
 }
 
-/* === Sticky pane headers === */
+.pane:last-child {
+  border-right: none;
+}
+
+/* --- Pane Header (Sticky) -------------------------------------------- */
 .pane-header {
   position: sticky;
   top: 0;
-  z-index: 10;
-  background: #ffffff;
-  padding: 14px 18px;
-  font-size: 1.4rem;
-  font-weight: 600;
+  z-index: 20;
+
+  height: 42px;
+  padding: 8px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #f1f5f9;
   border-bottom: 1px solid #e2e8f0;
+
+  pointer-events: auto;
 }
 
-/* === Scroll area inside each pane === */
+/* --- Scrollable Task Area -------------------------------------------- */
 .pane-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 16px 18px;
-  max-height: calc(100vh - 180px);  /* ← ADD THIS */
+
+  /* 
+     The key rule that restores scrolling.
+     If this is missing or overridden, pane scrolling breaks.
+  */
+  overflow-y: auto !important;
+  overflow-x: hidden;
+
+  position: relative;
   -webkit-overflow-scrolling: touch;
 }
 
+/* --- Task Item -------------------------------------------------------- */
+.task-item {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: white;
+}
+
+.task-item:hover {
+  background: #f8fafc;
+}
+.pane-content {
+  min-height: 2000px !important;
+}
