@@ -1,0 +1,66 @@
+/* ======================================================================
+   METRA – PreProject.css
+   Restored Task Styling (Safe for DualPane Layout)
+   Version: 2025-11-23 – Stable Visual Layer
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Provide clean METRA task styling
+   ✔ Add spacing, borders, subtle shadows
+   ✔ Ensure readable typography
+   ✔ SAFE: No sticky, no layout positioning
+   ✔ SAFE: No scroll, no global overrides
+   ====================================================================== */
+
+/* --- Container (not actively used in DualPane test mode) ------------- */
+.preproject-container {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* --- Task List ------------------------------------------------------- */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;                 /* Clean vertical spacing */
+  width: 100%;
+  padding: 0 12px;           /* Keeps tasks away from pane edges */
+  box-sizing: border-box;
+}
+
+/* --- Task Item (Universal) ------------------------------------------- */
+.task-item {
+  background: #f5f7fa;       /* Light grey, similar to METRA original */
+  border: 1px solid #d9e1eb; /* Soft border */
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1f2937;            /* Darker grey, high contrast */
+
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);    /* Very soft lift */
+  transition: background 0.15s ease;
+}
+
+.task-item:hover {
+  background: #eef3f8;
+}
+
+/* --- (Optional future: status colour tags) ---------------------------
+   NOT ENABLED YET — added safely for future steps
+----------------------------------------------------------------------- */
+.task-status {
+  font-size: 14px;
+  opacity: 0.75;
+  margin-left: 8px;
+}
+
+/* Status colours ready but unused until logic restored */
+.status-not-started { color: #6b7280; }
+.status-in-progress { color: #2563eb; }
+.status-completed   { color: #059669; }
+.status-flagged     { color: #dc2626; }
+.status-open        { color: #d97706; }

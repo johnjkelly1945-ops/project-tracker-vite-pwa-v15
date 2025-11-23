@@ -1,0 +1,68 @@
+/* ======================================================================
+   METRA – DualPane.css
+   Stage 3.9 – FINAL Correction
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Keep pane headers directly under FilterBar
+   ✔ Prevent ANY content from appearing above headers
+   ✔ Independent scroll for each pane
+   ✔ Uniform Safari + Chrome behaviour
+   ====================================================================== */
+
+/* --- Workspace container --------------------------------------------- */
+.dual-pane-workspace {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 56px - 48px); /* Global header + FilterBar */
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+/* --- Individual Panes ------------------------------------------------ */
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  /* Remove any unexpected margin collapse */
+  margin: 0;
+  padding: 0;
+
+  border-right: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+/* Remove last border */
+.pane-dev {
+  border-right: none;
+}
+
+/* --- Pane Header (sticky inside pane) -------------------------------- */
+.pane-header {
+  position: sticky;
+  top: 0; /* Stick to top of pane container */
+  z-index: 5;
+
+  height: 48px;
+  line-height: 48px;
+  padding-left: 20px;
+
+  background: #eef3f8;
+  font-weight: 600;
+  font-size: 17px;
+
+  border-bottom: 1px solid #d2d9e3;
+  margin: 0 !important;        /* Prevent Safari margin collapse */
+}
+
+/* --- Scrollable Content Area ---------------------------------------- */
+.pane-content {
+  flex: 1;
+  height: calc(100% - 48px);   /* ← ensures content area fills pane */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  margin: 0 !important;
+  padding: 8px 0;
+}
+
