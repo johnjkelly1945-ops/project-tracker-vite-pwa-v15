@@ -1,44 +1,46 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 3.8 – Header Restore + Scroll Boundary Fix
+   Phase 3A – Step 3
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Ensure each pane contains a visible sticky header
-   ✔ Prevent layout overrides from PaneMgmt / PaneDev
-   ✔ Restore scroll boundaries for DualPane.css to operate
+   ✔ Add safe per-pane task selection
+   ✔ No popup, no pipeline, no risk of interference
+   ✔ Shared selection state lives ONLY in DualPane
    ====================================================================== */
 
-import React from "react";
+import React, { useState } from "react";
 import PaneMgmt from "./PaneMgmt.jsx";
 import PaneDev from "./PaneDev.jsx";
 
 import "../Styles/DualPane.css";
 
 export default function DualPane() {
+
+  // --- Shared selected task (string id) ---
+  const [selectedTask, setSelectedTask] = useState(null);
+
   return (
     <div className="dual-pane-workspace">
 
       {/* === Management Pane ============================================= */}
       <div className="pane pane-mgmt">
-
-        {/* RESTORED HEADER */}
         <div className="pane-header">Management</div>
-
-        {/* Protected scroll container */}
         <div className="pane-content">
-          <PaneMgmt />
+          <PaneMgmt
+            selectedTask={selectedTask}
+            setSelectedTask={setSelectedTask}
+          />
         </div>
       </div>
 
       {/* === Development Pane ============================================ */}
       <div className="pane pane-dev">
-
-        {/* RESTORED HEADER */}
         <div className="pane-header">Development</div>
-
-        {/* Protected scroll container */}
         <div className="pane-content">
-          <PaneDev />
+          <PaneDev
+            selectedTask={selectedTask}
+            setSelectedTask={setSelectedTask}
+          />
         </div>
       </div>
 

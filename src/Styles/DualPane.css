@@ -65,4 +65,14 @@
   margin: 0 !important;
   padding: 8px 0;
 }
+/* ======================================================================
+   METRA – DualPane.css (Highlight Style)
+   Phase 3A – Step 3
+   ====================================================================== */
+
+.selected-task {
+  background: #c7d9f5 !important;   /* A2 – soft blue highlight */
+  border-left: 4px solid #0a4fa3;   /* METRA deep blue for clarity */
+  transition: background 0.15s ease;
+}
 

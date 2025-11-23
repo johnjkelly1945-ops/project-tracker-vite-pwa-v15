@@ -1,23 +1,31 @@
 /* ======================================================================
    METRA – PaneMgmt.jsx
-   Clean Version (Restored)
+   Phase 3A – Step 3
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Click to highlight tasks
+   ✔ Safe isolated behaviour
    ====================================================================== */
 
 import React from "react";
 
-export default function PaneMgmt() {
+export default function PaneMgmt({ selectedTask, setSelectedTask }) {
   return (
     <div className="task-list">
+      {[...Array(50)].map((_, i) => {
+        const id = `mgmt-${i}`;
+        const isSelected = selectedTask === id;
 
-      <div className="task-item">Management Task A</div>
-      <div className="task-item">Management Task B</div>
-      <div className="task-item">Management Task C</div>
-      <div className="task-item">Management Task D</div>
-      <div className="task-item">Management Task E</div>
-      <div className="task-item">Management Task F</div>
-      <div className="task-item">Management Task G</div>
-      <div className="task-item">Management Task H</div>
-
+        return (
+          <div
+            key={id}
+            className={`task-item ${isSelected ? "selected-task" : ""}`}
+            onClick={() => setSelectedTask(id)}
+          >
+            Management Task {i + 1}
+          </div>
+        );
+      })}
     </div>
   );
 }

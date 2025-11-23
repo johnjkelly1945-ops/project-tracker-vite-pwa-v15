@@ -1,24 +1,37 @@
 /* ======================================================================
    METRA – PreProjectDual.jsx
-   Stage 3.7 – Dual Pane Wrapper Restored
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Wrap management + development panes in dual-pane-workspace
-   ✔ Ensure DualPane.css controls height + scroll
-   ✔ Restore independent scrolling for both panes
+   Step 3 – Simple Popup Integration
    ====================================================================== */
 
-import React from "react";
+import React, { useState } from "react";
 import PaneMgmt from "./PaneMgmt.jsx";
 import PaneDev from "./PaneDev.jsx";
+import TaskPopup from "./TaskPopup.jsx";
 
-import "../Styles/DualPane.css";
+import "../Styles/PreProject.css";
 
 export default function PreProjectDual() {
+
+  const [selectedTask, setSelectedTask] = useState(null);
+
   return (
-    <div className="dual-pane-workspace">
-      <PaneMgmt />
-      <PaneDev />
+    <div className="preproject-inner">
+
+      {/* === Popup (if task selected) === */}
+      <TaskPopup task={selectedTask} onClose={() => setSelectedTask(null)} />
+
+      {/* === MANAGEMENT PANE === */}
+      <div className="preproject-pane preproject-pane-mgmt">
+        <h2 className="preproject-header">Management</h2>
+        <PaneMgmt onTaskClick={(t) => setSelectedTask(t)} />
+      </div>
+
+      {/* === DEVELOPMENT PANE === */}
+      <div className="preproject-pane preproject-pane-dev">
+        <h2 className="preproject-header">Development</h2>
+        <PaneDev onTaskClick={(t) => setSelectedTask(t)} />
+      </div>
+
     </div>
   );
 }
