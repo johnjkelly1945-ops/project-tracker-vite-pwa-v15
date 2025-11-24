@@ -1,0 +1,178 @@
+/* ======================================================================
+   METRA – PreProject.css
+   v4.6B.14 – Logic Reintegration (Stage 7)
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Clean PreProject visual layout
+   ✔ Supports independent scroll regions
+   ✔ Compatible with DualPane v3.9 alignment
+   ✔ Includes classes for Personnel + Popup integration
+   ====================================================================== */
+
+/* --- Container -------------------------------------------------------- */
+.preproject-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+  background: #ffffff;
+  overflow-y: auto;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* --- Header ----------------------------------------------------------- */
+.preproject-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1e293b;
+}
+
+/* --- Task List -------------------------------------------------------- */
+.preproject-tasklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preproject-taskline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.task-title {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.task-status {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+/* ======================================================================
+   PERSONNEL OVERLAY (Dormant until Stage 4 activation)
+   ====================================================================== */
+
+.personnel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.personnel-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.personnel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.personnel-line {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: #f1f5f9;
+}
+
+.personnel-line:hover {
+  background: #e2e8f0;
+  cursor: pointer;
+}
+
+.personnel-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* ======================================================================
+   PERSONNEL DETAIL (Dormant until Stage 4 activation)
+   ====================================================================== */
+
+.personnel-detail {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.personnel-detail-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.personnel-detail-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ======================================================================
+   TASK POPUP (Stage 5 active, wired in stage 6)
+   ====================================================================== */
+
+.taskpopup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.taskpopup-window {
+  width: 360px;
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.taskpopup-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.taskpopup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.taskpopup-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.taskpopup-status {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.taskpopup-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}

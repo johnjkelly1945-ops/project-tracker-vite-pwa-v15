@@ -1,46 +1,47 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Phase 3A – Step 3
+   v3.9 + Reintegration Mounting for PreProject (Stage 6)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Add safe per-pane task selection
-   ✔ No popup, no pipeline, no risk of interference
-   ✔ Shared selection state lives ONLY in DualPane
+   ✔ Provide left (Management) and right (Development) panes
+   ✔ Mount independent PreProject instances in each pane (Option A)
+   ✔ Maintain stable v3.9 layout baseline
+   ----------------------------------------------------------------------
+   NOTE:
+   – TaskPopup not yet wired
+   – Personnel not yet wired
+   – PreProject displays clean lists in both panes
    ====================================================================== */
 
-import React, { useState } from "react";
-import PaneMgmt from "./PaneMgmt.jsx";
-import PaneDev from "./PaneDev.jsx";
-
+import React from "react";
+import PreProject from "./PreProject.jsx";
 import "../Styles/DualPane.css";
 
 export default function DualPane() {
-
-  // --- Shared selected task (string id) ---
-  const [selectedTask, setSelectedTask] = useState(null);
-
   return (
     <div className="dual-pane-workspace">
 
-      {/* === Management Pane ============================================= */}
-      <div className="pane pane-mgmt">
-        <div className="pane-header">Management</div>
+      {/* ---------------------------------------------------------------
+         Management Pane
+         --------------------------------------------------------------- */}
+      <div className="pane management-pane">
+        <div className="pane-header">Management Workspace</div>
+
+        {/* PreProject instance #1 */}
         <div className="pane-content">
-          <PaneMgmt
-            selectedTask={selectedTask}
-            setSelectedTask={setSelectedTask}
-          />
+          <PreProject />
         </div>
       </div>
 
-      {/* === Development Pane ============================================ */}
-      <div className="pane pane-dev">
-        <div className="pane-header">Development</div>
+      {/* ---------------------------------------------------------------
+         Development Pane
+         --------------------------------------------------------------- */}
+      <div className="pane development-pane">
+        <div className="pane-header">Development Workspace</div>
+
+        {/* PreProject instance #2 */}
         <div className="pane-content">
-          <PaneDev
-            selectedTask={selectedTask}
-            setSelectedTask={setSelectedTask}
-          />
+          <PreProject />
         </div>
       </div>
 
