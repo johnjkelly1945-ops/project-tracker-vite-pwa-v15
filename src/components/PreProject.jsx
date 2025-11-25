@@ -1,213 +1,240 @@
 /* =============================================================================
    METRA – PreProject.jsx
-   v5.3 Integrated Build + Status Dot
+   v6.1 – Remove Old In-Pane Add Buttons + Sticky Footer Only
    -----------------------------------------------------------------------------
    FEATURES:
-   • Click task row → open popup
-   • Assign button shows only if unassigned
-   • After assignment → Assign button disappears
-   • Status auto-sets to "In Progress"
-   • Amber status dot before task title when active
-   • Timeline entry added
-   • Popup stays open
-   • Overlay opens only when requested
-   • Three-person list included
+   • Unified item array (Summaries + Tasks, Mgmt + Dev)
+   • Summary expand/collapse
+   • Independent tasks + summary-linked tasks
+   • NEW: Removed old button bar inside panes
+   • Sticky bottom footer now the only add-entry point
+   • AddItemPopup integration
+   • DualPane management/development filtering
+   • TaskPopup v5.3 preserved
+   • PersonnelOverlay preserved
+   • LocalStorage save/load
    ============================================================================= */
 
 import React, { useState, useEffect } from "react";
 import TaskPopup from "./TaskPopup.jsx";
 import PersonnelOverlay from "./PersonnelOverlay.jsx";
+import AddItemPopup from "./AddItemPopup.jsx";
+
 import "../Styles/PreProject.css";
 
 export default function PreProject() {
 
   /* ---------------------------------------------------------------------------
-     PERSONNEL LIST (v5.3)
+     LOAD / SAVE – unified array
   --------------------------------------------------------------------------- */
-  const people = [
-    { id: "pers-alice", name: "Alice Robertson" },
-    { id: "pers-bob", name: "Bob McKenzie" },
-    { id: "pers-charlie", name: "Charlie Hayes" },
-  ];
-
-  /* ---------------------------------------------------------------------------
-     DEFAULT TASKS (v5.3 model)
-  --------------------------------------------------------------------------- */
-  const defaultTasks = [
-    {
-      id: 1,
-      title: "Prepare Scope Summary",
-      assignedPerson: null,
-      status: "Not Started",
-      entries: [],
-    },
-    {
-      id: 2,
-      title: "Initial Risk Scan",
-      assignedPerson: null,
-      status: "Not Started",
-      entries: [],
-    },
-    {
-      id: 3,
-      title: "Stakeholder Mapping",
-      assignedPerson: null,
-      status: "Not Started",
-      entries: [],
-    }
-  ];
-
-  /* ---------------------------------------------------------------------------
-     LOAD / SAVE
-  --------------------------------------------------------------------------- */
-  const [tasks, setTasks] = useState(() => {
+  const [items, setItems] = useState(() => {
     try {
-      const saved = localStorage.getItem("tasks_v53");
-      return saved ? JSON.parse(saved) : defaultTasks;
+      const saved = localStorage.getItem("items_v6");
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return defaultTasks;
+      return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem("tasks_v53", JSON.stringify(tasks));
-  }, [tasks]);
+    localStorage.setItem("items_v6", JSON.stringify(items));
+  }, [items]);
 
   /* ---------------------------------------------------------------------------
-     POPUP + OVERLAY CONTROL
+     POPUP + OVERLAY STATE (TaskPopup + Personnel)
   --------------------------------------------------------------------------- */
   const [popupVisible, setPopupVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
 
-  const lockScroll = () => { document.body.style.overflow = "hidden"; };
-  const unlockScroll = () => { document.body.style.overflow = ""; };
+  const lockScroll = () => (document.body.style.overflow = "hidden");
+  const unlockScroll = () => (document.body.style.overflow = "");
 
-  const openPopup = (task) => {
+  const openTaskPopup = (task) => {
     setActiveTask(task);
     setPopupVisible(true);
     lockScroll();
   };
 
-  const closePopup = () => {
+  const closeTaskPopup = () => {
     setPopupVisible(false);
     setActiveTask(null);
+    setOverlayVisible(false);
     unlockScroll();
   };
 
-  const openOverlay = () => setOverlayVisible(true);
-  const closeOverlay = () => setOverlayVisible(false);
+  const handleChangePerson = () => setOverlayVisible(true);
 
-  /* ---------------------------------------------------------------------------
-     CLICK TASK → OPEN POPUP
-  --------------------------------------------------------------------------- */
-  const handleTaskClick = (task) => {
-    openPopup(task);
-  };
-
-  /* ---------------------------------------------------------------------------
-     PERSON SELECTED
-  --------------------------------------------------------------------------- */
   const handlePersonSelected = (name) => {
     if (!activeTask) return;
 
-    const timestamp = Date.now();
+    const timestamp = new Date().toLocaleString();
 
-    const updatedTasks = tasks.map((t) => {
-      if (t.id !== activeTask.id) return t;
+    const updated = items.map((i) => {
+      if (i.id !== activeTask.id) return i;
 
       return {
-        ...t,
+        ...i,
         assignedPerson: name,
         status: "In Progress",
-        entries: [
-          ...t.entries,
-          { text: `• Assigned to ${name}`, timestamp }
-        ]
+        entries: [...i.entries, `• Assigned to ${name} – ${timestamp}`],
       };
     });
 
-    setTasks(updatedTasks);
+    setItems(updated);
 
-    // Update popup content immediately
-    const updated = updatedTasks.find(t => t.id === activeTask.id);
-    setActiveTask(updated);
+    const refreshed = updated.find((x) => x.id === activeTask.id);
+    setActiveTask(refreshed);
 
-    closeOverlay();   // popup remains visible
+    setOverlayVisible(false);
   };
 
   /* ---------------------------------------------------------------------------
-     UPDATE TASK FROM POPUP (entries, status, etc.)
+     ADD ITEM POPUP STATE
   --------------------------------------------------------------------------- */
-  const updateTaskFromPopup = (updatedTask) => {
-    const updatedTasks = tasks.map((t) =>
-      t.id === updatedTask.id ? updatedTask : t
-    );
+  const [addPopupVisible, setAddPopupVisible] = useState(false);
 
-    setTasks(updatedTasks);
+  const openAddPopup = (mode) => {
+    setAddPopupVisible(true);
+    lockScroll();
+  };
 
-    // Sync popup content
-    setActiveTask(updatedTask);
+  const closeAddPopup = () => {
+    setAddPopupVisible(false);
+    unlockScroll();
+  };
+
+  const handleCreateItem = (newItem) => {
+    const updated = [...items, newItem];
+    setItems(updated);
   };
 
   /* ---------------------------------------------------------------------------
-     RENDER
+     SUMMARY TOGGLE
+  --------------------------------------------------------------------------- */
+  const toggleSummary = (sum) => {
+    const updated = items.map((i) => {
+      if (i.id !== sum.id) return i;
+      return { ...i, expanded: !i.expanded };
+    });
+    setItems(updated);
+  };
+
+  /* ---------------------------------------------------------------------------
+     FILTER FOR LEFT (Management) + RIGHT (Development)
+  --------------------------------------------------------------------------- */
+  const managementItems = items.filter((i) => i.itemClass === "management");
+  const developmentItems = items.filter((i) => i.itemClass === "development");
+
+  const getChildren = (summary) =>
+    items.filter((i) => i.parentId === summary.id);
+
+  /* ---------------------------------------------------------------------------
+     RENDER HELPERS
+  --------------------------------------------------------------------------- */
+  const renderItem = (item) => {
+    const isSummary = item.itemType === "summary";
+
+    if (isSummary) {
+      return (
+        <div key={item.id} className="pp-summary-row">
+          <div className="pp-summary-left">
+            <span
+              className="pp-summary-chevron"
+              onClick={() => toggleSummary(item)}
+            >
+              {item.expanded ? "▾" : "▸"}
+            </span>
+            <span className="pp-summary-dot"></span>
+            <span className="pp-summary-title">{item.title}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // TASK ROW
+    return (
+      <div
+        key={item.id}
+        className="pp-task-row"
+        onClick={() => openTaskPopup(item)}
+      >
+        <span className="pp-task-dot"></span>
+        <span className="pp-task-title">{item.title}</span>
+      </div>
+    );
+  };
+
+  const renderPane = (paneItems) => {
+    return (
+      <div className="pp-pane">
+        {paneItems.map((item) => {
+          if (item.itemType === "summary") {
+            return (
+              <React.Fragment key={item.id}>
+                {renderItem(item)}
+                {item.expanded &&
+                  getChildren(item).map((child) => renderItem(child))}
+              </React.Fragment>
+            );
+          }
+
+          if (item.itemType === "task" && !item.parentId) {
+            return renderItem(item);
+          }
+
+          return null;
+        })}
+      </div>
+    );
+  };
+
+  /* ---------------------------------------------------------------------------
+     MAIN RENDER
   --------------------------------------------------------------------------- */
   return (
     <div className="preproject-container">
 
-      {/* --------------------------- POPUP --------------------------- */}
+      {/* POPUP: TASK */}
       <TaskPopup
         visible={popupVisible}
         task={activeTask}
-        onClose={closePopup}
-        onRequestPersonChange={openOverlay}
-        onUpdateTask={updateTaskFromPopup}
+        onClose={closeTaskPopup}
+        onChangePerson={handleChangePerson}
       />
 
-      {/* ---------------------- PERSONNEL OVERLAY -------------------- */}
-      <PersonnelOverlay
-        visible={overlayVisible}
-        people={people}
-        onSelect={handlePersonSelected}
-        onClose={closeOverlay}
+      {/* POPUP: PERSONNEL */}
+      {overlayVisible && (
+        <PersonnelOverlay
+          onSelect={handlePersonSelected}
+          onClose={() => setOverlayVisible(false)}
+        />
+      )}
+
+      {/* POPUP: ADD ITEM */}
+      <AddItemPopup
+        visible={addPopupVisible}
+        onClose={closeAddPopup}
+        onCreateItem={handleCreateItem}
+        summaries={items.filter((i) => i.itemType === "summary")}
       />
 
-      {/* --------------------------- HEADER --------------------------- */}
+      {/* HEADER */}
       <div className="preproject-header">Pre-Project Workspace</div>
 
-      {/* ---------------------- TASK LIST ---------------------------- */}
-      <div className="preproject-tasklist">
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            className="preproject-taskline"
-            onClick={() => handleTaskClick(task)}
-          >
-            {/* STATUS DOT + TITLE */}
-            <div className="task-title">
-              {task.status === "In Progress" && (
-                <span className="status-dot amber"></span>
-              )}
-              {task.title}
-            </div>
+      {/* TWO COLUMNS */}
+      <div className="pp-dualpane-wrapper">
+        <div className="pp-left-pane">
+          <div className="pp-pane-header">Management</div>
+          {renderPane(managementItems)}
+        </div>
 
-            {/* ASSIGN BUTTON (shown only before assignment) */}
-            {!task.assignedPerson && (
-              <button
-                className="assign-btn"
-                onClick={(e) => {
-                  e.stopPropagation();   // prevent popup opening twice
-                  openPopup(task);
-                  openOverlay();
-                }}
-              >
-                Assign
-              </button>
-            )}
-          </div>
-        ))}
+        <div className="pp-right-pane">
+          <div className="pp-pane-header">Development</div>
+          {renderPane(developmentItems)}
+        </div>
       </div>
+
     </div>
   );
 }

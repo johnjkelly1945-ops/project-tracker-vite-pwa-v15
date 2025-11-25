@@ -1,50 +1,28 @@
-/* ======================================================================
+/* ============================================================================
    METRA – DualPane.jsx
-   v3.9 + Reintegration Mounting for PreProject (Stage 6)
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Provide left (Management) and right (Development) panes
-   ✔ Mount independent PreProject instances in each pane (Option A)
-   ✔ Maintain stable v3.9 layout baseline
-   ----------------------------------------------------------------------
-   NOTE:
-   – TaskPopup not yet wired
-   – Personnel not yet wired
-   – PreProject displays clean lists in both panes
-   ====================================================================== */
+   v3.9 + Repository Wiring
+   ========================================================================== */
 
 import React from "react";
 import PreProject from "./PreProject.jsx";
+import PreProjectFooter from "./PreProjectFooter.jsx";
 import "../Styles/DualPane.css";
 
-export default function DualPane() {
+export default function DualPane({ onViewRepository }) {
   return (
-    <div className="dual-pane-workspace">
+    <div className="dual-wrapper">
 
-      {/* ---------------------------------------------------------------
-         Management Pane
-         --------------------------------------------------------------- */}
-      <div className="pane management-pane">
-        <div className="pane-header">Management Workspace</div>
-
-        {/* PreProject instance #1 */}
-        <div className="pane-content">
-          <PreProject />
-        </div>
+      {/* Scroll Region */}
+      <div className="dual-scroll-region">
+        <PreProject />
       </div>
 
-      {/* ---------------------------------------------------------------
-         Development Pane
-         --------------------------------------------------------------- */}
-      <div className="pane development-pane">
-        <div className="pane-header">Development Workspace</div>
-
-        {/* PreProject instance #2 */}
-        <div className="pane-content">
-          <PreProject />
-        </div>
-      </div>
-
+      {/* Sticky Footer */}
+      <PreProjectFooter
+        onAddSummary={() => {}}
+        onAddTask={() => {}}
+        onViewRepo={onViewRepository}
+      />
     </div>
   );
 }

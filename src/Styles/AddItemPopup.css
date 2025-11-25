@@ -1,0 +1,152 @@
+/* =============================================================================
+   METRA – AddItemPopup.css
+   v1.0 – Creation Popup (Management/Development + Summary/Task)
+   -----------------------------------------------------------------------------
+   Clean modal window
+   High contrast, easy readability
+   Safari + Chrome stable
+   ============================================================================= */
+
+/* --- Backdrop -------------------------------------------------------------- */
+.additem-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* above all other overlays */
+}
+
+/* --- Container ------------------------------------------------------------- */
+.additem-container {
+  width: 420px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+}
+
+/* --- Header ---------------------------------------------------------------- */
+.additem-header {
+  background: #1e40af;
+  color: white;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.additem-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* --- Body ------------------------------------------------------------------ */
+.additem-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.additem-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.additem-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.additem-input:focus {
+  outline: 2px solid #1e40af;
+}
+
+/* --- Radio rows ------------------------------------------------------------ */
+.additem-row {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.additem-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: #334155;
+}
+
+/* --- Summary Selector ------------------------------------------------------ */
+.additem-summary-box {
+  background: #f8fafc;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.additem-nosummary {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.additem-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+/* --- Footer ---------------------------------------------------------------- */
+.additem-footer {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.additem-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 15px;
+}
+
+.additem-btn.cancel {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.additem-btn.cancel:hover {
+  background: #cbd5e1;
+}
+
+.additem-btn.create {
+  background: #1e40af;
+  color: white;
+}
+
+.additem-btn.create:hover {
+  background: #1e3a8a;
+}

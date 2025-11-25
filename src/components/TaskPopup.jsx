@@ -1,17 +1,6 @@
 /* =============================================================================
    METRA – TaskPopup.jsx
    v5.3 Reconstructed (Clean Build for DualPane)
-   -----------------------------------------------------------------------------
-   FEATURES:
-   • Header: Title — Assigned Person — Close X
-   • Scrollable notes/log panel
-   • Entries append at bottom
-   • Timestamp auto-added
-   • Blinking cursor at bottom
-   • Governance actions add log entries
-   • Assign / Change Person calls overlay from footer
-   • Popup ALWAYS stays open
-   • Fully compatible with DualPane v3.9 layout
    ============================================================================= */
 
 import React, { useState, useEffect } from "react";
@@ -21,13 +10,13 @@ export default function TaskPopup({
   visible,
   task,
   onClose,
-  onRequestPersonChange,
-  onUpdateTask,
+  onChangePerson,
+  onUpdateTask
 }) {
   if (!visible || !task) return null;
 
   /* ---------------------------------------------------------------------------
-     FORCE RE-RENDER EVERY SECOND (cursor + editable window)
+     RE-RENDER TICK (cursor blink)
   --------------------------------------------------------------------------- */
   const [, force] = useState(0);
   useEffect(() => {
@@ -36,24 +25,21 @@ export default function TaskPopup({
   }, []);
 
   /* ---------------------------------------------------------------------------
-     APPEND ENTRY TO TASK
+     APPEND ENTRY
   --------------------------------------------------------------------------- */
   const addEntry = (text) => {
-    const newEntry = {
-      text,
-      timestamp: Date.now(),
-    };
+    const entry = { text, timestamp: Date.now() };
 
-    const updatedTask = {
+    const updated = {
       ...task,
-      entries: [...task.entries, newEntry],
+      entries: [...task.entries, entry]
     };
 
-    onUpdateTask(updatedTask);
+    onUpdateTask(updated);
   };
 
   /* ---------------------------------------------------------------------------
-     FORMAT TIMESTAMP
+     TIMESTAMP FORMATTER
   --------------------------------------------------------------------------- */
   const fmt = (ts) =>
     new Date(ts).toLocaleString("en-GB", {
@@ -61,19 +47,9 @@ export default function TaskPopup({
       month: "short",
       year: "numeric",
       hour: "2-digit",
-      minute: "2-digit",
+      minute: "2-digit"
     });
 
-  /* ---------------------------------------------------------------------------
-     FOOTER ACTIONS → ADD ENTRIES WITH TAG
-  --------------------------------------------------------------------------- */
-  const handleFooterAction = (label) => {
-    addEntry(`• ${label}`);
-  };
-
-  /* ---------------------------------------------------------------------------
-     ASSIGN / CHANGE PERSON LABEL
-  --------------------------------------------------------------------------- */
   const assignLabel = task.assignedPerson ? "Change Person" : "Assign";
 
   /* ---------------------------------------------------------------------------
@@ -81,65 +57,56 @@ export default function TaskPopup({
   --------------------------------------------------------------------------- */
   return (
     <div className="popup-backdrop">
-
       <div className="popup-container">
 
-        {/* ------------------------------------------------------------------- */}
-        {/* HEADER                                                             */}
-        {/* ------------------------------------------------------------------- */}
+        {/* HEADER */}
         <div className="popup-header">
           <h2 className="popup-title">{task.title}</h2>
-
-          <span className="popup-assigned">
-            {task.assignedPerson || ""}
-          </span>
-
+          <span className="popup-assigned">{task.assignedPerson || ""}</span>
           <button className="popup-close" onClick={onClose}>×</button>
         </div>
 
-        {/* ------------------------------------------------------------------- */}
-        {/* CONTENT: LOG PANEL                                                 */}
-        {/* ------------------------------------------------------------------- */}
-        <div className="popup-content log-scroll-area">
+        {/* CONTENT */}
+        <div className="popup-content">
 
           <div className="log-heading">Entries:</div>
 
-          {(task.entries || []).map((entry, index) => (
-            <div key={index} className="log-entry">
-              {entry.text}{" "}
-              <span className="log-timestamp"> *[{fmt(entry.timestamp)}]* </span>
+          {(task.entries || []).map((e, i) => (
+            <div key={i} className="log-entry">
+              {e.text}
+              <span className="log-timestamp">
+                {"  "}*[{fmt(e.timestamp)}]*
+              </span>
             </div>
           ))}
 
-          {/* Blinking cursor at bottom */}
           <div className="log-cursor">|</div>
         </div>
 
-        {/* ------------------------------------------------------------------- */}
-        {/* FOOTER                                                             */}
-        {/* ------------------------------------------------------------------- */}
+        {/* FOOTER */}
         <div className="popup-footer">
 
           <div className="footer-row">
-            <span onClick={() => handleFooterAction("CC")}>CC</span>
-            <span onClick={() => handleFooterAction("QC")}>QC</span>
-            <span onClick={() => handleFooterAction("Risk")}>Risk</span>
-            <span onClick={() => handleFooterAction("Issue")}>Issue</span>
-            <span onClick={() => handleFooterAction("Escalate")}>Escalate</span>
-            <span onClick={() => handleFooterAction("Email")}>Email</span>
-            <span onClick={() => handleFooterAction("Docs")}>Docs</span>
-            <span onClick={() => handleFooterAction("Template")}>Template</span>
+            <span onClick={() => addEntry("• CC")}>CC</span>
+            <span onClick={() => addEntry("• QC")}>QC</span>
+            <span onClick={() => addEntry("• Risk")}>Risk</span>
+            <span onClick={() => addEntry("• Issue")}>Issue</span>
+            <span onClick={() => addEntry("• Escalate")}>Escalate</span>
+            <span onClick={() => addEntry("• Email")}>Email</span>
+            <span onClick={() => addEntry("• Docs")}>Docs</span>
+            <span onClick={() => addEntry("• Template")}>Template</span>
           </div>
 
           <div className="footer-row">
-            <span onClick={onRequestPersonChange}>{assignLabel}</span>
-            <span onClick={() => handleFooterAction("Mark Completed")}>
+            <span onClick={onChangePerson}>{assignLabel}</span>
+            <span onClick={() => addEntry("• Mark Completed")}>
               Mark Completed
             </span>
-            <span onClick={() => handleFooterAction("Delete")}>Delete</span>
+            <span onClick={() => addEntry("• Delete")}>Delete</span>
           </div>
 
         </div>
+
       </div>
     </div>
   );
