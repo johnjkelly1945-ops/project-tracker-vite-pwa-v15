@@ -1,0 +1,66 @@
+/* =============================================================================
+   METRA – PersonnelOverlay.css
+   Final Stable Version (DualPane-Compatible)
+   -----------------------------------------------------------------------------
+   Overlay MUST sit above TaskPopup.
+   Popup uses z-index: 9999 → Overlay must be higher.
+   ============================================================================= */
+
+.personnel-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;              /* CRITICAL: Higher than TaskPopup (9999) */
+  background: rgba(0, 0, 0, 0.40);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 80px;           /* Same top offset as popup for consistency */
+}
+
+/* Container --------------------------------------------------------------- */
+.personnel-overlay-container {
+  width: 420px;
+  max-height: 80vh;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  padding: 20px;
+}
+
+/* Header ----------------------------------------------------------------- */
+.personnel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.personnel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.personnel-close {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* List ------------------------------------------------------------------- */
+.personnel-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.personnel-item {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.personnel-item:hover {
+  background: #e2e8f0;
+}

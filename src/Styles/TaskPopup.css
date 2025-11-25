@@ -1,45 +1,145 @@
-/* ======================================================================
+/* =============================================================================
    METRA – TaskPopup.css
-   Step 3 – Centre Modal Styling
-   ====================================================================== */
+   v5.3 Reconstructed (Clean Build for DualPane)
+   -----------------------------------------------------------------------------
+   • Standard v5.3 popup width (~520px)
+   • Scrollable log panel
+   • Footer spacing fixes
+   • Blinking cursor animation
+   • Proper z-index layering (below PersonnelOverlay)
+   • Safari + Chrome stable layout
+   ============================================================================= */
 
-.popup-overlay {
+/* --- Backdrop -------------------------------------------------------------- */
+.popup-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-
-  background: rgba(0, 0, 0, 0.45);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 2000;
+  align-items: flex-start;
+  padding-top: 80px;
+  z-index: 9999;
 }
 
-.popup-window {
-  background: white;
-  padding: 24px;
+/* --- Popup Container ------------------------------------------------------- */
+.popup-container {
+  width: 520px;
+  max-height: calc(100vh - 160px);
+  background: #ffffff;
   border-radius: 12px;
-  width: 360px;
-  max-width: 90%;
-  text-align: center;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: popupFadeIn 0.15s ease-out;
+}
 
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+/* --- Header ---------------------------------------------------------------- */
+.popup-header {
+  background: #1e40af;
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .popup-title {
+  margin: 0;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 20px;
+}
+
+.popup-assigned {
+  margin-right: auto;
+  margin-left: 20px;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .popup-close {
-  padding: 8px 16px;
-  font-size: 16px;
-  background: #0a4fa3;
-  color: white;
+  background: transparent;
   border: none;
-  border-radius: 8px;
+  color: white;
+  font-size: 28px;
   cursor: pointer;
+}
+
+/* --- Log Panel ------------------------------------------------------------- */
+.log-scroll-area {
+  padding: 18px 22px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.log-heading {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #1e293b;
+}
+
+.log-entry {
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #334155;
+}
+
+.log-timestamp {
+  font-style: italic;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+/* --- Blinking Cursor ------------------------------------------------------- */
+.log-cursor {
+  font-weight: bold;
+  font-size: 18px;
+  color: #1e293b;
+  animation: blink 1s step-start infinite;
+  margin-top: 6px;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* --- Footer ---------------------------------------------------------------- */
+.popup-footer {
+  padding: 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.footer-row span {
+  cursor: pointer;
+  color: #1e293b;
+  font-size: 15px;
+  padding: 4px 8px;
+}
+
+.footer-row span:hover {
+  background: #e2e8f0;
+  border-radius: 6px;
+}
+
+/* --- Animation ------------------------------------------------------------- */
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

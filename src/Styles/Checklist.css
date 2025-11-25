@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ======================================================================
    METRA – Checklist.css
    Clean Baseline v4.6B.12
@@ -5,4 +6,146 @@
 
 .checklist-container {
   padding: 10px;
+=======
+/* src/Styles/Checklist.css */
+
+/* === Main checklist container === */
+.checklist {
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding: 24px;
+  margin: 24px auto;
+  background: #f9fafc;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 1000px;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.checklist h2,
+.checklist h3 {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.checklist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checklist li {
+  display: block;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.checklist li .row {
+  display: grid;
+  grid-template-columns: 1fr 180px 90px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.status-not-started { background: #f0f0f0; }
+.status-in-progress { background: #fff4cc; }
+.status-completed { background: #d2f8d2; text-decoration: line-through; }
+
+.checklist select {
+  width: 100%;
+  min-width: 160px;
+  padding: 6px 8px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.timestamp {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+}
+
+.add-task button {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.95rem;
+}
+.add-task button:hover { background-color: #1e7e34; }
+
+.delete-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+.delete-btn:hover { background: #bb2d3b; }
+
+.undo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  background: #fffae6;
+  border: 1px solid #ffe58f;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 14px;
+}
+.undo-banner .deleted-label { font-weight: 600; }
+.undo-banner .deleted-text {
+  font-style: italic;
+  opacity: 0.85;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.undo-banner button {
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+.undo-banner button:hover { background: #0b5ed7; }
+
+.add-task {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+.add-task input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+>>>>>>> 4683890a02a092e3dbcf95864f02b3cea6fe9be4
 }
