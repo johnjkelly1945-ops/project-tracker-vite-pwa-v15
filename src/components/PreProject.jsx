@@ -1,18 +1,18 @@
-/* ======================================================================
+/* =============================================================================
    METRA – PreProject.jsx
-   v4.6B.14 – Assignment Reintegration
-   ----------------------------------------------------------------------
+   v5.3 Integrated Build + Status Dot
+   -----------------------------------------------------------------------------
    FEATURES:
-   ✔ Taskline shows [Assign] until person chosen
-   ✔ After assignment, taskline becomes clean (no button)
-   ✔ Clicking [Assign] opens popup + personnel overlay immediately
-   ✔ Selecting a person updates assignment + creates timeline entry
-   ✔ Popup header shows Assigned: <Name>
-   ✔ Timeline entries stored under task title
-   ✔ Change Person button in popup continues workflow
-   ✔ Status auto-updates to "In Progress" internally
-   ✔ Background scroll locked during popup & overlay
-   ====================================================================== */
+   • Click task row → open popup
+   • Assign button shows only if unassigned
+   • After assignment → Assign button disappears
+   • Status auto-sets to "In Progress"
+   • Amber status dot before task title when active
+   • Timeline entry added
+   • Popup stays open
+   • Overlay opens only when requested
+   • Three-person list included
+   ============================================================================= */
 
 import React, { useState, useEffect } from "react";
 import TaskPopup from "./TaskPopup.jsx";
@@ -21,39 +21,48 @@ import "../Styles/PreProject.css";
 
 export default function PreProject() {
 
-  /* -------------------------------------------------------------------
-     DEFAULTS
-  ------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------------
+     PERSONNEL LIST (v5.3)
+  --------------------------------------------------------------------------- */
+  const people = [
+    { id: "pers-alice", name: "Alice Robertson" },
+    { id: "pers-bob", name: "Bob McKenzie" },
+    { id: "pers-charlie", name: "Charlie Hayes" },
+  ];
+
+  /* ---------------------------------------------------------------------------
+     DEFAULT TASKS (v5.3 model)
+  --------------------------------------------------------------------------- */
   const defaultTasks = [
     {
       id: 1,
       title: "Prepare Scope Summary",
+      assignedPerson: null,
       status: "Not Started",
-      assigned: null,
-      history: []
+      entries: [],
     },
     {
       id: 2,
       title: "Initial Risk Scan",
+      assignedPerson: null,
       status: "Not Started",
-      assigned: null,
-      history: []
+      entries: [],
     },
     {
       id: 3,
       title: "Stakeholder Mapping",
+      assignedPerson: null,
       status: "Not Started",
-      assigned: null,
-      history: []
+      entries: [],
     }
   ];
 
-  /* -------------------------------------------------------------------
+  /* ---------------------------------------------------------------------------
      LOAD / SAVE
-  ------------------------------------------------------------------- */
+  --------------------------------------------------------------------------- */
   const [tasks, setTasks] = useState(() => {
     try {
-      const saved = localStorage.getItem("tasks_v3_assign");
+      const saved = localStorage.getItem("tasks_v53");
       return saved ? JSON.parse(saved) : defaultTasks;
     } catch {
       return defaultTasks;
@@ -61,25 +70,19 @@ export default function PreProject() {
   });
 
   useEffect(() => {
-    localStorage.setItem("tasks_v3_assign", JSON.stringify(tasks));
+    localStorage.setItem("tasks_v53", JSON.stringify(tasks));
   }, [tasks]);
 
-  /* -------------------------------------------------------------------
-     POPUP + OVERLAY STATE
-  ------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------------
+     POPUP + OVERLAY CONTROL
+  --------------------------------------------------------------------------- */
   const [popupVisible, setPopupVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
 
-  /* -------------------------------------------------------------------
-     SCROLL LOCK
-  ------------------------------------------------------------------- */
   const lockScroll = () => { document.body.style.overflow = "hidden"; };
   const unlockScroll = () => { document.body.style.overflow = ""; };
 
-  /* -------------------------------------------------------------------
-     OPEN POPUP (Used for both Assign + Click)
-  ------------------------------------------------------------------- */
   const openPopup = (task) => {
     setActiveTask(task);
     setPopupVisible(true);
@@ -89,107 +92,119 @@ export default function PreProject() {
   const closePopup = () => {
     setPopupVisible(false);
     setActiveTask(null);
-    setOverlayVisible(false);
     unlockScroll();
   };
 
-  /* -------------------------------------------------------------------
-     USER CLICKS ASSIGN IN TASKLINE
-  ------------------------------------------------------------------- */
-  const handleAssignInTaskline = (task) => {
+  const openOverlay = () => setOverlayVisible(true);
+  const closeOverlay = () => setOverlayVisible(false);
+
+  /* ---------------------------------------------------------------------------
+     CLICK TASK → OPEN POPUP
+  --------------------------------------------------------------------------- */
+  const handleTaskClick = (task) => {
     openPopup(task);
-    setOverlayVisible(true);    // open personnel overlay immediately
   };
 
-  /* -------------------------------------------------------------------
-     CHANGE PERSON (Popup button)
-  ------------------------------------------------------------------- */
-  const handleChangePerson = () => {
-    setOverlayVisible(true);
-  };
-
-  /* -------------------------------------------------------------------
-     PERSON SELECTED FROM OVERLAY
-  ------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------------
+     PERSON SELECTED
+  --------------------------------------------------------------------------- */
   const handlePersonSelected = (name) => {
     if (!activeTask) return;
 
-    const timestamp = new Date().toLocaleString();
+    const timestamp = Date.now();
 
     const updatedTasks = tasks.map((t) => {
       if (t.id !== activeTask.id) return t;
 
       return {
         ...t,
-        assigned: name,
+        assignedPerson: name,
         status: "In Progress",
-        history: [
-          ...t.history,
-          `• Assigned to ${name} – ${timestamp}`
+        entries: [
+          ...t.entries,
+          { text: `• Assigned to ${name}`, timestamp }
         ]
       };
     });
 
     setTasks(updatedTasks);
 
-    // Update popup view
-    const updatedTask = updatedTasks.find(t => t.id === activeTask.id);
-    setActiveTask(updatedTask);
+    // Update popup content immediately
+    const updated = updatedTasks.find(t => t.id === activeTask.id);
+    setActiveTask(updated);
 
-    // Close overlay, keep popup open
-    setOverlayVisible(false);
+    closeOverlay();   // popup remains visible
   };
 
-  /* -------------------------------------------------------------------
+  /* ---------------------------------------------------------------------------
+     UPDATE TASK FROM POPUP (entries, status, etc.)
+  --------------------------------------------------------------------------- */
+  const updateTaskFromPopup = (updatedTask) => {
+    const updatedTasks = tasks.map((t) =>
+      t.id === updatedTask.id ? updatedTask : t
+    );
+
+    setTasks(updatedTasks);
+
+    // Sync popup content
+    setActiveTask(updatedTask);
+  };
+
+  /* ---------------------------------------------------------------------------
      RENDER
-  ------------------------------------------------------------------- */
+  --------------------------------------------------------------------------- */
   return (
     <div className="preproject-container">
 
-      {/* ================================================================
-         POPUP
-      ================================================================ */}
+      {/* --------------------------- POPUP --------------------------- */}
       <TaskPopup
         visible={popupVisible}
         task={activeTask}
         onClose={closePopup}
-        onChangePerson={handleChangePerson}
+        onRequestPersonChange={openOverlay}
+        onUpdateTask={updateTaskFromPopup}
       />
 
-      {/* ================================================================
-         PERSONNEL OVERLAY
-      ================================================================ */}
-      {overlayVisible && (
-        <PersonnelOverlay
-          onSelect={handlePersonSelected}
-          onClose={() => setOverlayVisible(false)}
-        />
-      )}
+      {/* ---------------------- PERSONNEL OVERLAY -------------------- */}
+      <PersonnelOverlay
+        visible={overlayVisible}
+        people={people}
+        onSelect={handlePersonSelected}
+        onClose={closeOverlay}
+      />
 
-      {/* ================================================================
-         HEADER
-      ================================================================ */}
+      {/* --------------------------- HEADER --------------------------- */}
       <div className="preproject-header">Pre-Project Workspace</div>
 
-      {/* ================================================================
-         TASK LIST
-      ================================================================ */}
+      {/* ---------------------- TASK LIST ---------------------------- */}
       <div className="preproject-tasklist">
         {tasks.map((task) => (
-          <div key={task.id} className="preproject-taskline">
+          <div
+            key={task.id}
+            className="preproject-taskline"
+            onClick={() => handleTaskClick(task)}
+          >
+            {/* STATUS DOT + TITLE */}
+            <div className="task-title">
+              {task.status === "In Progress" && (
+                <span className="status-dot amber"></span>
+              )}
+              {task.title}
+            </div>
 
-            <div className="task-title">{task.title}</div>
-
-            {/* ASSIGN BUTTON (only before assignment) */}
-            {!task.assigned && (
+            {/* ASSIGN BUTTON (shown only before assignment) */}
+            {!task.assignedPerson && (
               <button
                 className="assign-btn"
-                onClick={() => handleAssignInTaskline(task)}
+                onClick={(e) => {
+                  e.stopPropagation();   // prevent popup opening twice
+                  openPopup(task);
+                  openOverlay();
+                }}
               >
                 Assign
               </button>
             )}
-
           </div>
         ))}
       </div>

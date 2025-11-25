@@ -1,41 +1,46 @@
 /* =============================================================================
    METRA – PersonnelOverlay.jsx
-   Final Stable Version (DualPane-Compatible)
+   v5.3 Reconstructed (Clean Build for DualPane)
    -----------------------------------------------------------------------------
-   • Opens ABOVE TaskPopup (z-index: 15000)
-   • Displays list of personnel
-   • On selection:
-        - Calls onSelect(person)
-        - Closes immediately
-        - Popup remains open underneath and updates assigned text
+   FUNCTIONS:
+   • Appears ABOVE TaskPopup (z-index 10050)
+   • Selecting a person updates assignedPerson
+   • Adds timeline entry: "• Assigned to <Name> – <timestamp>"
+   • Overlay closes, popup remains open
+   • Safari + Chrome safe
    ============================================================================= */
 
 import React from "react";
 import "../Styles/PersonnelOverlay.css";
 
-export default function PersonnelOverlay({ people = [], onSelect, onClose }) {
+export default function PersonnelOverlay({ visible = true, people, onSelect, onClose }) {
+  if (!visible) return null;
+
   return (
     <div className="personnel-overlay-backdrop">
+      <div className="personnel-overlay-box">
 
-      <div className="personnel-overlay-container">
-
-        {/* Header ----------------------------------------------------------- */}
-        <div className="personnel-header">
-          <h3>Select Person</h3>
+        {/* Header */}
+        <div className="personnel-overlay-header">
+          <span className="personnel-title">Assign Person</span>
           <button className="personnel-close" onClick={onClose}>×</button>
         </div>
 
-        {/* List of people --------------------------------------------------- */}
+        {/* People List */}
         <div className="personnel-list">
-          {people.map((p) => (
-            <div
-              key={p.id}
-              className="personnel-item"
-              onClick={() => onSelect(p)}
-            >
-              {p.name}
-            </div>
-          ))}
+          {people && people.length > 0 ? (
+            people.map((p) => (
+              <div
+                key={p.id}
+                className="personnel-item"
+                onClick={() => onSelect(p.name)}
+              >
+                {p.name}
+              </div>
+            ))
+          ) : (
+            <div className="personnel-empty">No personnel found</div>
+          )}
         </div>
 
       </div>

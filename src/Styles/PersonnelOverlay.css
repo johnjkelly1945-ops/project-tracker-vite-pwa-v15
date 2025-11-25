@@ -1,43 +1,50 @@
 /* =============================================================================
    METRA – PersonnelOverlay.css
-   Final Stable Version (DualPane-Compatible)
+   v5.3 Reconstructed (Clean Build for DualPane)
    -----------------------------------------------------------------------------
-   Overlay MUST sit above TaskPopup.
-   Popup uses z-index: 9999 → Overlay must be higher.
+   PURPOSE:
+   • Full-screen blur/dim background
+   • Personnel selection box centered above TaskPopup
+   • Higher z-index than popup (10050)
+   • Safe on Safari + Chrome
    ============================================================================= */
 
+/* --- Backdrop -------------------------------------------------------------- */
 .personnel-overlay-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 15000;              /* CRITICAL: Higher than TaskPopup (9999) */
-  background: rgba(0, 0, 0, 0.40);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 80px;           /* Same top offset as popup for consistency */
+  padding-top: 120px;   /* ensure it sits above popup */
+  z-index: 10050;       /* popup = 9999, personnel = above */
 }
 
-/* Container --------------------------------------------------------------- */
-.personnel-overlay-container {
-  width: 420px;
-  max-height: 80vh;
+/* --- Box ------------------------------------------------------------------- */
+.personnel-overlay-box {
+  width: 380px;
+  max-height: calc(100vh - 200px);
   background: #ffffff;
   border-radius: 12px;
-  overflow-y: auto;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
-  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: fadeOverlay 0.15s ease-out;
 }
 
-/* Header ----------------------------------------------------------------- */
-.personnel-header {
+/* --- Header ---------------------------------------------------------------- */
+.personnel-overlay-header {
+  background: #1e3a8a;
+  color: white;
+  padding: 14px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
 }
 
-.personnel-header h3 {
-  margin: 0;
+.personnel-title {
   font-size: 18px;
   font-weight: 600;
 }
@@ -45,22 +52,41 @@
 .personnel-close {
   background: transparent;
   border: none;
-  font-size: 28px;
+  color: white;
+  font-size: 26px;
   cursor: pointer;
 }
 
-/* List ------------------------------------------------------------------- */
+/* --- People List ----------------------------------------------------------- */
 .personnel-list {
-  display: flex;
-  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 400px;
 }
 
 .personnel-item {
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 14px;
+  font-size: 16px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
   cursor: pointer;
+  color: #1e293b;
 }
 
 .personnel-item:hover {
   background: #e2e8f0;
+}
+
+.personnel-empty {
+  color: #64748b;
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* --- Animations ------------------------------------------------------------ */
+@keyframes fadeOverlay {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

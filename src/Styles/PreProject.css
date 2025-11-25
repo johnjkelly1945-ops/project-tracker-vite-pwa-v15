@@ -176,3 +176,18 @@
   font-size: 1.2rem;
   cursor: pointer;
 }
+/* ======================================================================
+   STATUS DOT (v5.3 – Active Task Indicator)
+   ====================================================================== */
+
+.status-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-dot.amber {
+  background-color: #f59e0b; /* Amber In-Progress indicator */
+}
