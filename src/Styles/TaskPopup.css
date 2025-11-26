@@ -1,145 +1,149 @@
-/* =============================================================================
-   METRA – TaskPopup.css
-   v5.3 Reconstructed (Clean Build for DualPane)
-   -----------------------------------------------------------------------------
-   • Standard v5.3 popup width (~520px)
-   • Scrollable log panel
-   • Footer spacing fixes
-   • Blinking cursor animation
-   • Proper z-index layering (below PersonnelOverlay)
-   • Safari + Chrome stable layout
-   ============================================================================= */
+/* ======================================================================
+   METRA – TaskPopup.css (v6.2 STRONG VERSION)
+   Forces correct popup styling even if global CSS overrides exist.
+   ====================================================================== */
 
-/* --- Backdrop -------------------------------------------------------------- */
-.popup-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 80px;
-  z-index: 9999;
+/* --- Overlay ----------------------------------------------------------- */
+.tp-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0,0,0,0.45) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
 }
 
-/* --- Popup Container ------------------------------------------------------- */
-.popup-container {
-  width: 520px;
-  max-height: calc(100vh - 160px);
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  animation: popupFadeIn 0.15s ease-out;
+/* --- Popup Window ------------------------------------------------------ */
+.tp-window {
+  background: #ffffff !important;
+  width: 520px !important;
+  max-width: 90% !important;
+  border-radius: 14px !important;
+  padding: 22px !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.32) !important;
+  animation: tp-fade-in 0.18s ease-out !important;
+  font-family: system-ui, sans-serif !important;
+  position: relative !important;
+  z-index: 100000 !important;
 }
 
-/* --- Header ---------------------------------------------------------------- */
-.popup-header {
-  background: #1e40af;
-  color: white;
-  padding: 14px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* --- Fade-in animation ------------------------------------------------- */
+@keyframes tp-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0px); }
 }
 
-.popup-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+/* --- Header ------------------------------------------------------------ */
+.tp-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 18px !important;
 }
 
-.popup-assigned {
-  margin-right: auto;
-  margin-left: 20px;
-  font-size: 15px;
-  font-weight: 500;
+.tp-header h3 {
+  margin: 0 !important;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
 }
 
-.popup-close {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 28px;
-  cursor: pointer;
+.tp-close-btn {
+  background: none !important;
+  border: none !important;
+  font-size: 1.8rem !important;
+  cursor: pointer !important;
+  color: #555 !important;
 }
 
-/* --- Log Panel ------------------------------------------------------------- */
-.log-scroll-area {
-  padding: 18px 22px;
-  flex: 1;
-  overflow-y: auto;
+.tp-close-btn:hover {
+  color: #000 !important;
 }
 
-.log-heading {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: #1e293b;
+/* --- Sections ---------------------------------------------------------- */
+.tp-section {
+  margin-bottom: 22px !important;
 }
 
-.log-entry {
-  margin-bottom: 12px;
-  font-size: 15px;
-  color: #334155;
+.tp-label {
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
 }
 
-.log-timestamp {
-  font-style: italic;
-  color: #64748b;
-  margin-left: 4px;
+.tp-person-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
 
-/* --- Blinking Cursor ------------------------------------------------------- */
-.log-cursor {
-  font-weight: bold;
-  font-size: 18px;
-  color: #1e293b;
-  animation: blink 1s step-start infinite;
-  margin-top: 6px;
+.tp-person-name {
+  color: #333 !important;
+  font-size: 1.05rem !important;
 }
 
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
+.tp-change-btn {
+  background: #1666c5 !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
 }
 
-/* --- Footer ---------------------------------------------------------------- */
-.popup-footer {
-  padding: 16px;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+.tp-change-btn:hover {
+  background: #0e4c94 !important;
 }
 
-.footer-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
+/* --- Governance Button Grid ------------------------------------------- */
+.tp-governance-row {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 10px !important;
+  margin-bottom: 26px !important;
 }
 
-.footer-row span {
-  cursor: pointer;
-  color: #1e293b;
-  font-size: 15px;
-  padding: 4px 8px;
+.tp-gov-btn {
+  background: #f0f2f5 !important;
+  border: 1px solid #d4d7dc !important;
+  border-radius: 6px !important;
+  padding: 10px 0 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
 }
 
-.footer-row span:hover {
-  background: #e2e8f0;
-  border-radius: 6px;
+.tp-gov-btn:hover {
+  background: #e0e2e5 !important;
 }
 
-/* --- Animation ------------------------------------------------------------- */
-@keyframes popupFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* --- Footer Action Bar ------------------------------------------------ */
+.tp-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-top: 28px !important;
+}
+
+.tp-footer-btn {
+  flex: 1 !important;
+  margin-right: 10px !important;
+  background: #d9e9fd !important;
+  border: 1px solid #bcd4f6 !important;
+  color: #0f408f !important;
+  padding: 10px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+}
+
+.tp-footer-btn:last-child {
+  margin-right: 0 !important;
+}
+
+.tp-delete {
+  background: #ffe3e3 !important;
+  border-color: #ffb8b8 !important;
+  color: #b80000 !important;
 }

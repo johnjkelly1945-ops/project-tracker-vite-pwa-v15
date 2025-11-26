@@ -1,193 +1,135 @@
 /* ======================================================================
    METRA – PreProject.css
-   v4.6B.14 – Logic Reintegration (Stage 7)
+   Version: v6.2 – Restored for clean standalone + future DualPane use
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Clean PreProject visual layout
-   ✔ Supports independent scroll regions
-   ✔ Compatible with DualPane v3.9 alignment
-   ✔ Includes classes for Personnel + Popup integration
+   ✔ Safe-scoped PreProject styles (pp- prefix)
+   ✔ Clean typography and spacing
+   ✔ Stable task rows
+   ✔ Clear status badges
+   ✔ Footer styling isolated
+   ✔ Does not interfere with DualPane when reattached
    ====================================================================== */
 
-/* --- Container -------------------------------------------------------- */
-.preproject-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 10px;
-  background: #ffffff;
-  overflow-y: auto;
-  border-top: 1px solid #e2e8f0;
-}
-
-/* --- Header ----------------------------------------------------------- */
-.preproject-header {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #1e293b;
-}
-
-/* --- Task List -------------------------------------------------------- */
-.preproject-tasklist {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.preproject-taskline {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
+/* --- Wrapper ----------------------------------------------------------- */
+.preproject-wrapper {
+  padding: 20px;
+  font-family: system-ui, sans-serif;
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  min-height: calc(100vh - 140px); /* Header + FilterBar clearance */
 }
 
-.task-title {
-  font-size: 0.95rem;
-  color: #0f172a;
-}
-
-.task-status {
-  font-size: 0.85rem;
-  color: #475569;
-}
-
-/* ======================================================================
-   PERSONNEL OVERLAY (Dormant until Stage 4 activation)
-   ====================================================================== */
-
-.personnel-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.personnel-header {
-  display: flex;
-  justify-content: space-between;
+/* --- Header ------------------------------------------------------------ */
+.pp-header h2 {
+  margin: 0 0 20px 0;
+  color: #1a1a1a;
+  font-size: 1.6rem;
   font-weight: 600;
-  margin-bottom: 10px;
 }
 
-.personnel-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.personnel-line {
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 5px;
-  background: #f1f5f9;
-}
-
-.personnel-line:hover {
-  background: #e2e8f0;
-  cursor: pointer;
-}
-
-.personnel-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-/* ======================================================================
-   PERSONNEL DETAIL (Dormant until Stage 4 activation)
-   ====================================================================== */
-
-.personnel-detail {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.personnel-detail-header {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.personnel-detail-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-/* ======================================================================
-   TASK POPUP (Stage 5 active, wired in stage 6)
-   ====================================================================== */
-
-.taskpopup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.taskpopup-window {
-  width: 360px;
-  background: #ffffff;
-  padding: 18px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-}
-
-.taskpopup-header {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.taskpopup-body {
+/* --- Task List --------------------------------------------------------- */
+.pp-tasklist {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-bottom: 32px;
 }
 
-.taskpopup-title {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.taskpopup-status {
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.taskpopup-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
+/* --- Task Row ---------------------------------------------------------- */
+.pp-task-row {
+  background: white;
+  border: 1px solid #d0d4d9;
+  padding: 14px 16px;
+  border-radius: 8px;
   cursor: pointer;
-}
-/* ======================================================================
-   STATUS DOT (v5.3 – Active Task Indicator)
-   ====================================================================== */
-
-.status-dot {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.status-dot.amber {
-  background-color: #f59e0b; /* Amber In-Progress indicator */
+.pp-task-row:hover {
+  background: #f0f4ff;
+  border-color: #b7c8f7;
+}
+
+/* --- Task Title -------------------------------------------------------- */
+.pp-task-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #222;
+}
+
+/* --- Assigned Person --------------------------------------------------- */
+.pp-task-person {
+  font-size: 0.9rem;
+  color: #444;
+  margin-left: 20px;
+  white-space: nowrap;
+}
+
+/* --- Status Badge ------------------------------------------------------ */
+.pp-task-status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Status colours */
+.pp-task-status.not-started {
+  background: #e8ecf6;
+  color: #2d4d8a;
+}
+
+.pp-task-status.in-progress {
+  background: #fff4d0;
+  color: #8a6d00;
+}
+
+.pp-task-status.completed {
+  background: #d7f5d7;
+  color: #106410;
+}
+
+.pp-task-status.flagged {
+  background: #ffe2e2;
+  color: #a30000;
+}
+
+.pp-task-status.open {
+  background: #e9f5ff;
+  color: #115c8f;
+}
+
+/* Handle the class names generated by JS replacement */
+.pp-task-status.not-started,
+.pp-task-status.in-progress,
+.pp-task-status.completed,
+.pp-task-status.flagged,
+.pp-task-status.open {
+  /* all covered above */
+}
+
+/* --- Footer ------------------------------------------------------------ */
+.pp-footer-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.pp-footer-btn {
+  background: #eef2f6;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #d2d6da;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  transition: 0.15s;
+}
+
+.pp-footer-btn:hover {
+  background: #e0e5eb;
 }

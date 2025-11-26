@@ -1,74 +1,62 @@
-/* ============================================================================
+/* ======================================================================
    METRA – App.jsx
-   v6.1 – Repository Mode Wiring (PreProjectFooter → DualPane → App)
-   ========================================================================= */
+   Version: v6.2 – Clean Shell (No DualPane, No Legacy Footer)
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Provides a clean module wrapper during v6.2 reintegration
+   ✔ Removes old dual-pane layout contamination
+   ✔ Ensures no second footer appears
+   ✔ Keeps routing simple: PreProject + Repository
+   ✔ Ready for reinsertion into DualPane once stable
+   ====================================================================== */
 
 import React, { useState } from "react";
-import DualPane from "./components/DualPane.jsx";
+import PreProject from "./components/PreProject.jsx";
+import RepositoryModule from "./components/RepositoryModule.jsx";
+import ModuleHeader from "./components/ModuleHeader.jsx";
 import FilterBar from "./components/FilterBar.jsx";
-import TemplateLinks from "./components/TemplateLinks.jsx";
 
-import "./Styles/App.v2.css";
-import "./Styles/DualPane.css";
-import "./Styles/FilterBar.css";
+import "./Styles/App.css";   /* OPTIONAL – depends on your setup */
 
 export default function App() {
-  /* ------------------------------------------------------------
-     MODE: "preproject" | "repository"
-  ------------------------------------------------------------ */
-  const [mode, setMode] = useState("preproject");
+  const [activeModule, setActiveModule] = useState("preproject");
 
-  const showPreProject = () => setMode("preproject");
-  const showRepository = () => setMode("repository");
+  /* -------------------------------------------------------------------
+     Switch top-level module cleanly
+     ------------------------------------------------------------------- */
+  const loadPreProject = () => setActiveModule("preproject");
+  const loadRepository = () => setActiveModule("repository");
 
   return (
-    <div className="app-container">
+    <div className="app-root">
 
-      {/* ------------------------------------------------------------
-          GLOBAL HEADER
-      ------------------------------------------------------------ */}
-      <header className="global-header">
-        METRA – PreProject
-      </header>
+      {/* ================================================================
+           Global Header
+         ================================================================ */}
+      <ModuleHeader
+        loadPreProject={loadPreProject}
+        loadRepository={loadRepository}
+      />
 
-      {/* ------------------------------------------------------------
-          FILTER BAR (hidden in repository mode)
-      ------------------------------------------------------------ */}
-      {mode === "preproject" && (
-        <div className="filter-bar-container">
-          <FilterBar />
-        </div>
-      )}
+      {/* ================================================================
+           Filter Bar (active in PreProject only)
+         ================================================================ */}
+      {activeModule === "preproject" && <FilterBar />}
 
-      {/* ------------------------------------------------------------
-          MAIN WORKSPACE
-      ------------------------------------------------------------ */}
-      {mode === "preproject" && (
-        <DualPane
-          onViewRepository={showRepository}
-        />
-      )}
+      {/* ================================================================
+           MODULE BODY (standalone for now)
+         ================================================================ */}
+      <div className="module-container">
 
-      {/* ------------------------------------------------------------
-          REPOSITORY MODE
-      ------------------------------------------------------------ */}
-      {mode === "repository" && (
-        <div className="repository-wrapper">
-          <div className="repository-return-bar">
-            <button
-              className="repository-return-btn"
-              onClick={showPreProject}
-            >
-              ← Back to PreProject Workspace
-            </button>
-          </div>
+        {activeModule === "preproject" && (
+          <PreProject />
+        )}
 
-          <div className="repository-content">
-            <TemplateLinks />
-          </div>
-        </div>
-      )}
+        {activeModule === "repository" && (
+          <RepositoryModule />
+        )}
 
+      </div>
     </div>
   );
 }
