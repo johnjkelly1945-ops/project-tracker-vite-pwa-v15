@@ -1,50 +1,36 @@
-// src/components/ModuleHeader.jsx
 import React from "react";
-import { setWindowStatus } from "../utils/windowTracker";
+import "../Styles/ModuleHeader.css";
 
-export default function ModuleHeader({ moduleName }) {
-  const handleClose = () => {
-    setWindowStatus(moduleName.toLowerCase(), false);
-    window.close();
-  };
+export default function ModuleHeader({ loadPreProject, loadRepository }) {
 
-  const goToSummary = () => {
-    window.location.href = "/";
-  };
-
-  const headerStyle = {
-    background: "#003366",
-    color: "white",
-    padding: "10px 20px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "2px solid #0055aa",
-    fontFamily: "Arial, sans-serif",
-  };
-
-  const buttonStyle = {
-    background: "#0055aa",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    padding: "6px 12px",
-    cursor: "pointer",
-    marginLeft: "10px",
-  };
+  console.log(">>> ModuleHeader.jsx from COMPONENTS loaded");
 
   return (
-    <div style={headerStyle}>
-      <div>
-        <strong>{moduleName}</strong> Module
-      </div>
-      <div>
-        <button style={buttonStyle} onClick={goToSummary}>
-          Return to Summary
+    <div className="mh-wrapper">
+      <div className="mh-title">METRA</div>
+
+      <div className="mh-buttons">
+
+        <button
+          className="mh-btn"
+          onClick={() => {
+            console.log(">>> PreProject button clicked (COMPONENTS)");
+            loadPreProject();
+          }}
+        >
+          Pre-Project
         </button>
-        <button style={buttonStyle} onClick={handleClose}>
-          Close Window
+
+        <button
+          className="mh-btn"
+          onClick={() => {
+            console.log(">>> Repository button clicked (COMPONENTS)");
+            loadRepository();
+          }}
+        >
+          Repository
         </button>
+
       </div>
     </div>
   );

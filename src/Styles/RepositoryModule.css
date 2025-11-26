@@ -8,6 +8,9 @@
    ✔ Simple, readable layout
    ✔ Non-intrusive – does not affect PreProject or DualPane
    ====================================================================== */
+.repo-wrapper {
+  background: yellow !important;
+}
 
 /* --- Wrapper ----------------------------------------------------------- */
 .repo-wrapper {
