@@ -1,62 +1,70 @@
 /* ======================================================================
    METRA – App.jsx
-   v6.3 – Restore Proper PreProject → DualPane Architecture
+   v6.3 DualPane Integration (Corrected)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ App manages only high-level module switching
-   ✔ PreProject owns: tasks, scrolling, popup, dualpane
-   ✔ Repository remains isolated and stable
-   ✔ Cleanest and safest structure for ongoing reintegration
+   ✔ Ensures PreProject always loads THROUGH DualPane
+   ✔ Removes any direct <PreProject /> rendering
+   ✔ Keeps Repository accessible from top navigation
+   ✔ Manages global module state
+   ✔ Renders FilterBar only in PreProject mode
    ====================================================================== */
 
 import React, { useState } from "react";
 
-import ModuleHeader from "./components/ModuleHeader.jsx";
-import FilterBar from "./components/FilterBar.jsx";
-
-import PreProject from "./components/PreProject.jsx";
+import DualPane from "./components/DualPane.jsx";
 import RepositoryModule from "./components/RepositoryModule.jsx";
+import FilterBar from "./components/FilterBar.jsx";
 
 import "./Styles/App.css";
 
 export default function App() {
-
-  console.log(">>> App.jsx (v6.3 Restore PreProject)");
-
-  /* ---------------------------------------------------------------
-     MODULE SWITCHING
-     --------------------------------------------------------------- */
   const [activeModule, setActiveModule] = useState("preproject");
 
-  const loadPreProject = () => setActiveModule("preproject");
-  const loadRepository = () => setActiveModule("repository");
-
   return (
-    <div className="app-root">
+    <div className="app-container">
 
-      {/* ===== GLOBAL HEADER ===== */}
-      <ModuleHeader
-        loadPreProject={loadPreProject}
-        loadRepository={loadRepository}
-      />
+      {/* ------------------------------------------------------------
+         GLOBAL HEADER
+         ------------------------------------------------------------ */}
+      <header className="global-header">
+        <h1 className="app-title">METRA</h1>
 
-      {/* ===== FILTER BAR (PreProject only) ===== */}
+        <div className="module-tabs">
+          <button
+            className={`module-btn ${
+              activeModule === "preproject" ? "active" : ""
+            }`}
+            onClick={() => setActiveModule("preproject")}
+          >
+            Pre-Project
+          </button>
+
+          <button
+            className={`module-btn ${
+              activeModule === "repository" ? "active" : ""
+            }`}
+            onClick={() => setActiveModule("repository")}
+          >
+            Repository
+          </button>
+        </div>
+      </header>
+
+
+      {/* ------------------------------------------------------------
+         FILTER BAR (only shown for PreProject)
+         ------------------------------------------------------------ */}
       {activeModule === "preproject" && <FilterBar />}
 
-      {/* ===== MAIN BODY ===== */}
-      <div className="module-container">
 
-        {/* === PREPROJECT ROOT === */}
-        {activeModule === "preproject" && (
-          <PreProject />
-        )}
-
-        {/* === REPOSITORY === */}
-        {activeModule === "repository" && (
-          <RepositoryModule />
-        )}
-
-      </div>
+      {/* ------------------------------------------------------------
+         WORKSPACE CONTENT AREA
+         ------------------------------------------------------------ */}
+      <main className="workspace">
+        {activeModule === "preproject" && <DualPane />}
+        {activeModule === "repository" && <RepositoryModule />}
+      </main>
 
     </div>
   );

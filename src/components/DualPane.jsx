@@ -1,44 +1,59 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Reintegration Mode – v6.2 (Option A: Restore Known-Good Structure)
+   v6.3 – Corrected for full PreProject reintegration (v7 A2)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Hosts the two independent scroll panes (Mgmt / Dev)
-   ✔ Receives tasks + handlers from App.jsx
-   ✔ Ensures clicking any task opens TaskPopup
-   ✔ NO NEW LOGIC ADDED – clean restoration only
+   ✔ Left pane = PreProject (fully functional)
+   ✔ Right pane = Development Tasks (empty until repository injection)
+   ✔ Independent scroll areas
+   ✔ Sticky headers inside each pane
+   ✔ Compatible with v6.3 CSS offsets
+   ✔ Clean integration with PreProject.jsx (A2 build)
    ====================================================================== */
 
 import React from "react";
+import PreProject from "./PreProject.jsx";
 
-
-import PaneMgmt from "./PaneMgmt.jsx";
-import PaneDev from "./PaneDev.jsx";
-
-// Correct CSS for dual-pane mode
 import "../Styles/DualPane.css";
 
-
-
-export default function DualPane({ mgmtTasks, devTasks, onTaskClick }) {
-
-  console.log(">>> DualPane.jsx loaded – Mgmt:", mgmtTasks?.length || 0, 
-              " Dev:", devTasks?.length || 0);
-
+export default function DualPane() {
   return (
     <div className="dual-pane-workspace">
 
-      {/* LEFT – MANAGEMENT PANE */}
-      <PaneMgmt
-        tasks={mgmtTasks}
-        onTaskClick={onTaskClick}
-      />
+      {/* ------------------------------------------------------------
+          LEFT PANE – MANAGEMENT TASKS (ACTIVE PreProject Workspace)
+         ------------------------------------------------------------ */}
+      <div className="pane mgmt-pane">
 
-      {/* RIGHT – DEVELOPMENT PANE */}
-      <PaneDev
-        tasks={devTasks}
-        onTaskClick={onTaskClick}
-      />
+        <div className="pane-header">
+          <h2>Management Tasks</h2>
+        </div>
+
+        {/* Scrollable area */}
+        <div className="pane-content">
+          <PreProject />
+        </div>
+
+      </div>
+
+
+      {/* ------------------------------------------------------------
+          RIGHT PANE – DEVELOPMENT TASKS
+          (empty until repository templates GET injected)
+         ------------------------------------------------------------ */}
+      <div className="pane dev-pane">
+
+        <div className="pane-header">
+          <h2>Development Tasks</h2>
+        </div>
+
+        {/* Scrollable area */}
+        <div className="pane-content dev-empty">
+          {/* Placeholder text until integration */}
+          <p className="dev-placeholder">No Development Tasks yet</p>
+        </div>
+
+      </div>
 
     </div>
   );

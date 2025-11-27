@@ -1,83 +1,227 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   v6.3 – Fully Restored PreProject → DualPane Architecture
+   v7 Rebuild (A2) – Based on v4.6B.13 logic, adapted for DualPane v6.3
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Owns ALL task logic
-   ✔ Provides mgmt/dev task lists
-   ✔ Provides popup logic
-   ✔ Provides test tasks for DualPane scrolling
-   ✔ Clean, stable, no repository logic
+   ✔ Restore full PreProject functionality
+   ✔ Maintain v4.6B.13 behaviour (the last verified working version)
+   ✔ Adapt structure for new DualPane v6.3 containers
+   ✔ Restore:
+       - Task list
+       - Add Task popup
+       - Personnel overlay + detail
+       - Task popup (TaskWorkingWindow)
+       - Status + flags
+       - Footer action bar
+       - Governance button strip
+       - LocalStorage persistence
+       - Click-to-open logic
    ====================================================================== */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-import DualPane from "./DualPane.jsx";
+import AddItemPopup from "./AddItemPopup.jsx";
+import PersonnelOverlay from "./PersonnelOverlay.jsx";
+import PersonnelDetail from "./PersonnelDetail.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 
 import "../Styles/PreProject.css";
 
 export default function PreProject() {
 
-  console.log(">>> PreProject.jsx loaded (v6.3)");
-
-  /* -------------------------------------------------------------------
-     DEFAULT TASKS (includes scroll-test block)
-     ------------------------------------------------------------------- */
+  /* ============================================================
+     DEFAULT TASKS (only used on first load)
+     ============================================================ */
   const defaultTasks = [
-    { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
-    { id: 2, title: "Initial Risk Scan", status: "Not Started" },
-    { id: 3, title: "Stakeholder Mapping", status: "In Progress" },
-
-    // LARGE BLOCK FOR SCROLL TESTING
-    { id: 10, title: "Test Task A", status: "Not Started" },
-    { id: 11, title: "Test Task B", status: "Not Started" },
-    { id: 12, title: "Test Task C", status: "Not Started" },
-    { id: 13, title: "Test Task D", status: "Not Started" },
-    { id: 14, title: "Test Task E", status: "Not Started" },
-    { id: 15, title: "Test Task F", status: "Not Started" },
-    { id: 16, title: "Test Task G", status: "Not Started" },
-    { id: 17, title: "Test Task H", status: "Not Started" },
-    { id: 18, title: "Test Task I", status: "Not Started" },
-    { id: 19, title: "Test Task J", status: "Not Started" }
+    { id: 1, title: "Prepare Scope Summary", status: "Not Started", person: "", flag: "" },
+    { id: 2, title: "Initial Risk Scan", status: "Not Started", person: "", flag: "" },
+    { id: 3, title: "Stakeholder Mapping", status: "Not Started", person: "", flag: "" }
   ];
 
-  /* -------------------------------------------------------------------
-     SPLIT INTO MGMT / DEV
-     ------------------------------------------------------------------- */
-  const mgmtTasks = defaultTasks.slice(0, 5);
-  const devTasks  = defaultTasks.slice(5);
+  /* ============================================================
+     LOCAL STORAGE LOAD
+     ============================================================ */
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks_v3");
+    return saved ? JSON.parse(saved) : defaultTasks;
+  });
 
-  /* -------------------------------------------------------------------
-     POPUP CONTROL
-     ------------------------------------------------------------------- */
-  const [activeTask, setActiveTask] = useState(null);
+  useEffect(() => {
+    localStorage.setItem("tasks_v3", JSON.stringify(tasks));
+  }, [tasks]);
 
-  const handleTaskClick = (task) => {
-    console.log(">>> PreProject: Task clicked:", task.title);
-    setActiveTask(task);
+
+  /* ============================================================
+     POPUP STATES
+     ============================================================ */
+  const [showAddItem, setShowAddItem] = useState(false);
+  const [showPersonnel, setShowPersonnel] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [selectedTaskForPopup, setSelectedTaskForPopup] = useState(null);
+
+
+  /* ============================================================
+     EVENT HANDLERS
+     ============================================================ */
+  const openAddItem = () => setShowAddItem(true);
+  const closeAddItem = () => setShowAddItem(false);
+
+  const openPersonnel = (taskId) => {
+    setSelectedTaskId(taskId);
+    setShowPersonnel(true);
   };
 
-  const closePopup = () => setActiveTask(null);
+  const closePersonnel = () => {
+    setShowPersonnel(false);
+    setSelectedPerson(null);
+    setSelectedTaskId(null);
+  };
 
-  /* -------------------------------------------------------------------
+  const handleAddTask = (taskObj) => {
+    const newTask = {
+      id: Date.now(),
+      title: taskObj.title,
+      status: "Not Started",
+      person: "",
+      flag: ""
+    };
+    setTasks([...tasks, newTask]);
+  };
+
+  const handleSelectPerson = (name) => {
+    if (!selectedTaskId) return;
+
+    const updated = tasks.map((t) =>
+      t.id === selectedTaskId ? { ...t, person: name } : t
+    );
+    setTasks(updated);
+    closePersonnel();
+  };
+
+  const handleOpenTaskPopup = (task) => {
+    setSelectedTaskForPopup(task);
+  };
+
+  const handleCloseTaskPopup = () => {
+    setSelectedTaskForPopup(null);
+  };
+
+  const updateTask = (id, fields) => {
+    const updated = tasks.map((t) =>
+      t.id === id ? { ...t, ...fields } : t
+    );
+    setTasks(updated);
+  };
+
+
+  /* ============================================================
      RENDER
-     ------------------------------------------------------------------- */
+     – "pane-content" is the correct v6.3 DualPane scroll container
+     – All elements now sit safely inside scroll boundaries
+     ============================================================ */
   return (
-    <div className="preproject-container">
+    <div className="preproject-pane">
 
-      {/* === DUAL PANE === */}
-      <DualPane
-        mgmtTasks={mgmtTasks}
-        devTasks={devTasks}
-        onTaskClick={handleTaskClick}
-      />
+      {/* --------------------------------------------------------
+          HEADER (sits under FilterBar – already sticky in layout)
+         -------------------------------------------------------- */}
+      <div className="preproject-header">
+        <h2 className="pp-title">Pre-Project Workspace</h2>
+        <button className="pp-add-btn" onClick={openAddItem}>+ Add Task</button>
+      </div>
 
-      {/* === POPUP === */}
-      {activeTask && (
-        <TaskPopup task={activeTask} onClose={closePopup} />
+
+      {/* --------------------------------------------------------
+          TASK LIST (inside scrollable container)
+         -------------------------------------------------------- */}
+      <div className="pane-content">
+
+        {tasks.map((task) => (
+          <div key={task.id} className="pp-task-item">
+
+            {/* LEFT COLUMN – Title (opens TaskPopup) */}
+            <div
+              className="pp-task-title"
+              onClick={() => handleOpenTaskPopup(task)}
+            >
+              {task.title}
+            </div>
+
+            {/* MIDDLE – Assigned Person (opens PersonnelDetail) */}
+            <div
+              className="pp-task-person"
+              onClick={() => openPersonnel(task.id)}
+            >
+              {task.person || "Assign Person"}
+            </div>
+
+            {/* RIGHT – Status dot */}
+            <div className={`pp-status-dot status-${task.status.replace(" ", "").toLowerCase()}`}></div>
+
+          </div>
+        ))}
+
+      </div>
+
+
+      {/* --------------------------------------------------------
+          FOOTER ACTION BAR (sticky)
+         -------------------------------------------------------- */}
+      <div className="preproject-footer">
+        <div className="footer-buttons">
+          <button>CC</button>
+          <button>QC</button>
+          <button>Risk</button>
+          <button>Issue</button>
+          <button>Escalate</button>
+          <button>Email</button>
+          <button>Docs</button>
+          <button>Template</button>
+        </div>
+      </div>
+
+
+      {/* --------------------------------------------------------
+          ADD TASK POPUP
+         -------------------------------------------------------- */}
+      {showAddItem && (
+        <AddItemPopup
+          onAdd={handleAddTask}
+          onClose={closeAddItem}
+        />
       )}
 
+      {/* --------------------------------------------------------
+          PERSONNEL OVERLAY
+         -------------------------------------------------------- */}
+      {showPersonnel && (
+        <PersonnelOverlay
+          onSelect={handleSelectPerson}
+          onClose={closePersonnel}
+        />
+      )}
+
+      {/* --------------------------------------------------------
+          PERSONNEL DETAIL (when clicking a name inside popup)
+         -------------------------------------------------------- */}
+      {selectedPerson && (
+        <PersonnelDetail
+          person={selectedPerson}
+          onClose={() => setSelectedPerson(null)}
+        />
+      )}
+
+      {/* --------------------------------------------------------
+          TASK POPUP (TaskWorkingWindow)
+         -------------------------------------------------------- */}
+      {selectedTaskForPopup && (
+        <TaskPopup
+          task={selectedTaskForPopup}
+          onClose={handleCloseTaskPopup}
+          onUpdate={(fields) => updateTask(selectedTaskForPopup.id, fields)}
+        />
+      )}
     </div>
   );
 }
