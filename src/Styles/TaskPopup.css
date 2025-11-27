@@ -1,65 +1,61 @@
 /* ======================================================================
    METRA – TaskPopup.css
-   v7 A2 – Corrected for DualPane v6.3 + PreProject reintegration
+   v7 A6 – Final Notes Engine Styling
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Visible overlay above all panes
-   ✔ Popup window centered
-   ✔ Internal scroll-safe layout
-   ✔ Header, governance sections, and footer fully styled
-   ✔ Safari + Chrome stable behaviour
+   ✔ Centered popup window
+   ✔ Dimmed background overlay
+   ✔ Scrollable notes area
+   ✔ Two footer rows (Gov + Actions)
+   ✔ Clean METRA spacing + borders
    ====================================================================== */
 
-
-/* ---------------------------------------------------------
-   OVERLAY BACKDROP
-   --------------------------------------------------------- */
+/* --- OVERLAY --------------------------------------------------------- */
 .taskpopup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.45); /* darkened backdrop */
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 9999;
+  justify-content: center;
+  z-index: 5000;
 }
 
-
-/* ---------------------------------------------------------
-   POPUP WINDOW
-   --------------------------------------------------------- */
+/* --- POPUP WINDOW ---------------------------------------------------- */
 .taskpopup-window {
+  width: 480px;
+  max-height: 80vh;
   background: #ffffff;
-  width: 520px;
-  max-height: 85vh;
   border-radius: 10px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-
-/* ---------------------------------------------------------
-   HEADER
-   --------------------------------------------------------- */
+/* --- HEADER ---------------------------------------------------------- */
 .tp-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
-  background: #e9f0fa;
-  border-bottom: 1px solid #c8d6e8;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .tp-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d3557;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.tp-person {
+  font-size: 14px;
+  color: #1d4ed8;
+  cursor: pointer;
+  margin-right: auto;
+  margin-left: 20px;
 }
 
 .tp-close-btn {
@@ -69,90 +65,70 @@
   cursor: pointer;
 }
 
-
-/* ---------------------------------------------------------
-   BODY
-   --------------------------------------------------------- */
+/* --- BODY ------------------------------------------------------------ */
 .tp-body {
   flex: 1;
-  overflow-y: auto;
-  padding: 16px 18px 24px 18px;
+  display: flex;
+  flex-direction: column;
 }
 
-.tp-section {
-  margin-bottom: 24px;
+.tp-body h4 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
 }
 
-.tp-section h4 {
-  margin: 0 0 10px 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #223041;
-}
-
-
-/* ---------------------------------------------------------
-   STATUS BUTTONS
-   --------------------------------------------------------- */
-.tp-status-buttons button,
-.tp-flag-buttons button,
-.tp-gov-buttons button {
-  background: #f1f5f9;
-  border: 1px solid #cdd6e0;
+.tp-note-draft {
+  width: 100%;
+  height: 260px;
+  resize: none;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  padding: 6px 10px;
-  margin: 4px;
-  font-size: 13px;
-  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  font-family: system-ui, sans-serif;
+  overflow-y: auto;
 }
 
-.tp-status-buttons button:hover,
-.tp-flag-buttons button:hover,
-.tp-gov-buttons button:hover {
-  background: #e3ebf4;
+/* --- FOOTER ---------------------------------------------------------- */
+.tp-footer {
+  margin-top: 15px;
 }
 
-
-/* ---------------------------------------------------------
-   GOVERNANCE BUTTON GRID
-   --------------------------------------------------------- */
-.tp-gov-buttons {
+/* Governance buttons row */
+.tp-gov-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin-bottom: 12px;
 }
 
-
-/* ---------------------------------------------------------
-   FOOTER
-   --------------------------------------------------------- */
-.tp-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 12px 16px;
-  border-top: 1px solid #c8d6e8;
-  background: #f8fafc;
-}
-
-.tp-footer-btn {
-  background: #f1f5f9;
-  border: 1px solid #cdd6e0;
+.tp-gov-row button {
+  padding: 6px 10px;
+  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  padding: 6px 12px;
   cursor: pointer;
   font-size: 13px;
 }
 
-.tp-footer-btn:hover {
-  background: #e6edf5;
+/* Action row */
+.tp-action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.tp-action-row button {
+  flex: 1;
+  padding: 8px;
+  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .tp-delete {
-  background: #ffe3e3;
-  border-color: #d19a9a;
-}
-
-.tp-delete:hover {
-  background: #ffd0d0;
+  background: #fee2e2;
+  border-color: #fecaca;
 }

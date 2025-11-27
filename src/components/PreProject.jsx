@@ -1,21 +1,6 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   v7 Rebuild (A2) – Based on v4.6B.13 logic, adapted for DualPane v6.3
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Restore full PreProject functionality
-   ✔ Maintain v4.6B.13 behaviour (the last verified working version)
-   ✔ Adapt structure for new DualPane v6.3 containers
-   ✔ Restore:
-       - Task list
-       - Add Task popup
-       - Personnel overlay + detail
-       - Task popup (TaskWorkingWindow)
-       - Status + flags
-       - Footer action bar
-       - Governance button strip
-       - LocalStorage persistence
-       - Click-to-open logic
+   v7 A2 – Adapted for DualPane v6.3 (CLEANED footer)
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -30,7 +15,7 @@ import "../Styles/PreProject.css";
 export default function PreProject() {
 
   /* ============================================================
-     DEFAULT TASKS (only used on first load)
+     DEFAULT TASKS
      ============================================================ */
   const defaultTasks = [
     { id: 1, title: "Prepare Scope Summary", status: "Not Started", person: "", flag: "" },
@@ -39,7 +24,7 @@ export default function PreProject() {
   ];
 
   /* ============================================================
-     LOCAL STORAGE LOAD
+     LOCAL STORAGE
      ============================================================ */
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks_v3");
@@ -50,20 +35,14 @@ export default function PreProject() {
     localStorage.setItem("tasks_v3", JSON.stringify(tasks));
   }, [tasks]);
 
-
-  /* ============================================================
-     POPUP STATES
-     ============================================================ */
+  /* POPUP STATES */
   const [showAddItem, setShowAddItem] = useState(false);
   const [showPersonnel, setShowPersonnel] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedTaskForPopup, setSelectedTaskForPopup] = useState(null);
 
-
-  /* ============================================================
-     EVENT HANDLERS
-     ============================================================ */
+  /* HANDLERS */
   const openAddItem = () => setShowAddItem(true);
   const closeAddItem = () => setShowAddItem(false);
 
@@ -117,30 +96,21 @@ export default function PreProject() {
 
   /* ============================================================
      RENDER
-     – "pane-content" is the correct v6.3 DualPane scroll container
-     – All elements now sit safely inside scroll boundaries
      ============================================================ */
   return (
     <div className="preproject-pane">
 
-      {/* --------------------------------------------------------
-          HEADER (sits under FilterBar – already sticky in layout)
-         -------------------------------------------------------- */}
+      {/* HEADER */}
       <div className="preproject-header">
         <h2 className="pp-title">Pre-Project Workspace</h2>
         <button className="pp-add-btn" onClick={openAddItem}>+ Add Task</button>
       </div>
 
-
-      {/* --------------------------------------------------------
-          TASK LIST (inside scrollable container)
-         -------------------------------------------------------- */}
+      {/* TASK LIST */}
       <div className="pane-content">
-
         {tasks.map((task) => (
           <div key={task.id} className="pp-task-item">
 
-            {/* LEFT COLUMN – Title (opens TaskPopup) */}
             <div
               className="pp-task-title"
               onClick={() => handleOpenTaskPopup(task)}
@@ -148,7 +118,6 @@ export default function PreProject() {
               {task.title}
             </div>
 
-            {/* MIDDLE – Assigned Person (opens PersonnelDetail) */}
             <div
               className="pp-task-person"
               onClick={() => openPersonnel(task.id)}
@@ -156,35 +125,13 @@ export default function PreProject() {
               {task.person || "Assign Person"}
             </div>
 
-            {/* RIGHT – Status dot */}
             <div className={`pp-status-dot status-${task.status.replace(" ", "").toLowerCase()}`}></div>
-
           </div>
         ))}
-
       </div>
 
 
-      {/* --------------------------------------------------------
-          FOOTER ACTION BAR (sticky)
-         -------------------------------------------------------- */}
-      <div className="preproject-footer">
-        <div className="footer-buttons">
-          <button>CC</button>
-          <button>QC</button>
-          <button>Risk</button>
-          <button>Issue</button>
-          <button>Escalate</button>
-          <button>Email</button>
-          <button>Docs</button>
-          <button>Template</button>
-        </div>
-      </div>
-
-
-      {/* --------------------------------------------------------
-          ADD TASK POPUP
-         -------------------------------------------------------- */}
+      {/* ADD TASK */}
       {showAddItem && (
         <AddItemPopup
           onAdd={handleAddTask}
@@ -192,9 +139,7 @@ export default function PreProject() {
         />
       )}
 
-      {/* --------------------------------------------------------
-          PERSONNEL OVERLAY
-         -------------------------------------------------------- */}
+      {/* PERSONNEL OVERLAY */}
       {showPersonnel && (
         <PersonnelOverlay
           onSelect={handleSelectPerson}
@@ -202,9 +147,7 @@ export default function PreProject() {
         />
       )}
 
-      {/* --------------------------------------------------------
-          PERSONNEL DETAIL (when clicking a name inside popup)
-         -------------------------------------------------------- */}
+      {/* PERSONNEL DETAIL */}
       {selectedPerson && (
         <PersonnelDetail
           person={selectedPerson}
@@ -212,16 +155,18 @@ export default function PreProject() {
         />
       )}
 
-      {/* --------------------------------------------------------
-          TASK POPUP (TaskWorkingWindow)
-         -------------------------------------------------------- */}
+      {/* TASK POPUP */}
       {selectedTaskForPopup && (
         <TaskPopup
           task={selectedTaskForPopup}
           onClose={handleCloseTaskPopup}
-          onUpdate={(fields) => updateTask(selectedTaskForPopup.id, fields)}
+          onUpdate={(fields) => updateTask(
+            selectedTaskForPopup.id,
+            fields.delete ? {} : fields
+          )}
         />
       )}
+
     </div>
   );
 }

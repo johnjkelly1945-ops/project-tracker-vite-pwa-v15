@@ -1,201 +1,55 @@
-/* =============================================================================
+/* ======================================================================
    METRA – AddItemPopup.jsx
-   Clean Rebuild – Guaranteed Valid JSX
-   ============================================================================= */
+   v7 A2 – restored from last verified stable logic (v4.6B.13)
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Popup for adding new tasks
+   ✔ Simple title input + validation
+   ✔ Clean overlay styling
+   ✔ Works with PreProject.jsx (A2)
+   ====================================================================== */
 
 import React, { useState } from "react";
 import "../Styles/AddItemPopup.css";
 
-export default function AddItemPopup({
-  visible,
-  onClose,
-  onCreateItem,
-  summaries
-}) {
-  if (!visible) return null;
-
+export default function AddItemPopup({ onAdd, onClose }) {
   const [title, setTitle] = useState("");
-  const [itemClass, setItemClass] = useState("management");
-  const [itemType, setItemType] = useState("summary");
-  const [taskRelationship, setTaskRelationship] = useState("independent");
-  const [selectedSummary, setSelectedSummary] = useState("");
 
-  const handleCreate = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (!title.trim()) return;
-
-    const newItem = {
-      id: Date.now(),
-      title: title.trim(),
-      itemClass,
-      itemType,
-      expanded: itemType === "summary",
-      parentId:
-        itemType === "task" &&
-        taskRelationship === "linked" &&
-        selectedSummary
-          ? Number(selectedSummary)
-          : null,
-      assignedPerson: null,
-      status: itemType === "task" ? "Not Started" : "Summary",
-      entries: []
-    };
-
-    onCreateItem(newItem);
+    onAdd({ title });
     onClose();
   };
 
-  const filteredSummaries = summaries.filter(
-    (s) => s.itemClass === itemClass
-  );
-
   return (
-    <div className="additem-backdrop">
-      <div className="additem-container">
+    <div className="additem-overlay">
+      <div className="additem-window">
 
         {/* HEADER */}
         <div className="additem-header">
-          <span>Create New Item</span>
-          <button className="additem-close" onClick={onClose}>×</button>
+          <h3>Add New Task</h3>
+          <button className="additem-close-btn" onClick={onClose}>✕</button>
         </div>
 
-        {/* BODY */}
-        <div className="additem-body">
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="additem-form">
 
-          {/* TITLE */}
-          <label className="additem-label">Title</label>
+          <label>Task Title</label>
           <input
-            className="additem-input"
             type="text"
             value={title}
+            placeholder="Enter task title"
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter title..."
+            className="additem-input"
+            autoFocus
           />
 
-          {/* ITEM CLASS */}
-          <label className="additem-label">Item Class</label>
-          <div className="additem-row">
-            <label className="additem-radio">
-              <input
-                type="radio"
-                name="itemClass"
-                value="management"
-                checked={itemClass === "management"}
-                onChange={() => setItemClass("management")}
-              />
-              Management
-            </label>
-
-            <label className="additem-radio">
-              <input
-                type="radio"
-                name="itemClass"
-                value="development"
-                checked={itemClass === "development"}
-                onChange={() => setItemClass("development")}
-              />
-              Development
-            </label>
-          </div>
-
-          {/* ITEM TYPE */}
-          <label className="additem-label">Item Type</label>
-          <div className="additem-row">
-            <label className="additem-radio">
-              <input
-                type="radio"
-                name="itemType"
-                value="summary"
-                checked={itemType === "summary"}
-                onChange={() => setItemType("summary")}
-              />
-              Summary
-            </label>
-
-            <label className="additem-radio">
-              <input
-                type="radio"
-                name="itemType"
-                value="task"
-                checked={itemType === "task"}
-                onChange={() => setItemType("task")}
-              />
-              Task
-            </label>
-          </div>
-
-          {/* TASK RELATIONSHIP */}
-          {itemType === "task" && (
-            <>
-              <label className="additem-label">Task Relationship</label>
-              <div className="additem-row">
-                <label className="additem-radio">
-                  <input
-                    type="radio"
-                    name="relationship"
-                    value="independent"
-                    checked={taskRelationship === "independent"}
-                    onChange={() => {
-                      setTaskRelationship("independent");
-                      setSelectedSummary("");
-                    }}
-                  />
-                  Independent
-                </label>
-
-                <label className="additem-radio">
-                  <input
-                    type="radio"
-                    name="relationship"
-                    value="linked"
-                    checked={taskRelationship === "linked"}
-                    onChange={() => setTaskRelationship("linked")}
-                  />
-                  Linked to Summary
-                </label>
-              </div>
-
-              {/* SUMMARY SELECTOR */}
-              {taskRelationship === "linked" && (
-                <div className="additem-summary-box">
-                  {filteredSummaries.length === 0 ? (
-                    <div className="additem-nosummary">
-                      No summaries available in this class.
-                      <br />
-                      Task will be independent.
-                    </div>
-                  ) : (
-                    <>
-                      <label className="additem-label">Choose Summary</label>
-                      <select
-                        className="additem-select"
-                        value={selectedSummary}
-                        onChange={(e) => setSelectedSummary(e.target.value)}
-                      >
-                        <option value="">Select…</option>
-                        {filteredSummaries.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.title}
-                          </option>
-                        ))}
-                      </select>
-                    </>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-
-        </div>
-
-        {/* FOOTER */}
-        <div className="additem-footer">
-          <button className="additem-btn cancel" onClick={onClose}>
-            Cancel
+          <button type="submit" className="additem-submit-btn">
+            Add Task
           </button>
-          <button className="additem-btn create" onClick={handleCreate}>
-            Create
-          </button>
-        </div>
+
+        </form>
 
       </div>
     </div>
