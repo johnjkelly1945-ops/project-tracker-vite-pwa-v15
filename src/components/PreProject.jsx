@@ -1,162 +1,83 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Version: v6.2 – Core Reintegration (Task Logic + Personnel + Status)
+   v6.3 – Fully Restored PreProject → DualPane Architecture
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Restores full PreProject task behaviour
-   ✔ Click task → opens TaskPopup
-   ✔ Personnel assignment using PersonnelOverlay (string-only)
-   ✔ Status workflow persisted to localStorage
-   ✔ Default tasks injected only if storage empty
-   ✔ Clean, dependency-safe structure with no history panel
+   ✔ Owns ALL task logic
+   ✔ Provides mgmt/dev task lists
+   ✔ Provides popup logic
+   ✔ Provides test tasks for DualPane scrolling
+   ✔ Clean, stable, no repository logic
    ====================================================================== */
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+
+import DualPane from "./DualPane.jsx";
 import TaskPopup from "./TaskPopup.jsx";
-import PersonnelOverlay from "./PersonnelOverlay.jsx";
-import PreProjectFooter from "./PreProjectFooter.jsx";
 
 import "../Styles/PreProject.css";
 
 export default function PreProject() {
 
+  console.log(">>> PreProject.jsx loaded (v6.3)");
+
   /* -------------------------------------------------------------------
-     1. DEFAULT TASKS (injected only if storage empty)
+     DEFAULT TASKS (includes scroll-test block)
      ------------------------------------------------------------------- */
   const defaultTasks = [
-    { id: "t1", title: "Prepare Scope Summary", status: "Not Started", person: "" },
-    { id: "t2", title: "Initial Risk Scan", status: "Not Started", person: "" },
-    { id: "t3", title: "Stakeholder Mapping", status: "Not Started", person: "" }
+    { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
+    { id: 2, title: "Initial Risk Scan", status: "Not Started" },
+    { id: 3, title: "Stakeholder Mapping", status: "In Progress" },
+
+    // LARGE BLOCK FOR SCROLL TESTING
+    { id: 10, title: "Test Task A", status: "Not Started" },
+    { id: 11, title: "Test Task B", status: "Not Started" },
+    { id: 12, title: "Test Task C", status: "Not Started" },
+    { id: 13, title: "Test Task D", status: "Not Started" },
+    { id: 14, title: "Test Task E", status: "Not Started" },
+    { id: 15, title: "Test Task F", status: "Not Started" },
+    { id: 16, title: "Test Task G", status: "Not Started" },
+    { id: 17, title: "Test Task H", status: "Not Started" },
+    { id: 18, title: "Test Task I", status: "Not Started" },
+    { id: 19, title: "Test Task J", status: "Not Started" }
   ];
 
   /* -------------------------------------------------------------------
-     2. LOAD tasks from localStorage
+     SPLIT INTO MGMT / DEV
      ------------------------------------------------------------------- */
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("tasks_v6_2");
-    return saved ? JSON.parse(saved) : defaultTasks;
-  });
+  const mgmtTasks = defaultTasks.slice(0, 5);
+  const devTasks  = defaultTasks.slice(5);
 
   /* -------------------------------------------------------------------
-     3. SAVE tasks to storage whenever they change
+     POPUP CONTROL
      ------------------------------------------------------------------- */
-  useEffect(() => {
-    localStorage.setItem("tasks_v6_2", JSON.stringify(tasks));
-  }, [tasks]);
+  const [activeTask, setActiveTask] = useState(null);
 
-  /* -------------------------------------------------------------------
-     4. Popup + Personnel Overlay controls
-     ------------------------------------------------------------------- */
-  const [activeTask, setActiveTask] = useState(null); // full task object
-  const [showPersonnel, setShowPersonnel] = useState(false);
-
-  /* -------------------------------------------------------------------
-     5. Update a task by id
-     ------------------------------------------------------------------- */
-  const updateTask = (id, updates) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    );
-  };
-
-  /* -------------------------------------------------------------------
-     6. Open popup from clicking the task row
-     ------------------------------------------------------------------- */
-  const openTask = (task) => {
+  const handleTaskClick = (task) => {
+    console.log(">>> PreProject: Task clicked:", task.title);
     setActiveTask(task);
   };
 
-  const closeTask = () => {
-    setActiveTask(null);
-  };
+  const closePopup = () => setActiveTask(null);
 
   /* -------------------------------------------------------------------
-     7. Personnel assignment
-     ------------------------------------------------------------------- */
-  const assignPerson = (name) => {
-    if (!activeTask) return;
-    updateTask(activeTask.id, { person: name });
-    setShowPersonnel(false);
-  };
-
-  /* -------------------------------------------------------------------
-     8. Status updates from footer
-     ------------------------------------------------------------------- */
-  const markComplete = () => {
-    if (!activeTask) return;
-    updateTask(activeTask.id, { status: "Completed" });
-    setActiveTask(null);
-  };
-
-  const deleteTask = () => {
-    if (!activeTask) return;
-    setTasks((prev) => prev.filter((t) => t.id !== activeTask.id));
-    setActiveTask(null);
-  };
-
-  /* -------------------------------------------------------------------
-     9. UI – TASK LIST
+     RENDER
      ------------------------------------------------------------------- */
   return (
-    <div className="preproject-wrapper">
+    <div className="preproject-container">
 
-      {/* ================================================================
-           HEADER BAR
-         ================================================================ */}
-      <div className="pp-header">
-        <h2>Pre-Project Workspace</h2>
-      </div>
+      {/* === DUAL PANE === */}
+      <DualPane
+        mgmtTasks={mgmtTasks}
+        devTasks={devTasks}
+        onTaskClick={handleTaskClick}
+      />
 
-      {/* ================================================================
-           TASK LIST
-         ================================================================ */}
-      <div className="pp-tasklist">
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            className="pp-task-row"
-            onClick={() => openTask(task)}
-          >
-            <div className="pp-task-title">{task.title}</div>
-
-            {task.person && (
-              <div className="pp-task-person">{task.person}</div>
-            )}
-
-            <div className={`pp-task-status ${task.status.replace(/\s+/g, "-").toLowerCase()}`}>
-              {task.status}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ================================================================
-           FOOTER – Static row (buttons inside popup)
-         ================================================================ */}
-      <PreProjectFooter />
-
-      {/* ================================================================
-           POPUP – Task Working Window
-         ================================================================ */}
+      {/* === POPUP === */}
       {activeTask && (
-        <TaskPopup
-          task={activeTask}
-          onClose={closeTask}
-          onAssignPerson={() => setShowPersonnel(true)}
-          onMarkComplete={markComplete}
-          onDelete={deleteTask}
-        />
+        <TaskPopup task={activeTask} onClose={closePopup} />
       )}
 
-      {/* ================================================================
-           PERSONNEL OVERLAY
-         ================================================================ */}
-      {showPersonnel && (
-        <PersonnelOverlay
-          onSelect={assignPerson}
-          onClose={() => setShowPersonnel(false)}
-        />
-      )}
     </div>
   );
 }

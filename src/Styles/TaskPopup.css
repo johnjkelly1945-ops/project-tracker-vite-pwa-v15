@@ -1,149 +1,89 @@
 /* ======================================================================
-   METRA – TaskPopup.css (v6.2 STRONG VERSION)
-   Forces correct popup styling even if global CSS overrides exist.
+   METRA – TaskPopup.css
+   v6.2 – Reintegration for DualPane Mode
+   ----------------------------------------------------------------------
+   Clean, stable popup layout
    ====================================================================== */
 
-/* --- Overlay ----------------------------------------------------------- */
 .tp-overlay {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0,0,0,0.45) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 99999 !important;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
 }
 
-/* --- Popup Window ------------------------------------------------------ */
 .tp-window {
-  background: #ffffff !important;
-  width: 520px !important;
-  max-width: 90% !important;
-  border-radius: 14px !important;
-  padding: 22px !important;
-  box-shadow: 0 10px 26px rgba(0,0,0,0.32) !important;
-  animation: tp-fade-in 0.18s ease-out !important;
-  font-family: system-ui, sans-serif !important;
-  position: relative !important;
-  z-index: 100000 !important;
+  width: 480px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* --- Fade-in animation ------------------------------------------------- */
-@keyframes tp-fade-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0px); }
-}
-
-/* --- Header ------------------------------------------------------------ */
 .tp-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  margin-bottom: 18px !important;
+  background: #0c3c78;
+  color: #fff;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.tp-header h3 {
-  margin: 0 !important;
-  font-size: 1.3rem !important;
-  font-weight: 600 !important;
+.tp-title {
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.tp-close-btn {
-  background: none !important;
-  border: none !important;
-  font-size: 1.8rem !important;
-  cursor: pointer !important;
-  color: #555 !important;
+.tp-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
 }
 
-.tp-close-btn:hover {
-  color: #000 !important;
+.tp-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-/* --- Sections ---------------------------------------------------------- */
 .tp-section {
-  margin-bottom: 22px !important;
+  display: flex;
+  flex-direction: column;
 }
 
 .tp-label {
-  font-weight: 600 !important;
-  margin-bottom: 6px !important;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 4px;
 }
 
-.tp-person-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
+.tp-value {
+  font-size: 1rem;
+  color: #000;
 }
 
-.tp-person-name {
-  color: #333 !important;
-  font-size: 1.05rem !important;
-}
-
-.tp-change-btn {
-  background: #1666c5 !important;
-  color: white !important;
-  border: none !important;
-  padding: 6px 12px !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-}
-
-.tp-change-btn:hover {
-  background: #0e4c94 !important;
-}
-
-/* --- Governance Button Grid ------------------------------------------- */
-.tp-governance-row {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 10px !important;
-  margin-bottom: 26px !important;
-}
-
-.tp-gov-btn {
-  background: #f0f2f5 !important;
-  border: 1px solid #d4d7dc !important;
-  border-radius: 6px !important;
-  padding: 10px 0 !important;
-  font-size: 0.9rem !important;
-  cursor: pointer !important;
-}
-
-.tp-gov-btn:hover {
-  background: #e0e2e5 !important;
-}
-
-/* --- Footer Action Bar ------------------------------------------------ */
 .tp-footer {
-  display: flex !important;
-  justify-content: space-between !important;
-  margin-top: 28px !important;
+  padding: 14px;
+  display: flex;
+  justify-content: center;
+  background: #f8f8f8;
+  border-top: 1px solid #e2e2e2;
 }
 
-.tp-footer-btn {
-  flex: 1 !important;
-  margin-right: 10px !important;
-  background: #d9e9fd !important;
-  border: 1px solid #bcd4f6 !important;
-  color: #0f408f !important;
-  padding: 10px !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  font-weight: 500 !important;
-  text-align: center !important;
-}
-
-.tp-footer-btn:last-child {
-  margin-right: 0 !important;
-}
-
-.tp-delete {
-  background: #ffe3e3 !important;
-  border-color: #ffb8b8 !important;
-  color: #b80000 !important;
+.tp-btn-return {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  background: #0c3c78;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
 }

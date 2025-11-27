@@ -1,104 +1,54 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   Version: v6.2 – Clean Working Window (No History)
+   v6.2 – Reintegration for DualPane Mode
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Opens when a task row is clicked
-   ✔ Shows task title + assigned person
-   ✔ Allows personnel change
-   ✔ Governance button row (non-functional placeholders)
-   ✔ Bottom action bar (Mark Complete, Delete, Close)
-   ✔ Passes all actions back to PreProject.jsx safely
+   Stable minimal popup:
+   ✔ Opens when a task is clicked
+   ✔ Shows title + person + status
+   ✔ Provides Return to Workspace button
+   ✔ Footer placeholder for governance buttons (disabled for now)
    ====================================================================== */
 
 import React from "react";
 import "../Styles/TaskPopup.css";
 
-export default function TaskPopup({
-  task,
-  onClose,
-  onAssignPerson,
-  onMarkComplete,
-  onDelete
-}) {
+export default function TaskPopup({ task, onClose }) {
   if (!task) return null;
 
   return (
     <div className="tp-overlay">
       <div className="tp-window">
 
-        {/* ================================================================
-             HEADER
-           ================================================================ */}
+        {/* ===== Header ===== */}
         <div className="tp-header">
-          <h3>{task.title}</h3>
-          <button className="tp-close-btn" onClick={onClose}>×</button>
+          <div className="tp-title">{task.title}</div>
+          <button className="tp-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
-        {/* ================================================================
-             ASSIGNED PERSON
-           ================================================================ */}
-        <div className="tp-section">
-          <div className="tp-label">Assigned To:</div>
+        {/* ===== Body ===== */}
+        <div className="tp-body">
 
-          <div className="tp-person-row">
-            <span className="tp-person-name">
-              {task.person && task.person !== "" ? task.person : "Unassigned"}
-            </span>
-
-            <button
-              className="tp-change-btn"
-              onClick={onAssignPerson}
-            >
-              Change
-            </button>
+          <div className="tp-section">
+            <div className="tp-label">Assigned To:</div>
+            <div className="tp-value">{task.person || "Unassigned"}</div>
           </div>
-        </div>
 
-        {/* ================================================================
-             GOVERNANCE BUTTON ROW
-           ================================================================ */}
-        <div className="tp-governance-row">
-
-          {/* Top row: CC / QC / Risk / Issue / Escalate / Email / Docs / Template */}
-          <button className="tp-gov-btn">CC</button>
-          <button className="tp-gov-btn">QC</button>
-          <button className="tp-gov-btn">Risk</button>
-          <button className="tp-gov-btn">Issue</button>
-          <button className="tp-gov-btn">Escalate</button>
-          <button className="tp-gov-btn">Email</button>
-          <button className="tp-gov-btn">Docs</button>
-          <button className="tp-gov-btn">Template</button>
+          <div className="tp-section">
+            <div className="tp-label">Status:</div>
+            <div className="tp-value">{task.status}</div>
+          </div>
 
         </div>
 
-        {/* ================================================================
-             BOTTOM ACTION BAR
-           ================================================================ */}
+        {/* ===== Footer ===== */}
         <div className="tp-footer">
-
-          <button
-            className="tp-footer-btn"
-            onClick={onAssignPerson}
-          >
-            Change Person
+          <button className="tp-btn-return" onClick={onClose}>
+            Return to Workspace
           </button>
-
-          <button
-            className="tp-footer-btn"
-            onClick={onMarkComplete}
-          >
-            Mark Completed
-          </button>
-
-          <button
-            className="tp-footer-btn tp-delete"
-            onClick={onDelete}
-          >
-            Delete
-          </button>
-
         </div>
+
       </div>
     </div>
   );

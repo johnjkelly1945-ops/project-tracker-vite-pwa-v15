@@ -1,34 +1,93 @@
 /* ======================================================================
-   METRA – DualPane.css
-   Version: v6.2 – Reintegration Shell
+   METRA – DualPane.css (Unified v6.3 Stable)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Clean two-pane layout
-   ✔ Independent scrolling
-   ✔ Stable header offsets
-   ✔ No bleed into other modules
+   • Final validated DualPane layout for Safari + Chrome
+   • Twin-column layout (Mgmt + Dev)
+   • Independent pane scrolling
+   • Sticky pane headers
+   • Sticky FilterBar compatibility
+   • Removes all conflicts between old CSS files
    ====================================================================== */
 
-.dual-pane-wrapper {
+/* ---- Reset ----------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ---- Dual Pane Root Container ---------------------------------------- */
+/* Height subtracts: METRA header + FilterBar */
+.dual-pane-workspace {
   display: flex;
-  height: calc(100vh - 140px); /* header + filter bar */
+  flex-direction: row;
+  width: 100%;
+  height: calc(100vh - 140px);
   overflow: hidden;
   background: #f8fafc;
 }
 
-.dual-pane-pane {
+/* ---- Each Pane -------------------------------------------------------- */
+.pane {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border-right: 1px solid #d7dce3;
+  overflow: hidden;    /* Keeps scroll strictly inside .pane-content */
+  border-right: 1px solid #d0d7e2;
 }
 
-.dual-pane-pane:last-child {
+.pane:last-child {
   border-right: none;
 }
 
-.dual-pane-inner {
+/* ---- Sticky Pane Header ----------------------------------------------- */
+.pane-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #ffffff;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #d0d7e2;
+}
+
+/* ---- Scrollable Task Content ------------------------------------------ */
+.pane-content {
+  flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 12px 16px;
+  background: #ffffff;
+}
+
+/* ---- Task Row ---------------------------------------------------------- */
+.task-row {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.task-row:hover {
+  background: #e2e8f0;
+}
+
+/* ---- Status text ------------------------------------------------------- */
+.task-status {
+  font-size: 0.78rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* ---- Fullscreen Mode --------------------------------------------------- */
+.pane.fullscreen {
+  flex: 1 1 100%;
+}
+
+.pane.fullscreen ~ .pane {
+  display: none !important;
 }

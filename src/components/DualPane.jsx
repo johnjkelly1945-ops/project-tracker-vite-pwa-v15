@@ -1,64 +1,44 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Phase 6.2b – Full DualPane Reintegration (Management + Development)
+   Reintegration Mode – v6.2 (Option A: Restore Known-Good Structure)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Restores left/right dual-pane layout
-   ✔ Accepts mgmtTasks + devTasks from PreProject
-   ✔ Handles popup open/close for tasks
-   ✔ Ensures independent scrolling & clean layout
-   ✔ No repository routing in this phase
+   ✔ Hosts the two independent scroll panes (Mgmt / Dev)
+   ✔ Receives tasks + handlers from App.jsx
+   ✔ Ensures clicking any task opens TaskPopup
+   ✔ NO NEW LOGIC ADDED – clean restoration only
    ====================================================================== */
 
-import React, { useState } from "react";
+import React from "react";
+
+
 import PaneMgmt from "./PaneMgmt.jsx";
 import PaneDev from "./PaneDev.jsx";
-import TaskPopup from "./TaskPopup.jsx";
+
+// Correct CSS for dual-pane mode
 import "../Styles/DualPane.css";
 
-export default function DualPane({ mgmtTasks, devTasks, onTaskUpdate }) {
-  console.log(">>> DualPane.jsx mounted (Phase 6.2b)");
 
-  // Active popup data
-  const [activeTask, setActiveTask] = useState(null);
 
-  const openPopup = (task) => {
-    console.log(">>> Opening popup for task:", task.title);
-    setActiveTask(task);
-  };
+export default function DualPane({ mgmtTasks, devTasks, onTaskClick }) {
 
-  const closePopup = () => {
-    console.log(">>> Closing popup");
-    setActiveTask(null);
-  };
-
-  const updateTask = (updatedTask) => {
-    onTaskUpdate(updatedTask); // passes up to PreProject
-  };
+  console.log(">>> DualPane.jsx loaded – Mgmt:", mgmtTasks?.length || 0, 
+              " Dev:", devTasks?.length || 0);
 
   return (
     <div className="dual-pane-workspace">
 
-      {/* MANAGEMENT PANE (left) */}
+      {/* LEFT – MANAGEMENT PANE */}
       <PaneMgmt
         tasks={mgmtTasks}
-        onTaskClick={openPopup}
+        onTaskClick={onTaskClick}
       />
 
-      {/* DEVELOPMENT PANE (right) */}
+      {/* RIGHT – DEVELOPMENT PANE */}
       <PaneDev
         tasks={devTasks}
-        onTaskClick={openPopup}
+        onTaskClick={onTaskClick}
       />
-
-      {/* POPUP RENDER */}
-      {activeTask && (
-        <TaskPopup
-          task={activeTask}
-          onClose={closePopup}
-          onUpdate={updateTask}
-        />
-      )}
 
     </div>
   );

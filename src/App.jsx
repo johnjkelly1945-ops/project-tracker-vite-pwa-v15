@@ -1,47 +1,63 @@
 /* ======================================================================
    METRA – App.jsx
-   Phase 6.2b – DualPane Reintegration Shell
+   v6.3 – Restore Proper PreProject → DualPane Architecture
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Restores full DualPane layout (Management + Development)
-   ✔ Removes temporary single-pane workspace
-   ✔ Provides clean header & filter bar
-   ✔ PreProject now drives task streams to both panes
-   ✔ No repository routing in this phase
+   ✔ App manages only high-level module switching
+   ✔ PreProject owns: tasks, scrolling, popup, dualpane
+   ✔ Repository remains isolated and stable
+   ✔ Cleanest and safest structure for ongoing reintegration
    ====================================================================== */
 
-import React from "react";
+import React, { useState } from "react";
+
 import ModuleHeader from "./components/ModuleHeader.jsx";
 import FilterBar from "./components/FilterBar.jsx";
-import DualPane from "./components/DualPane.jsx";
+
 import PreProject from "./components/PreProject.jsx";
+import RepositoryModule from "./components/RepositoryModule.jsx";
 
 import "./Styles/App.css";
 
 export default function App() {
-  console.log(">>> App.jsx – DualPane Reintegration Mode");
 
-  /* -------------------------------------------------------------------
-     PreProject remains the logic core:
-     - Loads tasks
-     - Filters tasks
-     - Handles assignment, status updates, etc.
-     - Derives mgmt/dev task arrays for the DualPane
-     ------------------------------------------------------------------- */
+  console.log(">>> App.jsx (v6.3 Restore PreProject)");
+
+  /* ---------------------------------------------------------------
+     MODULE SWITCHING
+     --------------------------------------------------------------- */
+  const [activeModule, setActiveModule] = useState("preproject");
+
+  const loadPreProject = () => setActiveModule("preproject");
+  const loadRepository = () => setActiveModule("repository");
 
   return (
     <div className="app-root">
 
-      {/* Global Header */}
-      <ModuleHeader />
+      {/* ===== GLOBAL HEADER ===== */}
+      <ModuleHeader
+        loadPreProject={loadPreProject}
+        loadRepository={loadRepository}
+      />
 
-      {/* PreProject Filter Bar (sticky, positioned above DualPane) */}
-      <FilterBar />
+      {/* ===== FILTER BAR (PreProject only) ===== */}
+      {activeModule === "preproject" && <FilterBar />}
 
-      {/* Main Workspace: DualPane fed from PreProject */}
+      {/* ===== MAIN BODY ===== */}
       <div className="module-container">
-        <PreProject layout="dual" />
+
+        {/* === PREPROJECT ROOT === */}
+        {activeModule === "preproject" && (
+          <PreProject />
+        )}
+
+        {/* === REPOSITORY === */}
+        {activeModule === "repository" && (
+          <RepositoryModule />
+        )}
+
       </div>
+
     </div>
   );
 }

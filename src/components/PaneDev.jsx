@@ -1,31 +1,28 @@
-/* ======================================================================
-   METRA – PaneDev.jsx
-   Phase 3A – Step 3
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Click to highlight tasks
-   ✔ Safe isolated behaviour
-   ====================================================================== */
-
 import React from "react";
 
-export default function PaneDev({ selectedTask, setSelectedTask }) {
+export default function PaneDev({ tasks, onTaskClick }) {
   return (
-    <div className="task-list">
-      {[...Array(50)].map((_, i) => {
-        const id = `dev-${i}`;
-        const isSelected = selectedTask === id;
+    <div className="pane">
 
-        return (
+      {/* Sticky Header */}
+      <div className="pane-header">
+        Development Tasks
+      </div>
+
+      {/* Scrollable Body */}
+      <div className="pane-content">
+        {tasks?.map((t) => (
           <div
-            key={id}
-            className={`task-item ${isSelected ? "selected-task" : ""}`}
-            onClick={() => setSelectedTask(id)}
+            key={t.id}
+            className="task-row"
+            onClick={() => onTaskClick(t)}
           >
-            Development Task {i + 1}
+            <div>{t.title}</div>
+            <div className="task-status">{t.status}</div>
           </div>
-        );
-      })}
+        ))}
+      </div>
+
     </div>
   );
 }
