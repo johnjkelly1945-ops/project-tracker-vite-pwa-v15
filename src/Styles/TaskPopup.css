@@ -1,134 +1,125 @@
 /* ======================================================================
    METRA – TaskPopup.css
-   v7 A6 – Final Notes Engine Styling
+   Stable Layout – Full Window + Correct Spacing
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Centered popup window
-   ✔ Dimmed background overlay
-   ✔ Scrollable notes area
-   ✔ Two footer rows (Gov + Actions)
-   ✔ Clean METRA spacing + borders
+   Matches the clean popup you reverted to.
+   No shrinkage, correct header, correct textarea.
    ====================================================================== */
 
-/* --- OVERLAY --------------------------------------------------------- */
 .taskpopup-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 5000;
+  align-items: center;
+  z-index: 9999;
 }
 
-/* --- POPUP WINDOW ---------------------------------------------------- */
 .taskpopup-window {
-  width: 480px;
-  max-height: 80vh;
+  width: 650px;
+  max-width: 90%;
   background: #ffffff;
   border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  padding: 20px 25px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  font-family: system-ui, sans-serif;
 }
 
-/* --- HEADER ---------------------------------------------------------- */
+/* HEADER -------------------------------------------------------------- */
+
 .tp-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: center;
+  margin-bottom: 18px;
 }
 
 .tp-header h3 {
   margin: 0;
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .tp-person {
-  font-size: 14px;
-  color: #1d4ed8;
+  margin-left: auto;
+  margin-right: 15px;
+  color: #0b5ed7;
   cursor: pointer;
-  margin-right: auto;
-  margin-left: 20px;
+}
+
+.tp-person:hover {
+  text-decoration: underline;
 }
 
 .tp-close-btn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
+  line-height: 1;
+  padding: 0;
 }
 
-/* --- BODY ------------------------------------------------------------ */
-.tp-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+/* BODY --------------------------------------------------------------- */
 
 .tp-body h4 {
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   font-size: 16px;
+  font-weight: 600;
 }
 
 .tp-note-draft {
   width: 100%;
-  height: 260px;
-  resize: none;
+  height: 160px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
-  font-family: system-ui, sans-serif;
+  resize: vertical;
+  white-space: pre-wrap;
   overflow-y: auto;
+  background: #ffffff;
 }
 
-/* --- FOOTER ---------------------------------------------------------- */
+/* FOOTER -------------------------------------------------------------- */
+
 .tp-footer {
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
-/* Governance buttons row */
-.tp-gov-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.tp-gov-row button {
-  padding: 6px 10px;
-  background: #e2e8f0;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-/* Action row */
+.tp-gov-row,
 .tp-action-row {
   display: flex;
   gap: 10px;
+  margin-bottom: 15px;
 }
 
+.tp-gov-row button,
 .tp-action-row button {
   flex: 1;
-  padding: 8px;
-  background: #e2e8f0;
-  border: 1px solid #cbd5e1;
+  padding: 10px 0;
+  font-size: 14px;
+  background: #eef2f7;
+  border: 1px solid #cfd7df;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+}
+
+.tp-gov-row button:hover,
+.tp-action-row button:hover {
+  background: #e2e8f0;
 }
 
 .tp-delete {
-  background: #fee2e2;
-  border-color: #fecaca;
+  background: #ffe5e5;
+  border: 1px solid #ffbaba !important;
+}
+
+.tp-delete:hover {
+  background: #ffd8d8;
 }

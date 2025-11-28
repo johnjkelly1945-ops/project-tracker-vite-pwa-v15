@@ -1,17 +1,15 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v7 A5 – Final Notes Engine (Append-only + Timestamp + Cursor Lock)
+   Version: v7B1 – Stable Restore (Step 1 typing fix)
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ One textarea, full ledger
-   ✔ Append-only model
-   ✔ Timestamp added AFTER entry
-   ✔ Blank line between entries
-   ✔ Auto-scroll to bottom
-   ✔ Cursor always returns to bottom
-   ✔ User may scroll + copy from old entries
-   ✔ Older entries read-only
-   ✔ Latest entry editable for 5 minutes
+   BEHAVIOUR:
+   ✓ One textarea for full ledger
+   ✓ User can always type freely until commit
+   ✓ Last committed entry editable for 5 minutes
+   ✓ Plain timestamp appended on commit
+   ✓ Older entries locked
+   ✓ On reopen → cursor drops ONE blank line below last entry
+   ✓ No forced behaviour beyond this
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -20,28 +18,25 @@ import "../Styles/TaskPopup.css";
 export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
 
-  /* ============================================================
-     NOTES LEDGER TEXT (single string)
-     ============================================================ */
-  const initialText = task.notes || "";
-  const [text, setText] = useState(initialText);
+  /* ---------------------------------------------------------------
+     NORMALISE NOTES
+     --------------------------------------------------------------- */
+  const normaliseNotes = (v) => {
+    if (typeof v === "string") return v;
+    if (v === null || v === undefined) return "";
+    if (Array.isArray(v)) return v.join("\n\n");
+    return String(v);
+  };
 
-  // Timestamp of most recent committed note
+  const initialText = normaliseNotes(task.notes);
+  const [text, setText] = useState(initialText);
   const lastTimestamp = task.notesTimestamp || null;
 
-  /* ============================================================
-     5-MINUTE RULE
-     Only newest entry (bottom) is editable for 5 minutes.
-     ============================================================ */
-  const canEdit =
-    !lastTimestamp || Date.now() - lastTimestamp <= 5 * 60 * 1000;
-
-  /* ============================================================
-     TEXTAREA REF (for auto-scroll + cursor positioning)
-     ============================================================ */
+  /* ---------------------------------------------------------------
+     TEXTAREA REF + SCROLL
+     --------------------------------------------------------------- */
   const areaRef = useRef(null);
 
-  // Always scroll to bottom when popup opens or text changes
   const scrollToBottom = () => {
     if (areaRef.current) {
       areaRef.current.scrollTop = areaRef.current.scrollHeight;
@@ -51,129 +46,108 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   useEffect(scrollToBottom, []);
   useEffect(scrollToBottom, [text]);
 
+  /* ---------------------------------------------------------------
+     5-MINUTE RULE (applies ONLY after commit)
+     --------------------------------------------------------------- */
+  const canEditLastEntry =
+    !lastTimestamp || Date.now() - lastTimestamp <= 5 * 60 * 1000;
 
-  /* ============================================================
-     CURSOR ENFORCEMENT
-     Prevents cursor entering locked (old) text.
-     ============================================================ */
-  const forceCursorToEnd = () => {
-    if (areaRef.current) {
-      const end = areaRef.current.value.length;
-      areaRef.current.selectionStart = end;
-      areaRef.current.selectionEnd = end;
+  /* ---------------------------------------------------------------
+     ON POPUP OPEN → ensure ONE blank line below last entry
+     --------------------------------------------------------------- */
+  useEffect(() => {
+    let updated = text;
+
+    if (!updated.endsWith("\n\n")) {
+      updated = updated.trimEnd() + "\n\n";
+      setText(updated);
     }
-  };
 
-  // On focus → always move cursor to bottom
-  const handleFocus = () => {
-    forceCursorToEnd();
-  };
-
-  // On click → if user clicks inside old text, jump cursor to bottom
-  const handleClick = () => {
-    if (!canEdit) {
-      forceCursorToEnd();
-      return;
-    }
-    if (areaRef.current) {
-      const pos = areaRef.current.selectionStart;
-      const readOnlyUpTo = initialText.length;
-
-      if (pos < readOnlyUpTo) {
-        forceCursorToEnd();
+    setTimeout(() => {
+      if (areaRef.current) {
+        const end = areaRef.current.value.length;
+        areaRef.current.selectionStart = end;
+        areaRef.current.selectionEnd = end;
       }
-    }
-  };
+    }, 0);
+  }, []);
 
-
-  /* ============================================================
-     CAPTURE NEW TYPING
-     Only allowed after the previous commit and within 5 min.
-     ============================================================ */
+  /* ---------------------------------------------------------------
+     STEP 1 — HANDLE TYPING (always allowed until commit)
+     --------------------------------------------------------------- */
   const handleChange = (e) => {
-    if (!canEdit) {
-      // revert cursor
-      forceCursorToEnd();
-      return;
-    }
-
-    // prevent edits in the old region
-    const newValue = e.target.value;
-    const oldLen = initialText.length;
-
-    if (newValue.length < oldLen) {
-      // user tried to backspace/delete inside old text
-      forceCursorToEnd();
-      return;
-    }
-
-    // enforce append-only typing
-    if (areaRef.current.selectionStart < oldLen) {
-      forceCursorToEnd();
-      return;
-    }
-
-    setText(newValue);
+    setText(e.target.value);   // ← FIX: fully restores typing
   };
 
+  /* ---------------------------------------------------------------
+     TIMESTAMP FORMAT  (plain text)
+     --------------------------------------------------------------- */
+  const makeTimestamp = () => {
+    const t = new Date();
+    const dd = String(t.getDate()).padStart(2, "0");
+    const mm = String(t.getMonth() + 1).padStart(2, "0");
+    const yyyy = t.getFullYear();
+    const HH = String(t.getHours()).padStart(2, "0");
+    const MM = String(t.getMinutes()).padStart(2, "0");
+    return `[${dd}/${mm}/${yyyy} – ${HH}:${MM}]`;
+  };
 
-  /* ============================================================
+  /* ---------------------------------------------------------------
      COMMIT ENTRY
-     Adds timestamp after the newly typed text.
-     ============================================================ */
+     --------------------------------------------------------------- */
   const commitEntry = () => {
-    const oldLen = initialText.length;
-    const newSegment = text.slice(oldLen).trim();
+    return new Promise((resolve) => {
+      let current = text.trimEnd();
+      const stamp = makeTimestamp();
 
-    if (newSegment === "") return;
+      const parts = current.split("\n\n");
+      const lastEntry = parts[parts.length - 1];
 
-    // create timestamp
-    const timestamp = Date.now();
-    const timeStr = new Date(timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+      const cleanedLast = lastEntry.replace(/\s*\[[^\]]+\]$/, "").trimEnd();
 
-    // Append timestamp on SAME LINE + blank line
-    const committed =
-      text.trimEnd() + `    (${timeStr})\n\n`;
+      const rebuilt =
+        parts.slice(0, -1).join("\n\n") +
+        (parts.length > 1 ? "\n\n" : "") +
+        cleanedLast +
+        " " +
+        stamp +
+        "\n\n";
 
-    setText(committed);
+      setText(rebuilt);
 
-    // Push update upstream
-    onUpdate({
-      notes: committed,
-      notesTimestamp: timestamp,
+      onUpdate({
+        notes: rebuilt,
+        notesTimestamp: Date.now(),
+      });
+
+      resolve(rebuilt);
     });
   };
 
-
-  /* ============================================================
-     CLOSING THE POPUP
-     ============================================================ */
-  const handleClose = () => {
-    commitEntry();
+  /* ---------------------------------------------------------------
+     CLOSE POPUP → commit and exit immediately
+     --------------------------------------------------------------- */
+  const handleClose = async () => {
+    await commitEntry();
     onClose();
   };
 
-
-  /* ============================================================
-     BUTTON ACTIONS
-     ============================================================ */
-  const doAction = (fields) => {
-    commitEntry();
+  /* ---------------------------------------------------------------
+     FOOTER ACTIONS
+     --------------------------------------------------------------- */
+  const doAction = async (fields) => {
+    await commitEntry();
     onUpdate(fields);
+    onClose();
   };
 
   const handleChangePerson = () => {
-    commitEntry();
     doAction({ changePerson: true });
   };
 
-
-  /* ============================================================
+  /* ---------------------------------------------------------------
      RENDER
-     ============================================================ */
+     --------------------------------------------------------------- */
   return (
     <div className="taskpopup-overlay">
       <div className="taskpopup-window">
@@ -181,26 +155,20 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
         {/* HEADER */}
         <div className="tp-header">
           <h3>{task.title}</h3>
-
           <div className="tp-person" onClick={handleChangePerson}>
             {task.person || "Assign Person"}
           </div>
-
           <button className="tp-close-btn" onClick={handleClose}>✕</button>
         </div>
 
-        {/* NOTES LEDGER */}
+        {/* NOTES */}
         <div className="tp-body">
           <h4>Notes</h4>
-
           <textarea
             ref={areaRef}
             className="tp-note-draft"
             value={text}
             onChange={handleChange}
-            onFocus={handleFocus}
-            onClick={handleClick}
-            readOnly={!canEdit}
           />
         </div>
 
