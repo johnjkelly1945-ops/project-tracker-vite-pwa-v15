@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v17 – Absolute History Protection (A1) + True Merge (V1) + D1 Blank Draft
+   v17.2 – Instant ChangePerson Close + Silent Lock Mode
    ----------------------------------------------------------------------
    PURPOSE:
    ✔ One visible textarea (unchanged look)
@@ -9,7 +9,9 @@
    ✔ True merge: history + draft shown together
    ✔ Commit only if draft has text
    ✔ Timestamp on same line as entry
-   ✔ 1-second close delay
+   ✔ 1-second close delay for normal close
+   ✔ NEW: Instant close for Change Person (fixes hidden overlay issue)
+   ✔ Silent lock mode – popup inactive until person assigned
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -17,6 +19,11 @@ import "../Styles/TaskPopup.css";
 
 export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
+
+  /* ---------------------------------------------------------------
+     LOCK MODE: Task is inactive until assigned
+     --------------------------------------------------------------- */
+  const isLocked = !task.person || task.person.trim() === "";
 
   /* ---------------------------------------------------------------
      NORMALISE HISTORY (stored notes)
@@ -30,10 +37,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
 
   const historyText = normaliseNotes(task.notes).trimEnd();
 
-  /* D1: Draft always empty on open */
   const [draftText, setDraftText] = useState("");
-
-  /* Unified visible text (history + draft) */
   const [visibleText, setVisibleText] = useState("");
   const areaRef = useRef(null);
 
@@ -41,15 +45,13 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
      RENDER MERGED TEXT ON OPEN
      --------------------------------------------------------------- */
   useEffect(() => {
-    // Always render history + 2 newlines + empty draft
     const merged = historyText + (historyText ? "\n\n" : "") + draftText;
-
     setVisibleText(merged);
 
     // place cursor after history
     setTimeout(() => {
       if (areaRef.current) {
-        const boundary = historyText.length + (historyText ? 2 : 0); 
+        const boundary = historyText.length + (historyText ? 2 : 0);
         areaRef.current.selectionStart = boundary;
         areaRef.current.selectionEnd = boundary;
       }
@@ -57,20 +59,18 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   }, [historyText]);
 
   /* ---------------------------------------------------------------
-     ON TYPING – allow changes only to draft region
+     ON TYPING – allow changes only to draft region (unless locked)
      --------------------------------------------------------------- */
   const handleChange = (e) => {
+    if (isLocked) return;
+
     const newValue = e.target.value;
-
     const boundary = historyText.length + (historyText ? 2 : 0);
-
-    // Extract draft portion only (text after boundary)
     const newDraft = newValue.slice(boundary);
 
     setDraftText(newDraft);
     setVisibleText(historyText + (historyText ? "\n\n" : "") + newDraft);
 
-    // Force cursor to stay in draft area
     setTimeout(() => {
       if (areaRef.current) {
         if (areaRef.current.selectionStart < boundary) {
@@ -95,24 +95,28 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     COMMIT ENTRY (only if draft contains text)
+     COMMIT ENTRY (only if draft contains text and unlocked)
      --------------------------------------------------------------- */
   const commitEntry = () => {
     return new Promise((resolve) => {
-      const trimmed = draftText.trim();
+      if (isLocked) {
+        resolve(null);
+        return;
+      }
 
+      const trimmed = draftText.trim();
       if (trimmed === "") {
-        resolve(null); // nothing to commit
+        resolve(null);
         return;
       }
 
       const stamp = makeTimestamp();
       const entry = `${trimmed} – ${stamp}`;
 
-      const updatedHistory = 
-        historyText 
-        ? `${historyText}\n\n${entry}` 
-        : entry;
+      const updatedHistory =
+        historyText
+          ? `${historyText}\n\n${entry}`
+          : entry;
 
       onUpdate({
         notes: updatedHistory + "\n\n",
@@ -124,25 +128,33 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     CLOSE POPUP (always with 1-second delay)
+     CLOSE POPUP (1-second delay unless Change Person)
      --------------------------------------------------------------- */
   const handleClose = async () => {
     await commitEntry();
-
     setTimeout(() => {
       onClose();
     }, 1000);
   };
 
-  /* Footer actions (force commit) */
-  const doAction = async (fields) => {
-    await commitEntry();
-    onUpdate(fields);
-    setTimeout(() => onClose(), 1000);
+  /* ---------------------------------------------------------------
+     INSTANT CHANGE PERSON FIX
+     --------------------------------------------------------------- */
+  const handleChangePerson = async () => {
+    await commitEntry();          // commit if allowed
+    onUpdate({ changePerson: true });
+    onClose();                    // <<< INSTANT CLOSE: FIX
   };
 
-  const handleChangePerson = () => {
-    doAction({ changePerson: true });
+  /* ---------------------------------------------------------------
+     FOOTER ACTIONS
+     --------------------------------------------------------------- */
+  const doAction = async (fields) => {
+    if (!isLocked) {
+      await commitEntry();
+      onUpdate(fields);
+    }
+    setTimeout(() => onClose(), 1000);
   };
 
   /* ---------------------------------------------------------------
@@ -154,9 +166,11 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
 
         <div className="tp-header">
           <h3>{task.title}</h3>
+
           <div className="tp-person" onClick={handleChangePerson}>
             {task.person || "Assign Person"}
           </div>
+
           <button className="tp-close-btn" onClick={handleClose}>✕</button>
         </div>
 
@@ -168,27 +182,29 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
             className="tp-note-draft"
             value={visibleText}
             onChange={handleChange}
+            readOnly={isLocked}
           />
         </div>
 
         <div className="tp-footer">
+
           <div className="tp-gov-row">
-            <button onClick={() => doAction({ gov: "CC" })}>CC</button>
-            <button onClick={() => doAction({ gov: "QC" })}>QC</button>
-            <button onClick={() => doAction({ gov: "Risk" })}>Risk</button>
-            <button onClick={() => doAction({ gov: "Issue" })}>Issue</button>
-            <button onClick={() => doAction({ gov: "Escalate" })}>Escalate</button>
-            <button onClick={() => doAction({ gov: "Email" })}>Email</button>
-            <button onClick={() => doAction({ gov: "Docs" })}>Docs</button>
-            <button onClick={() => doAction({ gov: "Template" })}>Template</button>
+            <button onClick={() => !isLocked && doAction({ gov: "CC" })}>CC</button>
+            <button onClick={() => !isLocked && doAction({ gov: "QC" })}>QC</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Risk" })}>Risk</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Issue" })}>Issue</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Escalate" })}>Escalate</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Email" })}>Email</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Docs" })}>Docs</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Template" })}>Template</button>
           </div>
 
           <div className="tp-action-row">
             <button onClick={handleChangePerson}>Change Person</button>
-            <button onClick={() => doAction({ status: "Completed" })}>
+            <button onClick={() => !isLocked && doAction({ status: "Completed" })}>
               Mark Completed
             </button>
-            <button className="tp-delete" onClick={() => doAction({ delete: true })}>
+            <button className="tp-delete" onClick={() => !isLocked && doAction({ delete: true })}>
               Delete
             </button>
           </div>
