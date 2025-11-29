@@ -1,15 +1,15 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   Version: v7B1 – Stable Restore (Step 1 typing fix)
+   Version: v16 – Immutable Log + No-False-Commit Edition
    ----------------------------------------------------------------------
-   BEHAVIOUR:
-   ✓ One textarea for full ledger
-   ✓ User can always type freely until commit
-   ✓ Last committed entry editable for 5 minutes
-   ✓ Plain timestamp appended on commit
-   ✓ Older entries locked
-   ✓ On reopen → cursor drops ONE blank line below last entry
-   ✓ No forced behaviour beyond this
+   RULES:
+   ✔ Old entries permanently locked
+   ✔ Only draft zone (bottom) is editable
+   ✔ Commit ONLY if draft contains real text (non-whitespace)
+   ✔ No timestamp spam
+   ✔ No commit if blank draft
+   ✔ Commit = freeze entry forever + add timestamp + add blank draft area
+   ✔ Cursor automatically goes to draft zone
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -19,68 +19,71 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
 
   /* ---------------------------------------------------------------
-     NORMALISE NOTES
+     INITIAL CONTENT
      --------------------------------------------------------------- */
-  const normaliseNotes = (v) => {
-    if (typeof v === "string") return v;
-    if (v === null || v === undefined) return "";
-    if (Array.isArray(v)) return v.join("\n\n");
-    return String(v);
-  };
+  const initialNotes =
+    typeof task.notes === "string"
+      ? task.notes
+      : task.notes
+      ? String(task.notes)
+      : "";
 
-  const initialText = normaliseNotes(task.notes);
-  const [text, setText] = useState(initialText);
-  const lastTimestamp = task.notesTimestamp || null;
-
-  /* ---------------------------------------------------------------
-     TEXTAREA REF + SCROLL
-     --------------------------------------------------------------- */
+  const [text, setText] = useState(initialNotes);
   const areaRef = useRef(null);
 
-  const scrollToBottom = () => {
-    if (areaRef.current) {
-      areaRef.current.scrollTop = areaRef.current.scrollHeight;
-    }
+  /* ---------------------------------------------------------------
+     FIND START OF DRAFT ENTRY
+     (editable region begins after the last double newline)
+     --------------------------------------------------------------- */
+  const findDraftStart = (input) => {
+    const idx = input.lastIndexOf("\n\n");
+    if (idx === -1) return 0;
+    return idx + 2;
   };
 
-  useEffect(scrollToBottom, []);
-  useEffect(scrollToBottom, [text]);
-
   /* ---------------------------------------------------------------
-     5-MINUTE RULE (applies ONLY after commit)
+     HANDLE USER TYPING – only allow edits in draft zone
      --------------------------------------------------------------- */
-  const canEditLastEntry =
-    !lastTimestamp || Date.now() - lastTimestamp <= 5 * 60 * 1000;
+  const handleChange = (e) => {
+    const newVal = e.target.value;
+    if (!areaRef.current) return;
 
-  /* ---------------------------------------------------------------
-     ON POPUP OPEN → ensure ONE blank line below last entry
-     --------------------------------------------------------------- */
-  useEffect(() => {
-    let updated = text;
+    const cursor = areaRef.current.selectionStart;
+    const draftStart = findDraftStart(text);
 
-    if (!updated.endsWith("\n\n")) {
-      updated = updated.trimEnd() + "\n\n";
-      setText(updated);
+    // Block edits in locked region
+    if (cursor < draftStart) {
+      areaRef.current.value = text; // restore previous text
+      return;
     }
 
-    setTimeout(() => {
-      if (areaRef.current) {
-        const end = areaRef.current.value.length;
-        areaRef.current.selectionStart = end;
-        areaRef.current.selectionEnd = end;
-      }
-    }, 0);
+    setText(newVal);
+  };
+
+  /* ---------------------------------------------------------------
+     POSITION CURSOR IN DRAFT ZONE ON OPEN
+     --------------------------------------------------------------- */
+  useEffect(() => {
+    if (!areaRef.current) return;
+
+    const draftStart = findDraftStart(text);
+    areaRef.current.selectionStart = draftStart;
+    areaRef.current.selectionEnd = draftStart;
+
+    areaRef.current.scrollTop = areaRef.current.scrollHeight;
   }, []);
 
   /* ---------------------------------------------------------------
-     STEP 1 — HANDLE TYPING (always allowed until commit)
+     SCROLL TO BOTTOM ON TEXT CHANGE
      --------------------------------------------------------------- */
-  const handleChange = (e) => {
-    setText(e.target.value);   // ← FIX: fully restores typing
-  };
+  useEffect(() => {
+    if (areaRef.current) {
+      areaRef.current.scrollTop = areaRef.current.scrollHeight;
+    }
+  }, [text]);
 
   /* ---------------------------------------------------------------
-     TIMESTAMP FORMAT  (plain text)
+     TIMESTAMP FORMATTER
      --------------------------------------------------------------- */
   const makeTimestamp = () => {
     const t = new Date();
@@ -89,60 +92,70 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
     const yyyy = t.getFullYear();
     const HH = String(t.getHours()).padStart(2, "0");
     const MM = String(t.getMinutes()).padStart(2, "0");
-    return `[${dd}/${mm}/${yyyy} – ${HH}:${MM}]`;
+    return ` – ${dd}/${mm}/${yyyy} ${HH}:${MM}`;
   };
 
   /* ---------------------------------------------------------------
-     COMMIT ENTRY
+     CHECK IF DRAFT CONTAINS REAL TEXT
+     (returns true only if letters/numbers/punctuation exist)
+     --------------------------------------------------------------- */
+  const draftHasRealText = () => {
+    const draftStart = findDraftStart(text);
+    const draft = text.slice(draftStart);
+
+    // Strip whitespace (spaces, tabs, blank lines)
+    return draft.trim().length > 0;
+  };
+
+  /* ---------------------------------------------------------------
+     COMMIT ENTRY (only if draft contains real text)
      --------------------------------------------------------------- */
   const commitEntry = () => {
     return new Promise((resolve) => {
-      let current = text.trimEnd();
-      const stamp = makeTimestamp();
+      // If no real text, do NOT commit anything
+      if (!draftHasRealText()) {
+        resolve(false); // no commit performed
+        return;
+      }
 
-      const parts = current.split("\n\n");
-      const lastEntry = parts[parts.length - 1];
+      let newText = text.trimEnd();
 
-      const cleanedLast = lastEntry.replace(/\s*\[[^\]]+\]$/, "").trimEnd();
+      // Append timestamp
+      newText = newText + makeTimestamp();
 
-      const rebuilt =
-        parts.slice(0, -1).join("\n\n") +
-        (parts.length > 1 ? "\n\n" : "") +
-        cleanedLast +
-        " " +
-        stamp +
-        "\n\n";
+      // Add two newlines for next draft entry
+      newText = newText + "\n\n\n";
 
-      setText(rebuilt);
+      setText(newText);
 
       onUpdate({
-        notes: rebuilt,
+        notes: newText,
         notesTimestamp: Date.now(),
       });
 
-      resolve(rebuilt);
+      resolve(true); // commit performed
     });
   };
 
   /* ---------------------------------------------------------------
-     CLOSE POPUP → commit and exit immediately
+     CLOSE POPUP (ONLY commit if real text exists)
      --------------------------------------------------------------- */
   const handleClose = async () => {
-    await commitEntry();
-    onClose();
+    const didCommit = await commitEntry();
+
+    // Whether committed or not, close after 2s
+    setTimeout(() => onClose(), 2000);
   };
 
   /* ---------------------------------------------------------------
-     FOOTER ACTIONS
+     FOOTER ACTIONS – always commit first if draft has real text
      --------------------------------------------------------------- */
   const doAction = async (fields) => {
-    await commitEntry();
-    onUpdate(fields);
-    onClose();
-  };
+    const didCommit = await commitEntry();
 
-  const handleChangePerson = () => {
-    doAction({ changePerson: true });
+    onUpdate(fields);
+
+    setTimeout(() => onClose(), 2000);
   };
 
   /* ---------------------------------------------------------------
@@ -155,9 +168,14 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
         {/* HEADER */}
         <div className="tp-header">
           <h3>{task.title}</h3>
-          <div className="tp-person" onClick={handleChangePerson}>
+
+          <div
+            className="tp-person"
+            onClick={() => doAction({ changePerson: true })}
+          >
             {task.person || "Assign Person"}
           </div>
+
           <button className="tp-close-btn" onClick={handleClose}>✕</button>
         </div>
 
@@ -174,7 +192,6 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
 
         {/* FOOTER */}
         <div className="tp-footer">
-
           <div className="tp-gov-row">
             <button onClick={() => doAction({ gov: "CC" })}>CC</button>
             <button onClick={() => doAction({ gov: "QC" })}>QC</button>
@@ -187,16 +204,18 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           </div>
 
           <div className="tp-action-row">
-            <button onClick={handleChangePerson}>Change Person</button>
+            <button onClick={() => doAction({ changePerson: true })}>
+              Change Person
+            </button>
             <button onClick={() => doAction({ status: "Completed" })}>
               Mark Completed
             </button>
-            <button className="tp-delete" onClick={() => doAction({ delete: true })}>
+            <button onClick={() => doAction({ delete: true })} className="tp-delete">
               Delete
             </button>
           </div>
-
         </div>
+
       </div>
     </div>
   );
