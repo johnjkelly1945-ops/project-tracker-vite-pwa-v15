@@ -1,17 +1,6 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v17.2 – Instant ChangePerson Close + Silent Lock Mode
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ One visible textarea (unchanged look)
-   ✔ History read-only: cursor cannot enter upper zone
-   ✔ Draft zone always empty on open
-   ✔ True merge: history + draft shown together
-   ✔ Commit only if draft has text
-   ✔ Timestamp on same line as entry
-   ✔ 1-second close delay for normal close
-   ✔ NEW: Instant close for Change Person (fixes hidden overlay issue)
-   ✔ Silent lock mode – popup inactive until person assigned
+   v18 – Stable Logic + Balanced Header (Left-Spacer Model)
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -21,13 +10,13 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
 
   /* ---------------------------------------------------------------
-     LOCK MODE: Task is inactive until assigned
-     --------------------------------------------------------------- */
+     LOCK MODE – task inactive until assigned
+  --------------------------------------------------------------- */
   const isLocked = !task.person || task.person.trim() === "";
 
   /* ---------------------------------------------------------------
-     NORMALISE HISTORY (stored notes)
-     --------------------------------------------------------------- */
+     NORMALISE HISTORY
+  --------------------------------------------------------------- */
   const normaliseNotes = (v) => {
     if (typeof v === "string") return v;
     if (!v) return "";
@@ -43,12 +32,11 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
 
   /* ---------------------------------------------------------------
      RENDER MERGED TEXT ON OPEN
-     --------------------------------------------------------------- */
+  --------------------------------------------------------------- */
   useEffect(() => {
     const merged = historyText + (historyText ? "\n\n" : "") + draftText;
     setVisibleText(merged);
 
-    // place cursor after history
     setTimeout(() => {
       if (areaRef.current) {
         const boundary = historyText.length + (historyText ? 2 : 0);
@@ -59,8 +47,8 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   }, [historyText]);
 
   /* ---------------------------------------------------------------
-     ON TYPING – allow changes only to draft region (unless locked)
-     --------------------------------------------------------------- */
+     HANDLE TYPING – only in draft zone
+  --------------------------------------------------------------- */
   const handleChange = (e) => {
     if (isLocked) return;
 
@@ -82,8 +70,8 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     TIMESTAMP MAKER
-     --------------------------------------------------------------- */
+     MAKE TIMESTAMP
+  --------------------------------------------------------------- */
   const makeTimestamp = () => {
     const t = new Date();
     const dd = String(t.getDate()).padStart(2, "0");
@@ -95,8 +83,8 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     COMMIT ENTRY (only if draft contains text and unlocked)
-     --------------------------------------------------------------- */
+     COMMIT ENTRY
+  --------------------------------------------------------------- */
   const commitEntry = () => {
     return new Promise((resolve) => {
       if (isLocked) {
@@ -128,8 +116,8 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     CLOSE POPUP (1-second delay unless Change Person)
-     --------------------------------------------------------------- */
+     CLOSE POPUP (normal close)
+  --------------------------------------------------------------- */
   const handleClose = async () => {
     await commitEntry();
     setTimeout(() => {
@@ -138,17 +126,17 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     INSTANT CHANGE PERSON FIX
-     --------------------------------------------------------------- */
+     INSTANT CHANGE PERSON
+  --------------------------------------------------------------- */
   const handleChangePerson = async () => {
-    await commitEntry();          // commit if allowed
+    await commitEntry();
     onUpdate({ changePerson: true });
-    onClose();                    // <<< INSTANT CLOSE: FIX
+    onClose(); // instant close
   };
 
   /* ---------------------------------------------------------------
-     FOOTER ACTIONS
-     --------------------------------------------------------------- */
+     FOOTER ACTION
+  --------------------------------------------------------------- */
   const doAction = async (fields) => {
     if (!isLocked) {
       await commitEntry();
@@ -159,19 +147,25 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
 
   /* ---------------------------------------------------------------
      RENDER
-     --------------------------------------------------------------- */
+  --------------------------------------------------------------- */
   return (
     <div className="taskpopup-overlay">
       <div className="taskpopup-window">
 
+        {/* ===== Balanced Header: left spacer | title | right group ===== */}
         <div className="tp-header">
-          <h3>{task.title}</h3>
 
-          <div className="tp-person" onClick={handleChangePerson}>
-            {task.person || "Assign Person"}
+          <div className="tp-header-left"></div>
+
+          <h3 className="tp-header-title">{task.title}</h3>
+
+          <div className="tp-header-right">
+            <div className="tp-person" onClick={handleChangePerson}>
+              {task.person || "Assign Person"}
+            </div>
+            <button className="tp-close-btn" onClick={handleClose}>✕</button>
           </div>
 
-          <button className="tp-close-btn" onClick={handleClose}>✕</button>
         </div>
 
         <div className="tp-body">
