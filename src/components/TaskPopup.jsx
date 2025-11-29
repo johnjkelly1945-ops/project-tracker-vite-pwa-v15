@@ -1,15 +1,15 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   Version: v15.9 – Last Fully Stable Logic Before Styling
+   v17 – Absolute History Protection (A1) + True Merge (V1) + D1 Blank Draft
    ----------------------------------------------------------------------
-   RULES:
-   ✔ Old entries permanently locked
-   ✔ Only draft zone (bottom) is editable
-   ✔ Commit ONLY if draft has real text
-   ✔ No timestamp duplication
-   ✔ No invisible commits
-   ✔ On close → commit then close after 2 seconds
-   ✔ On reopen → cursor moves to draft zone
+   PURPOSE:
+   ✔ One visible textarea (unchanged look)
+   ✔ History read-only: cursor cannot enter upper zone
+   ✔ Draft zone always empty on open
+   ✔ True merge: history + draft shown together
+   ✔ Commit only if draft has text
+   ✔ Timestamp on same line as entry
+   ✔ 1-second close delay
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -19,71 +19,70 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
 
   /* ---------------------------------------------------------------
-     NORMALISE NOTES
+     NORMALISE HISTORY (stored notes)
      --------------------------------------------------------------- */
   const normaliseNotes = (v) => {
     if (typeof v === "string") return v;
-    if (v === null || v === undefined) return "";
-    if (Array.isArray(v)) return v.join("\n\n");
+    if (!v) return "";
+    if (Array.isArray(v)) return v.join("\n");
     return String(v);
   };
 
-  const initialNotes = normaliseNotes(task.notes);
-  const [text, setText] = useState(initialNotes);
+  const historyText = normaliseNotes(task.notes).trimEnd();
+
+  /* D1: Draft always empty on open */
+  const [draftText, setDraftText] = useState("");
+
+  /* Unified visible text (history + draft) */
+  const [visibleText, setVisibleText] = useState("");
   const areaRef = useRef(null);
 
   /* ---------------------------------------------------------------
-     FIND START OF DRAFT ZONE
+     RENDER MERGED TEXT ON OPEN
      --------------------------------------------------------------- */
-  const findDraftStart = (input) => {
-    const idx = input.lastIndexOf("\n\n");
-    if (idx === -1) return 0;
-    return idx + 2;
-  };
+  useEffect(() => {
+    // Always render history + 2 newlines + empty draft
+    const merged = historyText + (historyText ? "\n\n" : "") + draftText;
+
+    setVisibleText(merged);
+
+    // place cursor after history
+    setTimeout(() => {
+      if (areaRef.current) {
+        const boundary = historyText.length + (historyText ? 2 : 0); 
+        areaRef.current.selectionStart = boundary;
+        areaRef.current.selectionEnd = boundary;
+      }
+    }, 0);
+  }, [historyText]);
 
   /* ---------------------------------------------------------------
-     TYPING HANDLER – Prevent editing old entries
+     ON TYPING – allow changes only to draft region
      --------------------------------------------------------------- */
   const handleChange = (e) => {
-    const newVal = e.target.value;
-    if (!areaRef.current) return;
+    const newValue = e.target.value;
 
-    const cursor = areaRef.current.selectionStart;
-    const draftStart = findDraftStart(text);
+    const boundary = historyText.length + (historyText ? 2 : 0);
 
-    if (cursor < draftStart) {
-      areaRef.current.value = text;
-      return;
-    }
+    // Extract draft portion only (text after boundary)
+    const newDraft = newValue.slice(boundary);
 
-    setText(newVal);
+    setDraftText(newDraft);
+    setVisibleText(historyText + (historyText ? "\n\n" : "") + newDraft);
+
+    // Force cursor to stay in draft area
+    setTimeout(() => {
+      if (areaRef.current) {
+        if (areaRef.current.selectionStart < boundary) {
+          areaRef.current.selectionStart = boundary;
+          areaRef.current.selectionEnd = boundary;
+        }
+      }
+    }, 0);
   };
 
   /* ---------------------------------------------------------------
-     POSITION CURSOR IN DRAFT ON OPEN
-     --------------------------------------------------------------- */
-  useEffect(() => {
-    if (!areaRef.current) return;
-
-    const draftStart = findDraftStart(text);
-
-    areaRef.current.selectionStart = draftStart;
-    areaRef.current.selectionEnd = draftStart;
-
-    areaRef.current.scrollTop = areaRef.current.scrollHeight;
-  }, []);
-
-  /* ---------------------------------------------------------------
-     SCROLL TO BOTTOM ON TEXT CHANGE
-     --------------------------------------------------------------- */
-  useEffect(() => {
-    if (areaRef.current) {
-      areaRef.current.scrollTop = areaRef.current.scrollHeight;
-    }
-  }, [text]);
-
-  /* ---------------------------------------------------------------
-     TIMESTAMP FORMAT
+     TIMESTAMP MAKER
      --------------------------------------------------------------- */
   const makeTimestamp = () => {
     const t = new Date();
@@ -92,83 +91,82 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
     const yyyy = t.getFullYear();
     const HH = String(t.getHours()).padStart(2, "0");
     const MM = String(t.getMinutes()).padStart(2, "0");
-    return ` – ${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+    return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
   };
 
   /* ---------------------------------------------------------------
-     CHECK IF DRAFT HAS REAL TEXT
-     --------------------------------------------------------------- */
-  const draftHasRealText = () => {
-    const draftStart = findDraftStart(text);
-    const draft = text.slice(draftStart);
-    return draft.trim().length > 0;
-  };
-
-  /* ---------------------------------------------------------------
-     COMMIT ENTRY
+     COMMIT ENTRY (only if draft contains text)
      --------------------------------------------------------------- */
   const commitEntry = () => {
     return new Promise((resolve) => {
-      if (!draftHasRealText()) {
-        resolve(false);
+      const trimmed = draftText.trim();
+
+      if (trimmed === "") {
+        resolve(null); // nothing to commit
         return;
       }
 
-      let newText = text.trimEnd();
-      newText = newText + makeTimestamp();
-      newText = newText + "\n\n\n";   // add blank line + new draft
+      const stamp = makeTimestamp();
+      const entry = `${trimmed} – ${stamp}`;
 
-      setText(newText);
+      const updatedHistory = 
+        historyText 
+        ? `${historyText}\n\n${entry}` 
+        : entry;
 
       onUpdate({
-        notes: newText,
+        notes: updatedHistory + "\n\n",
         notesTimestamp: Date.now(),
       });
 
-      resolve(true);
+      resolve(entry);
     });
   };
 
   /* ---------------------------------------------------------------
-     CLOSE POPUP
+     CLOSE POPUP (always with 1-second delay)
      --------------------------------------------------------------- */
   const handleClose = async () => {
     await commitEntry();
-    setTimeout(() => onClose(), 2000);
+
+    setTimeout(() => {
+      onClose();
+    }, 1000);
   };
 
-  /* ---------------------------------------------------------------
-     FOOTER ACTIONS
-     --------------------------------------------------------------- */
+  /* Footer actions (force commit) */
   const doAction = async (fields) => {
     await commitEntry();
     onUpdate(fields);
-    setTimeout(() => onClose(), 2000);
+    setTimeout(() => onClose(), 1000);
   };
 
+  const handleChangePerson = () => {
+    doAction({ changePerson: true });
+  };
+
+  /* ---------------------------------------------------------------
+     RENDER
+     --------------------------------------------------------------- */
   return (
     <div className="taskpopup-overlay">
       <div className="taskpopup-window">
 
         <div className="tp-header">
           <h3>{task.title}</h3>
-
-          <div
-            className="tp-person"
-            onClick={() => doAction({ changePerson: true })}
-          >
+          <div className="tp-person" onClick={handleChangePerson}>
             {task.person || "Assign Person"}
           </div>
-
           <button className="tp-close-btn" onClick={handleClose}>✕</button>
         </div>
 
         <div className="tp-body">
           <h4>Notes</h4>
+
           <textarea
             ref={areaRef}
             className="tp-note-draft"
-            value={text}
+            value={visibleText}
             onChange={handleChange}
           />
         </div>
@@ -186,9 +184,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           </div>
 
           <div className="tp-action-row">
-            <button onClick={() => doAction({ changePerson: true })}>
-              Change Person
-            </button>
+            <button onClick={handleChangePerson}>Change Person</button>
             <button onClick={() => doAction({ status: "Completed" })}>
               Mark Completed
             </button>
@@ -196,8 +192,8 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
               Delete
             </button>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
   );
