@@ -1,6 +1,11 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   v7 A2 – Adapted for DualPane v6.3 (CLEANED footer)
+   v7 A2 – Last Working Version Before Styling Changes
+   ----------------------------------------------------------------------
+   ✔ Assign Person works
+   ✔ Popup reopens after selection
+   ✔ Notes persist
+   ✔ No fields deletion bug
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -14,18 +19,12 @@ import "../Styles/PreProject.css";
 
 export default function PreProject() {
 
-  /* ============================================================
-     DEFAULT TASKS
-     ============================================================ */
   const defaultTasks = [
     { id: 1, title: "Prepare Scope Summary", status: "Not Started", person: "", flag: "" },
     { id: 2, title: "Initial Risk Scan", status: "Not Started", person: "", flag: "" },
     { id: 3, title: "Stakeholder Mapping", status: "Not Started", person: "", flag: "" }
   ];
 
-  /* ============================================================
-     LOCAL STORAGE
-     ============================================================ */
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks_v3");
     return saved ? JSON.parse(saved) : defaultTasks;
@@ -35,27 +34,13 @@ export default function PreProject() {
     localStorage.setItem("tasks_v3", JSON.stringify(tasks));
   }, [tasks]);
 
-  /* POPUP STATES */
   const [showAddItem, setShowAddItem] = useState(false);
   const [showPersonnel, setShowPersonnel] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedTaskForPopup, setSelectedTaskForPopup] = useState(null);
 
-  /* HANDLERS */
   const openAddItem = () => setShowAddItem(true);
   const closeAddItem = () => setShowAddItem(false);
-
-  const openPersonnel = (taskId) => {
-    setSelectedTaskId(taskId);
-    setShowPersonnel(true);
-  };
-
-  const closePersonnel = () => {
-    setShowPersonnel(false);
-    setSelectedPerson(null);
-    setSelectedTaskId(null);
-  };
 
   const handleAddTask = (taskObj) => {
     const newTask = {
@@ -68,14 +53,30 @@ export default function PreProject() {
     setTasks([...tasks, newTask]);
   };
 
+  const openPersonnel = (taskId) => {
+    setSelectedTaskId(taskId);
+    setShowPersonnel(true);
+  };
+
+  const closePersonnel = () => {
+    setShowPersonnel(false);
+  };
+
   const handleSelectPerson = (name) => {
     if (!selectedTaskId) return;
 
     const updated = tasks.map((t) =>
       t.id === selectedTaskId ? { ...t, person: name } : t
     );
+
     setTasks(updated);
     closePersonnel();
+
+    const updatedTask = updated.find(t => t.id === selectedTaskId);
+
+    setTimeout(() => {
+      setSelectedTaskForPopup(updatedTask);
+    }, 0);
   };
 
   const handleOpenTaskPopup = (task) => {
@@ -87,26 +88,35 @@ export default function PreProject() {
   };
 
   const updateTask = (id, fields) => {
+
+    if (fields.changePerson) {
+      setSelectedTaskForPopup(null);
+      setSelectedTaskId(id);
+      setShowPersonnel(true);
+      return;
+    }
+
     const updated = tasks.map((t) =>
       t.id === id ? { ...t, ...fields } : t
     );
+
     setTasks(updated);
+
+    if (!fields.delete) {
+      const updatedTask = updated.find(t => t.id === id);
+      setSelectedTaskForPopup(updatedTask);
+    }
   };
 
 
-  /* ============================================================
-     RENDER
-     ============================================================ */
   return (
     <div className="preproject-pane">
 
-      {/* HEADER */}
       <div className="preproject-header">
         <h2 className="pp-title">Pre-Project Workspace</h2>
         <button className="pp-add-btn" onClick={openAddItem}>+ Add Task</button>
       </div>
 
-      {/* TASK LIST */}
       <div className="pane-content">
         {tasks.map((task) => (
           <div key={task.id} className="pp-task-item">
@@ -130,8 +140,6 @@ export default function PreProject() {
         ))}
       </div>
 
-
-      {/* ADD TASK */}
       {showAddItem && (
         <AddItemPopup
           onAdd={handleAddTask}
@@ -139,7 +147,6 @@ export default function PreProject() {
         />
       )}
 
-      {/* PERSONNEL OVERLAY */}
       {showPersonnel && (
         <PersonnelOverlay
           onSelect={handleSelectPerson}
@@ -147,23 +154,13 @@ export default function PreProject() {
         />
       )}
 
-      {/* PERSONNEL DETAIL */}
-      {selectedPerson && (
-        <PersonnelDetail
-          person={selectedPerson}
-          onClose={() => setSelectedPerson(null)}
-        />
-      )}
-
-      {/* TASK POPUP */}
       {selectedTaskForPopup && (
         <TaskPopup
           task={selectedTaskForPopup}
           onClose={handleCloseTaskPopup}
-          onUpdate={(fields) => updateTask(
-            selectedTaskForPopup.id,
-            fields.delete ? {} : fields
-          )}
+          onUpdate={(fields) =>
+            updateTask(selectedTaskForPopup.id, fields)
+          }
         />
       )}
 

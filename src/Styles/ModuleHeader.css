@@ -1,3 +1,12 @@
+/* ======================================================================
+   METRA – ModuleHeader.css
+   Corrected Sticky Offset (Global Header → Module Header → FilterBar)
+   ----------------------------------------------------------------------
+   ✔ Sits under the 80px METRA global header
+   ✔ Sticky so it remains visible on scroll
+   ✔ Correct z-index order
+   ====================================================================== */
+
 .mh-wrapper {
   background: #003366;
   color: #ffffff;
@@ -7,6 +16,11 @@
   align-items: center;
   font-family: system-ui, sans-serif;
   border-bottom: 3px solid #0055aa;
+
+  /* FIX: sticky positioning under global header */
+  position: sticky;
+  top: 80px;
+  z-index: 50;
 }
 
 .mh-title {

@@ -1,15 +1,15 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   Version: v16 – Immutable Log + No-False-Commit Edition
+   Version: v15.9 – Last Fully Stable Logic Before Styling
    ----------------------------------------------------------------------
    RULES:
    ✔ Old entries permanently locked
    ✔ Only draft zone (bottom) is editable
-   ✔ Commit ONLY if draft contains real text (non-whitespace)
-   ✔ No timestamp spam
-   ✔ No commit if blank draft
-   ✔ Commit = freeze entry forever + add timestamp + add blank draft area
-   ✔ Cursor automatically goes to draft zone
+   ✔ Commit ONLY if draft has real text
+   ✔ No timestamp duplication
+   ✔ No invisible commits
+   ✔ On close → commit then close after 2 seconds
+   ✔ On reopen → cursor moves to draft zone
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -19,21 +19,21 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
 
   /* ---------------------------------------------------------------
-     INITIAL CONTENT
+     NORMALISE NOTES
      --------------------------------------------------------------- */
-  const initialNotes =
-    typeof task.notes === "string"
-      ? task.notes
-      : task.notes
-      ? String(task.notes)
-      : "";
+  const normaliseNotes = (v) => {
+    if (typeof v === "string") return v;
+    if (v === null || v === undefined) return "";
+    if (Array.isArray(v)) return v.join("\n\n");
+    return String(v);
+  };
 
+  const initialNotes = normaliseNotes(task.notes);
   const [text, setText] = useState(initialNotes);
   const areaRef = useRef(null);
 
   /* ---------------------------------------------------------------
-     FIND START OF DRAFT ENTRY
-     (editable region begins after the last double newline)
+     FIND START OF DRAFT ZONE
      --------------------------------------------------------------- */
   const findDraftStart = (input) => {
     const idx = input.lastIndexOf("\n\n");
@@ -42,7 +42,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     HANDLE USER TYPING – only allow edits in draft zone
+     TYPING HANDLER – Prevent editing old entries
      --------------------------------------------------------------- */
   const handleChange = (e) => {
     const newVal = e.target.value;
@@ -51,9 +51,8 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
     const cursor = areaRef.current.selectionStart;
     const draftStart = findDraftStart(text);
 
-    // Block edits in locked region
     if (cursor < draftStart) {
-      areaRef.current.value = text; // restore previous text
+      areaRef.current.value = text;
       return;
     }
 
@@ -61,12 +60,13 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     POSITION CURSOR IN DRAFT ZONE ON OPEN
+     POSITION CURSOR IN DRAFT ON OPEN
      --------------------------------------------------------------- */
   useEffect(() => {
     if (!areaRef.current) return;
 
     const draftStart = findDraftStart(text);
+
     areaRef.current.selectionStart = draftStart;
     areaRef.current.selectionEnd = draftStart;
 
@@ -83,7 +83,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   }, [text]);
 
   /* ---------------------------------------------------------------
-     TIMESTAMP FORMATTER
+     TIMESTAMP FORMAT
      --------------------------------------------------------------- */
   const makeTimestamp = () => {
     const t = new Date();
@@ -96,35 +96,27 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     CHECK IF DRAFT CONTAINS REAL TEXT
-     (returns true only if letters/numbers/punctuation exist)
+     CHECK IF DRAFT HAS REAL TEXT
      --------------------------------------------------------------- */
   const draftHasRealText = () => {
     const draftStart = findDraftStart(text);
     const draft = text.slice(draftStart);
-
-    // Strip whitespace (spaces, tabs, blank lines)
     return draft.trim().length > 0;
   };
 
   /* ---------------------------------------------------------------
-     COMMIT ENTRY (only if draft contains real text)
+     COMMIT ENTRY
      --------------------------------------------------------------- */
   const commitEntry = () => {
     return new Promise((resolve) => {
-      // If no real text, do NOT commit anything
       if (!draftHasRealText()) {
-        resolve(false); // no commit performed
+        resolve(false);
         return;
       }
 
       let newText = text.trimEnd();
-
-      // Append timestamp
       newText = newText + makeTimestamp();
-
-      // Add two newlines for next draft entry
-      newText = newText + "\n\n\n";
+      newText = newText + "\n\n\n";   // add blank line + new draft
 
       setText(newText);
 
@@ -133,39 +125,31 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
         notesTimestamp: Date.now(),
       });
 
-      resolve(true); // commit performed
+      resolve(true);
     });
   };
 
   /* ---------------------------------------------------------------
-     CLOSE POPUP (ONLY commit if real text exists)
+     CLOSE POPUP
      --------------------------------------------------------------- */
   const handleClose = async () => {
-    const didCommit = await commitEntry();
-
-    // Whether committed or not, close after 2s
+    await commitEntry();
     setTimeout(() => onClose(), 2000);
   };
 
   /* ---------------------------------------------------------------
-     FOOTER ACTIONS – always commit first if draft has real text
+     FOOTER ACTIONS
      --------------------------------------------------------------- */
   const doAction = async (fields) => {
-    const didCommit = await commitEntry();
-
+    await commitEntry();
     onUpdate(fields);
-
     setTimeout(() => onClose(), 2000);
   };
 
-  /* ---------------------------------------------------------------
-     RENDER
-     --------------------------------------------------------------- */
   return (
     <div className="taskpopup-overlay">
       <div className="taskpopup-window">
 
-        {/* HEADER */}
         <div className="tp-header">
           <h3>{task.title}</h3>
 
@@ -179,7 +163,6 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           <button className="tp-close-btn" onClick={handleClose}>✕</button>
         </div>
 
-        {/* NOTES */}
         <div className="tp-body">
           <h4>Notes</h4>
           <textarea
@@ -190,7 +173,6 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           />
         </div>
 
-        {/* FOOTER */}
         <div className="tp-footer">
           <div className="tp-gov-row">
             <button onClick={() => doAction({ gov: "CC" })}>CC</button>
@@ -210,7 +192,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
             <button onClick={() => doAction({ status: "Completed" })}>
               Mark Completed
             </button>
-            <button onClick={() => doAction({ delete: true })} className="tp-delete">
+            <button className="tp-delete" onClick={() => doAction({ delete: true })}>
               Delete
             </button>
           </div>
