@@ -1,18 +1,20 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   v7 A2 – Last Working Version Before Styling Changes
+   v7 A4 – Correct Card Layout (Status Dot + Title + Flag)
    ----------------------------------------------------------------------
-   ✔ Assign Person works
-   ✔ Popup reopens after selection
-   ✔ Notes persist
-   ✔ No fields deletion bug
+   ✔ Restores baseline card layout (.pp-task)
+   ✔ Status dot on left
+   ✔ Title in centre-left
+   ✔ Red flag on right if flagged
+   ✔ Whole card clickable (opens popup)
+   ✔ No person name and no Assign button in taskline
+   ✔ Popup logic, CC logic, toast logic unchanged
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
 
 import AddItemPopup from "./AddItemPopup.jsx";
 import PersonnelOverlay from "./PersonnelOverlay.jsx";
-import PersonnelDetail from "./PersonnelDetail.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 
 import "../Styles/PreProject.css";
@@ -66,7 +68,9 @@ export default function PreProject() {
     if (!selectedTaskId) return;
 
     const updated = tasks.map((t) =>
-      t.id === selectedTaskId ? { ...t, person: name } : t
+      t.id === selectedTaskId
+        ? { ...t, person: name, status: "In Progress" }
+        : t
     );
 
     setTasks(updated);
@@ -108,6 +112,12 @@ export default function PreProject() {
     }
   };
 
+  /* ----- STATUS DOT LOGIC ----- */
+  const getStatusClass = (task) => {
+    if (task.status === "Completed") return "status-green";
+    if (task.person && task.person.trim() !== "") return "status-amber";
+    return "status-grey";
+  };
 
   return (
     <div className="preproject-pane">
@@ -118,49 +128,50 @@ export default function PreProject() {
       </div>
 
       <div className="pane-content">
-        {tasks.map((task) => (
-          <div key={task.id} className="pp-task-item">
 
-            <div
-              className="pp-task-title"
-              onClick={() => handleOpenTaskPopup(task)}
-            >
+        {tasks.map((task) => (
+          <div
+            key={task.id}
+            className="pp-task"
+            onClick={() => handleOpenTaskPopup(task)}
+          >
+
+            {/* LEFT: Status Dot */}
+            <div className="pp-left">
+              <div className={`pp-status-dot ${getStatusClass(task)}`}></div>
+            </div>
+
+            {/* CENTRE: Title */}
+            <div className="pp-center">
               {task.title}
             </div>
 
-            <div
-              className="pp-task-person"
-              onClick={() => openPersonnel(task.id)}
-            >
-              {task.person || "Assign Person"}
+            {/* RIGHT: Red Flag (if any) */}
+            <div className="pp-right">
+              {task.flag === "red" && (
+                <span className="pp-flag-dot">🚩</span>
+              )}
             </div>
 
-            <div className={`pp-status-dot status-${task.status.replace(" ", "").toLowerCase()}`}></div>
           </div>
         ))}
+
       </div>
 
+      {/* Popups */}
       {showAddItem && (
-        <AddItemPopup
-          onAdd={handleAddTask}
-          onClose={closeAddItem}
-        />
+        <AddItemPopup onAdd={handleAddTask} onClose={closeAddItem} />
       )}
 
       {showPersonnel && (
-        <PersonnelOverlay
-          onSelect={handleSelectPerson}
-          onClose={closePersonnel}
-        />
+        <PersonnelOverlay onSelect={handleSelectPerson} onClose={closePersonnel} />
       )}
 
       {selectedTaskForPopup && (
         <TaskPopup
           task={selectedTaskForPopup}
           onClose={handleCloseTaskPopup}
-          onUpdate={(fields) =>
-            updateTask(selectedTaskForPopup.id, fields)
-          }
+          onUpdate={(fields) => updateTask(selectedTaskForPopup.id, fields)}
         />
       )}
 

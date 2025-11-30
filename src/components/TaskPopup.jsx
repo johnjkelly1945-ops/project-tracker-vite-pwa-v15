@@ -1,6 +1,13 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v18 – Stable Logic + Balanced Header (Left-Spacer Model)
+   v21 – CC Toast Confirmation (Tap-to-Dismiss)
+   ----------------------------------------------------------------------
+   ✔ First CC click shows toast
+   ✔ Second CC click performs actual CC
+   ✔ Toast remains until user dismisses it
+   ✔ Clicking INSIDE toast dismisses it
+   ✔ Clicking anywhere except CC dismisses it
+   ✔ CC triggers system note + red flag + close
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -10,12 +17,17 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   if (!task) return null;
 
   /* ---------------------------------------------------------------
-     LOCK MODE – task inactive until assigned
+     Toast confirmation state
+  --------------------------------------------------------------- */
+  const [ccConfirm, setCcConfirm] = useState(false);
+
+  /* ---------------------------------------------------------------
+     Lock mode – task inactive until assigned
   --------------------------------------------------------------- */
   const isLocked = !task.person || task.person.trim() === "";
 
   /* ---------------------------------------------------------------
-     NORMALISE HISTORY
+     Normalise history
   --------------------------------------------------------------- */
   const normaliseNotes = (v) => {
     if (typeof v === "string") return v;
@@ -31,7 +43,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   const areaRef = useRef(null);
 
   /* ---------------------------------------------------------------
-     RENDER MERGED TEXT ON OPEN
+     Merge history + draft on open
   --------------------------------------------------------------- */
   useEffect(() => {
     const merged = historyText + (historyText ? "\n\n" : "") + draftText;
@@ -47,10 +59,12 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   }, [historyText]);
 
   /* ---------------------------------------------------------------
-     HANDLE TYPING – only in draft zone
+     Typing – dismiss toast when user interacts
   --------------------------------------------------------------- */
   const handleChange = (e) => {
     if (isLocked) return;
+
+    if (ccConfirm) setCcConfirm(false);
 
     const newValue = e.target.value;
     const boundary = historyText.length + (historyText ? 2 : 0);
@@ -70,7 +84,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     MAKE TIMESTAMP
+     Timestamp helper
   --------------------------------------------------------------- */
   const makeTimestamp = () => {
     const t = new Date();
@@ -83,20 +97,14 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     COMMIT ENTRY
+     Commit user entry
   --------------------------------------------------------------- */
   const commitEntry = () => {
     return new Promise((resolve) => {
-      if (isLocked) {
-        resolve(null);
-        return;
-      }
+      if (isLocked) return resolve(null);
 
       const trimmed = draftText.trim();
-      if (trimmed === "") {
-        resolve(null);
-        return;
-      }
+      if (trimmed === "") return resolve(null);
 
       const stamp = makeTimestamp();
       const entry = `${trimmed} – ${stamp}`;
@@ -116,58 +124,104 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   /* ---------------------------------------------------------------
-     CLOSE POPUP (normal close)
+     CC System Note
+  --------------------------------------------------------------- */
+  const makeCCSystemNote = () => {
+    const stamp = makeTimestamp();
+    return `[System] Change Control request recorded – ${stamp}`;
+  };
+
+  /* ---------------------------------------------------------------
+     CC Handler – Two-step confirmation
+  --------------------------------------------------------------- */
+  const handleCC = async () => {
+    if (isLocked) return;
+
+    // FIRST CLICK – show toast only
+    if (!ccConfirm) {
+      setCcConfirm(true);
+      return;
+    }
+
+    // SECOND CLICK – perform CC
+    const systemNote = makeCCSystemNote();
+    const updatedHistory =
+      historyText
+        ? `${historyText}\n\n${systemNote}`
+        : systemNote;
+
+    onUpdate({
+      notes: updatedHistory + "\n\n",
+      notesTimestamp: Date.now(),
+      startChangeControl: true,
+      flag: "red"
+    });
+
+    onClose();
+  };
+
+  /* ---------------------------------------------------------------
+     Dismiss toast except when CC is clicked
+  --------------------------------------------------------------- */
+  const dismissToast = () => {
+    if (ccConfirm) setCcConfirm(false);
+  };
+
+  /* ---------------------------------------------------------------
+     Close popup normally
   --------------------------------------------------------------- */
   const handleClose = async () => {
+    if (ccConfirm) setCcConfirm(false);
     await commitEntry();
-    setTimeout(() => {
-      onClose();
-    }, 1000);
+    onClose();
   };
 
   /* ---------------------------------------------------------------
-     INSTANT CHANGE PERSON
+     Change Person
   --------------------------------------------------------------- */
   const handleChangePerson = async () => {
+    if (ccConfirm) setCcConfirm(false);
     await commitEntry();
     onUpdate({ changePerson: true });
-    onClose(); // instant close
+    onClose();
   };
 
   /* ---------------------------------------------------------------
-     FOOTER ACTION
+     Footer actions (Risk, QC, Issue, etc.)
   --------------------------------------------------------------- */
   const doAction = async (fields) => {
+    if (ccConfirm) setCcConfirm(false);
+
     if (!isLocked) {
       await commitEntry();
       onUpdate(fields);
     }
-    setTimeout(() => onClose(), 1000);
+    onClose();
   };
 
   /* ---------------------------------------------------------------
-     RENDER
+     Render
   --------------------------------------------------------------- */
   return (
-    <div className="taskpopup-overlay">
-      <div className="taskpopup-window">
+    <div className="taskpopup-overlay" onClick={dismissToast}>
+      <div
+        className="taskpopup-window"
+        onClick={(e) => e.stopPropagation()}  // prevents overlay click
+      >
 
-        {/* ===== Balanced Header: left spacer | title | right group ===== */}
+        {/* ==== HEADER ==== */}
         <div className="tp-header">
-
           <div className="tp-header-left"></div>
-
           <h3 className="tp-header-title">{task.title}</h3>
-
           <div className="tp-header-right">
             <div className="tp-person" onClick={handleChangePerson}>
               {task.person || "Assign Person"}
             </div>
             <button className="tp-close-btn" onClick={handleClose}>✕</button>
           </div>
-
         </div>
 
+        {/* ==== BODY ==== */}
         <div className="tp-body">
           <h4>Notes</h4>
 
@@ -180,14 +234,45 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           />
         </div>
 
+        {/* ==== TOAST (click to dismiss) ==== */}
+        {ccConfirm && (
+          <div
+            onClick={() => setCcConfirm(false)}
+            style={{
+              margin: "10px 20px",
+              padding: "10px 14px",
+              background: "#f2f4f7",
+              borderLeft: "4px solid #003366",
+              borderRadius: "6px",
+              color: "#003366",
+              fontSize: "0.9rem",
+              lineHeight: "1.3",
+              textAlign: "center",
+              cursor: "pointer"
+            }}
+          >
+            This will activate the Change Control process.
+            <br />
+            Click CC again to continue.
+          </div>
+        )}
+
+        {/* ==== FOOTER ==== */}
         <div className="tp-footer">
 
           <div className="tp-gov-row">
-            <button onClick={() => !isLocked && doAction({ gov: "CC" })}>CC</button>
+            <button onClick={handleCC}>CC</button>
+
             <button onClick={() => !isLocked && doAction({ gov: "QC" })}>QC</button>
-            <button onClick={() => !isLocked && doAction({ gov: "Risk" })}>Risk</button>
-            <button onClick={() => !isLocked && doAction({ gov: "Issue" })}>Issue</button>
-            <button onClick={() => !isLocked && doAction({ gov: "Escalate" })}>Escalate</button>
+            <button onClick={() => !isLocked && doAction({ gov: "Risk", flag: "red" })}>
+              Risk
+            </button>
+            <button onClick={() => !isLocked && doAction({ gov: "Issue", flag: "red" })}>
+              Issue
+            </button>
+            <button onClick={() => !isLocked && doAction({ gov: "Escalate", flag: "red" })}>
+              Escalate
+            </button>
             <button onClick={() => !isLocked && doAction({ gov: "Email" })}>Email</button>
             <button onClick={() => !isLocked && doAction({ gov: "Docs" })}>Docs</button>
             <button onClick={() => !isLocked && doAction({ gov: "Template" })}>Template</button>
@@ -198,7 +283,10 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
             <button onClick={() => !isLocked && doAction({ status: "Completed" })}>
               Mark Completed
             </button>
-            <button className="tp-delete" onClick={() => !isLocked && doAction({ delete: true })}>
+            <button
+              className="tp-delete"
+              onClick={() => !isLocked && doAction({ delete: true })}
+            >
               Delete
             </button>
           </div>

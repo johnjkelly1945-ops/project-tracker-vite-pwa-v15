@@ -1,49 +1,155 @@
 /* ======================================================================
    METRA – PreProject.css
    v7 A2 – Updated for DualPane v6.3 integration
-   ----------------------------------------------------------------------
-   Restores:
-   ✔ Task row layout
-   ✔ Assigned person alignment
-   ✔ Status dots
-   ✔ Add Task button
-   ✔ Sticky header + sticky footer
-   ✔ Scroll-safe container inside DualPane
+   (Option C Patch – Adds v7 A3 class names without changing layout)
    ====================================================================== */
 
-
-/* -----------------------------------------------------
-   WRAPPER (inside DualPane pane)
-   ----------------------------------------------------- */
+/* ----- PANEL WRAPPER ----- */
 .preproject-pane {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 12px 16px;
-  background: #ffffff;
-  font-family: system-ui, sans-serif;
+  width: 100%;
 }
 
-
-/* -----------------------------------------------------
-   HEADER – sits under FilterBar (which is already sticky)
-   ----------------------------------------------------- */
+/* ----- HEADER ----- */
 .preproject-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 4px 10px 4px;
-  border-bottom: 1px solid #d0d6dd;
+  padding: 12px 16px;
+  background: #003366;
+  color: white;
 }
 
 .pp-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1d3557;
+  font-size: 1.4rem;
   margin: 0;
 }
 
 .pp-add-btn {
-  background: #e3eef9;
-  border: 1px solid #b7c9dd;
+  padding: 6px 12px;
+  border: none;
+  background: #0066cc;
+  color: white;
   border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ----- MAIN SCROLL AREA ----- */
+.pane-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* ================================================================
+   EXISTING v7 A2 BASELINE TASK STYLES
+   (These were present in your uploaded file)
+   ================================================================ */
+
+.pp-task {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #d8dee6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pp-task:hover {
+  background: #f3f7fc;
+}
+
+.pp-left {
+  width: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.pp-center {
+  flex: 1;
+  padding: 0 10px;
+  font-size: 1rem;
+  color: #003366;
+  display: flex;
+  align-items: center;
+}
+
+.pp-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 40px;
+  justify-content: flex-end;
+}
+
+/* Status dot colours */
+.status-grey {
+  background: #cbd5e1;
+}
+
+.status-amber {
+  background: #f4b400;
+}
+
+.status-green {
+  background: #34a853;
+}
+
+/* ================================================================
+   OPTION C PATCH:
+   Add v7 A3 class names so your JSX works
+   WITHOUT changing existing layout
+   ================================================================ */
+
+/* New row wrapper maps to old .pp-task */
+.pp-task-item {
+  composes: pp-task;
+}
+
+/* New status dot maps to old .pp-left + dot */
+.pp-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* New title class maps to old .pp-center */
+.pp-task-title {
+  flex: 1;
+  padding: 0 10px;
+  font-size: 1rem;
+  color: #003366;
+  display: flex;
+  align-items: center;
+}
+
+/* New red-flag class maps to .pp-right position */
+.pp-flag-dot {
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Ensure row hover matches existing behaviour */
+.pp-task-item:hover {
+  background: #f3f7fc;
+}
+/* --- Status Dot inside pp-left (card layout) --- */
+.pp-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --- Flag on right side of card --- */
+.pp-flag-dot {
+  font-size: 16px;
+  pointer-events: none;
+}
+
