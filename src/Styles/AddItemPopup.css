@@ -1,152 +1,103 @@
-/* =============================================================================
-   METRA – AddItemPopup.css
-   v1.0 – Creation Popup (Management/Development + Summary/Task)
-   -----------------------------------------------------------------------------
-   Clean modal window
-   High contrast, easy readability
-   Safari + Chrome stable
-   ============================================================================= */
+/* ======================================================================
+   METRA – AddItemPopup.css (Unified Style for Both Panes)
+   v4 – Global Centre Popup (Left + Right Match)
+   ====================================================================== */
 
-/* --- Backdrop -------------------------------------------------------------- */
-.additem-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+.additem-overlay {
+  position: fixed; 
+  inset: 0;                      /* top:0, right:0, bottom:0, left:0 */
+  background: rgba(0, 0, 0, 0.45);
+
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999; /* above all other overlays */
+
+  z-index: 2000;
 }
 
-/* --- Container ------------------------------------------------------------- */
-.additem-container {
+/* Popup Panel */
+.additem-window {
   width: 420px;
   background: #ffffff;
   border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  animation: fadeInPopup 0.15s ease-out;
 }
 
-/* --- Header ---------------------------------------------------------------- */
+/* Header */
 .additem-header {
-  background: #1e40af;
-  color: white;
-  padding: 14px 20px;
-  font-size: 18px;
-  font-weight: 600;
+  background: #1f3fa3;
+  color: #ffffff;
+  padding: 16px 22px;
+  font-size: 22px;
+  font-weight: 700;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .additem-close {
-  background: none;
+  background: #ffffff;
   border: none;
-  color: white;
-  font-size: 28px;
+  font-size: 18px;
+  border-radius: 6px;
+  padding: 4px 10px;
   cursor: pointer;
-  line-height: 1;
 }
 
-/* --- Body ------------------------------------------------------------------ */
+.additem-close:hover {
+  background: #e7e9f3;
+}
+
+/* Body */
 .additem-body {
-  padding: 20px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  padding: 22px;
 }
 
-.additem-label {
+.additem-body label {
+  font-size: 16px;
   font-weight: 600;
-  font-size: 15px;
-  color: #1e293b;
 }
 
 .additem-input {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 15px;
-  color: #0f172a;
+  padding: 12px 14px;
+  font-size: 16px;
+
+  border: 2px solid #d0d5e4;
+  border-radius: 8px;
+
+  margin-top: 8px;
+  transition: border-color 0.15s ease;
 }
 
 .additem-input:focus {
-  outline: 2px solid #1e40af;
+  border-color: #1f3fa3;
+  outline: none;
 }
 
-/* --- Radio rows ------------------------------------------------------------ */
-.additem-row {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-}
+/* Button */
+.additem-submit-btn {
+  margin-top: 16px;
+  padding: 10px 18px;
 
-.additem-radio {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  color: #334155;
-}
-
-/* --- Summary Selector ------------------------------------------------------ */
-.additem-summary-box {
-  background: #f8fafc;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-}
-
-.additem-nosummary {
-  font-size: 13px;
-  color: #64748b;
-  line-height: 1.4;
-}
-
-.additem-select {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 15px;
-  margin-top: 6px;
-}
-
-/* --- Footer ---------------------------------------------------------------- */
-.additem-footer {
-  padding: 14px 18px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  border-top: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
-
-.additem-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
+  background: #1f3fa3;
+  color: #ffffff;
   border: none;
-  font-size: 15px;
+  border-radius: 8px;
+
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.additem-btn.cancel {
-  background: #e2e8f0;
-  color: #1e293b;
+.additem-submit-btn:hover {
+  background: #243fb8;
 }
 
-.additem-btn.cancel:hover {
-  background: #cbd5e1;
-}
-
-.additem-btn.create {
-  background: #1e40af;
-  color: white;
-}
-
-.additem-btn.create:hover {
-  background: #1e3a8a;
+/* Animation */
+@keyframes fadeInPopup {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }

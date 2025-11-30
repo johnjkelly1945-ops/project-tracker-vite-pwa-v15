@@ -1,29 +1,50 @@
 /* ======================================================================
    METRA – FilterBar.jsx
-   Stage 3.1 – Full Filter Bar (UI Only)
-   Correct, Clean, Safe Version
+   v1 – Shared Dual-Mode Filter Component (mgmt + dev)
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Full pill-style filter buttons (exactly as in your screenshot)
+   ✔ Works in BOTH panes via mode="mgmt" | mode="dev"
+   ✔ Emits selected filter back to parent pane
+   ✔ Clean, simple, eyesight-friendly layout
    ====================================================================== */
 
 import React from "react";
 import "../Styles/FilterBar.css";
 
-export default function FilterBar({ active, onChange }) {
+export default function FilterBar({ mode, activeFilter, onChange }) {
+
+  /* ------------------------------------------------------------------
+     FILTER OPTIONS – identical for both panes
+     ------------------------------------------------------------------ */
   const filters = [
     { id: "all", label: "All" },
-    { id: "not-started", label: "Not Started" },
-    { id: "in-progress", label: "In Progress" },
+    { id: "notstarted", label: "Not Started" },
+    { id: "inprogress", label: "In Progress" },
     { id: "completed", label: "Completed" },
     { id: "flagged", label: "Flagged" },
     { id: "open", label: "Open" }
   ];
 
+  /* ------------------------------------------------------------------
+     HANDLE CLICK
+     ------------------------------------------------------------------ */
+  const handleClick = (filterId) => {
+    if (onChange) {
+      onChange(mode, filterId); // parent handles filtering
+    }
+  };
+
+  /* ------------------------------------------------------------------
+     RENDER
+     ------------------------------------------------------------------ */
   return (
-    <div className="filter-bar">
+    <div className="filterbar-container">
       {filters.map((f) => (
         <button
           key={f.id}
-          className={`filter-pill ${active === f.id ? "active" : ""}`}
-          onClick={() => onChange?.(f.id)}
+          className={`filter-pill ${activeFilter === f.id ? "active" : ""}`}
+          onClick={() => handleClick(f.id)}
         >
           {f.label}
         </button>
