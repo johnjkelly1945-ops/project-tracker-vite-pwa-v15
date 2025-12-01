@@ -1,34 +1,28 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v21 – CC Toast Confirmation (Tap-to-Dismiss)
+   v8.0 – Unified Pane-Aware Popup (Architecture B)
    ----------------------------------------------------------------------
-   ✔ First CC click shows toast
-   ✔ Second CC click performs actual CC
-   ✔ Toast remains until user dismisses it
-   ✔ Clicking INSIDE toast dismisses it
-   ✔ Clicking anywhere except CC dismisses it
-   ✔ CC triggers system note + red flag + close
+   ✔ Pane-aware updates for both mgmt + dev
+   ✔ Safe commitEntry (never sends undefined fields)
+   ✔ Correct Change Person routing
+   ✔ Correct CC two-step logic
+   ✔ Notes merge + timestamp stable
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
 import "../Styles/TaskPopup.css";
 
-export default function TaskPopup({ task, onClose, onUpdate }) {
+export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   if (!task) return null;
 
-  /* ---------------------------------------------------------------
-     Toast confirmation state
-  --------------------------------------------------------------- */
-  const [ccConfirm, setCcConfirm] = useState(false);
-
-  /* ---------------------------------------------------------------
-     Lock mode – task inactive until assigned
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Locked if no assigned person
+  ------------------------------------------------------------------- */
   const isLocked = !task.person || task.person.trim() === "";
 
-  /* ---------------------------------------------------------------
-     Normalise history
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Normalise notes into text
+  ------------------------------------------------------------------- */
   const normaliseNotes = (v) => {
     if (typeof v === "string") return v;
     if (!v) return "";
@@ -37,18 +31,18 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
   };
 
   const historyText = normaliseNotes(task.notes).trimEnd();
-
   const [draftText, setDraftText] = useState("");
   const [visibleText, setVisibleText] = useState("");
   const areaRef = useRef(null);
 
-  /* ---------------------------------------------------------------
-     Merge history + draft on open
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Merge history + draft
+  ------------------------------------------------------------------- */
   useEffect(() => {
     const merged = historyText + (historyText ? "\n\n" : "") + draftText;
     setVisibleText(merged);
 
+    // Move cursor to start of draft region
     setTimeout(() => {
       if (areaRef.current) {
         const boundary = historyText.length + (historyText ? 2 : 0);
@@ -58,13 +52,11 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
     }, 0);
   }, [historyText]);
 
-  /* ---------------------------------------------------------------
-     Typing – dismiss toast when user interacts
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Typing handler
+  ------------------------------------------------------------------- */
   const handleChange = (e) => {
     if (isLocked) return;
-
-    if (ccConfirm) setCcConfirm(false);
 
     const newValue = e.target.value;
     const boundary = historyText.length + (historyText ? 2 : 0);
@@ -72,20 +64,11 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
 
     setDraftText(newDraft);
     setVisibleText(historyText + (historyText ? "\n\n" : "") + newDraft);
-
-    setTimeout(() => {
-      if (areaRef.current) {
-        if (areaRef.current.selectionStart < boundary) {
-          areaRef.current.selectionStart = boundary;
-          areaRef.current.selectionEnd = boundary;
-        }
-      }
-    }, 0);
   };
 
-  /* ---------------------------------------------------------------
-     Timestamp helper
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Timestamp
+  ------------------------------------------------------------------- */
   const makeTimestamp = () => {
     const t = new Date();
     const dd = String(t.getDate()).padStart(2, "0");
@@ -96,120 +79,107 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
     return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
   };
 
-  /* ---------------------------------------------------------------
-     Commit user entry
-  --------------------------------------------------------------- */
-  const commitEntry = () => {
-    return new Promise((resolve) => {
-      if (isLocked) return resolve(null);
+  /* -------------------------------------------------------------------
+     Commit entry safely
+  ------------------------------------------------------------------- */
+  const commitEntry = async () => {
+    if (isLocked) return null;
 
-      const trimmed = draftText.trim();
-      if (trimmed === "") return resolve(null);
+    const trimmed = draftText.trim();
+    if (trimmed === "") return null;
 
-      const stamp = makeTimestamp();
-      const entry = `${trimmed} – ${stamp}`;
+    const stamp = makeTimestamp();
+    const entry = `${trimmed} – ${stamp}`;
 
-      const updatedHistory =
-        historyText
-          ? `${historyText}\n\n${entry}`
-          : entry;
+    const updatedHistory =
+      historyText ? `${historyText}\n\n${entry}` : entry;
 
-      onUpdate({
-        notes: updatedHistory + "\n\n",
-        notesTimestamp: Date.now(),
-      });
-
-      resolve(entry);
+    onUpdate({
+      notes: updatedHistory + "\n\n",
+      notesTimestamp: Date.now(),
+      pane
     });
+
+    return entry;
   };
 
-  /* ---------------------------------------------------------------
-     CC System Note
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     CC system note
+  ------------------------------------------------------------------- */
   const makeCCSystemNote = () => {
     const stamp = makeTimestamp();
     return `[System] Change Control request recorded – ${stamp}`;
   };
 
-  /* ---------------------------------------------------------------
-     CC Handler – Two-step confirmation
-  --------------------------------------------------------------- */
+  const [ccConfirm, setCcConfirm] = useState(false);
+
+  /* -------------------------------------------------------------------
+     CC handler (two-step)
+  ------------------------------------------------------------------- */
   const handleCC = async () => {
     if (isLocked) return;
 
-    // FIRST CLICK – show toast only
+    // First click → show toast
     if (!ccConfirm) {
       setCcConfirm(true);
       return;
     }
 
-    // SECOND CLICK – perform CC
+    // Second click → commit CC entry
     const systemNote = makeCCSystemNote();
     const updatedHistory =
-      historyText
-        ? `${historyText}\n\n${systemNote}`
-        : systemNote;
+      historyText ? `${historyText}\n\n${systemNote}` : systemNote;
 
     onUpdate({
       notes: updatedHistory + "\n\n",
       notesTimestamp: Date.now(),
       startChangeControl: true,
-      flag: "red"
+      flag: "red",
+      pane
     });
 
     onClose();
   };
 
-  /* ---------------------------------------------------------------
-     Dismiss toast except when CC is clicked
-  --------------------------------------------------------------- */
-  const dismissToast = () => {
-    if (ccConfirm) setCcConfirm(false);
-  };
-
-  /* ---------------------------------------------------------------
-     Close popup normally
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Close
+  ------------------------------------------------------------------- */
   const handleClose = async () => {
-    if (ccConfirm) setCcConfirm(false);
     await commitEntry();
     onClose();
   };
 
-  /* ---------------------------------------------------------------
+  /* -------------------------------------------------------------------
      Change Person
-  --------------------------------------------------------------- */
+  ------------------------------------------------------------------- */
   const handleChangePerson = async () => {
-    if (ccConfirm) setCcConfirm(false);
     await commitEntry();
-    onUpdate({ changePerson: true });
+    onUpdate({ changePerson: true, pane });
     onClose();
   };
 
-  /* ---------------------------------------------------------------
-     Footer actions (Risk, QC, Issue, etc.)
-  --------------------------------------------------------------- */
+  /* -------------------------------------------------------------------
+     Footer governance actions
+  ------------------------------------------------------------------- */
   const doAction = async (fields) => {
-    if (ccConfirm) setCcConfirm(false);
-
     if (!isLocked) {
       await commitEntry();
-      onUpdate(fields);
+      onUpdate({ ...fields, pane });
     }
     onClose();
   };
 
-  /* ---------------------------------------------------------------
-     Render
-  --------------------------------------------------------------- */
+  /* ====================================================================
+     RENDER
+     ==================================================================== */
   return (
-    <div className="taskpopup-overlay" onClick={dismissToast}>
+    <div className="taskpopup-overlay" onClick={() => setCcConfirm(false)}>
       <div
         className="taskpopup-window"
-        onClick={(e) => e.stopPropagation()}  // prevents overlay click
+        onClick={(e) => e.stopPropagation()}
       >
 
-        {/* ==== HEADER ==== */}
+        {/* HEADER */}
         <div className="tp-header">
           <div className="tp-header-left"></div>
           <h3 className="tp-header-title">{task.title}</h3>
@@ -221,10 +191,9 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           </div>
         </div>
 
-        {/* ==== BODY ==== */}
+        {/* BODY */}
         <div className="tp-body">
           <h4>Notes</h4>
-
           <textarea
             ref={areaRef}
             className="tp-note-draft"
@@ -234,7 +203,7 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           />
         </div>
 
-        {/* ==== TOAST (click to dismiss) ==== */}
+        {/* CC Toast */}
         {ccConfirm && (
           <div
             onClick={() => setCcConfirm(false)}
@@ -257,41 +226,33 @@ export default function TaskPopup({ task, onClose, onUpdate }) {
           </div>
         )}
 
-        {/* ==== FOOTER ==== */}
+        {/* FOOTER */}
         <div className="tp-footer">
-
           <div className="tp-gov-row">
             <button onClick={handleCC}>CC</button>
-
-            <button onClick={() => !isLocked && doAction({ gov: "QC" })}>QC</button>
-            <button onClick={() => !isLocked && doAction({ gov: "Risk", flag: "red" })}>
-              Risk
-            </button>
-            <button onClick={() => !isLocked && doAction({ gov: "Issue", flag: "red" })}>
-              Issue
-            </button>
-            <button onClick={() => !isLocked && doAction({ gov: "Escalate", flag: "red" })}>
-              Escalate
-            </button>
-            <button onClick={() => !isLocked && doAction({ gov: "Email" })}>Email</button>
-            <button onClick={() => !isLocked && doAction({ gov: "Docs" })}>Docs</button>
-            <button onClick={() => !isLocked && doAction({ gov: "Template" })}>Template</button>
+            <button onClick={() => doAction({ gov: "QC" })}>QC</button>
+            <button onClick={() => doAction({ gov: "Risk", flag: "red" })}>Risk</button>
+            <button onClick={() => doAction({ gov: "Issue", flag: "red" })}>Issue</button>
+            <button onClick={() => doAction({ gov: "Escalate", flag: "red" })}>Escalate</button>
+            <button onClick={() => doAction({ gov: "Email" })}>Email</button>
+            <button onClick={() => doAction({ gov: "Docs" })}>Docs</button>
+            <button onClick={() => doAction({ gov: "Template" })}>Template</button>
           </div>
 
           <div className="tp-action-row">
             <button onClick={handleChangePerson}>Change Person</button>
-            <button onClick={() => !isLocked && doAction({ status: "Completed" })}>
+            <button onClick={() => doAction({ status: "Completed" })}>
               Mark Completed
             </button>
             <button
               className="tp-delete"
-              onClick={() => !isLocked && doAction({ delete: true })}
+              onClick={() => doAction({ delete: true })}
             >
               Delete
             </button>
           </div>
-
         </div>
+
       </div>
     </div>
   );

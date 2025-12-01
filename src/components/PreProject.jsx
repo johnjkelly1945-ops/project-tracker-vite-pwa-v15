@@ -1,131 +1,31 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   v7 A13 – AddTask exposed to DualPane + Correct Filters
+   v8.0 – Stateless Viewer (Architecture B)
+   ----------------------------------------------------------------------
+   ✔ Receives tasks from DualPane (no internal state)
+   ✔ Sends openPopup(task)
+   ✔ Sends onRequestAssign(taskID)
+   ✔ Applies same filtering rules as before
+   ✔ No data storage or business logic inside this component
    ====================================================================== */
 
-import React, {
-  useState,
-  useEffect,
-  forwardRef,
-  useImperativeHandle
-} from "react";
-
-import AddItemPopup from "./AddItemPopup.jsx";
-import PersonnelOverlay from "./PersonnelOverlay.jsx";
-import TaskPopup from "./TaskPopup.jsx";
-
+import React from "react";
 import "../Styles/PreProject.css";
 
-function PreProjectComponent({ filter, openPopup }, ref) {
+export default function PreProject({
+  filter,
+  tasks,
+  openPopup,
+  onRequestAssign
+}) {
 
-  /* ====================================================================
-     BASE TASKS
-     ==================================================================== */
-
-  const defaultTasks = [
-    { id: 1, title: "Prepare Scope Summary", status: "Not Started", person: "", flag: "" },
-    { id: 2, title: "Initial Risk Scan", status: "Not Started", person: "", flag: "" },
-    { id: 3, title: "Stakeholder Mapping", status: "Not Started", person: "", flag: "" }
-  ];
-
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("tasks_v3");
-    return saved ? JSON.parse(saved) : defaultTasks;
-  });
-
-  /* ====================================================================
-     STATUS AUTO-HEAL
-     ==================================================================== */
-
-  useEffect(() => {
-    const healed = tasks.map(t =>
-      t.person && t.person.trim() !== "" && t.status === "Not Started"
-        ? { ...t, status: "In Progress" }
-        : t
-    );
-
-    if (JSON.stringify(healed) !== JSON.stringify(tasks)) {
-      setTasks(healed);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("tasks_v3", JSON.stringify(tasks));
-  }, [tasks]);
-
-
-  /* ====================================================================
-     PERSONNEL OVERLAY
-     ==================================================================== */
-
-  const [showPersonnel, setShowPersonnel] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [selectedTaskForPopup, setSelectedTaskForPopup] = useState(null);
-
-  const openPersonnel = (taskId) => {
-    setSelectedTaskId(taskId);
-    setShowPersonnel(true);
-  };
-
-  const closePersonnel = () => setShowPersonnel(false);
-
-  const handleSelectPerson = (name) => {
-    if (!selectedTaskId) return;
-
-    const updated = tasks.map((t) =>
-      t.id === selectedTaskId
-        ? { ...t, person: name, status: "In Progress" }
-        : t
-    );
-
-    setTasks(updated);
-    closePersonnel();
-
-    const updatedTask = updated.find(t => t.id === selectedTaskId);
-
-    setTimeout(() => {
-      setSelectedTaskForPopup(updatedTask);
-    }, 0);
-  };
-
-
-  /* ====================================================================
-     ADD TASK POPUP
-     ==================================================================== */
-
-  const [showAddItem, setShowAddItem] = useState(false);
-
-  const handleAddTask = (taskObj) => {
-    const newTask = {
-      id: Date.now(),
-      title: taskObj.title,
-      status: "Not Started",
-      person: "",
-      flag: ""
-    };
-    setTasks([...tasks, newTask]);
-    setShowAddItem(false);
-  };
-
-  /* ====================================================================
-     EXPOSE METHOD TO DUALPANE
-     ==================================================================== */
-
-  useImperativeHandle(ref, () => ({
-    openAddTaskPopup: () => setShowAddItem(true)
-  }));
-
-
-  /* ====================================================================
-     FILTERING
-     ==================================================================== */
-
+  /* -------------------------------------------------------------------
+     FILTERING – identical behaviour to old system
+     ------------------------------------------------------------------- */
   const filteredTasks = (() => {
     switch (filter) {
       case "notstarted":
-        return tasks.filter(t =>
-          t.status === "Not Started" && t.flag === ""
-        );
+        return tasks.filter(t => t.status === "Not Started" && !t.flag);
       case "inprogress":
         return tasks.filter(t => t.status === "In Progress");
       case "completed":
@@ -139,46 +39,27 @@ function PreProjectComponent({ filter, openPopup }, ref) {
     }
   })();
 
-
-  /* ====================================================================
-     UPDATE TASK
-     ==================================================================== */
-
-  const updateTask = (id, fields) => {
-
-    if (fields.changePerson) {
-      setSelectedTaskForPopup(null);
-      setSelectedTaskId(id);
-      setShowPersonnel(true);
-      return;
-    }
-
-    const updated = tasks.map((t) =>
-      t.id === id ? { ...t, ...fields } : t
-    );
-
-    setTasks(updated);
-
-    if (!fields.delete) {
-      const updatedTask = updated.find(t => t.id === id);
-      setSelectedTaskForPopup(updatedTask);
-    }
-  };
-
-
-  /* ====================================================================
-     RENDER
-     ==================================================================== */
-
+  /* -------------------------------------------------------------------
+     RENDER – simple stateless map of tasks
+     ------------------------------------------------------------------- */
   return (
     <>
-
-      {filteredTasks.map((task) => (
+      {filteredTasks.map(task => (
         <div
           key={task.id}
           className="pp-task-item"
-          onClick={() => openPopup(task)}
+
+          onClick={() => {
+            // If task not assigned → request person assignment
+            if (!task.person || task.person.trim() === "") {
+              onRequestAssign(task.id);
+            } else {
+              openPopup(task);
+            }
+          }}
         >
+
+          {/* Status Dot */}
           <div
             className={`pp-status-dot ${
               task.status === "Completed"
@@ -187,39 +68,17 @@ function PreProjectComponent({ filter, openPopup }, ref) {
                 ? "status-amber"
                 : "status-grey"
             }`}
-          ></div>
+          />
 
+          {/* Task Title */}
           <div className="pp-task-title">{task.title}</div>
 
-          {task.flag === "red" && <div className="pp-flag-dot">🚩</div>}
+          {/* Flag */}
+          {task.flag === "red" && (
+            <div className="pp-flag-dot">🚩</div>
+          )}
         </div>
       ))}
-
-      {showAddItem && (
-        <AddItemPopup
-          onAdd={handleAddTask}
-          onClose={() => setShowAddItem(false)}
-        />
-      )}
-
-      {showPersonnel && (
-        <PersonnelOverlay
-          onSelect={handleSelectPerson}
-          onClose={closePersonnel}
-        />
-      )}
-
-      {selectedTaskForPopup && (
-        <TaskPopup
-          task={selectedTaskForPopup}
-          onClose={() => setSelectedTaskForPopup(null)}
-          onUpdate={(fields) =>
-            updateTask(selectedTaskForPopup.id, fields)
-          }
-        />
-      )}
     </>
   );
 }
-
-export default forwardRef(PreProjectComponent);

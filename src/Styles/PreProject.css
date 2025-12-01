@@ -138,3 +138,68 @@
   background: #c3c8cf;
   border-radius: 4px;
 }
+/* ======================================================================
+   PERSONNEL OVERLAY – FULL RESTORE
+   Matches working left-pane behaviour
+   ====================================================================== */
+
+.pp-person-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 3000 !important;          /* above TaskPopup */
+}
+
+.pp-person-window {
+  background: white !important;
+  border-radius: 10px !important;
+  width: 360px !important;
+  max-width: 90vw !important;
+  padding: 20px !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25) !important;
+  position: relative !important;
+  z-index: 3001 !important;
+}
+
+.pp-person-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+}
+
+.pp-person-header h3 {
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+.pp-person-close {
+  background: #d9534f !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+}
+
+.pp-person-list {
+  max-height: 50vh !important;
+  overflow-y: auto !important;
+}
+
+.pp-person-item {
+  padding: 10px !important;
+  border-bottom: 1px solid #eee !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  color: #002244 !important;
+}
+
+.pp-person-item:hover {
+  background: #f0f4f8 !important;
+}

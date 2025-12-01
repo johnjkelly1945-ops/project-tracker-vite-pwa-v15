@@ -1,15 +1,12 @@
 /* ======================================================================
    METRA – App.jsx
-   v6.3 DualPane Integration (Corrected)
+   v7.0 – Global Modal Layer Enabled
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Ensures PreProject always loads THROUGH DualPane
-   ✔ Removes any direct <PreProject /> rendering
-   ✔ Keeps Repository accessible from top navigation
-   ✔ Manages global module state
-   ✔ Renders FilterBar only in PreProject mode
+   ✔ PreProject loads through DualPane
+   ✔ Repository remains selectable
+   ✔ Global popup layer added (ALL modals render above app)
    ====================================================================== */
-/* TEST123 FROM RESTORED */
 
 import React, { useState } from "react";
 
@@ -54,18 +51,23 @@ export default function App() {
 
 
       {/* ------------------------------------------------------------
-         FILTER BAR (only shown for PreProject)
+         FILTER BAR (only for PreProject)
          ------------------------------------------------------------ */}
       {activeModule === "preproject" && <FilterBar />}
 
 
       {/* ------------------------------------------------------------
-         WORKSPACE CONTENT AREA
+         WORKSPACE CONTENT
          ------------------------------------------------------------ */}
       <main className="workspace">
         {activeModule === "preproject" && <DualPane />}
         {activeModule === "repository" && <RepositoryModule />}
       </main>
+
+      {/* ============================================================
+         GLOBAL POPUP LAYER (ALL modal windows render here)
+         ============================================================ */}
+      <div id="metra-popups"></div>
 
     </div>
   );
