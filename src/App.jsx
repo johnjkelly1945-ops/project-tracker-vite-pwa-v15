@@ -1,11 +1,37 @@
+/* ======================================================================
+   METRA – App.jsx
+   Stage 3.2 – DualPane Active Mode (Isolated Layout Testing)
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Keep global header stable
+   ✔ Keep filter bar visible
+   ✔ Render DualPane.jsx for isolated scroll & layout debugging
+   ✔ DO NOT affect PreProjectDual.jsx until DualPane is verified
+   ====================================================================== */
+
 import React from "react";
+import DualPane from "./components/DualPane";
+import FilterBar from "./components/FilterBar";
+
+
+import "./Styles/DualPane.css";
+import "./Styles/FilterBar.css";
 
 export default function App() {
-  console.log("🧩 Fresh isolated App.jsx loaded at runtime");
   return (
-    <div style={{padding:"2rem",textAlign:"center"}}>
-      <h1>Isolated App.jsx Render</h1>
-      <p>If you can see this text, Vite is now reading the new file.</p>
+    <div className="app-container">
+
+      {/* === Global Main Header (sticky) === */}
+      <header className="global-header">
+        METRA – PreProject
+      </header>
+
+      {/* === Filter Bar (shared) === */}
+      <FilterBar />
+
+      {/* === DualPane scaffold (ACTIVE for Stage 3.2) === */}
+      <DualPane />
+
     </div>
   );
 }

@@ -24,3 +24,35 @@ export default function TemplateLinks() {
     </div>
   );
 }
+/* ======================================================================
+   METRA – TemplateLinks.jsx
+   v2 – JSON-driven template list loader
+   ----------------------------------------------------------------------
+   • Loads templates from public/templates/templates.json
+   • Returns them in a clean array for use by TemplateAttachPopup
+   • Baseline-safe: NO UI added here, only provides data
+   ====================================================================== */
+
+import React, { useEffect, useState } from "react";
+
+export default function TemplateLinks({ onLoaded }) {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const res = await fetch("/templates/templates.json");
+        const data = await res.json();
+        setItems(data);
+
+        if (onLoaded) onLoaded(data);
+      } catch (err) {
+        console.error("Failed to load templates.json:", err);
+      }
+    }
+
+    loadTemplates();
+  }, [onLoaded]);
+
+  return null; // This component is non-visual
+}

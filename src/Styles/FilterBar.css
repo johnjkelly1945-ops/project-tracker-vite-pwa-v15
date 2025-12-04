@@ -1,0 +1,48 @@
+/* ======================================================================
+   METRA – FilterBar.css
+   v1.1 – Correct Sticky Offset + Pill Filters
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Clean pill-style filter buttons
+   ✔ FilterBar now sticks DIRECTLY under the pane header
+   ✔ Works identically in both panes
+   ====================================================================== */
+
+/* Container sits directly under each pane header */
+.filterbar-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #d8dee6;
+
+  /* ---------------------- FIXED STICKY OFFSET ---------------------- */
+  position: sticky;
+  top: 56px;   /* EXACT height of .pane-header */
+  z-index: 6;  /* above header so border overlaps cleanly */
+}
+
+/* Pill style button */
+.filter-pill {
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #344054;
+}
+
+/* Hover */
+.filter-pill:hover {
+  background: #e6e9ef;
+  border-color: #c4c9d4;
+}
+
+/* Active */
+.filter-pill.active {
+  background: #dce3ee;
+  border-color: #b4bcc9;
+  font-weight: 600;
+}

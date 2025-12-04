@@ -1,0 +1,106 @@
+/* ======================================================================
+   METRA – SummaryOverlay.css
+   v2.1 – Isolated Popup, No Style Conflicts
+   ====================================================================== */
+
+.summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+}
+
+.summary-window {
+  width: 480px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* HEADER */
+.summary-header {
+  background: #003366;          /* <-- THE BLUE HEADER */
+  color: white;
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-header-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.summary-close-btn {
+  background: #d9534f;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* BODY */
+.summary-body {
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #003366;
+}
+
+.summary-input {
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #c7cdd8;
+  outline: none;
+}
+
+/* FOOTER */
+.summary-footer {
+  padding: 16px 22px;
+  background: #f5f7fa;
+  border-top: 1px solid #e1e5eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.summary-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.summary-btn.cancel {
+  background: #e6e9ed;
+  color: #003366;
+}
+
+.summary-btn.add {
+  background: #003366;
+  color: white;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

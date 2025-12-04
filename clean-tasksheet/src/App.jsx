@@ -1,45 +1,15 @@
 /* ======================================================================
-   METRA – App.jsx
-   Navigation Bar + Screen Switching
+   METRA – App.jsx (Clean Tasksheet Recovery)
+   Ensures PreProject loads as the main visible component.
    ====================================================================== */
 
-import React, { useState } from "react";
-
-import NavBar from "./components/NavBar";
-import PreProjectDual from "./components/PreProjectDual";
-import RepositoryModule from "./components/RepositoryModule";
-
-
+import React from "react";
+import PreProject from "./components/PreProject";
 
 export default function App() {
-  const [screen, setScreen] = useState("preproject");
-  const [repoTasks, setRepoTasks] = useState([]);
-
-  const handleDownload = (items) => {
-    setRepoTasks(items);
-    setScreen("preproject");
-  };
-
-  const clearInjectedTasks = () => setRepoTasks([]);
-
   return (
-    <div className="app-root">
-      <NavBar setScreen={setScreen} />
-
-      {screen === "preproject" && (
-        <PreProjectDual
-          setScreen={setScreen}
-          injectedTasks={repoTasks}
-          clearInjectedTasks={clearInjectedTasks}
-        />
-      )}
-
-      {screen === "repository" && (
-        <RepositoryModule
-          setScreen={setScreen}
-          onDownload={handleDownload}
-        />
-      )}
+    <div className="App">
+      <PreProject />
     </div>
   );
 }

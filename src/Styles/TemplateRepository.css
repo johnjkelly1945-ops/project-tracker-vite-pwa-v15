@@ -1,0 +1,196 @@
+/* ======================================================================
+   METRA – TemplateRepository.css
+   Layout: Summary-style modal overlay
+   Split: 35% (list) / 65% (preview)
+   ====================================================================== */
+
+/* -------------------- Overlay Background -------------------- */
+.template-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+/* -------------------- Main Modal Window -------------------- */
+.template-window {
+  width: 90vw;
+  height: 85vh;
+  background: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* -------------------- Header with Big Buttons -------------------- */
+.template-header {
+  display: flex;
+  align-items: center;
+  background: #e6ecf4;
+  padding: 12px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.panel-button {
+  background: #d0d7e1;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1rem;
+  margin-right: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.panel-button.active {
+  background: #2d6cdf;
+  color: white;
+  font-weight: bold;
+}
+
+.close-button {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: #444;
+}
+
+/* -------------------- Filter Bar -------------------- */
+.template-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f2f4f7;
+  border-bottom: 1px solid #d0d7e1;
+  flex-shrink: 0;
+}
+
+.template-filters select,
+.template-search {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #c5cbd3;
+  font-size: 0.95rem;
+  background: white;
+}
+
+/* -------------------- Main Content Area -------------------- */
+.template-list,
+.template-preview {
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Layout: 35% list / 65% preview */
+.template-window > .template-list,
+.template-window > .template-preview {
+  /* ensures side-by-side layout */
+}
+
+/* But we need a container for the side-by-side split */
+.template-list {
+  width: 35%;
+  border-right: 1px solid #d0d7e1;
+}
+
+.template-preview {
+  width: 65%;
+}
+
+/* To achieve horizontal split */
+.template-window {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 35% 65%;
+}
+
+.template-header {
+  grid-column: 1 / 3;
+}
+
+.template-filters {
+  grid-column: 1 / 3;
+}
+
+.template-list {
+  grid-column: 1 / 2;
+}
+
+.template-preview {
+  grid-column: 2 / 3;
+}
+
+/* -------------------- Template List Items -------------------- */
+.template-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid #dce3ec;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.template-item:hover {
+  background: #e9eff7;
+}
+
+.template-item.selected {
+  background: #d6e4ff;
+  border-color: #2d6cdf;
+}
+
+.template-name {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.template-description {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* -------------------- Template Preview -------------------- */
+.template-preview h2 {
+  margin-top: 0;
+}
+
+.template-preview h3 {
+  margin-top: 15px;
+  font-size: 1.1rem;
+}
+
+.template-preview ul {
+  padding-left: 20px;
+}
+
+.use-template-button {
+  margin-top: 20px;
+  background: #2d6cdf;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.use-template-button:hover {
+  background: #1f4fad;
+}
+
+.no-preview {
+  font-size: 1rem;
+  color: #666;
+  padding-top: 20px;
+}

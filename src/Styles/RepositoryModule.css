@@ -1,0 +1,104 @@
+/* ======================================================================
+   METRA – RepositoryModule.css
+   Version: v6.1 Restored (Stable for v6.2 Reintegration)
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Provides clean styling for the Repository module
+   ✔ Safe-scoped repo- prefix
+   ✔ Simple, readable layout
+   ✔ Non-intrusive – does not affect PreProject or DualPane
+   ====================================================================== */
+.repo-wrapper {
+  background: yellow !important;
+}
+
+/* --- Wrapper ----------------------------------------------------------- */
+.repo-wrapper {
+  padding: 20px;
+  background: #f7f9fc;
+  font-family: system-ui, sans-serif;
+  min-height: calc(100vh - 140px);
+}
+
+/* --- Header ------------------------------------------------------------ */
+.repo-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.repo-header h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* --- Toggle Buttons ---------------------------------------------------- */
+.repo-toggle {
+  display: flex;
+  gap: 12px;
+}
+
+.repo-toggle-btn {
+  flex: 1;
+  padding: 10px;
+  background: #e8ecf3;
+  border: 1px solid #c7cdd8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.repo-toggle-btn:hover {
+  background: #dce2eb;
+}
+
+.repo-toggle-btn.active {
+  background: #2c5fab;
+  color: white;
+  border-color: #204a7f;
+}
+
+/* --- Template List ----------------------------------------------------- */
+.repo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.repo-item {
+  background: white;
+  border: 1px solid #d1d5da;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.repo-item:hover {
+  background: #f0f4ff;
+  border-color: #b7c8f7;
+}
+
+/* --- Footer ------------------------------------------------------------ */
+.repo-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.repo-action-btn {
+  background: #d9e9fd;
+  border: 1px solid #bcd4f6;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #1a1a1a;
+}
+
+.repo-action-btn:hover {
+  background: #c7ddfb;
+}

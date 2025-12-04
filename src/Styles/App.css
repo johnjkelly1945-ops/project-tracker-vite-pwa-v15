@@ -1,0 +1,63 @@
+/* ======================================================================
+   METRA – App.css (Stable Header + Module Tabs)
+   Restores correct sticky global header layout
+   ----------------------------------------------------------------------
+   ✔ 80px global header
+   ✔ module tabs aligned inside header
+   ✔ pushes all content below header
+   ✔ supports ModuleHeader + FilterBar offsets
+   ====================================================================== */
+
+/* ===== Global header ===== */
+.global-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 80px;                    /* ✔ FIXED stable height */
+  background: #003366;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 3px solid #0055aa;
+}
+
+/* ===== App title ===== */
+.app-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ===== Module navigation tabs ===== */
+.module-tabs {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.module-btn {
+  background: #0055aa;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: 0.18s ease;
+}
+
+.module-btn:hover {
+  background: #1976d2;
+}
+
+.module-btn.active {
+  background: #2563eb;
+}
+
+/* ===== Workspace area ===== */
+.workspace {
+  margin-top: 0;  /* now handled by sticky headers */
+}

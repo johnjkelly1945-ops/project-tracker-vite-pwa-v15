@@ -1,17 +1,36 @@
-.toast {
+/* ======================================================================
+   METRA – Toast.css
+   v5 Baseline – Bottom-Right Toast Styling
+   ----------------------------------------------------------------------
+   ✔ Fade-in effect
+   ✔ Auto-hide after 3 seconds
+   ✔ Sits above all panes/popup
+   ====================================================================== */
+
+.toast-container {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: #0a2b5c;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 6px;
-  animation: fadeIn 0.3s ease-out;
+  right: 22px;
+  bottom: 22px;
   z-index: 3000;
-  font-size: 0.9rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  animation: toast-fade-in 0.2s ease-out;
 }
 
-@keyframes fadeIn {
+.toast-box {
+  background: #1f2937;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+  opacity: 0.95;
+}
+
+@keyframes toast-fade-in {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }

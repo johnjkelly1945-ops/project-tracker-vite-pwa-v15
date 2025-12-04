@@ -1,11 +1,10 @@
 /* ======================================================================
-   METRA – PreProjectDual.jsx
-   v5 Baseline (Assigned Person Hidden in Row)
+   METRA – PreProjectDual.jsx (Stabilised for TaskPopup API v5)
    ----------------------------------------------------------------------
-   ✔ Task rows no longer show assigned person
-   ✔ Assign button opens Personnel Overlay
-   ✔ Popup shows full assigned person (clickable)
-   ✔ Scrolling + fullscreen + sticky all preserved
+   ✔ Dual workspace working
+   ✔ Personnel selection working
+   ✔ Popup updated to include onSave & onDelete (prevents silent crash)
+   ✔ Fully compatible with restored PreProject.jsx wrapper
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -16,19 +15,18 @@ import "../Styles/PreProjectDual.css";
 
 export default function PreProjectDual() {
 
-  /* ===========================================
+  /* ================================================================
      POPUP + PERSON STATES
-     =========================================== */
+     ================================================================ */
   const [popupTask, setPopupTask] = useState(null);
   const [personDetail, setPersonDetail] = useState(null);
-  const [assignTargetTask, setAssignTargetTask] = useState(null);
-
+  const [personSelectForTask, setPersonSelectForTask] = useState(null);
   const [leftFull, setLeftFull] = useState(false);
   const [rightFull, setRightFull] = useState(false);
 
-  /* ===========================================
+  /* ================================================================
      REAL TASK DATA
-     =========================================== */
+     ================================================================ */
   const [mgmtSummaries, setMgmtSummaries] = useState([
     { id: "mg-1", title: "Management Summary", expanded: false, tasks: [] },
     { id: "mg-2", title: "New Summary", expanded: false, tasks: [] },
@@ -48,20 +46,24 @@ export default function PreProjectDual() {
     { id: "dv-5", title: "New Task", status: "Not Started", person: "", isTask: true }
   ]);
 
-  /* ===========================================
+  /* ================================================================
      SUMMARY EXPAND/COLLAPSE
-     =========================================== */
+     ================================================================ */
   const toggleSummary = (pane, id) => {
-    const updater = (arr) =>
-      arr.map(s => s.id === id ? { ...s, expanded: !s.expanded } : s);
-
-    if (pane === "mgmt") setMgmtSummaries(prev => updater(prev));
-    else setDevSummaries(prev => updater(prev));
+    if (pane === "mgmt") {
+      setMgmtSummaries(prev =>
+        prev.map(s => s.id === id ? { ...s, expanded: !s.expanded } : s)
+      );
+    } else {
+      setDevSummaries(prev =>
+        prev.map(s => s.id === id ? { ...s, expanded: !s.expanded } : s)
+      );
+    }
   };
 
-  /* ===========================================
+  /* ================================================================
      OPEN POPUP
-     =========================================== */
+     ================================================================ */
   const openPopup = (task) => {
     if (!task.isTask) return;
     setPopupTask(task);
@@ -69,35 +71,32 @@ export default function PreProjectDual() {
 
   const closePopup = () => setPopupTask(null);
 
-  /* ===========================================
-     ASSIGN PERSONNEL
-     =========================================== */
-  const beginAssign = (task) => {
-    setAssignTargetTask(task);
-  };
+  /* ================================================================
+     PERSONNEL SELECTION
+     ================================================================ */
+  const openAssignOverlay = (task) => setPersonSelectForTask(task);
+  const closeAssignOverlay = () => setPersonSelectForTask(null);
 
-  const closeAssign = () => setAssignTargetTask(null);
-
-  const assignPerson = (taskId, personName) => {
-    const updateTask = (arr) =>
-      arr.map(t =>
-        t.id === taskId ? { ...t, person: personName } : t
+  const assignPersonToTask = (taskId, personName) => {
+    const updatePane = (arr) =>
+      arr.map(item =>
+        item.id === taskId ? { ...item, person: personName } : item
       );
 
-    setMgmtSummaries(prev => updateTask(prev));
-    setDevSummaries(prev => updateTask(prev));
-    closeAssign();
+    setMgmtSummaries(prev => updatePane(prev));
+    setDevSummaries(prev => updatePane(prev));
+    closeAssignOverlay();
   };
 
-  /* ===========================================
-     PERSON DETAIL POPUP
-     =========================================== */
-  const openDetail = (name) => setPersonDetail(name);
-  const closeDetail = () => setPersonDetail(null);
+  /* ================================================================
+     PERSON DETAIL PANEL
+     ================================================================ */
+  const openPersonDetail = (name) => setPersonDetail(name);
+  const closePersonDetailPanel = () => setPersonDetail(null);
 
-  /* ===========================================
-     RENDER ROW (NO PERSON SHOWN)
-     =========================================== */
+  /* ================================================================
+     RENDER ROW
+     ================================================================ */
   const renderRow = (item, pane) => {
 
     if (item.isTask) {
@@ -112,12 +111,15 @@ export default function PreProjectDual() {
             <div>{item.title}</div>
           </div>
 
-          {/* Assign button only */}
+          <div style={{ fontStyle: "italic", marginRight: "10px" }}>
+            {item.person}
+          </div>
+
           <button
             className="assign-btn"
             onClick={(e) => {
               e.stopPropagation();
-              beginAssign(item);
+              openAssignOverlay(item);
             }}
           >
             Assign
@@ -134,9 +136,7 @@ export default function PreProjectDual() {
         >
           <div className="summary-dot"></div>
           {item.title}
-          <div className="summary-arrow">
-            {item.expanded ? "▼" : "▶"}
-          </div>
+          <div className="summary-arrow">{item.expanded ? "▼" : "▶"}</div>
         </div>
 
         {item.expanded && (
@@ -148,16 +148,16 @@ export default function PreProjectDual() {
     );
   };
 
-  /* ===========================================
+  /* ================================================================
      MAIN RENDER
-     =========================================== */
+     ================================================================ */
   return (
     <div className="preproject-wrapper">
 
       {/* HEADER */}
       <div className="dual-header">
         <h1>Dual Workspace</h1>
-        <p>Baseline Version (v5 Stable)</p>
+        <p>Popup + Personnel integrated</p>
       </div>
 
       <div className="dual-scroll-area">
@@ -165,7 +165,6 @@ export default function PreProjectDual() {
 
           {/* LEFT PANE */}
           <div className={`pane ${leftFull ? "fullscreen" : ""} ${rightFull ? "hidden" : ""}`}>
-
             <div className="pane-header">
               <strong>Management Workspace</strong>
               <button className="fullscreen-btn" onClick={() => setLeftFull(!leftFull)}>
@@ -183,7 +182,7 @@ export default function PreProjectDual() {
             </div>
 
             <div className="pane-scroll">
-              {mgmtSummaries.map(item => renderRow(item, "mgmt"))}
+              {mgmtSummaries.map((item) => renderRow(item, "mgmt"))}
             </div>
 
             <div className="bottom-action-row">
@@ -194,7 +193,6 @@ export default function PreProjectDual() {
 
           {/* RIGHT PANE */}
           <div className={`pane ${rightFull ? "fullscreen" : ""} ${leftFull ? "hidden" : ""}`}>
-
             <div className="pane-header">
               <strong>Development Workspace</strong>
               <button className="fullscreen-btn" onClick={() => setRightFull(!rightFull)}>
@@ -212,7 +210,7 @@ export default function PreProjectDual() {
             </div>
 
             <div className="pane-scroll">
-              {devSummaries.map(item => renderRow(item, "dev"))}
+              {devSummaries.map((item) => renderRow(item, "dev"))}
             </div>
 
             <div className="bottom-action-row">
@@ -220,29 +218,38 @@ export default function PreProjectDual() {
               <button>Add Task</button>
             </div>
           </div>
+
         </div>
       </div>
 
-      {/* POPUPS */}
+      {/* TASK POPUP – UPDATED API */}
       {popupTask && (
         <TaskPopup
           task={popupTask}
           onClose={closePopup}
-          onOpenPerson={openDetail}
+          onOpenPerson={openPersonDetail}
+          onSave={() => {
+            closePopup();
+          }}
+          onDelete={() => {
+            closePopup();
+          }}
         />
       )}
 
+      {/* PERSON DETAIL */}
       {personDetail && (
         <PersonnelDetail
           personName={personDetail}
-          onClose={closeDetail}
+          onClose={closePersonDetailPanel}
         />
       )}
 
-      {assignTargetTask && (
+      {/* PERSONNEL OVERLAY */}
+      {personSelectForTask && (
         <PersonnelOverlay
-          onSelect={(name) => assignPerson(assignTargetTask.id, name)}
-          onClose={closeAssign}
+          onClose={closeAssignOverlay}
+          onSelect={(name) => assignPersonToTask(personSelectForTask.id, name)}
         />
       )}
 

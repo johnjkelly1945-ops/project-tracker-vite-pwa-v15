@@ -1,138 +1,91 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import "../Styles/App.css";
 
-/**
- * Personnel module with popup, persistence, and safety confirmations.
- */
-export default function Personnel({ projectName }) {
-  const storageKey = projectName
-    ? `metra-${projectName}-personnel`
-    : "personnel-list";
+console.log("✅ Personnel component loaded (popup enabled)");
 
+export default function Personnel() {
   const [people, setPeople] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+    const saved = localStorage.getItem("personnel-list");
+    return saved ? JSON.parse(saved) : [
+      // Optional starter rows so you can test the popup quickly:
+      // { name: "Jane Doe", role: "Project Manager", organisation: "", department: "", email: "" },
+      // { name: "Alex Lee", role: "Developer", organisation: "", department: "", email: "" },
+    ];
+  });
+
+  const [newName, setNewName] = useState("");
+  const [newRole, setNewRole] = useState("");
+
+  // Popup state
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [popupData, setPopupData] = useState({
+    name: "",
+    role: "",
+    organisation: "",
+    department: "",
+    email: "",
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(people));
-    } catch {
-      /* ignore write errors */
-    }
-  }, [people, storageKey]);
+    localStorage.setItem("personnel-list", JSON.stringify(people));
+  }, [people]);
 
-  const [showModal, setShowModal] = useState(false);
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("");
-  const [organisation, setOrganisation] = useState("");
-  const [department, setDepartment] = useState("");
-  const [location, setLocation] = useState("");
-  const [email, setEmail] = useState("");
-
-  // --- Open modal for adding person ---
-  const openModal = () => {
-    setName("");
-    setRole("");
-    setOrganisation("");
-    setDepartment("");
-    setLocation("");
-    setEmail("");
-    setShowModal(true);
-  };
-
-  // --- Confirm before closing modal ---
-  const closeModal = () => {
-    const hasData =
-      name || role || organisation || department || location || email;
-    if (hasData) {
-      const confirmClose = window.confirm(
-        "Discard any unsaved changes and close?"
-      );
-      if (!confirmClose) return;
-    }
-    setShowModal(false);
-  };
-
-  // --- Add new person ---
   const addPerson = () => {
-    if (!name.trim()) return;
+    if (!newName.trim() || !newRole.trim()) return;
     const newPerson = {
-      id: Date.now(),
-      name: name.trim(),
-      role: role.trim(),
-      organisation: organisation.trim(),
-      department: department.trim(),
-      location: location.trim(),
-      email: email.trim(),
+      name: newName.trim(),
+      role: newRole.trim(),
+      organisation: "",
+      department: "",
+      email: "",
     };
-    setPeople((prev) => [...prev, newPerson]);
-    setShowModal(false);
+    setPeople(prev => [...prev, newPerson]);
+    setNewName("");
+    setNewRole("");
   };
 
-  // --- Confirm before deleting ---
-  const deletePerson = (id) => {
-    const person = people.find((p) => p.id === id);
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${person?.name || "this person"}?`
-      )
-    ) {
-      setPeople((prev) => prev.filter((p) => p.id !== id));
-    }
+  const deletePerson = (index) => {
+    setPeople(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const openPopup = (person, index) => {
+    setSelectedIndex(index);
+    // Ensure all fields exist so inputs are controlled
+    setPopupData({
+      name: person.name || "",
+      role: person.role || "",
+      organisation: person.organisation || "",
+      department: person.department || "",
+      email: person.email || "",
+    });
+  };
+
+  const closePopup = () => setSelectedIndex(null);
+
+  const savePopup = () => {
+    setPeople(prev => {
+      const updated = [...prev];
+      updated[selectedIndex] = { ...popupData };
+      return updated;
+    });
+    setSelectedIndex(null);
   };
 
   return (
-    <div className="checklist">
-      <h2>Personnel</h2>
+    <div className="personnel">
+      <h2>Project Personnel</h2>
 
-      {/* Add Person (green button) */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-        <button className="add-btn" onClick={openModal}>
-          Add Person
-        </button>
-      </div>
-
-      <ul style={{ paddingLeft: 0 }}>
-        {people.length === 0 && (
-          <li className="card">
+      <ul>
+        {people.map((person, i) => (
+          <li key={i}>
+            <span>
+              {person.name} – {person.role}
+            </span>
             <div>
-              <div className="card-title">No personnel added yet</div>
-              <div style={{ color: "#666" }}>
-                Click <strong>Add Person</strong> to include names, roles and contacts.
-              </div>
-            </div>
-          </li>
-        )}
-
-        {people.map((p) => (
-          <li key={p.id} className="card">
-            <div style={{ flex: 1 }}>
-              <div className="card-title">
-                {p.name} {p.role ? `— ${p.role}` : ""}
-              </div>
-              <div style={{ fontSize: "0.9rem", color: "#555" }}>
-                {p.organisation && <span><strong>Org:</strong> {p.organisation} &nbsp; </span>}
-                {p.department && <span><strong>Dept:</strong> {p.department} &nbsp; </span>}
-                {p.location && <span><strong>Location:</strong> {p.location} &nbsp; </span>}
-                {p.email && (
-                  <span>
-                    <strong>Email:</strong>{" "}
-                    <a
-                      href={`mailto:${p.email}`}
-                      style={{ color: "#0077cc", textDecoration: "none" }}
-                    >
-                      {p.email}
-                    </a>
-                  </span>
-                )}
-              </div>
-            </div>
-            <div>
-              <button className="delete-btn" onClick={() => deletePerson(p.id)}>
+              <button className="view-btn" onClick={() => openPopup(person, i)}>
+                View
+              </button>
+              <button className="delete-btn" onClick={() => deletePerson(i)}>
                 Delete
               </button>
             </div>
@@ -140,75 +93,57 @@ export default function Personnel({ projectName }) {
         ))}
       </ul>
 
-      {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <h3>Add New Person</h3>
+      <div className="add-person">
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Name"
+        />
+        <input
+          value={newRole}
+          onChange={(e) => setNewRole(e.target.value)}
+          placeholder="Role"
+        />
+        <button onClick={addPerson}>Add Person</button>
+      </div>
 
-            <div className="form-grid">
-              <div className="full">
-                <label>Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Jane Doe"
-                  autoFocus
-                />
-              </div>
+      {selectedIndex !== null && (
+        <div className="popup-overlay" onClick={closePopup}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>Personnel Details</h3>
 
-              <div className="full">
-                <label>Role</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
-                  <option value="">Select role…</option>
-                  <option>Project Manager</option>
-                  <option>Business Analyst</option>
-                  <option>Developer</option>
-                  <option>QA / Tester</option>
-                  <option>Stakeholder</option>
-                </select>
-              </div>
+            <input
+              value={popupData.name}
+              onChange={(e) => setPopupData({ ...popupData, name: e.target.value })}
+              placeholder="Name"
+            />
+            <input
+              value={popupData.role}
+              onChange={(e) => setPopupData({ ...popupData, role: e.target.value })}
+              placeholder="Role"
+            />
+            <input
+              value={popupData.organisation}
+              onChange={(e) => setPopupData({ ...popupData, organisation: e.target.value })}
+              placeholder="Organisation"
+              autoComplete="organization"
+            />
+            <input
+              value={popupData.department}
+              onChange={(e) => setPopupData({ ...popupData, department: e.target.value })}
+              placeholder="Department"
+            />
+            <input
+              value={popupData.email}
+              onChange={(e) => setPopupData({ ...popupData, email: e.target.value })}
+              placeholder="Email"
+              type="email"
+              autoComplete="email"
+            />
 
-              <div>
-                <label>Organisation</label>
-                <input
-                  value={organisation}
-                  onChange={(e) => setOrganisation(e.target.value)}
-                  placeholder="Company / Client"
-                />
-              </div>
-
-              <div>
-                <label>Department</label>
-                <input
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="Dept / Team"
-                />
-              </div>
-
-              <div>
-                <label>Location</label>
-                <input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="HQ / Remote"
-                />
-              </div>
-
-              <div>
-                <label>Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                />
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button className="close-btn" onClick={closeModal}>Cancel</button>
-              <button className="btn-primary" onClick={addPerson}>Add</button>
+            <div className="popup-buttons">
+              <button onClick={savePopup}>Save</button>
+              <button onClick={closePopup}>Cancel</button>
             </div>
           </div>
         </div>

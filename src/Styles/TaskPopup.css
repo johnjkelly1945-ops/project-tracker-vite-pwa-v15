@@ -1,0 +1,211 @@
+/* ======================================================================
+   METRA – TaskPopup.css
+   v18.1 – Stable Balanced Header (Final Fix)
+   ====================================================================== */
+
+.taskpopup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.taskpopup-window {
+  width: 70vw;
+  height: 70vh;
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* ======================================================================
+   BALANCED HEADER
+   Left (empty space) | Title | Right (person + X)
+   ====================================================================== */
+.tp-header {
+  display: flex;
+  justify-content: space-between;    /* <<< KEY FIX */
+  align-items: center;
+  padding: 18px 24px;
+
+  background: #003366;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+  color: white;
+}
+
+/* Title occupies full middle area */
+.tp-header h3 {
+  flex: 1;                            /* <<< NEW */
+  text-align: center;                 /* <<< NEW */
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Right-side group stays cleanly aligned */
+.tp-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tp-person {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #e5efff;
+}
+
+.tp-close-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ======================================================================
+   BODY
+   ====================================================================== */
+.tp-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tp-body h4 {
+  margin: 12px 20px 8px;
+}
+
+.tp-note-draft {
+  flex: 1;
+  padding: 2px 20px;
+  border: none;
+  background: transparent;
+  outline: none;
+  resize: none;
+  white-space: pre-wrap;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+/* ======================================================================
+   FOOTER
+   ====================================================================== */
+.tp-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #d8dee6;
+  background: #f7f9fb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tp-gov-row,
+.tp-action-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.tp-gov-row button,
+.tp-action-row button {
+  background: transparent;
+  border: none;
+  font-style: italic;
+  cursor: pointer;
+  color: #003366;
+}
+
+.tp-delete {
+  color: #d9534f;
+}
+/* ======================================================================
+   METRA – SummaryOverlay (Compact Form Popup)
+   ====================================================================== */
+
+.summary-window {
+  width: 420px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.summary-header {
+  background: #003366;
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-close {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.summary-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #003366;
+}
+
+.summary-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccd3dd;
+  border-radius: 6px;
+}
+
+.summary-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #f7f9fb;
+  border-top: 1px solid #d8dee6;
+}
+
+.summary-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+}
+
+.summary-btn.cancel {
+  background: #e2e6ea;
+  color: #003366;
+}
+
+.summary-btn.add {
+  background: #003366;
+  color: white;
+}
