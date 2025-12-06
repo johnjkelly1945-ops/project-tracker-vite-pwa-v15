@@ -1,97 +1,90 @@
-/* ======================================================================
-   METRA – RepositoryModule.jsx
-   Version: v6.1 Restored (Stable for v6.2 Reintegration)
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Provides working Repository module during PreProject restoration
-   ✔ Simple, stable structure
-   ✔ No DualPane or popup logic
-   ✔ Safe class names (repo- prefix)
-   ====================================================================== */
+/* ============================================================
+   METRA – Template Repository Overlay
+   Ensures modal appears ABOVE everything else
+   ============================================================ */
 
-import React, { useState } from "react";
-import "../Styles/RepositoryModule.css";
+.repo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* 🔥 ABOVE TaskPopup */
+}
 
-export default function RepositoryModule() {
-  const [activeView, setActiveView] = useState("management");
+.repo-window {
+  width: 70vw;
+  height: 70vh;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-  /* -------------------------------------------------------------------
-     Example template sets (placeholder only)
-     These match the simple working repository from your last baseline.
-     ------------------------------------------------------------------- */
-  const managementTemplates = [
-    { id: "m1", name: "Scope Summary Template" },
-    { id: "m2", name: "Stakeholder Plan Template" },
-    { id: "m3", name: "Governance Checklist" }
-  ];
+.repo-header {
+  background: #0b3d91;
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  const developmentTemplates = [
-    { id: "d1", name: "Requirements Outline" },
-    { id: "d2", name: "Design Structure Template" },
-    { id: "d3", name: "Build Checklist" }
-  ];
+.repo-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
 
-  const templates =
-    activeView === "management" ? managementTemplates : developmentTemplates;
+.repo-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
 
-  /* -------------------------------------------------------------------
-     UI RENDER
-     ------------------------------------------------------------------- */
-  return (
-    <div className="repo-wrapper">
+.repo-list {
+  width: 35%;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  padding: 10px;
+}
 
-      {/* ================================================================
-           REPOSITORY HEADER
-         ================================================================ */}
-      <div className="repo-header">
-        <h2>Template Repository</h2>
+.repo-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 6px;
+}
 
-        {/* Toggle buttons */}
-        <div className="repo-toggle">
-          <button
-            className={
-              activeView === "management"
-                ? "repo-toggle-btn active"
-                : "repo-toggle-btn"
-            }
-            onClick={() => setActiveView("management")}
-          >
-            Management
-          </button>
+.repo-item:hover {
+  background: #f0f0f0;
+}
 
-          <button
-            className={
-              activeView === "development"
-                ? "repo-toggle-btn active"
-                : "repo-toggle-btn"
-            }
-            onClick={() => setActiveView("development")}
-          >
-            Development
-          </button>
-        </div>
-      </div>
+.repo-item.selected {
+  background: #d9e6ff;
+}
 
-      {/* ================================================================
-           TEMPLATE LIST
-         ================================================================ */}
-      <div className="repo-list">
-        {templates.map((t) => (
-          <div key={t.id} className="repo-item">
-            {t.name}
-          </div>
-        ))}
-      </div>
+.repo-preview {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
 
-      {/* ================================================================
-           FOOTER ACTION (Placeholder)
-         ================================================================ */}
-      <div className="repo-footer">
-        <button className="repo-action-btn">
-          Download Selection to PreProject
-        </button>
-      </div>
+.repo-download-btn,
+.repo-attach-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 15px;
+  background: #0b3d91;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+}
 
-    </div>
-  );
+.repo-attach-btn {
+  cursor: pointer;
 }

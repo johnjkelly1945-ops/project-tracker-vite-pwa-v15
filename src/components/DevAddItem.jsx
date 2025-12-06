@@ -1,47 +1,42 @@
 /* ======================================================================
-   METRA – DevAddItemPopup.jsx
-   v1 – Identical UI to AddItemPopup but for Development Tasks
+   METRA – ModuleHeader.jsx (Diagnostic Version)
+   ----------------------------------------------------------------------
+   ✔ Forces visible change ("REPO TEST BUTTON")
+   ✔ Fires alert() so we know click handler runs
+   ✔ Calls onOpenRepository() passed from App.jsx
    ====================================================================== */
 
-import React, { useState } from "react";
-import "../Styles/AddItemPopup.css";
+import React from "react";
+import "../Styles/ModuleHeader.css";
 
-export default function DevAddItemPopup({ onAdd, onClose }) {
-  const [title, setTitle] = useState("");
+export default function ModuleHeader({ onOpenRepository }) {
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+  const handleRepository = () => {
+    alert("HEADER CLICKED");                     // ← Diagnostic test
+    console.log("Repository button pressed");
 
-    onAdd({ title });
-    setTitle("");
+    if (onOpenRepository) {
+      onOpenRepository();                        // ← Should open repository
+    } else {
+      console.warn("onOpenRepository NOT PROVIDED");
+    }
   };
 
   return (
-    <div className="additem-overlay">
-      <div className="additem-window">
+    <header className="metra-header">
 
-        <div className="additem-header">
-          <h3>Add Development Task</h3>
-          <button className="additem-close-btn" onClick={onClose}>✕</button>
-        </div>
-
-        <form className="additem-body" onSubmit={handleSubmit}>
-          <label>Task Title</label>
-          <input
-            type="text"
-            className="additem-input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter task title…"
-          />
-
-          <button className="additem-submit-btn" type="submit">
-            Add Task
-          </button>
-        </form>
-
+      {/* LEFT SIDE – TITLE */}
+      <div className="metra-header-left">
+        <h1 className="metra-title">METRA Workspace</h1>
       </div>
-    </div>
+
+      {/* RIGHT SIDE – BUTTON */}
+      <div className="metra-header-right">
+        <button className="metra-header-btn" onClick={handleRepository}>
+          REPO TEST BUTTON
+        </button>
+      </div>
+
+    </header>
   );
 }

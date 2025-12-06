@@ -1,36 +1,34 @@
 /* ======================================================================
    METRA – App.jsx
-   Stage 3.2 – DualPane Active Mode (Isolated Layout Testing)
-   ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Keep global header stable
-   ✔ Keep filter bar visible
-   ✔ Render DualPane.jsx for isolated scroll & layout debugging
-   ✔ DO NOT affect PreProjectDual.jsx until DualPane is verified
+   Includes:
+   • Global header
+   • DualPane workspace
+   • TaskRepository modal (on demand)
    ====================================================================== */
 
-import React from "react";
-import DualPane from "./components/DualPane";
-import FilterBar from "./components/FilterBar";
-
-
-import "./Styles/DualPane.css";
-import "./Styles/FilterBar.css";
+import React, { useState } from "react";
+import DualPane from "./components/DualPane.jsx";
+import ModuleHeader from "./components/ModuleHeader.jsx";
+import TaskRepository from "./components/TaskRepository.jsx";
 
 export default function App() {
+  const [showRepo, setShowRepo] = useState(false);
+
   return (
     <div className="app-container">
 
-      {/* === Global Main Header (sticky) === */}
-      <header className="global-header">
-        METRA – PreProject
-      </header>
+      {/* Header with button that opens the Repository */}
+      <ModuleHeader onOpenRepository={() => setShowRepo(true)} />
 
-      {/* === Filter Bar (shared) === */}
-      <FilterBar />
-
-      {/* === DualPane scaffold (ACTIVE for Stage 3.2) === */}
+      {/* Main workspace */}
       <DualPane />
+
+      {/* Repository Modal */}
+      {showRepo && (
+        <TaskRepository
+          onClose={() => setShowRepo(false)}
+        />
+      )}
 
     </div>
   );

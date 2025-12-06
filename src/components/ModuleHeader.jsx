@@ -1,36 +1,35 @@
 /* ======================================================================
    METRA – ModuleHeader.jsx
-   Stable v3 – PreProject / Repository Header Bar
-   ----------------------------------------------------------------------
-   Provides:
-   ✔ Title for active module
-   ✔ Buttons for switching modules (if needed)
-   ✔ Sticky under global header
+   Production Version – Repository Button Fully Wired
    ====================================================================== */
 
 import React from "react";
 import "../Styles/ModuleHeader.css";
 
-export default function ModuleHeader({ title, rightButtons = [] }) {
+export default function ModuleHeader({ onOpenRepository }) {
+
+  const handleRepository = () => {
+    console.log("Repository button pressed");
+    if (onOpenRepository) {
+      onOpenRepository();
+    }
+  };
+
   return (
-    <div className="mh-wrapper">
-      
-      <div className="mh-title">
-        {title}
+    <header className="metra-header">
+
+      {/* LEFT: App Title */}
+      <div className="metra-header-left">
+        <h1 className="metra-title">METRA Workspace</h1>
       </div>
 
-      <div className="mh-right">
-        {rightButtons.map((btn, index) => (
-          <button
-            key={index}
-            className="mh-btn"
-            onClick={btn.onClick}
-          >
-            {btn.label}
-          </button>
-        ))}
+      {/* RIGHT: Repository Button */}
+      <div className="metra-header-right">
+        <button className="metra-header-btn" onClick={handleRepository}>
+          Repository
+        </button>
       </div>
 
-    </div>
+    </header>
   );
 }

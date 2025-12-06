@@ -1,104 +1,110 @@
 /* ======================================================================
    METRA – RepositoryModule.css
-   Version: v6.1 Restored (Stable for v6.2 Reintegration)
+   FULL CLEAN VERIFIED VERSION – DECEMBER 2025
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Provides clean styling for the Repository module
-   ✔ Safe-scoped repo- prefix
-   ✔ Simple, readable layout
-   ✔ Non-intrusive – does not affect PreProject or DualPane
+   ✔ Full-screen modal overlay
+   ✔ Always appears ABOVE TaskPopup (z-index: 5000)
+   ✔ List + Preview panel layout
+   ✔ Clean buttons + scrolling
    ====================================================================== */
-.repo-wrapper {
-  background: yellow !important;
+
+/* Overlay covers entire screen */
+.repo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000; /* ⬅️ CRITICAL */
 }
 
-/* --- Wrapper ----------------------------------------------------------- */
-.repo-wrapper {
-  padding: 20px;
-  background: #f7f9fc;
-  font-family: system-ui, sans-serif;
-  min-height: calc(100vh - 140px);
+/* Window */
+.repo-window {
+  width: 70vw;
+  height: 70vh;
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
 }
 
-/* --- Header ------------------------------------------------------------ */
+/* Header */
 .repo-header {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 24px;
-}
-
-.repo-header h2 {
-  margin: 0 0 16px 0;
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-/* --- Toggle Buttons ---------------------------------------------------- */
-.repo-toggle {
-  display: flex;
-  gap: 12px;
-}
-
-.repo-toggle-btn {
-  flex: 1;
-  padding: 10px;
-  background: #e8ecf3;
-  border: 1px solid #c7cdd8;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.repo-toggle-btn:hover {
-  background: #dce2eb;
-}
-
-.repo-toggle-btn.active {
-  background: #2c5fab;
+  background: #0b3d91;
   color: white;
-  border-color: #204a7f;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* --- Template List ----------------------------------------------------- */
-.repo-list {
+.repo-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+}
+
+/* Body layout */
+.repo-body {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 30px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left list */
+.repo-list {
+  width: 35%;
+  background: #f7f7f7;
+  border-right: 1px solid #ddd;
+  padding: 10px;
+  overflow-y: auto;
 }
 
 .repo-item {
-  background: white;
-  border: 1px solid #d1d5da;
-  padding: 12px 16px;
+  padding: 10px;
   border-radius: 6px;
-  font-size: 0.98rem;
   cursor: pointer;
 }
 
 .repo-item:hover {
-  background: #f0f4ff;
-  border-color: #b7c8f7;
+  background: #e0e7ff;
 }
 
-/* --- Footer ------------------------------------------------------------ */
-.repo-footer {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+.repo-item.selected {
+  background: #c7d2fe;
 }
 
-.repo-action-btn {
-  background: #d9e9fd;
-  border: 1px solid #bcd4f6;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  color: #1a1a1a;
+/* Right preview panel */
+.repo-preview {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
 }
 
-.repo-action-btn:hover {
-  background: #c7ddfb;
+.repo-placeholder {
+  text-align: center;
+  color: #666;
+  padding-top: 20px;
+}
+
+/* Buttons */
+.repo-download-btn,
+.repo-attach-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 15px;
+  background: #0b3d91;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.repo-attach-btn {
+  background: #2e6be6;
+  margin-left: 10px;
 }
