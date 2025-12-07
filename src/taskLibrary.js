@@ -1,153 +1,149 @@
 /* ======================================================================
    METRA – taskLibrary.js
-   FINAL TWO-COLUMN MODEL (Summaries + Tasks)
+   STRUCTURE ALIGNED WITH NEW TaskRepository.jsx
    ----------------------------------------------------------------------
-   Column 1:
-     • Summaries (filtered)
-     • Bundles (filtered)
-
-   Column 2:
-     • Tasks associated with the selected summaries OR selected bundles
-     • Tasks can also be selected independently
-
-   Behaviours:
-     ✔ No item auto-selects others
-     ✔ Bundles reveal their summaries + tasks in UI, but require click to import
-     ✔ Filters affect all three structures
+   • Summaries include: id, name, method, scope, level, tasks[]
+   • Tasks include: id, name, method, scope, level, type, category
+   • Bundles include: id, name, method, scope, level, summaries[], tasks[]
+   • Category used for hierarchical grouping in Pane 2
+   • Scope + Type added to support filtering
    ====================================================================== */
 
 export const taskLibrary = {
+
   /* ================================================================
-     SUMMARIES
-     (Column 1 – always expanded, collapsible later if needed)
+     SUMMARIES (Structural sections only)
      ================================================================ */
   summaries: [
     {
       id: "s1",
       name: "Project Initiation Summary",
-      description: "Captures the core aims and constraints of the project.",
       method: "PRINCE2",
-      projectType: "All",
+      scope: "Software",
       level: "Project",
+      type: "Mgmt",
       tasks: ["t1", "t2", "t3"]
     },
     {
       id: "s2",
       name: "Governance Summary",
-      description: "Key governance structures, responsibilities, and controls.",
       method: "Generic",
-      projectType: "All",
+      scope: "Software",
       level: "Project",
+      type: "Mgmt",
       tasks: ["t4", "t5"]
     },
     {
       id: "s3",
       name: "Programme Mobilisation Summary",
-      description: "High-level mobilisation steps for programmes.",
       method: "MSP",
-      projectType: "All",
+      scope: "Transformation",
       level: "Programme",
+      type: "Mgmt",
       tasks: ["t6", "t7"]
     }
   ],
 
   /* ================================================================
-     TASKS
-     (Column 2 – filtered by selected summaries or bundles)
+     TASKS (Hierarchical + Filterable)
      ================================================================ */
   tasks: [
     {
       id: "t1",
       name: "Create Project Brief",
-      description: "Document project purpose, justification, and scope.",
       method: "PRINCE2",
-      projectType: "All",
-      level: "Project"
+      scope: "Software",
+      level: "Project",
+      type: "Mgmt",
+      category: "Initiation"
     },
     {
       id: "t2",
       name: "Define Approach",
-      description: "Outline methods, delivery style, and constraints.",
       method: "PRINCE2",
-      projectType: "All",
-      level: "Project"
+      scope: "Software",
+      level: "Project",
+      type: "Mgmt",
+      category: "Initiation"
     },
     {
       id: "t3",
       name: "Initial Stakeholder Mapping",
-      description: "Identify key stakeholders and influence levels.",
       method: "Generic",
-      projectType: "All",
-      level: "Project"
+      scope: "Software",
+      level: "Project",
+      type: "Mgmt",
+      category: "Initiation"
     },
     {
       id: "t4",
       name: "Set Governance Structure",
-      description: "Define boards, roles, and reporting routes.",
       method: "Generic",
-      projectType: "All",
-      level: "Project"
+      scope: "Software",
+      level: "Project",
+      type: "Mgmt",
+      category: "Governance Setup"
     },
     {
       id: "t5",
       name: "Setup Issue & Risk Logs",
-      description: "Create tools for capturing issues and risks.",
       method: "Generic",
-      projectType: "All",
-      level: "Project"
+      scope: "Software",
+      level: "Project",
+      type: "Mgmt",
+      category: "Governance Setup"
     },
     {
       id: "t6",
       name: "Define Programme Vision",
-      description: "Agree long-term MSP vision and intended outcomes.",
       method: "MSP",
-      projectType: "All",
-      level: "Programme"
+      scope: "Transformation",
+      level: "Programme",
+      type: "Mgmt",
+      category: "Programme Definition"
     },
     {
       id: "t7",
       name: "Prepare Programme Blueprint",
-      description: "Draft future operating model according to MSP.",
       method: "MSP",
-      projectType: "Transformation",
-      level: "Programme"
+      scope: "Transformation",
+      level: "Programme",
+      type: "Mgmt",
+      category: "Programme Definition"
     }
   ],
 
   /* ================================================================
-     BUNDLES
-     (Column 1 – displayed after Summaries)
-     Bundles = predefined combinations of summaries + tasks.
-     User must explicitly tick each item they want.
+     BUNDLES (Combination of summaries + tasks)
      ================================================================ */
   bundles: [
     {
       id: "b1",
       name: "Project Startup Pack",
-      description: "Quick start items for small/medium PRINCE2 projects.",
       method: "PRINCE2",
-      projectType: "All",
+      scope: "Software",
       level: "Project",
+      type: "Mgmt",
       summaries: ["s1"],
       tasks: ["t1", "t2", "t3"]
     },
     {
       id: "b2",
       name: "Core Governance Pack",
-      description: "Ensures PMO-standard governance readiness.",
       method: "Generic",
-      projectType: "All",
+      scope: "Software",
       level: "Project",
+      type: "Mgmt",
       summaries: ["s2"],
       tasks: ["t4", "t5"]
     },
     {
       id: "b3",
       name: "Programme Launch Pack",
-      description: "MSP mobilisation starter pack.",
       method: "MSP",
-      projectType: "Transformation",
+      scope: "Transformation",
       level: "Programme",
+      type: "Mgmt",
       summaries: ["s3"],
       tasks: ["t6", "t7"]
     }

@@ -1,0 +1,31 @@
+/* ======================================================================
+   METRA – App.v2.css
+   Global baseline styling for clean-tasksheet environment
+   Provides:
+   ✔ High-contrast font smoothing
+   ✔ Body reset
+   ✔ Safe background
+   ✔ No margin collapse issues
+   ====================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  background: #f8fafc; /* light neutral background */
+  color: #111827;      /* high-contrast dark text */
+  overflow: hidden;    /* prevents double-scroll on iOS Safari */
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}

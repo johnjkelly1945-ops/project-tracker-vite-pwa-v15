@@ -1,169 +1,252 @@
 /* ======================================================================
-   METRA – TaskRepository.css (Hierarchy-Corrected Version)
+   METRA – TaskRepository.css
+   COMPLETE REBUILD (Matches new TaskRepository.jsx)
    ----------------------------------------------------------------------
-   • Full-screen modal repository
-   • Two-column hierarchy:
-       Column 1 → Summaries & Bundles (vertical groups)
-       Column 2 → Tasks (vertical groups)
-   • Stable filter row across top
-   • Clean METRA visual design
+   • Full modal overlay
+   • Centered repository window
+   • Two-row filter bar with labels + triggers
+   • Auto-width dropdown menus
+   • Two-pane 50/50 layout
+   • Collapsible task groups
    ====================================================================== */
 
-/* ---------------- OVERLAY ---------------- */
+/* --------------------------------------------------------------
+   OVERLAY + WINDOW
+   -------------------------------------------------------------- */
 .repo-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 2000;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 60px;
+  z-index: 1000;
 }
 
-/* ---------------- WINDOW ---------------- */
 .repo-window {
-  width: 90vw;
-  height: 85vh;
+  width: 80vw;
+  height: 80vh;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
-  overflow: hidden;
-  font-family: system-ui, sans-serif;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
-/* ---------------- HEADER ---------------- */
+/* --------------------------------------------------------------
+   HEADER
+   -------------------------------------------------------------- */
 .repo-header {
-  background: #003366;
+  background: #0a3d7c; /* METRA blue */
   color: white;
   padding: 12px 20px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
 .repo-title {
+  font-size: 1.25rem;
+  font-weight: bold;
   margin: 0;
-  font-size: 1.4rem;
 }
 
 .repo-close-btn {
-  background: transparent;
+  background: none;
   border: none;
+  font-size: 1.4rem;
   color: white;
-  font-size: 1.6rem;
   cursor: pointer;
 }
 
-/* ---------------- FILTER ROW (TOP OF CONTENT) ---------------- */
-.repo-filters {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* --------------------------------------------------------------
+   FILTER BAR (TWO ROWS)
+   -------------------------------------------------------------- */
+.repo-filterbar {
   padding: 12px 20px;
-  flex-wrap: nowrap;
-  border-bottom: 1px solid #d0d0d0;
+  border-bottom: 1px solid #d0d3d6;
+  background: #f7f8fa;
 }
 
-.repo-filters input,
-.repo-filters select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+.repo-filterbar-row {
+  display: grid;
+  grid-template-columns: 120px 120px 140px 140px 1fr;
+  column-gap: 12px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.repo-filterbar-row.labels span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.repo-filterbar-row.controls {
+  margin-top: 4px;
+}
+
+/* SEARCH FIELD */
+.repo-search-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #999;
+  border-radius: 4px;
   font-size: 0.9rem;
 }
 
-.repo-filters > * {
-  flex: none;
+/* --------------------------------------------------------------
+   DROPDOWN COMPONENT
+   -------------------------------------------------------------- */
+.repo-dropdown {
+  position: relative;
 }
 
-/* ---------------- BODY LAYOUT (2 columns) ---------------- */
+.repo-dropdown-trigger {
+  padding: 6px 10px;
+  background: #ffffff;
+  border: 1px solid #999;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  color: #222;
+}
+
+.repo-dropdown-trigger:hover {
+  background: #f0f0f0;
+}
+
+/* Auto-width floating menu */
+.repo-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  background: white;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 4px 0;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.repo-dropdown-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.repo-dropdown-item:hover {
+  background: #e6ecf2;
+}
+
+/* --------------------------------------------------------------
+   MAIN BODY — TWO PANES
+   -------------------------------------------------------------- */
 .repo-body {
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Summaries/Bundles | Tasks */
+  display: flex;
   overflow: hidden;
 }
 
-/* ============================================================
-   LEFT COLUMN — SUMMARIES & BUNDLES
-   ============================================================ */
-.repo-left {
-  padding: 20px;
+/* LEFT & RIGHT PANES (50/50 SPLIT) */
+.repo-pane {
+  flex: 1;
+  padding: 16px 20px;
   overflow-y: auto;
-  border-right: 1px solid #d0d0d0;
-  background: #f7f9fb;
+  border-right: 1px solid #e0e0e0;
 }
 
-/* Section blocks (Summaries / Bundles) */
+.repo-pane-right {
+  border-right: none;
+}
+
+.repo-pane-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* --------------------------------------------------------------
+   ITEMS (Summaries, Bundles, Tasks)
+   -------------------------------------------------------------- */
 .repo-section {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
-.repo-section-title {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-/* Vertical group container */
-.repo-group {
+.repo-item {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Checkbox row */
-.repo-row {
-  display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   padding: 4px 0;
   font-size: 0.95rem;
 }
 
-/* ============================================================
-   RIGHT COLUMN — TASKS
-   ============================================================ */
-.repo-right {
-  padding: 20px;
-  overflow-y: auto;
+.repo-item input {
+  cursor: pointer;
 }
 
-.repo-tasks-title {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 10px;
+.repo-empty {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #555;
 }
 
-/* Vertical task grouping */
-.repo-task-group {
+/* --------------------------------------------------------------
+   TASK GROUPS (COLLAPSIBLE)
+   -------------------------------------------------------------- */
+.repo-task-groups {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
-.repo-task-row {
+.repo-task-group-header {
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #0a3d7c;
+  margin-bottom: 6px;
+  user-select: none;
+}
+
+.repo-task-group-header:hover {
+  text-decoration: underline;
+}
+
+.repo-task-group-body {
+  padding-left: 16px;
+  border-left: 2px solid #d1d6dc;
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 4px 0;
-  font-size: 0.95rem;
+  flex-direction: column;
+  gap: 4px;
 }
 
-/* ---------------- ADD BUTTON ---------------- */
+/* --------------------------------------------------------------
+   FOOTER
+   -------------------------------------------------------------- */
+.repo-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #d0d3d6;
+  background: #f9fafb;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .repo-add-btn {
-  margin-top: 20px;
-  padding: 12px 18px;
-  background: #006699;
+  padding: 10px 22px;
+  background: #0a3d7c;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .repo-add-btn:hover {
-  background: #00517d;
+  background: #08407c;
 }

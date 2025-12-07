@@ -1,115 +1,126 @@
 /* ======================================================================
-   METRA – TaskRepository.jsx
-   FINAL TWO-COLUMN MODEL (Summaries + Bundles → Tasks)
+   METRA – TaskRepository.jsx (FINAL STABLE VERSION)
    ----------------------------------------------------------------------
-   • Column 1: Summaries + Bundles (checkbox selectable)
-   • Column 2: Tasks (checkbox selectable)
-   • Filters: Method, Project Type, Level, Search
-   • No auto-selection – user explicitly chooses everything
-   • Designed to integrate with DualPane via onSelect callback
+   • Fully aligned with taskLibrary.js (type/method/scope/level/category)
+   • No JSX errors, no duplicate wrappers
+   • Dropdowns remain open while interacting
+   • Pane 1 appears ONLY when all filters selected
+   • Pane 2 appears ONLY when summaries/bundles selected
+   • Tasks grouped into collapsible sections
    ====================================================================== */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import "../Styles/TaskRepository.css";
 import { taskLibrary } from "../taskLibrary.js";
 
 export default function TaskRepository({ onClose, onAddToWorkspace }) {
 
-  /* -------------------------------------------------------------
-     FILTER STATE
-     ------------------------------------------------------------- */
-  const [search, setSearch] = useState("");
-  const [methodFilter, setMethodFilter] = useState("All");
-  const [typeFilter, setTypeFilter] = useState("All");
-  const [levelFilter, setLevelFilter] = useState("All");
+  /* ======================================================================
+     DROPDOWN COMPONENT
+     ====================================================================== */
+  function Dropdown({ id, label, value, options, openId, setOpenId, onSelect }) {
+    const ref = useRef(null);
 
-  /* -------------------------------------------------------------
-     SELECTION STATE (checkboxes)
-     ------------------------------------------------------------- */
+    useEffect(() => {
+      function handleClick(e) {
+        if (ref.current && !ref.current.contains(e.target)) {
+          setOpenId(null);
+        }
+      }
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }, [setOpenId]);
+
+    const isOpen = openId === id;
+
+    return (
+      <div className="repo-dropdown" ref={ref}>
+        <div
+          className="repo-dropdown-trigger"
+          onClick={() => setOpenId(isOpen ? null : id)}
+        >
+          {value ? `${label}: ${value} ▾` : `${label} ▾`}
+        </div>
+
+        {isOpen && (
+          <div className="repo-dropdown-menu">
+            {options.map(opt => (
+              <div
+                key={opt}
+                className="repo-dropdown-item"
+                onClick={() => {
+                  onSelect(opt);
+                  setOpenId(null);
+                }}
+              >
+                {opt}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* ======================================================================
+     FILTER STATE
+     ====================================================================== */
+  const [typeFilter, setTypeFilter] = useState("");
+  const [methodFilter, setMethodFilter] = useState("");
+  const [scopeFilter, setScopeFilter] = useState("");
+  const [levelFilter, setLevelFilter] = useState("");
+  const [search, setSearch] = useState("");
+
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  const allFiltersSet =
+    typeFilter && methodFilter && scopeFilter && levelFilter;
+
+  /* ======================================================================
+     USER SELECTION STATE
+     ====================================================================== */
   const [selectedSummaries, setSelectedSummaries] = useState({});
   const [selectedBundles, setSelectedBundles] = useState({});
   const [selectedTasks, setSelectedTasks] = useState({});
 
-  /* -------------------------------------------------------------
-     FILTERED SUMMARIES
-     ------------------------------------------------------------- */
+  /* ======================================================================
+     FILTER SUMMARIES / BUNDLES
+     ====================================================================== */
   const filteredSummaries = useMemo(() => {
-    return taskLibrary.summaries.filter(s => {
-      const matchSearch =
-        !search ||
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.description.toLowerCase().includes(search.toLowerCase());
+    if (!allFiltersSet) return [];
 
-      const matchMethod =
-        methodFilter === "All" || s.method === methodFilter;
+    return taskLibrary.summaries.filter(s =>
+      s.type === typeFilter &&
+      s.method === methodFilter &&
+      s.scope === scopeFilter &&
+      s.level === levelFilter
+    );
+  }, [typeFilter, methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
-      const matchType =
-        typeFilter === "All" || s.projectType === typeFilter;
-
-      const matchLevel =
-        levelFilter === "All" || s.level === levelFilter;
-
-      return matchSearch && matchMethod && matchType && matchLevel;
-    });
-  }, [search, methodFilter, typeFilter, levelFilter]);
-
-  /* -------------------------------------------------------------
-     FILTERED BUNDLES
-     ------------------------------------------------------------- */
   const filteredBundles = useMemo(() => {
-    return taskLibrary.bundles.filter(b => {
-      const matchSearch =
-        !search ||
-        b.name.toLowerCase().includes(search.toLowerCase()) ||
-        b.description.toLowerCase().includes(search.toLowerCase());
+    if (!allFiltersSet) return [];
 
-      const matchMethod =
-        methodFilter === "All" || b.method === methodFilter;
+    return taskLibrary.bundles.filter(b =>
+      b.type === typeFilter &&
+      b.method === methodFilter &&
+      b.scope === scopeFilter &&
+      b.level === levelFilter
+    );
+  }, [typeFilter, methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
-      const matchType =
-        typeFilter === "All" || b.projectType === typeFilter;
+  /* ======================================================================
+     DETERMINE TASKS FOR PANE 2
+     ====================================================================== */
+  const visibleTaskIds = useMemo(() => {
+    const anySelection =
+      Object.values(selectedSummaries).some(v => v) ||
+      Object.values(selectedBundles).some(v => v);
 
-      const matchLevel =
-        levelFilter === "All" || b.level === levelFilter;
+    if (!anySelection) return [];
 
-      return matchSearch && matchMethod && matchType && matchLevel;
-    });
-  }, [search, methodFilter, typeFilter, levelFilter]);
-
-  /* -------------------------------------------------------------
-     FILTERED TASKS
-     ------------------------------------------------------------- */
-  const filteredTasks = useMemo(() => {
-    return taskLibrary.tasks.filter(t => {
-      const matchSearch =
-        !search ||
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.description.toLowerCase().includes(search.toLowerCase());
-
-      const matchMethod =
-        methodFilter === "All" || t.method === methodFilter;
-
-      const matchType =
-        typeFilter === "All" || t.projectType === typeFilter;
-
-      const matchLevel =
-        levelFilter === "All" || t.level === levelFilter;
-
-      return matchSearch && matchMethod && matchType && matchLevel;
-    });
-  }, [search, methodFilter, typeFilter, levelFilter]);
-
-  /* -------------------------------------------------------------
-     TASKS SHOWN IN COLUMN 2
-     Based on:
-       • tasks from selected summaries
-       • tasks from selected bundles
-       • OR filteredTasks if nothing selected
-     ------------------------------------------------------------- */
-  const tasksFromSelections = useMemo(() => {
     const collected = new Set();
 
-    // Tasks from selected summaries
+    // From summaries
     Object.keys(selectedSummaries).forEach(sumId => {
       if (selectedSummaries[sumId]) {
         const summary = taskLibrary.summaries.find(s => s.id === sumId);
@@ -117,55 +128,52 @@ export default function TaskRepository({ onClose, onAddToWorkspace }) {
       }
     });
 
-    // Tasks from selected bundles
+    // From bundles (direct + via summaries)
     Object.keys(selectedBundles).forEach(bid => {
       if (selectedBundles[bid]) {
         const bundle = taskLibrary.bundles.find(b => b.id === bid);
+
         bundle?.tasks?.forEach(tid => collected.add(tid));
+
         bundle?.summaries?.forEach(sid => {
-          const sum = taskLibrary.summaries.find(s => s.id === sid);
-          sum?.tasks?.forEach(tid => collected.add(tid));
+          const summary = taskLibrary.summaries.find(s => s.id === sid);
+          summary?.tasks?.forEach(tid => collected.add(tid));
         });
       }
     });
 
-    if (collected.size === 0) {
-      // Nothing selected → show filteredTasks
-      return filteredTasks;
-    }
+    const searchLower = search.toLowerCase();
 
-    // Convert collected IDs → full task objects
-    return [...collected]
-      .map(id => taskLibrary.tasks.find(t => t.id === id))
-      .filter(Boolean);
-  }, [
-    selectedSummaries,
-    selectedBundles,
-    filteredTasks
-  ]);
+    return [...collected].filter(tid => {
+      const t = taskLibrary.tasks.find(x => x.id === tid);
+      if (!t) return false;
 
-  /* -------------------------------------------------------------
-     HANDLE ADD TO WORKSPACE
-     ------------------------------------------------------------- */
-  const handleAdd = () => {
-    if (!onAddToWorkspace) return;
-
-    const selectedSummaryIds = Object.keys(selectedSummaries).filter(id => selectedSummaries[id]);
-    const selectedBundleIds = Object.keys(selectedBundles).filter(id => selectedBundles[id]);
-    const selectedTaskIds = Object.keys(selectedTasks).filter(id => selectedTasks[id]);
-
-    onAddToWorkspace({
-      summaries: selectedSummaryIds,
-      bundles: selectedBundleIds,
-      tasks: selectedTaskIds
+      return (
+        !search ||
+        t.name.toLowerCase().includes(searchLower) ||
+        (t.description || "").toLowerCase().includes(searchLower)
+      );
     });
+  }, [selectedSummaries, selectedBundles, search]);
 
-    onClose();
-  };
+  /* ======================================================================
+     COLLAPSIBLE GROUPS
+     ====================================================================== */
+  const [openGroups, setOpenGroups] = useState({
+    "Initiation": false,
+    "Governance Setup": false,
+    "Programme Definition": false,
+    "Other": false
+  });
 
-  /* -------------------------------------------------------------
-     RENDER
-     ------------------------------------------------------------- */
+  function toggleGroup(group) {
+    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  }
+
+  /* ======================================================================
+     RENDER START
+     ====================================================================== */
+
   return (
     <div className="repo-overlay">
       <div className="repo-window">
@@ -178,41 +186,74 @@ export default function TaskRepository({ onClose, onAddToWorkspace }) {
 
         {/* FILTER BAR */}
         <div className="repo-filterbar">
-          <input
-            className="repo-input"
-            placeholder="Search…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
 
-          <select value={methodFilter} onChange={e => setMethodFilter(e.target.value)}>
-            <option>All</option>
-            <option>PRINCE2</option>
-            <option>MSP</option>
-            <option>Generic</option>
-          </select>
+          <div className="repo-filterbar-row labels">
+            <span>Type</span>
+            <span>Method</span>
+            <span>Scope</span>
+            <span>Level</span>
+            <span className="repo-search-label">Search</span>
+          </div>
 
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
-            <option>All</option>
-            <option>All</option>
-            <option>Software</option>
-            <option>Transformation</option>
-          </select>
+          <div className="repo-filterbar-row controls">
+            <Dropdown
+              id="type"
+              label="Type"
+              value={typeFilter}
+              options={["Mgmt", "Dev"]}
+              openId={openDropdown}
+              setOpenId={setOpenDropdown}
+              onSelect={setTypeFilter}
+            />
+            <Dropdown
+              id="method"
+              label="Method"
+              value={methodFilter}
+              options={["PRINCE2", "MSP", "Generic"]}
+              openId={openDropdown}
+              setOpenId={setOpenDropdown}
+              onSelect={setMethodFilter}
+            />
+            <Dropdown
+              id="scope"
+              label="Scope"
+              value={scopeFilter}
+              options={["Software", "Transformation"]}
+              openId={openDropdown}
+              setOpenId={setOpenDropdown}
+              onSelect={setScopeFilter}
+            />
+            <Dropdown
+              id="level"
+              label="Level"
+              value={levelFilter}
+              options={["Project", "Programme"]}
+              openId={openDropdown}
+              setOpenId={setOpenDropdown}
+              onSelect={setLevelFilter}
+            />
 
-          <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
-            <option>All</option>
-            <option>Project</option>
-            <option>Programme</option>
-          </select>
+            <input
+              className="repo-search-input"
+              placeholder="Search…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
-        {/* MAIN LAYOUT */}
+        {/* MAIN BODY */}
         <div className="repo-body">
 
-          {/* COLUMN 1: Summaries + Bundles */}
-          <div className="repo-column1">
-            <h3>Summaries</h3>
+          {/* PANE 1 — SUMMARIES + BUNDLES */}
+          <div className="repo-pane repo-pane-left">
+            <h3 className="repo-pane-title">Summaries</h3>
+
             <div className="repo-section">
+              {allFiltersSet && filteredSummaries.length === 0 && (
+                <p className="repo-empty">No summaries match filter.</p>
+              )}
+
               {filteredSummaries.map(s => (
                 <label key={s.id} className="repo-item">
                   <input
@@ -230,8 +271,13 @@ export default function TaskRepository({ onClose, onAddToWorkspace }) {
               ))}
             </div>
 
-            <h3>Bundles</h3>
+            <h3 className="repo-pane-title">Bundles</h3>
+
             <div className="repo-section">
+              {allFiltersSet && filteredBundles.length === 0 && (
+                <p className="repo-empty">No bundles match filter.</p>
+              )}
+
               {filteredBundles.map(b => (
                 <label key={b.id} className="repo-item">
                   <input
@@ -250,38 +296,87 @@ export default function TaskRepository({ onClose, onAddToWorkspace }) {
             </div>
           </div>
 
-          {/* COLUMN 2: Tasks */}
-          <div className="repo-column2">
-            <h3>Tasks</h3>
+          {/* PANE 2 — TASKS */}
+          <div className="repo-pane repo-pane-right">
+            <h3 className="repo-pane-title">Tasks</h3>
 
-            {tasksFromSelections.length === 0 && (
-              <p className="repo-empty">No tasks available.</p>
+            {/* Case 1 — Filters not selected */}
+            {!allFiltersSet && (
+              <p className="repo-empty">Select Type, Method, Scope and Level to begin.</p>
             )}
 
-            {tasksFromSelections.map(t => (
-              <label key={t.id} className="repo-item">
-                <input
-                  type="checkbox"
-                  checked={!!selectedTasks[t.id]}
-                  onChange={e =>
-                    setSelectedTasks(prev => ({
-                      ...prev,
-                      [t.id]: e.target.checked
-                    }))
-                  }
-                />
-                {t.name}
-              </label>
-            ))}
+            {/* Case 2 — Filters selected but no summaries/bundles */}
+            {allFiltersSet &&
+             !Object.values(selectedSummaries).some(v => v) &&
+             !Object.values(selectedBundles).some(v => v) && (
+              <p className="repo-empty">Select a Summary or Bundle to see tasks.</p>
+            )}
+
+            {/* Case 3 — Show tasks */}
+            {allFiltersSet &&
+             (Object.values(selectedSummaries).some(v => v) ||
+              Object.values(selectedBundles).some(v => v)) && (
+              <div className="repo-task-groups">
+
+                {/* Group builder */}
+                {["Initiation", "Governance Setup", "Programme Definition", "Other"].map(group => {
+                  const groupTasks = visibleTaskIds
+                    .map(id => taskLibrary.tasks.find(t => t.id === id))
+                    .filter(t => t && (t.category === group || (group === "Other" && !["Initiation", "Governance Setup", "Programme Definition"].includes(t.category))));
+
+                  return (
+                    <div key={group} className="repo-task-group">
+                      <div
+                        className="repo-task-group-header"
+                        onClick={() => toggleGroup(group)}
+                      >
+                        {openGroups[group] ? "▾" : "▸"} {group}
+                      </div>
+
+                      {openGroups[group] && (
+                        <div className="repo-task-group-body">
+                          {groupTasks.map(t => (
+                            <label key={t.id} className="repo-item">
+                              <input
+                                type="checkbox"
+                                checked={!!selectedTasks[t.id]}
+                                onChange={e =>
+                                  setSelectedTasks(prev => ({
+                                    ...prev,
+                                    [t.id]: e.target.checked
+                                  }))
+                                }
+                              />
+                              {t.name}
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* FOOTER BUTTON */}
+        {/* FOOTER */}
         <div className="repo-footer">
-          <button className="repo-add-btn" onClick={handleAdd}>
+          <button
+            className="repo-add-btn"
+            onClick={() => {
+              onAddToWorkspace({
+                summaries: Object.keys(selectedSummaries).filter(id => selectedSummaries[id]),
+                bundles: Object.keys(selectedBundles).filter(id => selectedBundles[id]),
+                tasks: Object.keys(selectedTasks).filter(id => selectedTasks[id])
+              });
+              onClose();
+            }}
+          >
             Add Selected to Workspace
           </button>
         </div>
+
       </div>
     </div>
   );
