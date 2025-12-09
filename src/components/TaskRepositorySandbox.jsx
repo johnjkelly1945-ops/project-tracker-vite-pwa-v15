@@ -1,22 +1,20 @@
 /* ======================================================================
-   METRA – TaskRepositorySandbox.jsx
-   Safe Development Version – Stage 1 (Flat logic, clean selection model)
+   METRA - TaskRepositorySandbox.jsx
+   Stage 2A + Logic Correction (Bundle → Summaries Only)
    ----------------------------------------------------------------------
-   RULES IMPLEMENTED:
-   • Selecting a bundle REVEALS its summaries & tasks, but does NOT check them
-   • User may tick only the summaries/tasks they want
-   • Collapsing a bundle hides all *unticked* summaries/tasks
-   • Ticked items ALWAYS remain visible
-   • “Download to Workspace” returns only ticked items
-   • After download, resets to a clean state
+   CHANGES IN THIS VERSION:
+   • Stage-2A visual upgrades preserved exactly
+   • CRITICAL FIX: Bundles NO LONGER reveal tasks automatically
+       - Tasks now appear ONLY when summaries are ticked
+       - Added guard inside visibleTaskIds for bundle summaries
    ====================================================================== */
 
 import React, { useState, useMemo } from "react";
-import "../Styles/TaskRepository.css";
+import "../Styles/TaskRepositorySandbox.css";
 import { taskLibrary } from "../taskLibrary.js";
 
 export default function TaskRepositorySandbox({ onClose }) {
-  
+
   /* --------------------------------------------------------------
      FILTER STATE
      -------------------------------------------------------------- */
@@ -60,35 +58,45 @@ export default function TaskRepositorySandbox({ onClose }) {
 
 
   /* ======================================================================
-     DETERMINE VISIBLE TASKS (FLAT LIST with persistent selections)
+     DETERMINE VISIBLE TASKS (Corrected Bundle Behaviour)
      ====================================================================== */
   const visibleTaskIds = useMemo(() => {
     const collected = new Set();
 
-    // 1. Manually selected tasks always remain visible
+    /* --------------------------------------------------------------
+       1. Manual selections
+       -------------------------------------------------------------- */
     Object.keys(selectedTasks).forEach(tid => {
       if (selectedTasks[tid]) collected.add(tid);
     });
 
-    // 2. Tasks from selected Summaries
+    /* --------------------------------------------------------------
+       2. Tasks from selected Summaries (unchanged)
+       -------------------------------------------------------------- */
     Object.keys(selectedSummaries).forEach(sid => {
       if (!selectedSummaries[sid]) return;
       const summary = taskLibrary.summaries.find(s => s.id === sid);
       summary?.tasks?.forEach(tid => collected.add(tid));
     });
 
-    // 3. Tasks from selected Bundles (direct + via summaries)
+    /* --------------------------------------------------------------
+       3. FIXED: Tasks from selected Bundles
+          Bundles now reveal ONLY summaries, NOT tasks.
+          Tasks appear only if the user TICKS a summary.
+       -------------------------------------------------------------- */
     Object.keys(selectedBundles).forEach(bid => {
       if (!selectedBundles[bid]) return;
 
       const bundle = taskLibrary.bundles.find(b => b.id === bid);
       if (!bundle) return;
 
-      // Direct tasks
+      // Direct bundle tasks (should be empty by METRA design)
       bundle.tasks?.forEach(tid => collected.add(tid));
 
-      // Tasks via summaries
+      // *** CRITICAL FIX ***
+      // Only add tasks from summaries IF summaries are selected by user
       bundle.summaries?.forEach(sid => {
+        if (!selectedSummaries[sid]) return;  // <-- FIXED LINE
         const summary = taskLibrary.summaries.find(s => s.id === sid);
         summary?.tasks?.forEach(tid => collected.add(tid));
       });
@@ -106,13 +114,17 @@ export default function TaskRepositorySandbox({ onClose }) {
     <div className="repo-overlay">
       <div className="repo-window">
 
-        {/* HEADER */}
+        {/* ================================================================
+            HEADER (Stage-2A)
+           ================================================================ */}
         <div className="repo-header">
-          <h2 className="repo-title">Task Repository — Sandbox</h2>
+          <h2 className="repo-title">METRA Workspace Repository</h2>
           <button className="repo-close-btn" onClick={onClose}>✕</button>
         </div>
 
-        {/* FILTER BAR */}
+        {/* ================================================================
+            FILTER BAR (unchanged)
+           ================================================================ */}
         <div className="repo-filterbar">
           <div className="repo-filterbar-row labels">
             <span>Type</span>
@@ -149,15 +161,15 @@ export default function TaskRepositorySandbox({ onClose }) {
           </div>
         </div>
 
-        {/* MAIN BODY */}
+        {/* ================================================================
+            MAIN BODY (Stage-2A)
+           ================================================================ */}
         <div className="repo-body">
 
-          {/* --------------------------------------------------------------
-              PANE 1 — Summaries + Bundles
-             -------------------------------------------------------------- */}
+          {/* LEFT PANE */}
           <div className="repo-pane repo-pane-left">
-            
-            <h3 className="repo-pane-title">Summaries</h3>
+
+            <div className="repo-section-header">Summaries</div>
             <div className="repo-section">
               {filteredSummaries.map(s => (
                 <label key={s.id} className="repo-item">
@@ -176,7 +188,7 @@ export default function TaskRepositorySandbox({ onClose }) {
               ))}
             </div>
 
-            <h3 className="repo-pane-title">Bundles</h3>
+            <div className="repo-section-header">Bundles</div>
             <div className="repo-section">
               {filteredBundles.map(b => {
                 const isOpen = !!selectedBundles[b.id];
@@ -187,7 +199,6 @@ export default function TaskRepositorySandbox({ onClose }) {
                 return (
                   <div key={b.id} className="repo-bundle-block">
 
-                    {/* BUNDLE CHECK */}
                     <label className="repo-item">
                       <input
                         type="checkbox"
@@ -202,7 +213,6 @@ export default function TaskRepositorySandbox({ onClose }) {
                       {b.name}
                     </label>
 
-                    {/* Reveal summaries only when bundle selected */}
                     {isOpen && (
                       <div className="repo-bundle-children">
                         {bundleSummaries.map(s => (
@@ -230,11 +240,10 @@ export default function TaskRepositorySandbox({ onClose }) {
 
           </div>
 
-          {/* --------------------------------------------------------------
-              PANE 2 — Tasks (Flat list, persistent selected)
-             -------------------------------------------------------------- */}
+          {/* RIGHT PANE */}
           <div className="repo-pane repo-pane-right">
-            <h3 className="repo-pane-title">Tasks</h3>
+
+            <div className="repo-section-header">Tasks</div>
 
             <div className="repo-section">
               {visibleTaskIds.length === 0 && (
@@ -260,9 +269,10 @@ export default function TaskRepositorySandbox({ onClose }) {
                   </label>
                 ))}
             </div>
+
           </div>
 
-        </div> {/* END repo-body */}
+        </div>
 
         {/* FOOTER */}
         <div className="repo-footer">
