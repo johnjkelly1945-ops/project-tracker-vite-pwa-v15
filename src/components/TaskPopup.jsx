@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   FULL CLEAN VERIFIED VERSION – DECEMBER 2025
+   FULL CLEAN VERIFIED VERSION – DECEMBER 2025 (with Delete 2-Stage Confirm)
    ----------------------------------------------------------------------
    ✔ Stable Notes + Timestamp
    ✔ Change Person
@@ -9,6 +9,7 @@
    ✔ Template button fully working
    ✔ No 5-minute lock
    ✔ Clean merge of history + draft
+   ✔ NEW: SAFE DELETE (requires 2 presses)
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -174,11 +175,34 @@ export default function TaskPopup({
   };
 
   /* ================================================================
-     GENERIC ACTIONS (QC / Risk / Issue / Email etc.)
+     GENERIC ACTIONS
      ================================================================ */
   const doAction = async (fields) => {
     if (!isLocked) await commitEntry();
     onUpdate({ ...fields, pane });
+    onClose();
+  };
+
+  /* ================================================================
+     SAFE DELETE (NEW — TWO-PRESS LOGIC)
+     ================================================================ */
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      return;
+    }
+
+    // Second press — perform delete
+    if (!isLocked) await commitEntry();
+
+    onUpdate({
+      delete: true,
+      id: task.id,
+      pane
+    });
+
     onClose();
   };
 
@@ -196,7 +220,10 @@ export default function TaskPopup({
   return (
     <div
       className="taskpopup-overlay"
-      onClick={() => setCcConfirm(false)}
+      onClick={() => {
+        setCcConfirm(false);
+        setDeleteConfirm(false);
+      }}
     >
       <div
         className="taskpopup-window"
@@ -234,23 +261,40 @@ export default function TaskPopup({
           </div>
         )}
 
+        {/* DELETE CONFIRMATION BANNER ----------------------------- */}
+        {deleteConfirm && (
+          <div className="tp-delete-toast">
+            Click DELETE again to permanently remove this task.
+          </div>
+        )}
+
         {/* FOOTER -------------------------------------------------- */}
         <div className="tp-footer">
 
           <div className="tp-gov-row">
             <button onClick={handleCC}>CC</button>
             <button onClick={() => doAction({ gov: "QC" })}>QC</button>
-            <button onClick={() => doAction({ gov: "Risk", flag: "red" })}>Risk</button>
-            <button onClick={() => doAction({ gov: "Issue", flag: "red" })}>Issue</button>
-            <button onClick={() => doAction({ gov: "Escalate", flag: "red" })}>Escalate</button>
+            <button onClick={() => doAction({ gov: "Risk", flag: "red" })}>
+              Risk
+            </button>
+            <button onClick={() => doAction({ gov: "Issue", flag: "red" })}>
+              Issue
+            </button>
+            <button onClick={() => doAction({ gov: "Escalate", flag: "red" })}>
+              Escalate
+            </button>
             <button onClick={() => doAction({ gov: "Email" })}>Email</button>
             <button onClick={handleTemplate}>Template</button>
           </div>
 
           <div className="tp-action-row">
             <button onClick={handleChangePerson}>Change Person</button>
-            <button onClick={() => doAction({ status: "Completed" })}>Mark Completed</button>
-            <button className="tp-delete" onClick={() => doAction({ delete: true })}>
+            <button onClick={() => doAction({ status: "Completed" })}>
+              Mark Completed
+            </button>
+
+            {/* NEW DELETE HANDLER */}
+            <button className="tp-delete" onClick={handleDelete}>
               Delete
             </button>
           </div>
