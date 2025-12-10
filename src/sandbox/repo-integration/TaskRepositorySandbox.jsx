@@ -1,21 +1,14 @@
-/* ======================================================================
-   METRA – TaskRepositorySandbox.jsx
-   BASELINE – Repo Sandbox v1 (stable, verified)
-   ----------------------------------------------------------------------
-   ✔ Clean JSX structure (no unterminated JSX)
-   ✔ All filters working with original labels
-   ✔ Bundles → reveal summaries only (Stage 2A logic fix)
-   ✔ Tasks appear correctly when summaries ticked
-   ✔ Export sends correct payload
-   ✔ No missing imports
-   ✔ No console errors, no 500 server error
-   ====================================================================== */
+/* --- SANDBOX VERSION ----------------------------------------------
+   File: src/components/TaskRepositorySandbox.jsx
+   Used ONLY in RepoIntegrationApp (sandbox mode)
+   Not part of the main METRA workspace repository
+--------------------------------------------------------------------- */
 
 import React, { useState, useMemo } from "react";
 import "./TaskRepositorySandbox.css";
 import { taskLibrary } from "../../taskLibrary.js";
 
-export default function TaskRepositorySandbox({ onClose }) {
+export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
 
   /* --------------------------------------------------------------
      FILTER STATE
@@ -29,17 +22,33 @@ export default function TaskRepositorySandbox({ onClose }) {
     typeFilter && methodFilter && scopeFilter && levelFilter;
 
   /* --------------------------------------------------------------
+     METHOD OPTIONS BASED ON TYPE
+     -------------------------------------------------------------- */
+  const methodOptions = useMemo(() => {
+    if (typeFilter === "Mgmt") return ["PRINCE2", "MSP", "Generic"];
+    if (typeFilter === "Dev") return ["Agile"];
+    return [];
+  }, [typeFilter]);
+
+  /* Reset method when type changes */
+  const handleTypeChange = (value) => {
+    setTypeFilter(value);
+    setMethodFilter(""); // prevents invalid state
+  };
+
+  /* --------------------------------------------------------------
      SELECTION STATE
      -------------------------------------------------------------- */
   const [selectedSummaries, setSelectedSummaries] = useState({});
   const [selectedBundles, setSelectedBundles] = useState({});
-  const [selectedTasks,   setSelectedTasks]   = useState({});
+  const [selectedTasks, setSelectedTasks] = useState({});
 
   /* --------------------------------------------------------------
      FILTERED SUMMARIES / BUNDLES
      -------------------------------------------------------------- */
   const filteredSummaries = useMemo(() => {
     if (!allFiltersSet) return [];
+
     return taskLibrary.summaries.filter(s =>
       s.type   === typeFilter &&
       s.method === methodFilter &&
@@ -50,6 +59,7 @@ export default function TaskRepositorySandbox({ onClose }) {
 
   const filteredBundles = useMemo(() => {
     if (!allFiltersSet) return [];
+
     return taskLibrary.bundles.filter(b =>
       b.type   === typeFilter &&
       b.method === methodFilter &&
@@ -58,15 +68,15 @@ export default function TaskRepositorySandbox({ onClose }) {
     );
   }, [typeFilter, methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
-  /* ======================================================================
-     DETERMINE VISIBLE TASKS (Corrected Bundle Behaviour)
-     ====================================================================== */
+  /* --------------------------------------------------------------
+     DETERMINE VISIBLE TASKS
+     -------------------------------------------------------------- */
   const visibleTaskIds = useMemo(() => {
     const collected = new Set();
 
-    // Tasks manually ticked
-    Object.keys(selectedTasks).forEach(tid => {
-      if (selectedTasks[tid]) collected.add(tid);
+    // Manually selected tasks
+    Object.keys(selectedTasks).forEach(id => {
+      if (selectedTasks[id]) collected.add(id);
     });
 
     // Tasks from summaries
@@ -76,15 +86,13 @@ export default function TaskRepositorySandbox({ onClose }) {
       summary?.tasks?.forEach(tid => collected.add(tid));
     });
 
-    // Bundles → only reveal summaries, not automatic tasks
+    // Bundles → reveal summaries; tasks only if summaries checked
     Object.keys(selectedBundles).forEach(bid => {
       if (!selectedBundles[bid]) return;
-
       const bundle = taskLibrary.bundles.find(b => b.id === bid);
       if (!bundle) return;
 
-      // If bundle includes summaries, include tasks ONLY if summaries ticked
-      bundle.summaries?.forEach(sid => {
+      bundle.summaries.forEach(sid => {
         if (!selectedSummaries[sid]) return;
         const summary = taskLibrary.summaries.find(s => s.id === sid);
         summary?.tasks?.forEach(tid => collected.add(tid));
@@ -95,20 +103,21 @@ export default function TaskRepositorySandbox({ onClose }) {
   }, [selectedSummaries, selectedBundles, selectedTasks]);
 
   /* ======================================================================
-     RENDER START
+     RENDER
      ====================================================================== */
   return (
     <div className="repo-overlay">
       <div className="repo-window">
 
-        {/* HEADER */}
+        {/* HEADER ------------------------------------------------------ */}
         <div className="repo-header">
           <h2 className="repo-title">METRA Workspace Repository</h2>
           <button className="repo-close-btn" onClick={onClose}>✕</button>
         </div>
 
-        {/* FILTER BAR */}
+        {/* FILTER BAR -------------------------------------------------- */}
         <div className="repo-filterbar">
+
           <div className="repo-filterbar-row labels">
             <span>Type</span>
             <span>Method</span>
@@ -117,37 +126,47 @@ export default function TaskRepositorySandbox({ onClose }) {
           </div>
 
           <div className="repo-filterbar-row controls">
-            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+
+            {/* TYPE */}
+            <select value={typeFilter} onChange={e => handleTypeChange(e.target.value)}>
               <option value="">Type</option>
               <option value="Mgmt">Mgmt</option>
               <option value="Dev">Dev</option>
             </select>
 
-            <select value={methodFilter} onChange={e => setMethodFilter(e.target.value)}>
+            {/* METHOD (dynamic, disabled until Type chosen) */}
+            <select
+              value={methodFilter}
+              disabled={!typeFilter}
+              onChange={e => setMethodFilter(e.target.value)}
+            >
               <option value="">Method</option>
-              <option value="PRINCE2">PRINCE2</option>
-              <option value="MSP">MSP</option>
-              <option value="Generic">Generic</option>
+              {methodOptions.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
             </select>
 
+            {/* SCOPE */}
             <select value={scopeFilter} onChange={e => setScopeFilter(e.target.value)}>
               <option value="">Scope</option>
               <option value="Software">Software</option>
               <option value="Transformation">Transformation</option>
             </select>
 
+            {/* LEVEL */}
             <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
               <option value="">Level</option>
               <option value="Project">Project</option>
               <option value="Programme">Programme</option>
             </select>
+
           </div>
         </div>
 
-        {/* MAIN BODY */}
+        {/* MAIN BODY --------------------------------------------------- */}
         <div className="repo-body">
 
-          {/* LEFT PANE */}
+          {/* LEFT PANE: SUMMARIES + BUNDLES --------------------------- */}
           <div className="repo-pane repo-pane-left">
 
             <div className="repo-section-header">Summaries</div>
@@ -221,7 +240,7 @@ export default function TaskRepositorySandbox({ onClose }) {
 
           </div>
 
-          {/* RIGHT PANE */}
+          {/* RIGHT PANE: TASKS --------------------------------------- */}
           <div className="repo-pane repo-pane-right">
 
             <div className="repo-section-header">Tasks</div>
@@ -254,18 +273,21 @@ export default function TaskRepositorySandbox({ onClose }) {
           </div>
         </div>
 
-        {/* FOOTER */}
+        {/* FOOTER ----------------------------------------------------- */}
         <div className="repo-footer">
           <button
             className="repo-add-btn"
             onClick={() => {
               const payload = {
+                type: typeFilter,
                 summaries: Object.keys(selectedSummaries).filter(id => selectedSummaries[id]),
-                bundles:   Object.keys(selectedBundles).filter(id => selectedBundles[id]),
-                tasks:     Object.keys(selectedTasks).filter(id => selectedTasks[id]),
+                bundles: Object.keys(selectedBundles).filter(id => selectedBundles[id]),
+                tasks: Object.keys(selectedTasks).filter(id => selectedTasks[id]),
               };
 
               console.log("📤 SANDBOX EXPORT PAYLOAD:", payload);
+
+              if (onAddToWorkspace) onAddToWorkspace(payload);
 
               // Reset after export
               setSelectedSummaries({});
@@ -281,3 +303,5 @@ export default function TaskRepositorySandbox({ onClose }) {
     </div>
   );
 }
+
+/* --- END OF SANDBOX VERSION ---------------------------------------- */
