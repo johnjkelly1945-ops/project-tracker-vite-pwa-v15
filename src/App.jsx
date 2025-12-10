@@ -1,81 +1,77 @@
 /* ======================================================================
    METRA – App.jsx
-   Sandbox Switch Version
+   Unified Repository Integration (Dec 2025)
    ----------------------------------------------------------------------
-   • Keeps the main (stable) TaskRepository fully intact
-   • Adds a temporary button to open TaskRepositorySandbox.jsx
-   • No changes to any other component
+   ✔ One Repository button only
+   ✔ Opens TaskRepositorySandbox as the official repo
+   ✔ Receives repo export payload
+   ✔ Forwards payload to DualPane through global bridge
+   ✔ No impact to existing components or layout
    ====================================================================== */
 
 import React, { useState } from "react";
 import "./Styles/App.css";
 
 import DualPane from "./components/DualPane.jsx";
-import TaskRepository from "./components/TaskRepository.jsx";           // stable
-import TaskRepositorySandbox from "./components/TaskRepositorySandbox.jsx"; // sandbox
+import TaskRepositorySandbox from "./components/TaskRepositorySandbox.jsx";
 
 export default function App() {
-  const [showRepo, setShowRepo] = useState(false);            // stable repo popup
-  const [showSandboxRepo, setShowSandboxRepo] = useState(false); // sandbox popup
+
+  const [showRepository, setShowRepository] = useState(false);
+
+  /* ================================================================
+     HANDLE REPOSITORY IMPORT
+     ================================================================ */
+  const handleRepoImport = (payload) => {
+    console.log("📤 App received repo payload:", payload);
+
+    // Deliver payload into DualPane via the bridge defined inside DualPane.jsx
+    if (typeof window.onRepoImportToDualPane === "function") {
+      window.onRepoImportToDualPane(payload);
+    } else {
+      console.warn("⚠️ DualPane listener not ready.");
+    }
+
+    setShowRepository(false);
+  };
 
   return (
     <div className="app-container">
 
-      {/* ================================================================
+      {/* ============================================================
           GLOBAL HEADER
-      ================================================================ */}
+      ============================================================ */}
       <header className="global-header">
         <h1 className="app-title">METRA Workspace</h1>
 
         <div className="header-buttons">
-          {/* Stable Repository Button */}
           <button
             className="header-btn"
-            onClick={() => setShowRepo(true)}
+            onClick={() => setShowRepository(true)}
           >
-            Repository (Stable)
-          </button>
-
-          {/* Sandbox Repository Button */}
-          <button
-            className="header-btn"
-            onClick={() => setShowSandboxRepo(true)}
-          >
-            Repository (Sandbox)
+            Repository
           </button>
         </div>
       </header>
 
-      {/* ================================================================
-          MAIN WORKSPACE AREA
-      ================================================================ */}
+      {/* ============================================================
+          MAIN WORKSPACE
+      ============================================================ */}
       <DualPane />
 
-      {/* ================================================================
-          POPUPS – Stable Repository
-      ================================================================ */}
-      {showRepo && (
-        <TaskRepository
-          onClose={() => setShowRepo(false)}
-          onAddToWorkspace={(items) => {
-            console.log("Imported from STABLE repo:", items);
-            setShowRepo(false);
-          }}
+      {/* ============================================================
+          POPUP – Unified Repository (Sandbox)
+      ============================================================ */}
+      {showRepository && (
+        <TaskRepositorySandbox
+          onClose={() => setShowRepository(false)}
+
+          // The Sandbox Repo will call this with:
+          // { summaries: [...], bundles: [...], tasks: [...], type: "Mgmt" | "Dev" }
+          onAddToWorkspace={handleRepoImport}
         />
       )}
 
-      {/* ================================================================
-          POPUPS – Sandbox Repository
-      ================================================================ */}
-      {showSandboxRepo && (
-        <TaskRepositorySandbox
-          onClose={() => setShowSandboxRepo(false)}
-          onAddToWorkspace={(items) => {
-            console.log("Imported from SANDBOX repo:", items);
-            setShowSandboxRepo(false);
-          }}
-        />
-      )}
     </div>
   );
 }

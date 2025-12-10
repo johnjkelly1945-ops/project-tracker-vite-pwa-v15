@@ -1,66 +1,67 @@
 /* ======================================================================
    METRA – RepoIntegrationApp.jsx
-   Stage-3A Sandbox Wrapper
+   FINAL SANDBOX REPOSITORY LAUNCHER (Dec 2025)
    ----------------------------------------------------------------------
-   PURPOSE:
-   • Standalone environment for safe Repository → Workspace integration
-   • Loads RepoIntegrationDualPane.jsx only (NOT the main METRA Workspace)
-   • Provides a clean header with a button to open the Repository Sandbox
+   ✔ Opens repository sandbox popup
+   ✔ Receives repo export payload
+   ✔ Forwards payload to DualPane via global bridge
+   ✔ No DOM events
+   ✔ Clean, stable, isolated from main METRA app
    ====================================================================== */
 
 import React, { useState } from "react";
-import { createPortal } from "react-dom";
+import "../../Styles/App.css";
 
 import RepoIntegrationDualPane from "./RepoIntegrationDualPane.jsx";
-import TaskRepositorySandbox from "./TaskRepositorySandbox.jsx";
+import TaskRepositorySandbox from "../../components/TaskRepositorySandbox.jsx";
 
 export default function RepoIntegrationApp() {
 
-  const [showRepo, setShowRepo] = useState(false);
+  const [showRepository, setShowRepository] = useState(false);
+
+  /* --------------------------------------------------------------
+     HANDLE PAYLOAD FROM REPOSITORY
+     -------------------------------------------------------------- */
+  const handleRepoImport = (payload) => {
+    console.log("📤 Sandbox App received repo payload:", payload);
+
+    if (typeof window.onRepoImportToDualPane === "function") {
+      window.onRepoImportToDualPane(payload);
+    } else {
+      console.warn("⚠️ RepoIntegrationDualPane listener not ready.");
+    }
+
+    setShowRepository(false);
+  };
 
   return (
-    <div className="repo-integration-app">
+    <div className="app-container">
 
-      {/* === SIMPLE HEADER ======================================== */}
-      <div className="repo-integration-header"
-           style={{ display: "flex", justifyContent: "space-between",
-                    padding: "12px 20px", background:"#f0f4fa",
-                    borderBottom:"1px solid #d0d7e2" }}>
-        <h1 style={{ margin: 0, fontSize: "20px" }}>
-          METRA – Repository Integration Sandbox
-        </h1>
+      {/* HEADER --------------------------------------------------- */}
+      <header className="global-header">
+        <h1 className="app-title">METRA Sandbox Workspace</h1>
 
-        <button
-          onClick={() => setShowRepo(true)}
-          style={{
-            padding: "8px 14px",
-            background: "#0b4b85",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
-          Open Repository
-        </button>
-      </div>
+        <div className="header-buttons">
+          <button
+            className="header-btn"
+            onClick={() => setShowRepository(true)}
+          >
+            Repository (Sandbox)
+          </button>
+        </div>
+      </header>
 
-      {/* === MAIN SANDBOX WORKSPACE ================================= */}
+      {/* MAIN WORKSPACE ------------------------------------------- */}
       <RepoIntegrationDualPane />
 
-      {/* === REPOSITORY POPUP (SANDBOX VERSION) ===================== */}
-      {showRepo && createPortal(
+      {/* REPOSITORY POPUP ------------------------------------------ */}
+      {showRepository && (
         <TaskRepositorySandbox
-          onClose={() => setShowRepo(false)}
-          onImport={(data) => {
-            window.dispatchEvent(
-              new CustomEvent("repoIntegrationImport", { detail: data })
-            );
-            setShowRepo(false);
-          }}
-        />,
-        document.getElementById("metra-popups")
+          onClose={() => setShowRepository(false)}
+          onAddToWorkspace={handleRepoImport}
+        />
       )}
+
     </div>
   );
 }

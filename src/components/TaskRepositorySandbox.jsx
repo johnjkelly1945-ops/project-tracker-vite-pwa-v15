@@ -1,19 +1,21 @@
 /* ======================================================================
-   METRA - TaskRepositorySandbox.jsx
-   Stage 2A + Logic Correction (Bundle → Summaries Only)
+   METRA – TaskRepositorySandbox.jsx
+   FINAL LOGIC-CORRECT VERSION (Dec 2025)
    ----------------------------------------------------------------------
-   CHANGES IN THIS VERSION:
-   • Stage-2A visual upgrades preserved exactly
-   • CRITICAL FIX: Bundles NO LONGER reveal tasks automatically
-       - Tasks now appear ONLY when summaries are ticked
-       - Added guard inside visibleTaskIds for bundle summaries
+   ✔ Filters determine *available* items, not visibility of tasks
+   ✔ Tasks appear ONLY when a summary is checked
+   ✔ Bundles reveal summaries (no task auto-reveal)
+   ✔ Export = checked summaries + checked tasks only
+   ✔ Bundles are NEVER exported
+   ✔ Type (Mgmt/Dev) is included in export payload
+   ✔ Fully compatible with RepoIntegrationApp and RepoIntegrationDualPane
    ====================================================================== */
 
 import React, { useState, useMemo } from "react";
-import "../Styles/TaskRepositorySandbox.css";
+import "../sandbox/repo-integration/TaskRepositorySandbox.css";
 import { taskLibrary } from "../taskLibrary.js";
 
-export default function TaskRepositorySandbox({ onClose }) {
+export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
 
   /* --------------------------------------------------------------
      FILTER STATE
@@ -31,100 +33,110 @@ export default function TaskRepositorySandbox({ onClose }) {
      -------------------------------------------------------------- */
   const [selectedSummaries, setSelectedSummaries] = useState({});
   const [selectedBundles, setSelectedBundles] = useState({});
-  const [selectedTasks,   setSelectedTasks]   = useState({});
+  const [selectedTasks, setSelectedTasks] = useState({});
 
   /* --------------------------------------------------------------
-     FILTERED SUMMARIES / BUNDLES
+     FILTERED SUMMARIES & BUNDLES
      -------------------------------------------------------------- */
   const filteredSummaries = useMemo(() => {
     if (!allFiltersSet) return [];
     return taskLibrary.summaries.filter(s =>
-      s.type   === typeFilter &&
+      s.type === typeFilter &&
       s.method === methodFilter &&
-      s.scope  === scopeFilter &&
-      s.level  === levelFilter
+      s.scope === scopeFilter &&
+      s.level === levelFilter
     );
   }, [typeFilter, methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
   const filteredBundles = useMemo(() => {
     if (!allFiltersSet) return [];
     return taskLibrary.bundles.filter(b =>
-      b.type   === typeFilter &&
+      b.type === typeFilter &&
       b.method === methodFilter &&
-      b.scope  === scopeFilter &&
-      b.level  === levelFilter
+      b.scope === scopeFilter &&
+      b.level === levelFilter
     );
   }, [typeFilter, methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
-
   /* ======================================================================
-     DETERMINE VISIBLE TASKS (Corrected Bundle Behaviour)
+     TASK VISIBILITY LOGIC (CORRECT METRA BEHAVIOUR)
      ====================================================================== */
   const visibleTaskIds = useMemo(() => {
     const collected = new Set();
 
-    /* --------------------------------------------------------------
-       1. Manual selections
-       -------------------------------------------------------------- */
-    Object.keys(selectedTasks).forEach(tid => {
-      if (selectedTasks[tid]) collected.add(tid);
+    // Tasks manually checked
+    Object.entries(selectedTasks).forEach(([tid, val]) => {
+      if (val) collected.add(tid);
     });
 
-    /* --------------------------------------------------------------
-       2. Tasks from selected Summaries (unchanged)
-       -------------------------------------------------------------- */
-    Object.keys(selectedSummaries).forEach(sid => {
-      if (!selectedSummaries[sid]) return;
+    // Tasks from checked summaries
+    Object.entries(selectedSummaries).forEach(([sid, isChecked]) => {
+      if (!isChecked) return;
       const summary = taskLibrary.summaries.find(s => s.id === sid);
       summary?.tasks?.forEach(tid => collected.add(tid));
     });
 
-    /* --------------------------------------------------------------
-       3. FIXED: Tasks from selected Bundles
-          Bundles now reveal ONLY summaries, NOT tasks.
-          Tasks appear only if the user TICKS a summary.
-       -------------------------------------------------------------- */
-    Object.keys(selectedBundles).forEach(bid => {
-      if (!selectedBundles[bid]) return;
+    // Bundles → reveal summaries only, no task auto-reveal
+    Object.entries(selectedBundles).forEach(([bid, isOpen]) => {
+      if (!isOpen) return;
 
       const bundle = taskLibrary.bundles.find(b => b.id === bid);
       if (!bundle) return;
 
-      // Direct bundle tasks (should be empty by METRA design)
-      bundle.tasks?.forEach(tid => collected.add(tid));
-
-      // *** CRITICAL FIX ***
-      // Only add tasks from summaries IF summaries are selected by user
-      bundle.summaries?.forEach(sid => {
-        if (!selectedSummaries[sid]) return;  // <-- FIXED LINE
+      // If summary under bundle is checked, reveal its tasks
+      bundle.summaries.forEach(sid => {
+        if (!selectedSummaries[sid]) return;
         const summary = taskLibrary.summaries.find(s => s.id === sid);
         summary?.tasks?.forEach(tid => collected.add(tid));
       });
     });
 
     return [...collected];
-
   }, [selectedSummaries, selectedBundles, selectedTasks]);
 
+  /* ======================================================================
+     EXPORT HANDLER
+     ====================================================================== */
+  const handleExport = () => {
+    const summariesToExport = Object.keys(selectedSummaries)
+      .filter(id => selectedSummaries[id]);
+
+    const tasksToExport = Object.keys(selectedTasks)
+      .filter(id => selectedTasks[id]);
+
+    const payload = {
+      type: typeFilter,             // "Mgmt" or "Dev"
+      summaries: summariesToExport,
+      tasks: tasksToExport,
+      bundles: []                   // Bundles are not exported
+    };
+
+    console.log("📤 EXPORT PAYLOAD:", payload);
+
+    if (onAddToWorkspace) {
+      onAddToWorkspace(payload);
+    }
+
+    setSelectedSummaries({});
+    setSelectedTasks({});
+    setSelectedBundles({});
+    onClose();
+  };
 
   /* ======================================================================
-     RENDER START
+     RENDER
      ====================================================================== */
   return (
     <div className="repo-overlay">
       <div className="repo-window">
 
-        {/* ================================================================
-            HEADER (Stage-2A)
-           ================================================================ */}
+        {/* HEADER --------------------------------------------------------- */}
         <div className="repo-header">
-          <h2 className="repo-title">METRA Workspace Repository</h2>
+          <h2 className="repo-title">METRA Repository (Sandbox)</h2>
           <button className="repo-close-btn" onClick={onClose}>✕</button>
         </div>
 
-        {/* ================================================================
-            FILTER BAR (unchanged)
-           ================================================================ */}
+        {/* FILTER BAR ----------------------------------------------------- */}
         <div className="repo-filterbar">
           <div className="repo-filterbar-row labels">
             <span>Type</span>
@@ -157,18 +169,18 @@ export default function TaskRepositorySandbox({ onClose }) {
               <option value="">Level</option>
               <option value="Project">Project</option>
               <option value="Programme">Programme</option>
+              <option value="Corporate">Corporate</option>
             </select>
           </div>
         </div>
 
-        {/* ================================================================
-            MAIN BODY (Stage-2A)
-           ================================================================ */}
+        {/* BODY ----------------------------------------------------------- */}
         <div className="repo-body">
 
-          {/* LEFT PANE */}
+          {/* LEFT PANE – SUMMARIES + BUNDLES ----------------------------- */}
           <div className="repo-pane repo-pane-left">
 
+            {/* SUMMARIES */}
             <div className="repo-section-header">Summaries</div>
             <div className="repo-section">
               {filteredSummaries.map(s => (
@@ -188,6 +200,7 @@ export default function TaskRepositorySandbox({ onClose }) {
               ))}
             </div>
 
+            {/* BUNDLES */}
             <div className="repo-section-header">Bundles</div>
             <div className="repo-section">
               {filteredBundles.map(b => {
@@ -240,9 +253,8 @@ export default function TaskRepositorySandbox({ onClose }) {
 
           </div>
 
-          {/* RIGHT PANE */}
+          {/* RIGHT PANE – TASKS ----------------------------------------- */}
           <div className="repo-pane repo-pane-right">
-
             <div className="repo-section-header">Tasks</div>
 
             <div className="repo-section">
@@ -269,30 +281,13 @@ export default function TaskRepositorySandbox({ onClose }) {
                   </label>
                 ))}
             </div>
-
           </div>
 
         </div>
 
-        {/* FOOTER */}
+        {/* FOOTER -------------------------------------------------------- */}
         <div className="repo-footer">
-          <button
-            className="repo-add-btn"
-            onClick={() => {
-              const result = {
-                summaries: Object.keys(selectedSummaries).filter(id => selectedSummaries[id]),
-                bundles:   Object.keys(selectedBundles).filter(id => selectedBundles[id]),
-                tasks:     Object.keys(selectedTasks).filter(id => selectedTasks[id]),
-              };
-
-              console.log("SANDBOX RESULT:", result);
-              alert("Items sent to console. Sandbox resets.");
-
-              setSelectedSummaries({});
-              setSelectedBundles({});
-              setSelectedTasks({});
-            }}
-          >
+          <button className="repo-add-btn" onClick={handleExport}>
             Add Selected to Workspace
           </button>
         </div>

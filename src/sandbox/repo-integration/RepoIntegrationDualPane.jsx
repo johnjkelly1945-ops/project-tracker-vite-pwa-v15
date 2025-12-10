@@ -1,12 +1,14 @@
 /* ======================================================================
    METRA – RepoIntegrationDualPane.jsx
-   Stage-3A Repository → Workspace Integration (Sandbox Only)
+   FINAL SANDBOX IMPORT PIPELINE (Dec 2025)
    ----------------------------------------------------------------------
-   ✔ Safe clone of DualPane for testing repository imports
-   ✔ All Workspace behaviour preserved (summaries, tasks, popups)
-   ✔ Imports from TaskRepositorySandbox injected into mgmt / dev panes
-   ✔ Pane-expand function restored (NEW DEC 2025)
-   ✔ Uses sandbox CSS: RepoIntegrationDualPane.css
+   ✔ Receives repository imports through window.onRepoImportToDualPane
+   ✔ Imports summaries and tasks into Mgmt or Dev pane
+   ✔ Tasks grouped under imported summary only if they belong there
+   ✔ Ungrouped tasks imported as standalone (A1 confirmed)
+   ✔ Append-to-bottom using orderIndex
+   ✔ No DOM events (removed)
+   ✔ All popup behaviour preserved
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -19,11 +21,12 @@ import AddItemPopup from "../../components/AddItemPopup.jsx";
 import PersonnelOverlay from "../../components/PersonnelOverlay.jsx";
 import SummaryOverlay from "../../components/SummaryOverlay.jsx";
 
+import { taskLibrary } from "../../taskLibrary.js";
 import "./RepoIntegrationDualPane.css";
 
-/* ================================================================
-   HELPERS
-   ================================================================ */
+/* --------------------------------------------------------------
+   ORDER INDEX HELPERS
+   -------------------------------------------------------------- */
 function getNextOrderIndex(tasks, summaries) {
   const all = [...tasks, ...summaries];
   if (all.length === 0) return 0;
@@ -31,13 +34,11 @@ function getNextOrderIndex(tasks, summaries) {
 }
 
 /* ======================================================================
-   MAIN SANDBOX DUAL PANE
+   MAIN SANDBOX WORKSPACE DUALPANE
    ====================================================================== */
 export default function RepoIntegrationDualPane() {
 
-  /* --------------------------------------------------------------
-     FILTERS
-     -------------------------------------------------------------- */
+  /* FILTERS ------------------------------------------------------ */
   const [mgmtFilter, setMgmtFilter] = useState("all");
   const [devFilter, setDevFilter] = useState("all");
 
@@ -46,18 +47,14 @@ export default function RepoIntegrationDualPane() {
     else setDevFilter(id);
   };
 
-  /* --------------------------------------------------------------
-     LOCAL SUMMARY/TASK STATE (starts empty for sandbox)
-     -------------------------------------------------------------- */
+  /* WORKSPACE STATE --------------------------------------------- */
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
   const [devSummaries, setDevSummaries] = useState([]);
 
   const [mgmtTasks, setMgmtTasks] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
 
-  /* --------------------------------------------------------------
-     POPUPS
-     -------------------------------------------------------------- */
+  /* POPUPS ------------------------------------------------------- */
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
 
@@ -71,9 +68,7 @@ export default function RepoIntegrationDualPane() {
     setSelectedPane(null);
   };
 
-  /* ================================================================
-     PERSONNEL OVERLAY
-     ================================================================ */
+  /* PERSONNEL ---------------------------------------------------- */
   const [showPersonnel, setShowPersonnel] = useState(false);
   const [pendingTaskID, setPendingTaskID] = useState(null);
   const [pendingPane, setPendingPane] = useState(null);
@@ -94,16 +89,12 @@ export default function RepoIntegrationDualPane() {
     );
 
     updateFn(updated);
-
     setSelectedPane(pendingPane);
     setSelectedTask(updated.find(t => t.id === pendingTaskID));
-
     setShowPersonnel(false);
   };
 
-  /* ================================================================
-     SUMMARY & TASK ADD POPUPS
-     ================================================================ */
+  /* SUMMARY ADD -------------------------------------------------- */
   const [showSummaryOverlay, setShowSummaryOverlay] = useState(false);
   const [summaryPane, setSummaryPane] = useState(null);
 
@@ -114,14 +105,14 @@ export default function RepoIntegrationDualPane() {
 
   const handleAddSummary = (title) => {
     const isMgmt = summaryPane === "mgmt";
-    const currentSummaries = isMgmt ? mgmtSummaries : devSummaries;
-    const currentTasks = isMgmt ? mgmtTasks : devTasks;
+    const summaries = isMgmt ? mgmtSummaries : devSummaries;
+    const tasks = isMgmt ? mgmtTasks : devTasks;
 
     const newSummary = {
       id: Date.now(),
       title,
       expanded: true,
-      orderIndex: getNextOrderIndex(currentTasks, currentSummaries),
+      orderIndex: getNextOrderIndex(tasks, summaries),
     };
 
     if (isMgmt) setMgmtSummaries([...mgmtSummaries, newSummary]);
@@ -130,6 +121,7 @@ export default function RepoIntegrationDualPane() {
     setShowSummaryOverlay(false);
   };
 
+  /* TASK ADD ----------------------------------------------------- */
   const [showMgmtAddPopup, setShowMgmtAddPopup] = useState(false);
   const [showDevAddPopup, setShowDevAddPopup] = useState(false);
 
@@ -162,60 +154,89 @@ export default function RepoIntegrationDualPane() {
   };
 
   /* ======================================================================
-     IMPORTS FROM REPOSITORY
+     IMPORT FROM REPOSITORY (NEW PIPELINE)
      ====================================================================== */
-  useEffect(() => {
-    const handleImport = (event) => {
-      const { type, summaries, tasks } = event.detail;
-      const isMgmt = type === "Mgmt";
+  window.onRepoImportToDualPane = (payload) => {
+    console.log("📥 Sandbox DualPane received Repo payload:", payload);
 
-      const setSummaries = isMgmt ? setMgmtSummaries : setDevSummaries;
-      const setTasks = isMgmt ? setMgmtTasks : setDevTasks;
+    const { type, summaries = [], tasks = [] } = payload;
+    const isMgmt = type === "Mgmt";
 
-      const currentSummaries = isMgmt ? mgmtSummaries : devSummaries;
-      const currentTasks = isMgmt ? mgmtTasks : devTasks;
+    const wsSummaries = isMgmt ? mgmtSummaries : devSummaries;
+    const wsTasks = isMgmt ? mgmtTasks : devTasks;
 
-      let newSummaries = [];
-      let newTasks = [];
+    const setSummaries = isMgmt ? setMgmtSummaries : setDevSummaries;
+    const setTasks = isMgmt ? setMgmtTasks : setDevTasks;
 
-      summaries.forEach((s) => {
-        const newSummary = {
-          id: Date.now() + Math.random(),
-          title: s.name,
-          expanded: true,
-          orderIndex: getNextOrderIndex(currentTasks, currentSummaries),
-        };
+    const newSummaries = [];
+    const newTasks = [];
 
-        newSummaries.push(newSummary);
+    /* ---- Build imported summaries ----------------------------------- */
+    summaries.forEach((sid, index) => {
+      const summaryObj = taskLibrary.summaries.find(s => s.id === sid);
+      if (!summaryObj) return;
 
-        tasks
-          .filter((t) => t.summaryId === s.id || t.summary === s.id)
-          .forEach((t) => {
-            newTasks.push({
-              id: Date.now() + Math.random(),
-              title: t.name,
-              summaryId: newSummary.id,
-              status: "Not Started",
-              person: "",
-              flag: "",
-              orderIndex: getNextOrderIndex(
-                [...currentTasks, ...newTasks],
-                [...currentSummaries, ...newSummaries]
-              ),
-            });
-          });
+      const importedSummary = {
+        id: `repo_s_${Date.now()}_${index}`,
+        title: summaryObj.name,
+        expanded: true,
+        orderIndex: getNextOrderIndex([...wsTasks, ...newTasks], [...wsSummaries, ...newSummaries]),
+      };
+
+      newSummaries.push(importedSummary);
+
+      /* ---- Add any tasks belonging to this summary ------------------ */
+      summaryObj.tasks?.forEach((tid) => {
+        if (!tasks.includes(tid)) return;
+
+        const taskObj = taskLibrary.tasks.find(t => t.id === tid);
+        if (!taskObj) return;
+
+        newTasks.push({
+          id: `repo_t_${Date.now()}_${Math.random()}`,
+          title: taskObj.name,
+          summaryId: importedSummary.id,
+          status: "Not Started",
+          person: "",
+          flag: "",
+          orderIndex: getNextOrderIndex(
+            [...wsTasks, ...newTasks],
+            [...wsSummaries, ...newSummaries]
+          ),
+        });
       });
+    });
 
-      setSummaries([...currentSummaries, ...newSummaries]);
-      setTasks([...currentTasks, ...newTasks]);
-    };
+    /* ---- Add standalone (ungrouped) tasks ---------------------------- */
+    tasks.forEach((tid) => {
+      /* Skip tasks already added to a summary above: */
+      const alreadyAdded = newTasks.find(t => t.title === taskLibrary.tasks.find(z => z.id === tid)?.name);
+      if (alreadyAdded) return;
 
-    window.addEventListener("repoIntegrationImport", handleImport);
-    return () => window.removeEventListener("repoIntegrationImport", handleImport);
-  }, [mgmtSummaries, devSummaries, mgmtTasks, devTasks]);
+      const taskObj = taskLibrary.tasks.find(t => t.id === tid);
+      if (!taskObj) return;
+
+      newTasks.push({
+        id: `repo_t_${Date.now()}_${Math.random()}`,
+        title: taskObj.name,
+        summaryId: null,
+        status: "Not Started",
+        person: "",
+        flag: "",
+        orderIndex: getNextOrderIndex(
+          [...wsTasks, ...newTasks],
+          [...wsSummaries, ...newSummaries]
+        ),
+      });
+    });
+
+    /* ---- Commit to workspace state ---------------------------------- */
+    setSummaries([...wsSummaries, ...newSummaries]);
+    setTasks([...wsTasks, ...newTasks]);
+  };
 
   /* ======================================================================
-     PANE EXPANSION (NEW)
+     PANE EXPANSION
      ====================================================================== */
   const [expandedPane, setExpandedPane] = useState(null);
 
@@ -229,7 +250,7 @@ export default function RepoIntegrationDualPane() {
   return (
     <div className="dual-pane-workspace">
 
-      {/* ========================= MGMT PANE ========================= */}
+      {/* ========================= MGMT ========================= */}
       <div
         className={
           expandedPane === "dev"
@@ -266,7 +287,7 @@ export default function RepoIntegrationDualPane() {
         </div>
       </div>
 
-      {/* ========================= DEV PANE ========================= */}
+      {/* ========================= DEV ========================= */}
       <div
         className={
           expandedPane === "mgmt"
@@ -349,14 +370,16 @@ export default function RepoIntegrationDualPane() {
             pane={selectedPane}
             onClose={closeTaskPopup}
             onUpdate={(fields) => {
+              const setFn = selectedPane === "mgmt" ? setMgmtTasks : setDevTasks;
+              const list = selectedPane === "mgmt" ? mgmtTasks : devTasks;
+
               if (fields.delete) {
-                const setFn = selectedPane === "mgmt" ? setMgmtTasks : setDevTasks;
-                setFn(prev => prev.filter(t => t.id !== selectedTask.id));
+                setFn(list.filter(t => t.id !== selectedTask.id));
                 closeTaskPopup();
               } else {
-                const setFn = selectedPane === "mgmt" ? setMgmtTasks : setDevTasks;
-                const list = selectedPane === "mgmt" ? mgmtTasks : devTasks;
-                const updated = list.map(t => t.id === selectedTask.id ? { ...t, ...fields } : t);
+                const updated = list.map(t =>
+                  t.id === selectedTask.id ? { ...t, ...fields } : t
+                );
                 setFn(updated);
                 setSelectedTask(updated.find(t => t.id === selectedTask.id));
               }

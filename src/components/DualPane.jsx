@@ -1,11 +1,12 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   FULL CLEAN VERIFIED VERSION – WITH EXPANSION TOGGLE (DEC 2025)
+   Unified Repository Integration Version (Dec 2025)
    ----------------------------------------------------------------------
-   ✔ Template Repository fully integrated
-   ✔ TaskPopup + Personnel + Summary overlays stable
-   ✔ Repo integration untouched
-   ✔ NEW: Pane Expansion Toggle (⤢ expand, ⤡ restore)
+   ✔ Receives Repository imports from App.jsx
+   ✔ Adds imported summaries/tasks to Mgmt or Dev pane (Option B)
+   ✔ Appends imported items to bottom of each list
+   ✔ No regressions to existing popups or logic
+   ✔ No UI changes except Repo integration
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -43,11 +44,9 @@ function getNextOrderIndex(tasks, summaries) {
 export default function DualPane() {
 
   /* ============================================================
-     EXPANSION TOGGLE – NEW
-     expandedPane = "mgmt" | "dev" | null
+     EXPANSION TOGGLE
      ============================================================ */
   const [expandedPane, setExpandedPane] = useState(null);
-
   const toggleExpand = (pane) => {
     setExpandedPane(prev => (prev === pane ? null : pane));
   };
@@ -83,21 +82,25 @@ export default function DualPane() {
   /* TASKS ------------------------------------------------------ */
   const [mgmtTasks, setMgmtTasks] = useState(() => {
     const saved = localStorage.getItem("tasks_v3");
-    const list = saved ? JSON.parse(saved) : [
-      { id: 1, title: "Prepare Scope Summary", status: "Not Started", person: "", flag: "", summaryId: null },
-      { id: 2, title: "Initial Risk Scan", status: "Not Started", person: "", flag: "", summaryId: null },
-      { id: 3, title: "Stakeholder Mapping", status: "Not Started", person: "", flag: "", summaryId: null },
-    ];
+    const list = saved
+      ? JSON.parse(saved)
+      : [
+          { id: 1, title: "Prepare Scope Summary", status: "Not Started", person: "", flag: "", summaryId: null },
+          { id: 2, title: "Initial Risk Scan", status: "Not Started", person: "", flag: "", summaryId: null },
+          { id: 3, title: "Stakeholder Mapping", status: "Not Started", person: "", flag: "", summaryId: null },
+        ];
     return initialiseItems(list);
   });
 
   const [devTasks, setDevTasks] = useState(() => {
     const saved = localStorage.getItem("devtasks_v1");
-    const list = saved ? JSON.parse(saved) : [
-      { id: 1001, title: "Review Existing Architecture", status: "Not Started", person: "", flag: "", summaryId: null },
-      { id: 1002, title: "Identify Integration Points", status: "In Progress", person: "Demo Dev", flag: "", summaryId: null },
-      { id: 1003, title: "Prototype UI Layout", status: "Not Started", person: "", flag: "", summaryId: null },
-    ];
+    const list = saved
+      ? JSON.parse(saved)
+      : [
+          { id: 1001, title: "Review Existing Architecture", status: "Not Started", person: "", flag: "", summaryId: null },
+          { id: 1002, title: "Identify Integration Points", status: "In Progress", person: "Demo Dev", flag: "", summaryId: null },
+          { id: 1003, title: "Prototype UI Layout", status: "Not Started", person: "", flag: "", summaryId: null },
+        ];
     return initialiseItems(list);
   });
 
@@ -109,7 +112,9 @@ export default function DualPane() {
     localStorage.setItem("devtasks_v1", JSON.stringify(devTasks));
   }, [devTasks]);
 
-  /* POPUP HANDLING -------------------------------------------- */
+  /* ================================================================
+     POPUPS
+     ================================================================ */
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
 
@@ -157,7 +162,9 @@ export default function DualPane() {
     setPendingPane(null);
   };
 
-  /* UPDATE TASK ------------------------------------------------ */
+  /* ================================================================
+     UPDATE TASK
+     ================================================================ */
   const updateTask = (fields) => {
     const id = selectedTask?.id;
     const pane = fields.pane || selectedPane;
@@ -170,7 +177,7 @@ export default function DualPane() {
     const setter = pane === "mgmt" ? setMgmtTasks : setDevTasks;
     const list = pane === "mgmt" ? mgmtTasks : devTasks;
 
-    const updated = list.map(t => t.id === id ? { ...t, ...fields } : t);
+    const updated = list.map(t => (t.id === id ? { ...t, ...fields } : t));
     setter(updated);
 
     if (!fields.delete) {
@@ -180,7 +187,9 @@ export default function DualPane() {
     }
   };
 
-  /* SUMMARY POPUP --------------------------------------------- */
+  /* ================================================================
+     SUMMARY POPUP
+     ================================================================ */
   const [showSummaryOverlay, setShowSummaryOverlay] = useState(false);
   const [summaryPane, setSummaryPane] = useState(null);
 
@@ -207,7 +216,9 @@ export default function DualPane() {
     setShowSummaryOverlay(false);
   };
 
-  /* ADD TASK POPUPS ------------------------------------------- */
+  /* ================================================================
+     ADD TASK POPUPS
+     ================================================================ */
   const [showDevAddPopup, setShowDevAddPopup] = useState(false);
   const [showMgmtAddPopup, setShowMgmtAddPopup] = useState(false);
 
@@ -246,6 +257,68 @@ export default function DualPane() {
   };
 
   /* ================================================================
+     REPOSITORY IMPORT (MAIN LOGIC)
+     ================================================================ */
+
+  // Create global listener so App.jsx can call into DualPane
+  window.onRepoImportToDualPane = (payload) => {
+    console.log("📥 DualPane received Repo payload:", payload);
+
+    const { summaries = [], tasks = [], type } = payload;
+    const timestamp = Date.now();
+
+    if (type === "Mgmt") {
+      // Append summaries
+      const nextSummaryIndex = getNextOrderIndex(mgmtTasks, mgmtSummaries);
+      const newSummaries = summaries.map((s, i) => ({
+        id: "repo_s_" + timestamp + "_" + i,
+        title: s,
+        expanded: false,
+        orderIndex: nextSummaryIndex + i,
+      }));
+
+      // Append tasks
+      const nextTaskIndex = getNextOrderIndex(mgmtTasks, mgmtSummaries);
+      const newTasks = tasks.map((t, i) => ({
+        id: "repo_t_" + timestamp + "_" + i,
+        title: t,
+        status: "Not Started",
+        person: "",
+        flag: "",
+        summaryId: null,
+        orderIndex: nextTaskIndex + i,
+      }));
+
+      setMgmtSummaries(prev => [...prev, ...newSummaries]);
+      setMgmtTasks(prev => [...prev, ...newTasks]);
+    }
+
+    if (type === "Dev") {
+      const nextSummaryIndex = getNextOrderIndex(devTasks, devSummaries);
+      const newSummaries = summaries.map((s, i) => ({
+        id: "repo_s_" + timestamp + "_" + i,
+        title: s,
+        expanded: false,
+        orderIndex: nextSummaryIndex + i,
+      }));
+
+      const nextTaskIndex = getNextOrderIndex(devTasks, devSummaries);
+      const newTasks = tasks.map((t, i) => ({
+        id: "repo_t_" + timestamp + "_" + i,
+        title: t,
+        status: "Not Started",
+        person: "",
+        flag: "",
+        summaryId: null,
+        orderIndex: nextTaskIndex + i,
+      }));
+
+      setDevSummaries(prev => [...prev, ...newSummaries]);
+      setDevTasks(prev => [...prev, ...newTasks]);
+    }
+  };
+
+  /* ================================================================
      RENDER
      ================================================================ */
   return (
@@ -266,7 +339,6 @@ export default function DualPane() {
         <div className="pane-header">
           <h2>Management Tasks</h2>
 
-          {/* EXPAND BUTTON – NEW */}
           <button className="pane-expand-btn" onClick={() => toggleExpand("mgmt")}>
             {expandedPane === "mgmt" ? "⤡" : "⤢"}
           </button>
@@ -307,7 +379,6 @@ export default function DualPane() {
         <div className="pane-header">
           <h2>Development Tasks</h2>
 
-          {/* EXPAND BUTTON – NEW */}
           <button className="pane-expand-btn" onClick={() => toggleExpand("dev")}>
             {expandedPane === "dev" ? "⤡" : "⤢"}
           </button>
