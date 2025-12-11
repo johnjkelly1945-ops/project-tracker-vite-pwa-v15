@@ -1,15 +1,17 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   FULL CLEAN VERIFIED VERSION – DEC 2025
+   Baseline – Stable Notes, Timestamp, CC, Personnel, Status
    ----------------------------------------------------------------------
-   ✔ Notes with timestamp merge correctly
-   ✔ No 5-minute lock
-   ✔ Change Person works
+   ✔ Notes with timestamp added on exit
+   ✔ No 5-minute edit lock
    ✔ CC / QC / Risk / Issue / Escalate
-   ✔ Email placeholder
-   ✔ Template button fully routed
-   ✔ SAFE DELETE (two-step)
-   ✔ Toasts disappear instantly on click or typing
+   ✔ Change Person routing
+   ✔ Mark Completed / Delete
+   ✔ Template button (trigger only)
+   ✔ No Docs button
+   ----------------------------------------------------------------------
+   This version matches DualPane’s current signature:
+   onOpenTemplateRepo({ task, pane })
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -20,14 +22,14 @@ export default function TaskPopup({
   pane,
   onClose,
   onUpdate,
-  onOpenTemplateRepo
+  onOpenTemplateRepo     // ⭐ Template trigger
 }) {
   if (!task) return null;
 
   const isLocked = !task.person || task.person.trim() === "";
 
   /* --------------------------------------------------------------
-     NORMALISE NOTES
+     NOTES NORMALISATION
   -------------------------------------------------------------- */
   const normaliseNotes = (v) => {
     if (typeof v === "string") return v;
@@ -38,16 +40,14 @@ export default function TaskPopup({
 
   const historyText = normaliseNotes(task.notes).trimEnd();
   const [draftText, setDraftText] = useState("");
-  const [visibleText, setVisibleText] = useState(historyText);
+  const [visibleText, setVisibleText] = useState("");
   const areaRef = useRef(null);
 
   /* --------------------------------------------------------------
      MERGE HISTORY + DRAFT
   -------------------------------------------------------------- */
   useEffect(() => {
-    const merged =
-      historyText + (historyText ? "\n\n" : "") + (draftText || "");
-
+    const merged = historyText + (historyText ? "\n\n" : "") + draftText;
     setVisibleText(merged);
 
     setTimeout(() => {
@@ -61,20 +61,15 @@ export default function TaskPopup({
 
   /* --------------------------------------------------------------
      HANDLE TYPING
-     -------------------------------------------------------------- */
+  -------------------------------------------------------------- */
   const handleChange = (e) => {
     if (isLocked) return;
 
-    // dismiss CC / Delete toasts instantly
-    setCcConfirm(false);
-    setDeleteConfirm(false);
-
-    const raw = e.target.value;
+    const val = e.target.value;
     const boundary = historyText.length + (historyText ? 2 : 0);
+    const newDraft = val.slice(boundary);
 
-    const newDraft = raw.slice(boundary);
     setDraftText(newDraft);
-
     setVisibleText(historyText + (historyText ? "\n\n" : "") + newDraft);
   };
 
@@ -107,6 +102,7 @@ export default function TaskPopup({
 
     onUpdate({
       notes: updated + "\n\n",
+      notesTimestamp: Date.now(),
       pane
     });
 
@@ -114,17 +110,20 @@ export default function TaskPopup({
   };
 
   /* --------------------------------------------------------------
-     PERSON CHANGE LOGGING
+     PERSON CHANGE SYSTEM NOTE
   -------------------------------------------------------------- */
   const commitPersonChangeNote = () => {
+    if (!task.person) return;
+
     const stamp = makeTimestamp();
-    const entry = `[System] Person changed – ${stamp}`;
+    const note = `[System] Person changed from ${task.person} – ${stamp}`;
 
     const updated =
-      historyText ? `${historyText}\n\n${entry}` : entry;
+      historyText ? `${historyText}\n\n${note}` : note;
 
     onUpdate({
       notes: updated + "\n\n",
+      notesTimestamp: Date.now(),
       pane
     });
   };
@@ -143,9 +142,14 @@ export default function TaskPopup({
   };
 
   /* --------------------------------------------------------------
-     CC (two-step confirm)
+     CC TWO-PRESS CONFIRMATION
   -------------------------------------------------------------- */
   const [ccConfirm, setCcConfirm] = useState(false);
+
+  const makeCCNote = () => {
+    const stamp = makeTimestamp();
+    return `[System] Change Control request recorded – ${stamp}`;
+  };
 
   const handleCC = async () => {
     if (isLocked) return;
@@ -155,14 +159,14 @@ export default function TaskPopup({
       return;
     }
 
-    const stamp = makeTimestamp();
-    const entry = `[System] Change Control activated – ${stamp}`;
-
+    const note = makeCCNote();
     const updated =
-      historyText ? `${historyText}\n\n${entry}` : entry;
+      historyText ? `${historyText}\n\n${note}` : note;
 
     onUpdate({
       notes: updated + "\n\n",
+      notesTimestamp: Date.now(),
+      startChangeControl: true,
       flag: "red",
       pane
     });
@@ -171,43 +175,11 @@ export default function TaskPopup({
   };
 
   /* --------------------------------------------------------------
-     TEMPLATE REPO BUTTON
+     TEMPLATE TRIGGER
   -------------------------------------------------------------- */
   const handleTemplate = async () => {
     await commitEntry();
-    if (onOpenTemplateRepo)
-      onOpenTemplateRepo({ task, pane });
-  };
-
-  /* --------------------------------------------------------------
-     GENERIC ACTIONS
-  -------------------------------------------------------------- */
-  const doAction = async (fields) => {
-    if (!isLocked) await commitEntry();
-    onUpdate({ ...fields, pane });
-    onClose();
-  };
-
-  /* --------------------------------------------------------------
-     SAFE DELETE (two-step confirm)
-  -------------------------------------------------------------- */
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-
-  const handleDelete = async () => {
-    if (!deleteConfirm) {
-      setDeleteConfirm(true);
-      return;
-    }
-
-    if (!isLocked) await commitEntry();
-
-    onUpdate({
-      delete: true,
-      id: task.id,
-      pane
-    });
-
-    onClose();
+    if (onOpenTemplateRepo) onOpenTemplateRepo({ task, pane });
   };
 
   /* --------------------------------------------------------------
@@ -218,22 +190,22 @@ export default function TaskPopup({
     onClose();
   };
 
-  /* ================================================================
-     RENDER
-  ================================================================ */
-  return (
-    <div
-      className="taskpopup-overlay"
-      onClick={() => {
-        setCcConfirm(false);
-        setDeleteConfirm(false);
-      }}
-    >
-      <div
-        className="taskpopup-window"
-        onClick={(e) => e.stopPropagation()}
-      >
+  /* --------------------------------------------------------------
+     GENERIC ACTION HANDLER
+  -------------------------------------------------------------- */
+  const doAction = async (fields) => {
+    if (!isLocked) await commitEntry();
+    onUpdate({ ...fields, pane });
+    onClose();
+  };
 
+  /* --------------------------------------------------------------
+     RENDER
+  -------------------------------------------------------------- */
+  return (
+    <div className="taskpopup-overlay" onClick={() => setCcConfirm(false)}>
+      <div className="taskpopup-window" onClick={(e) => e.stopPropagation()}>
+        
         {/* HEADER */}
         <div className="tp-header">
           <h3 className="tp-header-title">{task.title}</h3>
@@ -247,13 +219,7 @@ export default function TaskPopup({
         </div>
 
         {/* NOTES */}
-        <div
-          className="tp-body"
-          onClick={() => {
-            setCcConfirm(false);
-            setDeleteConfirm(false);
-          }}
-        >
+        <div className="tp-body">
           <h4>Notes</h4>
           <textarea
             ref={areaRef}
@@ -261,24 +227,15 @@ export default function TaskPopup({
             value={visibleText}
             onChange={handleChange}
             readOnly={isLocked}
-            onKeyDown={() => {
-              setCcConfirm(false);
-              setDeleteConfirm(false);
-            }}
           />
         </div>
 
-        {/* CC TOAST */}
+        {/* CC CONFIRMATION */}
         {ccConfirm && (
           <div className="tp-cc-toast">
-            Click CC again to activate Change Control.
-          </div>
-        )}
-
-        {/* DELETE TOAST */}
-        {deleteConfirm && (
-          <div className="tp-delete-toast">
-            Click DELETE again to permanently remove this task.
+            This will activate the Change Control process.
+            <br />
+            Click CC again to continue.
           </div>
         )}
 
@@ -288,16 +245,12 @@ export default function TaskPopup({
           <div className="tp-gov-row">
             <button onClick={handleCC}>CC</button>
             <button onClick={() => doAction({ gov: "QC" })}>QC</button>
-            <button onClick={() => doAction({ gov: "Risk", flag: "red" })}>
-              Risk
-            </button>
-            <button onClick={() => doAction({ gov: "Issue", flag: "red" })}>
-              Issue
-            </button>
-            <button onClick={() => doAction({ gov: "Escalate", flag: "red" })}>
-              Escalate
-            </button>
+            <button onClick={() => doAction({ gov: "Risk", flag: "red" })}>Risk</button>
+            <button onClick={() => doAction({ gov: "Issue", flag: "red" })}>Issue</button>
+            <button onClick={() => doAction({ gov: "Escalate", flag: "red" })}>Escalate</button>
             <button onClick={() => doAction({ gov: "Email" })}>Email</button>
+
+            {/* ⭐ TEMPLATE BUTTON RESTORED */}
             <button onClick={handleTemplate}>Template</button>
           </div>
 
@@ -306,12 +259,13 @@ export default function TaskPopup({
             <button onClick={() => doAction({ status: "Completed" })}>
               Mark Completed
             </button>
-            <button className="tp-delete" onClick={handleDelete}>
+            <button className="tp-delete" onClick={() => doAction({ delete: true })}>
               Delete
             </button>
           </div>
 
         </div>
+
       </div>
     </div>
   );

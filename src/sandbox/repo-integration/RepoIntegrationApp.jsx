@@ -1,12 +1,10 @@
 /* ======================================================================
    METRA – RepoIntegrationApp.jsx
-   FINAL SANDBOX REPOSITORY LAUNCHER (Dec 2025)
+   SANDBOX APP WITH GLOBAL TOAST PROVIDER (Dec 2025)
    ----------------------------------------------------------------------
-   ✔ Opens repository sandbox popup
-   ✔ Receives repo export payload
-   ✔ Forwards payload to DualPane via global bridge
-   ✔ No DOM events
-   ✔ Clean, stable, isolated from main METRA app
+   • Wraps the DualPane sandbox in <ToastProvider>
+   • Exposes window.METRA_toast globally
+   • Repository popup unchanged
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -14,6 +12,8 @@ import "../../Styles/App.css";
 
 import RepoIntegrationDualPane from "./RepoIntegrationDualPane.jsx";
 import TaskRepositorySandbox from "../../components/TaskRepositorySandbox.jsx";
+import { ToastProvider } from "../../components/GlobalToast.jsx";
+
 
 export default function RepoIntegrationApp() {
 
@@ -35,33 +35,35 @@ export default function RepoIntegrationApp() {
   };
 
   return (
-    <div className="app-container">
+    <ToastProvider>   {/* ⭐ Wrap the entire sandbox in the toast provider */}
+      <div className="app-container">
 
-      {/* HEADER --------------------------------------------------- */}
-      <header className="global-header">
-        <h1 className="app-title">METRA Sandbox Workspace</h1>
+        {/* HEADER --------------------------------------------------- */}
+        <header className="global-header">
+          <h1 className="app-title">METRA Sandbox Workspace</h1>
 
-        <div className="header-buttons">
-          <button
-            className="header-btn"
-            onClick={() => setShowRepository(true)}
-          >
-            Repository (Sandbox)
-          </button>
-        </div>
-      </header>
+          <div className="header-buttons">
+            <button
+              className="header-btn"
+              onClick={() => setShowRepository(true)}
+            >
+              Repository (Sandbox)
+            </button>
+          </div>
+        </header>
 
-      {/* MAIN WORKSPACE ------------------------------------------- */}
-      <RepoIntegrationDualPane />
+        {/* MAIN WORKSPACE ------------------------------------------- */}
+        <RepoIntegrationDualPane />
 
-      {/* REPOSITORY POPUP ------------------------------------------ */}
-      {showRepository && (
-        <TaskRepositorySandbox
-          onClose={() => setShowRepository(false)}
-          onAddToWorkspace={handleRepoImport}
-        />
-      )}
+        {/* REPOSITORY POPUP ------------------------------------------ */}
+        {showRepository && (
+          <TaskRepositorySandbox
+            onClose={() => setShowRepository(false)}
+            onAddToWorkspace={handleRepoImport}
+          />
+        )}
 
-    </div>
+      </div>
+    </ToastProvider>
   );
 }

@@ -1,14 +1,12 @@
 /* ======================================================================
    METRA – RepoIntegrationDualPane.jsx
-   FINAL SANDBOX IMPORT PIPELINE (Dec 2025)
+   FINAL SANDBOX IMPORT PIPELINE + COMPLETE POPUP HANDLING (Dec 2025)
    ----------------------------------------------------------------------
-   ✔ Receives repository imports through window.onRepoImportToDualPane
-   ✔ Imports summaries and tasks into Mgmt or Dev pane
-   ✔ Tasks grouped under imported summary only if they belong there
-   ✔ Ungrouped tasks imported as standalone (A1 confirmed)
-   ✔ Append-to-bottom using orderIndex
-   ✔ No DOM events (removed)
-   ✔ All popup behaviour preserved
+   ✔ Correct Assign Person + Change Person routing
+   ✔ Popup remains open (except delete)
+   ✔ Notes + flags + status update live
+   ✔ Repository import logic unchanged
+   ✔ Fully documented section headers for easy navigation
    ====================================================================== */
 
 import React, { useState, useEffect } from "react";
@@ -24,9 +22,9 @@ import SummaryOverlay from "../../components/SummaryOverlay.jsx";
 import { taskLibrary } from "../../taskLibrary.js";
 import "./RepoIntegrationDualPane.css";
 
-/* --------------------------------------------------------------
+/* ======================================================================
    ORDER INDEX HELPERS
-   -------------------------------------------------------------- */
+   ====================================================================== */
 function getNextOrderIndex(tasks, summaries) {
   const all = [...tasks, ...summaries];
   if (all.length === 0) return 0;
@@ -34,11 +32,13 @@ function getNextOrderIndex(tasks, summaries) {
 }
 
 /* ======================================================================
-   MAIN SANDBOX WORKSPACE DUALPANE
+   MAIN COMPONENT – RepoIntegrationDualPane Sandbox
    ====================================================================== */
 export default function RepoIntegrationDualPane() {
 
-  /* FILTERS ------------------------------------------------------ */
+  /* ====================================================================
+     FILTER STATE
+     ==================================================================== */
   const [mgmtFilter, setMgmtFilter] = useState("all");
   const [devFilter, setDevFilter] = useState("all");
 
@@ -47,14 +47,18 @@ export default function RepoIntegrationDualPane() {
     else setDevFilter(id);
   };
 
-  /* WORKSPACE STATE --------------------------------------------- */
+  /* ====================================================================
+     WORKSPACE STATE (summaries + tasks for both panes)
+     ==================================================================== */
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
   const [devSummaries, setDevSummaries] = useState([]);
 
   const [mgmtTasks, setMgmtTasks] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
 
-  /* POPUPS ------------------------------------------------------- */
+  /* ====================================================================
+     TASK POPUP (selectedTask / selectedPane)
+     ==================================================================== */
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
 
@@ -68,11 +72,14 @@ export default function RepoIntegrationDualPane() {
     setSelectedPane(null);
   };
 
-  /* PERSONNEL ---------------------------------------------------- */
+  /* ====================================================================
+     PERSONNEL OVERLAY — Assign Person / Change Person
+     ==================================================================== */
   const [showPersonnel, setShowPersonnel] = useState(false);
   const [pendingTaskID, setPendingTaskID] = useState(null);
   const [pendingPane, setPendingPane] = useState(null);
 
+  // Called by TaskPopup via onUpdate({ assignPerson: true }) or changePerson
   const requestAssign = (taskID, pane) => {
     setPendingTaskID(taskID);
     setPendingPane(pane);
@@ -85,16 +92,23 @@ export default function RepoIntegrationDualPane() {
     const list = isMgmt ? mgmtTasks : devTasks;
 
     const updated = list.map(t =>
-      t.id === pendingTaskID ? { ...t, person: name, status: "In Progress" } : t
+      t.id === pendingTaskID
+        ? { ...t, person: name, status: "In Progress" }
+        : t
     );
 
     updateFn(updated);
+
+    // Update popup live
     setSelectedPane(pendingPane);
     setSelectedTask(updated.find(t => t.id === pendingTaskID));
+
     setShowPersonnel(false);
   };
 
-  /* SUMMARY ADD -------------------------------------------------- */
+  /* ====================================================================
+     SUMMARY ADD OVERLAY
+     ==================================================================== */
   const [showSummaryOverlay, setShowSummaryOverlay] = useState(false);
   const [summaryPane, setSummaryPane] = useState(null);
 
@@ -105,23 +119,28 @@ export default function RepoIntegrationDualPane() {
 
   const handleAddSummary = (title) => {
     const isMgmt = summaryPane === "mgmt";
-    const summaries = isMgmt ? mgmtSummaries : devSummaries;
-    const tasks = isMgmt ? mgmtTasks : devTasks;
 
     const newSummary = {
       id: Date.now(),
       title,
       expanded: true,
-      orderIndex: getNextOrderIndex(tasks, summaries),
+      orderIndex: getNextOrderIndex(
+        isMgmt ? mgmtTasks : devTasks,
+        isMgmt ? mgmtSummaries : devSummaries
+      ),
     };
 
-    if (isMgmt) setMgmtSummaries([...mgmtSummaries, newSummary]);
-    else setDevSummaries([...devSummaries, newSummary]);
+    if (isMgmt)
+      setMgmtSummaries([...mgmtSummaries, newSummary]);
+    else
+      setDevSummaries([...devSummaries, newSummary]);
 
     setShowSummaryOverlay(false);
   };
 
-  /* TASK ADD ----------------------------------------------------- */
+  /* ====================================================================
+     TASK ADD POPUPS
+     ==================================================================== */
   const [showMgmtAddPopup, setShowMgmtAddPopup] = useState(false);
   const [showDevAddPopup, setShowDevAddPopup] = useState(false);
 
@@ -154,7 +173,7 @@ export default function RepoIntegrationDualPane() {
   };
 
   /* ======================================================================
-     IMPORT FROM REPOSITORY (NEW PIPELINE)
+     REPOSITORY IMPORT PIPELINE (unchanged)
      ====================================================================== */
   window.onRepoImportToDualPane = (payload) => {
     console.log("📥 Sandbox DualPane received Repo payload:", payload);
@@ -171,7 +190,7 @@ export default function RepoIntegrationDualPane() {
     const newSummaries = [];
     const newTasks = [];
 
-    /* ---- Build imported summaries ----------------------------------- */
+    /* ---- Import summaries ---- */
     summaries.forEach((sid, index) => {
       const summaryObj = taskLibrary.summaries.find(s => s.id === sid);
       if (!summaryObj) return;
@@ -180,15 +199,17 @@ export default function RepoIntegrationDualPane() {
         id: `repo_s_${Date.now()}_${index}`,
         title: summaryObj.name,
         expanded: true,
-        orderIndex: getNextOrderIndex([...wsTasks, ...newTasks], [...wsSummaries, ...newSummaries]),
+        orderIndex: getNextOrderIndex(
+          [...wsTasks, ...newTasks],
+          [...wsSummaries, ...newSummaries]
+        ),
       };
 
       newSummaries.push(importedSummary);
 
-      /* ---- Add any tasks belonging to this summary ------------------ */
+      /* ---- Import tasks belonging to this summary ---- */
       summaryObj.tasks?.forEach((tid) => {
         if (!tasks.includes(tid)) return;
-
         const taskObj = taskLibrary.tasks.find(t => t.id === tid);
         if (!taskObj) return;
 
@@ -207,11 +228,12 @@ export default function RepoIntegrationDualPane() {
       });
     });
 
-    /* ---- Add standalone (ungrouped) tasks ---------------------------- */
+    /* ---- Add standalone tasks ---- */
     tasks.forEach((tid) => {
-      /* Skip tasks already added to a summary above: */
-      const alreadyAdded = newTasks.find(t => t.title === taskLibrary.tasks.find(z => z.id === tid)?.name);
-      if (alreadyAdded) return;
+      const already = newTasks.find(
+        t => t.title === taskLibrary.tasks.find(z => z.id === tid)?.name
+      );
+      if (already) return;
 
       const taskObj = taskLibrary.tasks.find(t => t.id === tid);
       if (!taskObj) return;
@@ -230,13 +252,13 @@ export default function RepoIntegrationDualPane() {
       });
     });
 
-    /* ---- Commit to workspace state ---------------------------------- */
+    /* ---- Commit ---- */
     setSummaries([...wsSummaries, ...newSummaries]);
     setTasks([...wsTasks, ...newTasks]);
   };
 
   /* ======================================================================
-     PANE EXPANSION
+     PANE EXPANSION (existing behaviour)
      ====================================================================== */
   const [expandedPane, setExpandedPane] = useState(null);
 
@@ -250,7 +272,9 @@ export default function RepoIntegrationDualPane() {
   return (
     <div className="dual-pane-workspace">
 
-      {/* ========================= MGMT ========================= */}
+      {/* ===============================================================
+          MGMT PANE
+          =============================================================== */}
       <div
         className={
           expandedPane === "dev"
@@ -287,7 +311,9 @@ export default function RepoIntegrationDualPane() {
         </div>
       </div>
 
-      {/* ========================= DEV ========================= */}
+      {/* ===============================================================
+          DEV PANE
+          =============================================================== */}
       <div
         className={
           expandedPane === "mgmt"
@@ -324,7 +350,9 @@ export default function RepoIntegrationDualPane() {
         </div>
       </div>
 
-      {/* ======================= GLOBAL POPUPS ======================= */}
+      {/* ===============================================================
+          GLOBAL POPUPS
+          =============================================================== */}
       {showSummaryOverlay &&
         createPortal(
           <SummaryOverlay
@@ -363,31 +391,57 @@ export default function RepoIntegrationDualPane() {
           document.getElementById("metra-popups")
         )}
 
+      {/* ==================================================================
+          TASK POPUP + UPDATED onUpdate LOGIC
+          ================================================================== */}
       {selectedTask &&
         createPortal(
           <TaskPopup
             task={selectedTask}
             pane={selectedPane}
             onClose={closeTaskPopup}
-            onUpdate={(fields) => {
-              const setFn = selectedPane === "mgmt" ? setMgmtTasks : setDevTasks;
-              const list = selectedPane === "mgmt" ? mgmtTasks : devTasks;
 
+            /* =========================================================
+               UPDATED POPUP → WORKSPACE UPDATE HANDLER
+               ========================================================= */
+            onUpdate={(fields) => {
+              const isMgmt = selectedPane === "mgmt";
+              const tasks = isMgmt ? mgmtTasks : devTasks;
+              const setTasks = isMgmt ? setMgmtTasks : setDevTasks;
+
+              /* 1. DELETE */
               if (fields.delete) {
-                setFn(list.filter(t => t.id !== selectedTask.id));
+                setTasks(tasks.filter(t => t.id !== selectedTask.id));
                 closeTaskPopup();
-              } else {
-                const updated = list.map(t =>
-                  t.id === selectedTask.id ? { ...t, ...fields } : t
-                );
-                setFn(updated);
-                setSelectedTask(updated.find(t => t.id === selectedTask.id));
+                return;
               }
+
+              /* 2. ASSIGN PERSON */
+              if (fields.assignPerson) {
+                requestAssign(selectedTask.id, selectedPane);
+                return;
+              }
+
+              /* 3. CHANGE PERSON */
+              if (fields.changePerson) {
+                requestAssign(selectedTask.id, selectedPane);
+                return;
+              }
+
+              /* 4. NORMAL UPDATE */
+              const updated = tasks.map(t =>
+                t.id === selectedTask.id ? { ...t, ...fields } : t
+              );
+
+              setTasks(updated);
+              setSelectedTask(updated.find(t => t.id === selectedTask.id));
             }}
+
             onOpenTemplateRepo={() => {}}
           />,
           document.getElementById("metra-popups")
         )}
+
     </div>
   );
 }
