@@ -1,44 +1,132 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 3.8 – Header Restore + Scroll Boundary Fix
+   Unified Repository Integration Version (Dec 2025)
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Ensure each pane contains a visible sticky header
-   ✔ Prevent layout overrides from PaneMgmt / PaneDev
-   ✔ Restore scroll boundaries for DualPane.css to operate
+   ✔ Sandbox-safe
+   ✔ Legacy repo import DISABLED in sandbox mode
+   ✔ No behavioural change to main METRA
    ====================================================================== */
 
-import React from "react";
-import PaneMgmt from "./PaneMgmt.jsx";
-import PaneDev from "./PaneDev.jsx";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+
+import PreProject from "./PreProject.jsx";
+import TaskPopup from "./TaskPopup.jsx";
+import FilterBar from "./FilterBar.jsx";
+import AddItemPopup from "./AddItemPopup.jsx";
+import PersonnelOverlay from "./PersonnelOverlay.jsx";
+import SummaryOverlay from "./SummaryOverlay.jsx";
 
 import "../Styles/DualPane.css";
 
-export default function DualPane() {
+/* ================================================================
+   HELPERS
+   ================================================================ */
+function initialiseItems(list) {
+  return list.map((item, index) => ({
+    ...item,
+    orderIndex: item.orderIndex ?? index,
+  }));
+}
+
+function getNextOrderIndex(tasks, summaries) {
+  const all = [...tasks, ...summaries];
+  if (all.length === 0) return 0;
+  return Math.max(...all.map(i => i.orderIndex ?? 0)) + 1;
+}
+
+/* ================================================================
+   MAIN COMPONENT
+   ================================================================ */
+export default function DualPane(props) {
+
+  const { sandboxMode = false } = props;
+
+  /* ============================================================
+     EXPANSION
+     ============================================================ */
+  const [expandedPane, setExpandedPane] = useState(null);
+  const toggleExpand = (pane) => {
+    setExpandedPane(prev => (prev === pane ? null : pane));
+  };
+
+  /* FILTERS ---------------------------------------------------- */
+  const [mgmtFilter, setMgmtFilter] = useState("all");
+  const [devFilter, setDevFilter] = useState("all");
+
+  const handleFilterChange = (pane, id) => {
+    if (pane === "mgmt") setMgmtFilter(id);
+    else setDevFilter(id);
+  };
+
+  /* ============================================================
+     STATE (CONTROLLED BY PARENT IN SANDBOX)
+     ============================================================ */
+  const [mgmtSummaries, setMgmtSummaries] = useState([]);
+  const [mgmtTasks, setMgmtTasks] = useState([]);
+  const [devSummaries, setDevSummaries] = useState([]);
+  const [devTasks, setDevTasks] = useState([]);
+
+  /* ============================================================
+     LEGACY GLOBAL IMPORTER (DISABLED IN SANDBOX)
+     ============================================================ */
+  useEffect(() => {
+    if (sandboxMode) return;
+
+    window.onRepoImportToDualPane = (payload) => {
+      console.warn("⚠️ Legacy repo import active:", payload);
+    };
+
+    return () => {
+      delete window.onRepoImportToDualPane;
+    };
+  }, [sandboxMode]);
+
+  /* ============================================================
+     RENDER
+     ============================================================ */
   return (
     <div className="dual-pane-workspace">
 
-      {/* === Management Pane ============================================= */}
-      <div className="pane pane-mgmt">
+      {/* ================= LEFT (MGMT) ================= */}
+      <div className="pane mgmt-pane">
+        <div className="pane-header">
+          <h2>Management Tasks</h2>
+        </div>
 
-        {/* RESTORED HEADER */}
-        <div className="pane-header">Management</div>
+        <FilterBar mode="mgmt" activeFilter={mgmtFilter} onChange={handleFilterChange} />
 
-        {/* Protected scroll container */}
         <div className="pane-content">
-          <PaneMgmt />
+          <PreProject
+            pane="mgmt"
+            filter={mgmtFilter}
+            tasks={props.mgmtTasks}
+            summaries={props.mgmtSummaries}
+            setSummaries={props.setMgmtSummaries}
+            openPopup={(task) => props.openPopup?.(task, "mgmt")}
+            onRequestAssign={(id) => props.onRequestAssign?.(id, "mgmt")}
+          />
         </div>
       </div>
 
-      {/* === Development Pane ============================================ */}
-      <div className="pane pane-dev">
+      {/* ================= RIGHT (DEV) ================= */}
+      <div className="pane dev-pane">
+        <div className="pane-header">
+          <h2>Development Tasks</h2>
+        </div>
 
-        {/* RESTORED HEADER */}
-        <div className="pane-header">Development</div>
+        <FilterBar mode="dev" activeFilter={devFilter} onChange={handleFilterChange} />
 
-        {/* Protected scroll container */}
         <div className="pane-content">
-          <PaneDev />
+          <PreProject
+            pane="dev"
+            filter={devFilter}
+            tasks={props.devTasks}
+            summaries={props.devSummaries}
+            setSummaries={props.setDevSummaries}
+            openPopup={(task) => props.openPopup?.(task, "dev")}
+            onRequestAssign={(id) => props.onRequestAssign?.(id, "dev")}
+          />
         </div>
       </div>
 
