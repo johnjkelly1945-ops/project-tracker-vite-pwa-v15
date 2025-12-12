@@ -1,0 +1,91 @@
+/* ======================================================================
+   METRA – RepoIntegrationDualPane.css
+   Sandbox Styling for Repository → Workspace Integration Dual Pane
+   DEC 2025
+   ====================================================================== */
+
+.dual-pane-workspace {
+  display: flex;
+  height: calc(100vh - 80px);
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------
+   PANES
+   --------------------------------------------------------------- */
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+  border-right: 1px solid #e1e5ea;
+  background: #ffffff;
+}
+
+.pane:last-child {
+  border-right: none;
+}
+
+/* Expanded pane takes full width */
+.pane.expanded {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+/* Hidden pane disappears */
+.pane.hidden {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------
+   HEADERS
+   --------------------------------------------------------------- */
+.pane-header {
+  background: white;
+  padding: 12px 18px;
+  border-bottom: 1px solid #dce3ec;
+  display: flex;
+  align-items: center;
+}
+
+.pane-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #002244;
+}
+
+/* Expand Button */
+.pane-expand-btn {
+  margin-left: auto;
+  font-size: 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 4px 8px;
+}
+
+.pane-expand-btn:hover {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------
+   CONTENT
+   --------------------------------------------------------------- */
+.pane-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.pane-footer {
+  padding: 10px 18px;
+  background: #f3f5f7;
+  border-top: 1px solid #dce3ec;
+}
+
+.pane-footer button {
+  margin-right: 8px;
+}
