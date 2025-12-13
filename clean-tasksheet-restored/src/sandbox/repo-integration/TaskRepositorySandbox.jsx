@@ -1,244 +1,157 @@
-/* --- SANDBOX VERSION ----------------------------------------------
-   File: src/sandbox/repo-integration/TaskRepositorySandbox.jsx
-   Used ONLY in RepoIntegrationApp / RepositoryOverlay (sandbox mode)
-   Not part of the main METRA workspace repository
---------------------------------------------------------------------- */
+/* ======================================================================
+   METRA – TaskRepositorySandbox.jsx
+   Stage 6.9 – FINAL FIX (Summary Selection Wired Correctly)
+   ====================================================================== */
 
 import React, { useState, useMemo } from "react";
-import { taskLibrary } from "../../sandbox/taskLibrarySandbox.js";
+import { adaptRepoPayload } from "/src/utils/repo/repoPayloadAdapter.js";
 
-export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
-
+export default function TaskRepositorySandbox({
+  repositoryData,
+  activePane,
+  onExport,
+  onClose
+}) {
   /* --------------------------------------------------------------
-     FILTER STATE
+     DEFENSIVE NORMALISATION
      -------------------------------------------------------------- */
-  const [typeFilter, setTypeFilter] = useState("");
-  const [methodFilter, setMethodFilter] = useState("");
-  const [scopeFilter, setScopeFilter] = useState("");
-  const [levelFilter, setLevelFilter] = useState("");
+  const safeRepositoryData = Array.isArray(repositoryData)
+    ? repositoryData
+    : [];
 
-  const allFiltersSet =
-    typeFilter && methodFilter && scopeFilter && levelFilter;
-
-  /* --------------------------------------------------------------
-     METHOD OPTIONS BASED ON TYPE
-     -------------------------------------------------------------- */
-  const methodOptions = useMemo(() => {
-    if (typeFilter === "Mgmt") return ["PRINCE2", "MSP", "Generic"];
-    if (typeFilter === "Dev") return ["Agile"];
-    return [];
-  }, [typeFilter]);
-
-  const handleTypeChange = (value) => {
-    setTypeFilter(value);
-    setMethodFilter("");
-  };
-
-  /* --------------------------------------------------------------
-     SELECTION STATE
-     -------------------------------------------------------------- */
+  const [openBundles, setOpenBundles] = useState({});
   const [selectedSummaries, setSelectedSummaries] = useState({});
-  const [selectedBundles, setSelectedBundles] = useState({});
   const [selectedTasks, setSelectedTasks] = useState({});
 
   /* --------------------------------------------------------------
-     FILTERED SUMMARIES / BUNDLES
+     TOGGLES
      -------------------------------------------------------------- */
-  const filteredSummaries = useMemo(() => {
-    if (!allFiltersSet) return [];
-    return taskLibrary.summaries.filter(s =>
-      s.method === methodFilter &&
-      s.scope === scopeFilter &&
-      s.level === levelFilter
-    );
-  }, [methodFilter, scopeFilter, levelFilter, allFiltersSet]);
+  const toggleBundle = (bundleId) => {
+    setOpenBundles((prev) => ({ ...prev, [bundleId]: !prev[bundleId] }));
+  };
 
-  const filteredBundles = useMemo(() => {
-    if (!allFiltersSet) return [];
-    return taskLibrary.bundles.filter(b =>
-      b.method === methodFilter &&
-      b.scope === scopeFilter &&
-      b.level === levelFilter
-    );
-  }, [methodFilter, scopeFilter, levelFilter, allFiltersSet]);
+  const toggleSummary = (summary) => {
+    setSelectedSummaries((prev) => {
+      const next = { ...prev };
+      if (next[summary.id]) {
+        delete next[summary.id];
+      } else {
+        next[summary.id] = summary;
+      }
+      return next;
+    });
+  };
+
+  const toggleTask = (task) => {
+    setSelectedTasks((prev) => {
+      const next = { ...prev };
+      if (next[task.id]) {
+        delete next[task.id];
+      } else {
+        next[task.id] = task;
+      }
+      return next;
+    });
+  };
 
   /* --------------------------------------------------------------
-     DETERMINE VISIBLE TASKS
+     PAYLOAD
      -------------------------------------------------------------- */
-  const visibleTaskIds = useMemo(() => {
-    const collected = new Set();
-
-    Object.keys(selectedTasks).forEach(id => {
-      if (selectedTasks[id]) collected.add(id);
+  const preparedPayload = useMemo(() => {
+    return adaptRepoPayload({
+      pane: activePane,
+      summaries: Object.values(selectedSummaries),
+      tasks: Object.values(selectedTasks)
     });
+  }, [activePane, selectedSummaries, selectedTasks]);
 
-    Object.keys(selectedSummaries).forEach(sid => {
-      if (!selectedSummaries[sid]) return;
-      const summary = taskLibrary.summaries.find(s => s.id === sid);
-      summary?.tasks?.forEach(tid => collected.add(tid));
-    });
+  const handleExport = () => {
+    if (!activePane) {
+      alert("No target pane selected.");
+      return;
+    }
 
-    Object.keys(selectedBundles).forEach(bid => {
-      if (!selectedBundles[bid]) return;
-      const bundle = taskLibrary.bundles.find(b => b.id === bid);
-      bundle?.items?.forEach(itemId => collected.add(itemId));
-    });
+    if (
+      preparedPayload.summaries.length === 0 &&
+      preparedPayload.tasks.length === 0
+    ) {
+      alert("Nothing selected to import.");
+      return;
+    }
 
-    return [...collected];
-  }, [selectedSummaries, selectedBundles, selectedTasks]);
+    if (preparedPayload.hasDuplicates) {
+      alert("Duplicate summaries or tasks detected. Import blocked.");
+      return;
+    }
 
-  /* ======================================================================
+    onExport(preparedPayload);
+  };
+
+  /* --------------------------------------------------------------
      RENDER
-     ====================================================================== */
+     -------------------------------------------------------------- */
   return (
-    <div className="repo-overlay">
-      <div className="repo-window">
+    <div className="task-repo-sandbox">
+      <div className="repo-header">
+        <h3>Repository</h3>
+        <button onClick={onClose}>Close</button>
+      </div>
 
-        <div className="repo-header">
-          <h2 className="repo-title">METRA Workspace Repository (Sandbox)</h2>
-          <button className="repo-close-btn" onClick={onClose}>✕</button>
-        </div>
+      <div className="repo-body">
+        {safeRepositoryData.map((bundle) => {
+          const summaries = Array.isArray(bundle.summaries)
+            ? bundle.summaries
+            : [];
+          const tasks = Array.isArray(bundle.tasks)
+            ? bundle.tasks
+            : [];
 
-        <div className="repo-filterbar">
-          <div className="repo-filterbar-row labels">
-            <span>Type</span>
-            <span>Method</span>
-            <span>Scope</span>
-            <span>Level</span>
-          </div>
+          return (
+            <div key={bundle.id} className="repo-bundle">
+              <div className="repo-bundle-row">
+                <input
+                  type="checkbox"
+                  checked={!!openBundles[bundle.id]}
+                  onChange={() => toggleBundle(bundle.id)}
+                />
+                <span>{bundle.title}</span>
+              </div>
 
-          <div className="repo-filterbar-row controls">
-            <select value={typeFilter} onChange={e => handleTypeChange(e.target.value)}>
-              <option value="">Type</option>
-              <option value="Mgmt">Mgmt</option>
-              <option value="Dev">Dev</option>
-            </select>
+              {openBundles[bundle.id] && (
+                <div className="repo-bundle-contents">
+                  {summaries.map((s) => (
+                    <label key={s.id} style={{ display: "block" }}>
+                      <input
+                        type="checkbox"
+                        checked={!!selectedSummaries[s.id]}
+                        onChange={() => toggleSummary(s)}
+                      />
+                      {s.title}
+                    </label>
+                  ))}
 
-            <select
-              value={methodFilter}
-              disabled={!typeFilter}
-              onChange={e => setMethodFilter(e.target.value)}
-            >
-              <option value="">Method</option>
-              {methodOptions.map(m => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
-
-            <select value={scopeFilter} onChange={e => setScopeFilter(e.target.value)}>
-              <option value="">Scope</option>
-              <option value="Software">Software</option>
-              <option value="Business">Business</option>
-              <option value="Transformation">Transformation</option>
-            </select>
-
-            <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
-              <option value="">Level</option>
-              <option value="Project">Project</option>
-              <option value="Programme">Programme</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="repo-body">
-          <div className="repo-pane repo-pane-left">
-            <div className="repo-section-header">Summaries</div>
-            <div className="repo-section">
-              {filteredSummaries.map(s => (
-                <label key={s.id} className="repo-item">
-                  <input
-                    type="checkbox"
-                    checked={!!selectedSummaries[s.id]}
-                    onChange={e =>
-                      setSelectedSummaries(prev => ({
-                        ...prev,
-                        [s.id]: e.target.checked
-                      }))
-                    }
-                  />
-                  {s.name}
-                </label>
-              ))}
+                  {tasks.map((t) => (
+                    <label key={t.id} style={{ display: "block" }}>
+                      <input
+                        type="checkbox"
+                        checked={!!selectedTasks[t.id]}
+                        onChange={() => toggleTask(t)}
+                      />
+                      {t.title}
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
+          );
+        })}
+      </div>
 
-            <div className="repo-section-header">Bundles</div>
-            <div className="repo-section">
-              {filteredBundles.map(b => (
-                <label key={b.id} className="repo-item">
-                  <input
-                    type="checkbox"
-                    checked={!!selectedBundles[b.id]}
-                    onChange={e =>
-                      setSelectedBundles(prev => ({
-                        ...prev,
-                        [b.id]: e.target.checked
-                      }))
-                    }
-                  />
-                  {b.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="repo-pane repo-pane-right">
-            <div className="repo-section-header">Tasks</div>
-            <div className="repo-section">
-              {visibleTaskIds.map(id => {
-                const t = taskLibrary.tasks.find(t => t.id === id);
-                if (!t) return null;
-
-                return (
-                  <label key={t.id} className="repo-item">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedTasks[t.id]}
-                      onChange={e =>
-                        setSelectedTasks(prev => ({
-                          ...prev,
-                          [t.id]: e.target.checked
-                        }))
-                      }
-                    />
-                    {t.name}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* ======================= EXPORT ======================= */}
-        <div className="repo-footer">
-          <button
-            className="repo-add-btn"
-            onClick={() => {
-              const payload = {
-                type: typeFilter,
-                summaries: Object.keys(selectedSummaries)
-                  .filter(id => selectedSummaries[id])
-                  .map(id => taskLibrary.summaries.find(s => s.id === id))
-                  .filter(Boolean),
-
-                tasks: Object.keys(selectedTasks)
-                  .filter(id => selectedTasks[id])
-                  .map(id => taskLibrary.tasks.find(t => t.id === id))
-                  .filter(Boolean)
-              };
-
-              console.log("📤 SANDBOX EXPORT PAYLOAD:", payload);
-
-              if (onAddToWorkspace) onAddToWorkspace(payload);
-
-              setSelectedSummaries({});
-              setSelectedBundles({});
-              setSelectedTasks({});
-            }}
-          >
-            Add Selected to Workspace
-          </button>
-        </div>
-
+      <div className="repo-footer">
+        <button onClick={handleExport}>
+          Add Selected ({preparedPayload.summaries.length} summaries,{" "}
+          {preparedPayload.tasks.length} tasks)
+        </button>
       </div>
     </div>
   );

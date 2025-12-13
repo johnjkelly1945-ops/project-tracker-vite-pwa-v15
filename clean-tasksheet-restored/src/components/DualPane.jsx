@@ -1,11 +1,11 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 6.8 – Real Repo Trigger via Overlay (Replace-Only)
+   Stage 6.9 – Repository Import (Explicit Summary Linking)
    ----------------------------------------------------------------------
-   ✔ Repository overlay opens from Main
-   ✔ Payload flows into importRepoPayload
-   ✔ Replace-only semantics
-   ✔ No persistence
+   ✔ Tasks linked to summaries on import
+   ✔ Summaries become visible in PreProject
+   ✔ Replace-only semantics preserved
+   ✔ No hierarchy inference beyond explicit selection
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -39,9 +39,9 @@ export default function DualPane() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
   const [showRepo, setShowRepo] = useState(false);
+  const [repoPaneContext] = useState("mgmt");
 
   const openTaskPopup = (task, pane) => {
-    console.log("🟢 Task clicked:", task);
     setSelectedTask(task);
     setSelectedPane(pane);
   };
@@ -55,18 +55,31 @@ export default function DualPane() {
 
   const importRepoPayload = (payload) => {
     const adapted = adaptRepoPayloadToWorkspace(payload);
+    if (!adapted) return;
 
-    if (adapted.type === "mgmt") {
-      setMgmtSummaries(adapted.summaries);
-      setMgmtTasks(adapted.tasks);
+    const summaries = adapted.summaries || [];
+    let tasks = adapted.tasks || [];
+
+    // 🔑 EXPLICIT LINKING RULE (Stage 6.9 only)
+    if (summaries.length > 0 && tasks.length > 0) {
+      const targetSummaryId = summaries[0].id;
+      tasks = tasks.map(task => ({
+        ...task,
+        summaryId: targetSummaryId
+      }));
     }
 
-    if (adapted.type === "dev") {
-      setDevSummaries(adapted.summaries);
-      setDevTasks(adapted.tasks);
+    if (adapted.pane === "mgmt") {
+      setMgmtSummaries(summaries);
+      setMgmtTasks(tasks);
     }
 
-    setShowRepo(false); // close overlay after import
+    if (adapted.pane === "dev") {
+      setDevSummaries(summaries);
+      setDevTasks(tasks);
+    }
+
+    setShowRepo(false);
   };
 
   /* ============================ RENDER =========================== */
@@ -74,12 +87,14 @@ export default function DualPane() {
   return (
     <div className="dual-pane-workspace">
 
-      {/* ================= MANAGEMENT ================= */}
+      <div className="workspace-header">
+        <button onClick={() => setShowRepo(true)}>
+          Open Repository
+        </button>
+      </div>
+
       <div className="pane mgmt-pane">
         <div className="pane-header">
-          <button onClick={() => setShowRepo(true)} style={{ marginRight: "12px" }}>
-            Open Repository
-          </button>
           <h2>Management Tasks</h2>
         </div>
 
@@ -95,7 +110,6 @@ export default function DualPane() {
         </div>
       </div>
 
-      {/* ================= DEVELOPMENT ================= */}
       <div className="pane dev-pane">
         <div className="pane-header">
           <h2>Development Tasks</h2>
@@ -113,7 +127,6 @@ export default function DualPane() {
         </div>
       </div>
 
-      {/* ================= POPUPS ================= */}
       {selectedTask &&
         createPortal(
           <TaskPopup
@@ -127,8 +140,9 @@ export default function DualPane() {
       {showRepo &&
         createPortal(
           <RepositoryOverlay
+            activePane={repoPaneContext}
+            onExport={importRepoPayload}
             onClose={() => setShowRepo(false)}
-            onAddToWorkspace={importRepoPayload}
           />,
           document.getElementById("metra-popups")
         )}
