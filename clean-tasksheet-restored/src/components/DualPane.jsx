@@ -1,13 +1,11 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 6.7 – Dev Pane Repo Import (Replace-Only, No Persistence)
+   Stage 6.8 – Real Repo Trigger via Overlay (Replace-Only)
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Symmetric repo import for mgmt + dev panes
-   ✔ Single Main import gate
-   ✔ Replace semantics only
+   ✔ Repository overlay opens from Main
+   ✔ Payload flows into importRepoPayload
+   ✔ Replace-only semantics
    ✔ No persistence
-   ✔ Temporary harness only
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -16,6 +14,7 @@ import { createPortal } from "react-dom";
 import PreProject from "./PreProject.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 import FilterBar from "./FilterBar.jsx";
+import RepositoryOverlay from "./RepositoryOverlay.jsx";
 
 import { adaptRepoPayloadToWorkspace } from
   "../utils/repo/repoPayloadAdapter.js";
@@ -24,25 +23,22 @@ import "../Styles/DualPane.css";
 
 export default function DualPane() {
 
-  /* ================================================================
-     BASE WORKSPACE STATE
-     ================================================================ */
+  /* ======================= WORKSPACE STATE ======================= */
 
   const [mgmtTasks, setMgmtTasks] = useState([
     { id: "local-1", title: "Define Project Justification", status: "Not Started" },
     { id: "local-2", title: "Identify Options and Feasibility", status: "Not Started" },
   ]);
-
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
 
   const [devTasks, setDevTasks] = useState([]);
   const [devSummaries, setDevSummaries] = useState([]);
 
-  /* ================================================================
-     POPUP STATE
-     ================================================================ */
+  /* ========================= UI STATE ============================ */
+
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
+  const [showRepo, setShowRepo] = useState(false);
 
   const openTaskPopup = (task, pane) => {
     console.log("🟢 Task clicked:", task);
@@ -55,9 +51,8 @@ export default function DualPane() {
     setSelectedPane(null);
   };
 
-  /* ================================================================
-     MAIN REPO IMPORT GATE (SHARED)
-     ================================================================ */
+  /* ===================== MAIN IMPORT GATE ======================== */
+
   const importRepoPayload = (payload) => {
     const adapted = adaptRepoPayloadToWorkspace(payload);
 
@@ -70,49 +65,20 @@ export default function DualPane() {
       setDevSummaries(adapted.summaries);
       setDevTasks(adapted.tasks);
     }
+
+    setShowRepo(false); // close overlay after import
   };
 
-  /* ================================================================
-     TEMPORARY HARNESS (MGMT / DEV)
-     ================================================================ */
-  const simulateRepoImportMgmt = () => {
-    importRepoPayload({
-      type: "mgmt",
-      summaries: [
-        { id: "repo-s1", title: "Imported Mgmt Summary" }
-      ],
-      tasks: [
-        { id: "repo-m1", title: "Mgmt Repo Task A", summaryId: "repo-s1" },
-        { id: "repo-m2", title: "Mgmt Repo Task B", summaryId: "repo-s1" },
-      ],
-    });
-  };
+  /* ============================ RENDER =========================== */
 
-  const simulateRepoImportDev = () => {
-    importRepoPayload({
-      type: "dev",
-      summaries: [
-        { id: "repo-d1", title: "Imported Dev Summary" }
-      ],
-      tasks: [
-        { id: "repo-dt1", title: "Dev Repo Task A", summaryId: "repo-d1" },
-        { id: "repo-dt2", title: "Dev Repo Task B", summaryId: "repo-d1" },
-      ],
-    });
-  };
-
-  /* ================================================================
-     RENDER
-     ================================================================ */
   return (
     <div className="dual-pane-workspace">
 
       {/* ================= MANAGEMENT ================= */}
       <div className="pane mgmt-pane">
-
         <div className="pane-header">
-          <button onClick={simulateRepoImportMgmt} style={{ marginRight: "12px" }}>
-            + Simulate Repo Import (Mgmt)
+          <button onClick={() => setShowRepo(true)} style={{ marginRight: "12px" }}>
+            Open Repository
           </button>
           <h2>Management Tasks</h2>
         </div>
@@ -127,16 +93,11 @@ export default function DualPane() {
             openPopup={(task) => openTaskPopup(task, "mgmt")}
           />
         </div>
-
       </div>
 
       {/* ================= DEVELOPMENT ================= */}
       <div className="pane dev-pane">
-
         <div className="pane-header">
-          <button onClick={simulateRepoImportDev} style={{ marginRight: "12px" }}>
-            + Simulate Repo Import (Dev)
-          </button>
           <h2>Development Tasks</h2>
         </div>
 
@@ -150,16 +111,24 @@ export default function DualPane() {
             openPopup={(task) => openTaskPopup(task, "dev")}
           />
         </div>
-
       </div>
 
-      {/* ================= POPUP ================= */}
+      {/* ================= POPUPS ================= */}
       {selectedTask &&
         createPortal(
           <TaskPopup
             task={selectedTask}
             pane={selectedPane}
             onClose={closeTaskPopup}
+          />,
+          document.getElementById("metra-popups")
+        )}
+
+      {showRepo &&
+        createPortal(
+          <RepositoryOverlay
+            onClose={() => setShowRepo(false)}
+            onAddToWorkspace={importRepoPayload}
           />,
           document.getElementById("metra-popups")
         )}

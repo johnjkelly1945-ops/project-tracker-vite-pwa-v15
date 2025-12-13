@@ -1,11 +1,10 @@
 /* --- SANDBOX VERSION ----------------------------------------------
-   File: src/components/TaskRepositorySandbox.jsx
-   Used ONLY in RepoIntegrationApp (sandbox mode)
+   File: src/sandbox/repo-integration/TaskRepositorySandbox.jsx
+   Used ONLY in RepoIntegrationApp / RepositoryOverlay (sandbox mode)
    Not part of the main METRA workspace repository
 --------------------------------------------------------------------- */
 
 import React, { useState, useMemo } from "react";
-import "./TaskRepositorySandbox.css";
 import { taskLibrary } from "../../sandbox/taskLibrarySandbox.js";
 
 export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
@@ -30,7 +29,6 @@ export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
     return [];
   }, [typeFilter]);
 
-  /* Reset method when type changes */
   const handleTypeChange = (value) => {
     setTypeFilter(value);
     setMethodFilter("");
@@ -48,23 +46,19 @@ export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
      -------------------------------------------------------------- */
   const filteredSummaries = useMemo(() => {
     if (!allFiltersSet) return [];
-
-    return taskLibrary.filter(item =>
-      item.type === "summary" &&
-      item.method === methodFilter &&
-      item.scope === scopeFilter &&
-      item.level === levelFilter
+    return taskLibrary.summaries.filter(s =>
+      s.method === methodFilter &&
+      s.scope === scopeFilter &&
+      s.level === levelFilter
     );
   }, [methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
   const filteredBundles = useMemo(() => {
     if (!allFiltersSet) return [];
-
-    return taskLibrary.filter(item =>
-      item.type === "bundle" &&
-      item.method === methodFilter &&
-      item.scope === scopeFilter &&
-      item.level === levelFilter
+    return taskLibrary.bundles.filter(b =>
+      b.method === methodFilter &&
+      b.scope === scopeFilter &&
+      b.level === levelFilter
     );
   }, [methodFilter, scopeFilter, levelFilter, allFiltersSet]);
 
@@ -80,27 +74,14 @@ export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
 
     Object.keys(selectedSummaries).forEach(sid => {
       if (!selectedSummaries[sid]) return;
-      const summary = taskLibrary.find(s => s.id === sid);
+      const summary = taskLibrary.summaries.find(s => s.id === sid);
       summary?.tasks?.forEach(tid => collected.add(tid));
     });
 
     Object.keys(selectedBundles).forEach(bid => {
       if (!selectedBundles[bid]) return;
-      const bundle = taskLibrary.find(b => b.id === bid);
-      if (!bundle) return;
-
-      bundle.items.forEach(itemId => {
-        const item = taskLibrary.find(i => i.id === itemId);
-        if (!item) return;
-
-        if (item.type === "summary" && selectedSummaries[item.id]) {
-          item.tasks?.forEach(tid => collected.add(tid));
-        }
-
-        if (item.type === "task" && selectedTasks[item.id]) {
-          collected.add(item.id);
-        }
-      });
+      const bundle = taskLibrary.bundles.find(b => b.id === bid);
+      bundle?.items?.forEach(itemId => collected.add(itemId));
     });
 
     return [...collected];
@@ -204,7 +185,7 @@ export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
             <div className="repo-section-header">Tasks</div>
             <div className="repo-section">
               {visibleTaskIds.map(id => {
-                const t = taskLibrary.find(item => item.id === id);
+                const t = taskLibrary.tasks.find(t => t.id === id);
                 if (!t) return null;
 
                 return (
@@ -227,15 +208,22 @@ export default function TaskRepositorySandbox({ onClose, onAddToWorkspace }) {
           </div>
         </div>
 
+        {/* ======================= EXPORT ======================= */}
         <div className="repo-footer">
           <button
             className="repo-add-btn"
             onClick={() => {
               const payload = {
                 type: typeFilter,
-                summaries: Object.keys(selectedSummaries).filter(id => selectedSummaries[id]),
-                bundles: Object.keys(selectedBundles).filter(id => selectedBundles[id]),
-                tasks: Object.keys(selectedTasks).filter(id => selectedTasks[id])
+                summaries: Object.keys(selectedSummaries)
+                  .filter(id => selectedSummaries[id])
+                  .map(id => taskLibrary.summaries.find(s => s.id === id))
+                  .filter(Boolean),
+
+                tasks: Object.keys(selectedTasks)
+                  .filter(id => selectedTasks[id])
+                  .map(id => taskLibrary.tasks.find(t => t.id === id))
+                  .filter(Boolean)
               };
 
               console.log("📤 SANDBOX EXPORT PAYLOAD:", payload);

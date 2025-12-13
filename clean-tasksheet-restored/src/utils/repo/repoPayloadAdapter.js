@@ -1,13 +1,12 @@
 /* ======================================================================
    METRA – repoPayloadAdapter.js
-   Stage 6.5.2 – Metadata-Hardened Workspace Adapter (Sandbox Only)
+   Workspace-Safe Adapter
    ----------------------------------------------------------------------
    ✔ Normalises repo payload
    ✔ Preserves summary → task hierarchy
-   ✔ Adds source metadata (non-behavioural)
+   ✔ Enforces flat workspace contract
    ✔ No side effects
    ✔ No persistence
-   ✔ No UI knowledge
    ====================================================================== */
 
 export function adaptRepoPayloadToWorkspace(payload) {
@@ -16,17 +15,20 @@ export function adaptRepoPayloadToWorkspace(payload) {
     return { summaries: [], tasks: [], type: null };
   }
 
-  const { type, summaries = [], tasks = [] } = payload;
+  const { summaries = [], tasks = [] } = payload;
+
+  // 🔐 NORMALISE TYPE (critical fix)
+  const type =
+    payload.type?.toLowerCase() === "mgmt" ? "mgmt" :
+    payload.type?.toLowerCase() === "dev"  ? "dev"  :
+    null;
 
   // --- Normalise summaries -----------------------------------------
   const normalisedSummaries = summaries.map((s, index) => ({
     id: s.id ?? `repo-summary-${index}`,
-    title: s.title ?? String(s),
+    title: s.title ?? s.name ?? String(s),
     expanded: true,
-
-    // --- Stage 6.5.2 metadata (additive only) ---
-    source: "repo",
-    originBundleId: s.id ?? null,
+    source: "repo"
   }));
 
   const summaryIdMap = {};
@@ -37,16 +39,13 @@ export function adaptRepoPayloadToWorkspace(payload) {
   // --- Normalise tasks ---------------------------------------------
   const normalisedTasks = tasks.map((t, index) => ({
     id: t.id ?? `repo-task-${index}`,
-    title: t.title ?? String(t),
+    title: t.title ?? t.name ?? String(t),
     status: "Not Started",
     summaryId:
       t.summaryId && summaryIdMap[t.summaryId]
         ? t.summaryId
         : null,
-
-    // --- Stage 6.5.2 metadata (additive only) ---
-    source: "repo",
-    originBundleId: t.summaryId ?? null,
+    source: "repo"
   }));
 
   console.log("🧩 Adapted repo summaries:", normalisedSummaries);
@@ -55,6 +54,6 @@ export function adaptRepoPayloadToWorkspace(payload) {
   return {
     type,
     summaries: normalisedSummaries,
-    tasks: normalisedTasks,
+    tasks: normalisedTasks
   };
 }
