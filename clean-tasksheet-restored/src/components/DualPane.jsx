@@ -15,9 +15,8 @@ import { createPortal } from "react-dom";
 import PreProject from "./PreProject.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 import FilterBar from "./FilterBar.jsx";
-
 import { adaptRepoPayloadToWorkspace } from
-  "../sandbox/repo-integration/repoPayloadAdapter.js";
+  "../utils/repo/repoPayloadAdapter.js";
 
 import "../Styles/DualPane.css";
 
