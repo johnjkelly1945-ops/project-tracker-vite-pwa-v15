@@ -1,14 +1,11 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 5.6 – Summary Capability Verified (Clean)
+   Stage 6.2 – Repo Payload → Workspace Append (SAFE)
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Flat task rendering restored
-   ✔ Summary capability remains available (via props)
-   ✔ Task click → popup wiring intact
-   ✔ No demo data
-   ✔ No repo logic
-   ✔ No scroll changes
+   ✔ Uses repoPayloadAdapter
+   ✔ Appends (never replaces) workspace data
+   ✔ Sandbox-only wiring
+   ✔ Fully reversible
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -18,28 +15,32 @@ import PreProject from "./PreProject.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 import FilterBar from "./FilterBar.jsx";
 
+import { adaptRepoPayloadToWorkspace } from "../sandbox/repo-integration/repoPayloadAdapter.js";
+
 import "../Styles/DualPane.css";
 
 export default function DualPane() {
 
   /* ================================================================
-     BASE STATE (CLEAN, REAL)
+     WORKSPACE STATE (NOW MUTABLE)
      ================================================================ */
-  const [mgmtTasks] = useState([
+  const [mgmtTasks, setMgmtTasks] = useState([
     { id: 1, title: "Define Project Justification", status: "Not Started" },
     { id: 2, title: "Identify Options and Feasibility", status: "Not Started" },
   ]);
 
-  const [devTasks] = useState([]);
+  const [mgmtSummaries, setMgmtSummaries] = useState([
+    { id: "tmp-1", title: "Temporary Summary – Stage 5.5 Proof" }
+  ]);
 
-  const [mgmtSummaries] = useState([]);
-  const [devSummaries] = useState([]);
+  const [devTasks, setDevTasks] = useState([]);
+  const [devSummaries, setDevSummaries] = useState([]);
 
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
 
   /* ================================================================
-     CLICK HANDLERS
+     TASK INTERACTION
      ================================================================ */
   const openTaskPopup = (task, pane) => {
     console.log("🟢 Task clicked:", task);
@@ -53,10 +54,53 @@ export default function DualPane() {
   };
 
   /* ================================================================
+     STAGE 6.2 — SIMULATED REPO IMPORT (SAFE)
+     ================================================================ */
+  const simulateRepoImport = () => {
+    const fakeRepoPayload = {
+      type: "mgmt",
+      summaries: [
+        { id: "repo-s1", title: "Imported Repo Summary" }
+      ],
+      tasks: [
+        {
+          id: "repo-t1",
+          title: "Repo Task A",
+          summaryId: "repo-s1"
+        },
+        {
+          id: "repo-t2",
+          title: "Repo Task B",
+          summaryId: "repo-s1"
+        }
+      ]
+    };
+
+    const adapted = adaptRepoPayloadToWorkspace(fakeRepoPayload);
+
+    if (adapted.type === "mgmt") {
+      setMgmtSummaries(prev => [...prev, ...adapted.summaries]);
+      setMgmtTasks(prev => [...prev, ...adapted.tasks]);
+    }
+
+    if (adapted.type === "dev") {
+      setDevSummaries(prev => [...prev, ...adapted.summaries]);
+      setDevTasks(prev => [...prev, ...adapted.tasks]);
+    }
+  };
+
+  /* ================================================================
      RENDER
      ================================================================ */
   return (
     <div className="dual-pane-workspace">
+
+      {/* === TEMP TEST CONTROL (Stage 6.2 only) === */}
+      <div style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
+        <button onClick={simulateRepoImport}>
+          ➕ Simulate Repo Import
+        </button>
+      </div>
 
       {/* ================= MANAGEMENT ================= */}
       <div className="pane mgmt-pane">
@@ -98,7 +142,7 @@ export default function DualPane() {
 
       </div>
 
-      {/* ================= TASK POPUP ================= */}
+      {/* ================= POPUP ================= */}
       {selectedTask &&
         createPortal(
           <TaskPopup
@@ -108,7 +152,6 @@ export default function DualPane() {
           />,
           document.getElementById("metra-popups")
         )}
-
     </div>
   );
 }

@@ -1,73 +1,49 @@
 /* ======================================================================
    METRA – repoPayloadAdapter.js
+   Stage 6.1 – Workspace-Safe Adapter (Sandbox Only)
    ----------------------------------------------------------------------
-   SANDBOX-ONLY
-   Normalises repository export payloads into true workspace
-   summaries and tasks (data-shape parity only).
-
-   Stage 5.1:
-   ✔ Ensures imported tasks match native task structure
-   ✔ No interaction wiring here
-   ✔ No main METRA dependencies
+   ✔ Normalises repo payload
+   ✔ Preserves summary → task hierarchy
+   ✔ No side effects
+   ✔ No persistence
    ====================================================================== */
 
-import { taskLibrary } from "../taskLibrarySandbox.js";
-
-/* --------------------------------------------------------------
-   Helper: find task title by ID
--------------------------------------------------------------- */
-function getTaskTitle(taskId) {
-  const task = taskLibrary.tasks.find(t => t.id === taskId);
-  return task ? task.name : `Task ${taskId}`;
-}
-
-/* --------------------------------------------------------------
-   Helper: find summary title by ID
--------------------------------------------------------------- */
-function getSummaryTitle(summaryId) {
-  const summary = taskLibrary.summaries.find(s => s.id === summaryId);
-  return summary ? summary.name : `Summary ${summaryId}`;
-}
-
-/* --------------------------------------------------------------
-   Main Adapter
--------------------------------------------------------------- */
 export function adaptRepoPayloadToWorkspace(payload) {
-  const { summaries = [], tasks = [] } = payload;
+  if (!payload) {
+    console.warn("⚠️ Empty repo payload received");
+    return { summaries: [], tasks: [], type: null };
+  }
 
-  const timestamp = Date.now();
-  let orderCounter = 0;
+  const { type, summaries = [], tasks = [] } = payload;
 
-  /* ------------------------------------------------------------
-     Normalise summaries
-  ------------------------------------------------------------ */
-  const normalisedSummaries = summaries.map((summaryId, index) => ({
-    id: `repo_summary_${timestamp}_${index}`,
-    title: getSummaryTitle(summaryId),
+  // --- Normalise summaries -----------------------------------------
+  const normalisedSummaries = summaries.map((s, index) => ({
+    id: s.id ?? `repo-summary-${index}`,
+    title: s.title ?? String(s),
     expanded: true,
-    orderIndex: orderCounter++
   }));
 
-  /* ------------------------------------------------------------
-     Normalise tasks (Stage 5.1 focus)
-  ------------------------------------------------------------ */
-  const normalisedTasks = tasks.map((taskId, index) => ({
-    id: `repo_task_${timestamp}_${index}`,
-    title: getTaskTitle(taskId),
+  const summaryIdMap = {};
+  normalisedSummaries.forEach(s => {
+    summaryIdMap[s.id] = s.id;
+  });
 
-    // --- REQUIRED WORKSPACE FIELDS ----------------------------
+  // --- Normalise tasks ---------------------------------------------
+  const normalisedTasks = tasks.map((t, index) => ({
+    id: t.id ?? `repo-task-${index}`,
+    title: t.title ?? String(t),
     status: "Not Started",
-    person: "",
-    flag: "",
-
-    // Parent summary relationship is applied later by caller
-    summaryId: null,
-
-    orderIndex: orderCounter++
+    summaryId: t.summaryId && summaryIdMap[t.summaryId]
+      ? t.summaryId
+      : null,
   }));
+
+  console.log("🧩 Adapted repo summaries:", normalisedSummaries);
+  console.log("🧩 Adapted repo tasks:", normalisedTasks);
 
   return {
+    type,
     summaries: normalisedSummaries,
-    tasks: normalisedTasks
+    tasks: normalisedTasks,
   };
 }
