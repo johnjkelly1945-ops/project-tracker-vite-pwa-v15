@@ -1,11 +1,13 @@
 /* ======================================================================
    METRA – repoPayloadAdapter.js
-   Stage 6.1 – Workspace-Safe Adapter (Sandbox Only)
+   Stage 6.5.2 – Metadata-Hardened Workspace Adapter (Sandbox Only)
    ----------------------------------------------------------------------
    ✔ Normalises repo payload
    ✔ Preserves summary → task hierarchy
+   ✔ Adds source metadata (non-behavioural)
    ✔ No side effects
    ✔ No persistence
+   ✔ No UI knowledge
    ====================================================================== */
 
 export function adaptRepoPayloadToWorkspace(payload) {
@@ -21,6 +23,10 @@ export function adaptRepoPayloadToWorkspace(payload) {
     id: s.id ?? `repo-summary-${index}`,
     title: s.title ?? String(s),
     expanded: true,
+
+    // --- Stage 6.5.2 metadata (additive only) ---
+    source: "repo",
+    originBundleId: s.id ?? null,
   }));
 
   const summaryIdMap = {};
@@ -33,9 +39,14 @@ export function adaptRepoPayloadToWorkspace(payload) {
     id: t.id ?? `repo-task-${index}`,
     title: t.title ?? String(t),
     status: "Not Started",
-    summaryId: t.summaryId && summaryIdMap[t.summaryId]
-      ? t.summaryId
-      : null,
+    summaryId:
+      t.summaryId && summaryIdMap[t.summaryId]
+        ? t.summaryId
+        : null,
+
+    // --- Stage 6.5.2 metadata (additive only) ---
+    source: "repo",
+    originBundleId: t.summaryId ?? null,
   }));
 
   console.log("🧩 Adapted repo summaries:", normalisedSummaries);
