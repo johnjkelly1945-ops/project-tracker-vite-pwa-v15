@@ -1,13 +1,13 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 6.6 – Main Wiring (Replace-Only, No Persistence)
+   Stage 6.7 – Dev Pane Repo Import (Replace-Only, No Persistence)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Official Main entry point for repo-shaped data
-   ✔ Replace semantics only (no merge)
-   ✔ Shared adapter (src/utils/repo)
+   ✔ Symmetric repo import for mgmt + dev panes
+   ✔ Single Main import gate
+   ✔ Replace semantics only
    ✔ No persistence
-   ✔ No UI expansion
+   ✔ Temporary harness only
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -56,7 +56,7 @@ export default function DualPane() {
   };
 
   /* ================================================================
-     STAGE 6.6 – MAIN REPO IMPORT GATE (REPLACE)
+     MAIN REPO IMPORT GATE (SHARED)
      ================================================================ */
   const importRepoPayload = (payload) => {
     const adapted = adaptRepoPayloadToWorkspace(payload);
@@ -73,17 +73,30 @@ export default function DualPane() {
   };
 
   /* ================================================================
-     TEMPORARY HARNESS (WILL BE REPLACED LATER)
+     TEMPORARY HARNESS (MGMT / DEV)
      ================================================================ */
-  const simulateRepoImport = () => {
+  const simulateRepoImportMgmt = () => {
     importRepoPayload({
       type: "mgmt",
       summaries: [
-        { id: "repo-s1", title: "Imported Repo Summary" }
+        { id: "repo-s1", title: "Imported Mgmt Summary" }
       ],
       tasks: [
-        { id: "repo-t1", title: "Repo Task A", summaryId: "repo-s1" },
-        { id: "repo-t2", title: "Repo Task B", summaryId: "repo-s1" },
+        { id: "repo-m1", title: "Mgmt Repo Task A", summaryId: "repo-s1" },
+        { id: "repo-m2", title: "Mgmt Repo Task B", summaryId: "repo-s1" },
+      ],
+    });
+  };
+
+  const simulateRepoImportDev = () => {
+    importRepoPayload({
+      type: "dev",
+      summaries: [
+        { id: "repo-d1", title: "Imported Dev Summary" }
+      ],
+      tasks: [
+        { id: "repo-dt1", title: "Dev Repo Task A", summaryId: "repo-d1" },
+        { id: "repo-dt2", title: "Dev Repo Task B", summaryId: "repo-d1" },
       ],
     });
   };
@@ -98,11 +111,8 @@ export default function DualPane() {
       <div className="pane mgmt-pane">
 
         <div className="pane-header">
-          <button
-            onClick={simulateRepoImport}
-            style={{ marginRight: "12px" }}
-          >
-            + Simulate Repo Import
+          <button onClick={simulateRepoImportMgmt} style={{ marginRight: "12px" }}>
+            + Simulate Repo Import (Mgmt)
           </button>
           <h2>Management Tasks</h2>
         </div>
@@ -124,6 +134,9 @@ export default function DualPane() {
       <div className="pane dev-pane">
 
         <div className="pane-header">
+          <button onClick={simulateRepoImportDev} style={{ marginRight: "12px" }}>
+            + Simulate Repo Import (Dev)
+          </button>
           <h2>Development Tasks</h2>
         </div>
 
