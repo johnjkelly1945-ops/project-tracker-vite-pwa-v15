@@ -1,11 +1,12 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 6.2 – Repo Payload → Workspace Append (SAFE)
+   Stage 6.4 – Repo Import REPLACE Semantics (Sandbox Safe)
    ----------------------------------------------------------------------
-   ✔ Uses repoPayloadAdapter
-   ✔ Appends (never replaces) workspace data
-   ✔ Sandbox-only wiring
-   ✔ Fully reversible
+   PURPOSE:
+   ✔ Repo import replaces previous repo-derived state
+   ✔ Prevent duplicate React keys
+   ✔ Preserve clean workspace ownership
+   ✔ No merge logic yet (by design)
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -15,33 +16,34 @@ import PreProject from "./PreProject.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 import FilterBar from "./FilterBar.jsx";
 
-import { adaptRepoPayloadToWorkspace } from "../sandbox/repo-integration/repoPayloadAdapter.js";
+import { adaptRepoPayloadToWorkspace } from
+  "../sandbox/repo-integration/repoPayloadAdapter.js";
 
 import "../Styles/DualPane.css";
 
 export default function DualPane() {
 
   /* ================================================================
-     WORKSPACE STATE (NOW MUTABLE)
+     BASE WORKSPACE STATE
      ================================================================ */
+
+  // Local workspace tasks (non-repo)
   const [mgmtTasks, setMgmtTasks] = useState([
-    { id: 1, title: "Define Project Justification", status: "Not Started" },
-    { id: 2, title: "Identify Options and Feasibility", status: "Not Started" },
+    { id: "local-1", title: "Define Project Justification", status: "Not Started" },
+    { id: "local-2", title: "Identify Options and Feasibility", status: "Not Started" },
   ]);
 
-  const [mgmtSummaries, setMgmtSummaries] = useState([
-    { id: "tmp-1", title: "Temporary Summary – Stage 5.5 Proof" }
-  ]);
+  const [mgmtSummaries, setMgmtSummaries] = useState([]);
 
   const [devTasks, setDevTasks] = useState([]);
   const [devSummaries, setDevSummaries] = useState([]);
 
+  /* ================================================================
+     POPUP STATE
+     ================================================================ */
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPane, setSelectedPane] = useState(null);
 
-  /* ================================================================
-     TASK INTERACTION
-     ================================================================ */
   const openTaskPopup = (task, pane) => {
     console.log("🟢 Task clicked:", task);
     setSelectedTask(task);
@@ -54,7 +56,7 @@ export default function DualPane() {
   };
 
   /* ================================================================
-     STAGE 6.2 — SIMULATED REPO IMPORT (SAFE)
+     STAGE 6.4 – SIMULATED REPO IMPORT (REPLACE)
      ================================================================ */
   const simulateRepoImport = () => {
     const fakeRepoPayload = {
@@ -63,30 +65,16 @@ export default function DualPane() {
         { id: "repo-s1", title: "Imported Repo Summary" }
       ],
       tasks: [
-        {
-          id: "repo-t1",
-          title: "Repo Task A",
-          summaryId: "repo-s1"
-        },
-        {
-          id: "repo-t2",
-          title: "Repo Task B",
-          summaryId: "repo-s1"
-        }
-      ]
+        { id: "repo-t1", title: "Repo Task A", summaryId: "repo-s1" },
+        { id: "repo-t2", title: "Repo Task B", summaryId: "repo-s1" },
+      ],
     };
 
     const adapted = adaptRepoPayloadToWorkspace(fakeRepoPayload);
 
-    if (adapted.type === "mgmt") {
-      setMgmtSummaries(prev => [...prev, ...adapted.summaries]);
-      setMgmtTasks(prev => [...prev, ...adapted.tasks]);
-    }
-
-    if (adapted.type === "dev") {
-      setDevSummaries(prev => [...prev, ...adapted.summaries]);
-      setDevTasks(prev => [...prev, ...adapted.tasks]);
-    }
+    // 🔐 REPLACE semantics (no append, no merge)
+    setMgmtSummaries(adapted.summaries);
+    setMgmtTasks(adapted.tasks);
   };
 
   /* ================================================================
@@ -95,17 +83,16 @@ export default function DualPane() {
   return (
     <div className="dual-pane-workspace">
 
-      {/* === TEMP TEST CONTROL (Stage 6.2 only) === */}
-      <div style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>
-        <button onClick={simulateRepoImport}>
-          ➕ Simulate Repo Import
-        </button>
-      </div>
-
       {/* ================= MANAGEMENT ================= */}
       <div className="pane mgmt-pane">
 
         <div className="pane-header">
+          <button
+            onClick={simulateRepoImport}
+            style={{ marginRight: "12px" }}
+          >
+            + Simulate Repo Import
+          </button>
           <h2>Management Tasks</h2>
         </div>
 
