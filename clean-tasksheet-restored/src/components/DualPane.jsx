@@ -1,12 +1,13 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 6.4 – Repo Import REPLACE Semantics (Sandbox Safe)
+   Stage 6.6 – Main Wiring (Replace-Only, No Persistence)
    ----------------------------------------------------------------------
    PURPOSE:
-   ✔ Repo import replaces previous repo-derived state
-   ✔ Prevent duplicate React keys
-   ✔ Preserve clean workspace ownership
-   ✔ No merge logic yet (by design)
+   ✔ Official Main entry point for repo-shaped data
+   ✔ Replace semantics only (no merge)
+   ✔ Shared adapter (src/utils/repo)
+   ✔ No persistence
+   ✔ No UI expansion
    ====================================================================== */
 
 import React, { useState } from "react";
@@ -15,6 +16,7 @@ import { createPortal } from "react-dom";
 import PreProject from "./PreProject.jsx";
 import TaskPopup from "./TaskPopup.jsx";
 import FilterBar from "./FilterBar.jsx";
+
 import { adaptRepoPayloadToWorkspace } from
   "../utils/repo/repoPayloadAdapter.js";
 
@@ -26,7 +28,6 @@ export default function DualPane() {
      BASE WORKSPACE STATE
      ================================================================ */
 
-  // Local workspace tasks (non-repo)
   const [mgmtTasks, setMgmtTasks] = useState([
     { id: "local-1", title: "Define Project Justification", status: "Not Started" },
     { id: "local-2", title: "Identify Options and Feasibility", status: "Not Started" },
@@ -55,10 +56,27 @@ export default function DualPane() {
   };
 
   /* ================================================================
-     STAGE 6.4 – SIMULATED REPO IMPORT (REPLACE)
+     STAGE 6.6 – MAIN REPO IMPORT GATE (REPLACE)
+     ================================================================ */
+  const importRepoPayload = (payload) => {
+    const adapted = adaptRepoPayloadToWorkspace(payload);
+
+    if (adapted.type === "mgmt") {
+      setMgmtSummaries(adapted.summaries);
+      setMgmtTasks(adapted.tasks);
+    }
+
+    if (adapted.type === "dev") {
+      setDevSummaries(adapted.summaries);
+      setDevTasks(adapted.tasks);
+    }
+  };
+
+  /* ================================================================
+     TEMPORARY HARNESS (WILL BE REPLACED LATER)
      ================================================================ */
   const simulateRepoImport = () => {
-    const fakeRepoPayload = {
+    importRepoPayload({
       type: "mgmt",
       summaries: [
         { id: "repo-s1", title: "Imported Repo Summary" }
@@ -67,13 +85,7 @@ export default function DualPane() {
         { id: "repo-t1", title: "Repo Task A", summaryId: "repo-s1" },
         { id: "repo-t2", title: "Repo Task B", summaryId: "repo-s1" },
       ],
-    };
-
-    const adapted = adaptRepoPayloadToWorkspace(fakeRepoPayload);
-
-    // 🔐 REPLACE semantics (no append, no merge)
-    setMgmtSummaries(adapted.summaries);
-    setMgmtTasks(adapted.tasks);
+    });
   };
 
   /* ================================================================
