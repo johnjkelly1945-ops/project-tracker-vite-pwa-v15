@@ -1,12 +1,13 @@
 /* ======================================================================
    METRA – App.jsx
-   Stage 3.2 – DualPane Active Mode (Isolated Layout Testing)
+   Stage 5.3 – DualPane Interaction Restore
    ----------------------------------------------------------------------
    PURPOSE:
    ✔ Keep global header stable
    ✔ Keep filter bar visible
-   ✔ Render DualPane.jsx for isolated scroll & layout debugging
-   ✔ DO NOT affect PreProjectDual.jsx until DualPane is verified
+   ✔ Render DualPane with working portals
+   ✔ Restore task interaction safely
+   ✔ NO layout or scroll changes yet
    ====================================================================== */
 
 import React from "react";
@@ -29,8 +30,11 @@ export default function App() {
       {/* === Filter Bar (shared) === */}
       <FilterBar />
 
-      {/* === DualPane scaffold (ACTIVE for Stage 3.2) === */}
+      {/* === DualPane workspace === */}
       <DualPane />
+
+      {/* === GLOBAL PORTAL ROOT (REQUIRED) === */}
+      <div id="metra-popups"></div>
 
     </div>
   );

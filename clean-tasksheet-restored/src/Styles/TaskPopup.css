@@ -1,0 +1,12 @@
+cat > src/Styles/TaskPopup.css << 'EOF'
+/* ======================================================================
+   METRA – TaskPopup.css (Stub)
+   ----------------------------------------------------------------------
+   Placeholder styles to satisfy component imports.
+   Full styling restored in later stage if required.
+   ====================================================================== */
+
+.task-popup {
+  display: none;
+}
+EOF

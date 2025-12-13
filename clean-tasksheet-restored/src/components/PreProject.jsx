@@ -1,42 +1,98 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Stage 3.2 – Workspace Content View (No Internal Header)
+   Stage 5.5 – Summary Expand / Collapse (Safe)
    ----------------------------------------------------------------------
-   Internal “METRA – PreProject” header removed because the global
-   header now sits above the dual pane layout.
+   ✔ Crash-proof rendering
+   ✔ Expand / collapse summaries
+   ✔ Read-only hierarchy
+   ✔ Task click diagnostics only
    ====================================================================== */
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "../Styles/PreProject.css";
 
-export default function PreProject() {
-  const defaultTasks = [
-    { id: 1, title: "Prepare Scope Summary", status: "Not Started" },
-    { id: 2, title: "Initial Risk Scan", status: "Not Started" },
-    { id: 3, title: "Stakeholder Mapping", status: "Not Started" }
-  ];
+export default function PreProject(props) {
 
-  const [tasks, setTasks] = useState(() => {
-    const stored = localStorage.getItem("tasks_v3");
-    return stored ? JSON.parse(stored) : defaultTasks;
-  });
+  /* --------------------------------------------------------------
+     HARD SAFETY CLAMP
+     -------------------------------------------------------------- */
+  const tasks = Array.isArray(props.tasks) ? props.tasks : [];
+  const summaries = Array.isArray(props.summaries) ? props.summaries : [];
 
-  useEffect(() => {
-    localStorage.setItem("tasks_v3", JSON.stringify(tasks));
-  }, [tasks]);
+  /* --------------------------------------------------------------
+     LOCAL UI STATE (SAFE)
+     -------------------------------------------------------------- */
+  const [openSummaries, setOpenSummaries] = useState({});
 
+  const toggleSummary = (id) => {
+    setOpenSummaries(prev => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  /* --------------------------------------------------------------
+     RENDER
+     -------------------------------------------------------------- */
   return (
     <div className="preproject-container">
-      {/* Main title removed — now in the global header */}
 
-      <div className="task-list">
-        {tasks.map((task) => (
-          <div key={task.id} className="task-row">
-            <div className="task-title">{task.title}</div>
-            <div className="task-status">{task.status}</div>
+      {/* === SUMMARIES === */}
+      {summaries.map(summary => {
+        const isOpen = openSummaries[summary.id] ?? true;
+
+        return (
+          <div key={summary.id} className="summary-block">
+
+            <div
+              className="summary-header"
+              onClick={() => toggleSummary(summary.id)}
+              style={{ cursor: "pointer" }}
+            >
+              <strong>{summary.title}</strong>
+              <span style={{ marginLeft: "8px", fontSize: "0.85em" }}>
+                {isOpen ? "▾" : "▸"}
+              </span>
+            </div>
+
+            {/* === TASKS UNDER SUMMARY === */}
+            {isOpen &&
+              tasks
+                .filter(t => t.summaryId === summary.id)
+                .map(task => (
+                  <div
+                    key={task.id}
+                    className="task-row indented"
+                    onClick={() => {
+                      console.log("🟢 Task clicked:", task);
+                      props.openPopup?.(task);
+                    }}
+                  >
+                    <span className="task-title">{task.title}</span>
+                    <span className="task-status">{task.status}</span>
+                  </div>
+                ))}
+          </div>
+        );
+      })}
+
+      {/* === UNSUMMARISED TASKS === */}
+      {tasks
+        .filter(t => !t.summaryId)
+        .map(task => (
+          <div
+            key={task.id}
+            className="task-row"
+            onClick={() => {
+              console.log("🟢 Task clicked:", task);
+              props.openPopup?.(task);
+            }}
+          >
+            <span className="task-title">{task.title}</span>
+            <span className="task-status">{task.status}</span>
           </div>
         ))}
-      </div>
+
     </div>
   );
 }

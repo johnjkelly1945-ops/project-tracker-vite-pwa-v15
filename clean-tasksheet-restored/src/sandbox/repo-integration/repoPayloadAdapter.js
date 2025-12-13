@@ -2,80 +2,72 @@
    METRA – repoPayloadAdapter.js
    ----------------------------------------------------------------------
    SANDBOX-ONLY
-   Adapts Repo Sandbox payloads into PreProject-compatible structures
+   Normalises repository export payloads into true workspace
+   summaries and tasks (data-shape parity only).
+
+   Stage 5.1:
+   ✔ Ensures imported tasks match native task structure
+   ✔ No interaction wiring here
+   ✔ No main METRA dependencies
    ====================================================================== */
 
-import { taskLibrary } from "../taskLibrarySandbox";
+import { taskLibrary } from "../taskLibrarySandbox.js";
 
-/* ---------------------------------------------------------------
-   MAIN ADAPTER
----------------------------------------------------------------- */
+/* --------------------------------------------------------------
+   Helper: find task title by ID
+-------------------------------------------------------------- */
+function getTaskTitle(taskId) {
+  const task = taskLibrary.tasks.find(t => t.id === taskId);
+  return task ? task.name : `Task ${taskId}`;
+}
+
+/* --------------------------------------------------------------
+   Helper: find summary title by ID
+-------------------------------------------------------------- */
+function getSummaryTitle(summaryId) {
+  const summary = taskLibrary.summaries.find(s => s.id === summaryId);
+  return summary ? summary.name : `Summary ${summaryId}`;
+}
+
+/* --------------------------------------------------------------
+   Main Adapter
+-------------------------------------------------------------- */
 export function adaptRepoPayloadToWorkspace(payload) {
-  if (!payload || !payload.type) {
-    return { summaries: [], tasks: [] };
-  }
-
-  const selectedSummaryIds = payload.summaries || [];
-  const selectedTaskIds = payload.tasks || [];
-
-  const summaries = [];
-  const tasks = [];
+  const { summaries = [], tasks = [] } = payload;
 
   const timestamp = Date.now();
+  let orderCounter = 0;
 
-  /* -------------------------------------------------------------
-     BUILD SUMMARIES
-  ------------------------------------------------------------- */
-  selectedSummaryIds.forEach((summaryId, index) => {
-    const sourceSummary = taskLibrary.summaries.find(
-      s => s.id === summaryId
-    );
+  /* ------------------------------------------------------------
+     Normalise summaries
+  ------------------------------------------------------------ */
+  const normalisedSummaries = summaries.map((summaryId, index) => ({
+    id: `repo_summary_${timestamp}_${index}`,
+    title: getSummaryTitle(summaryId),
+    expanded: true,
+    orderIndex: orderCounter++
+  }));
 
-    if (!sourceSummary) return;
+  /* ------------------------------------------------------------
+     Normalise tasks (Stage 5.1 focus)
+  ------------------------------------------------------------ */
+  const normalisedTasks = tasks.map((taskId, index) => ({
+    id: `repo_task_${timestamp}_${index}`,
+    title: getTaskTitle(taskId),
 
-    summaries.push({
-      id: `repo_summary_${timestamp}_${index}`,
-      title: sourceSummary.name,
-      expanded: true,
-      orderIndex: index
-    });
-  });
+    // --- REQUIRED WORKSPACE FIELDS ----------------------------
+    status: "Not Started",
+    person: "",
+    flag: "",
 
-  /* -------------------------------------------------------------
-     BUILD TASKS (ATTACHED TO SUMMARIES)
-  ------------------------------------------------------------- */
-  selectedTaskIds.forEach((taskId, index) => {
-    const sourceTask = taskLibrary.tasks.find(
-      t => t.id === taskId
-    );
+    // Parent summary relationship is applied later by caller
+    summaryId: null,
 
-    if (!sourceTask) return;
+    orderIndex: orderCounter++
+  }));
 
-    // Find which summary this task belongs to
-    const sourceSummary = taskLibrary.summaries.find(
-      s =>
-        s.tasks?.includes(taskId) &&
-        selectedSummaryIds.includes(s.id)
-    );
-
-    if (!sourceSummary) return;
-
-    const targetSummary = summaries.find(
-      s => s.title === sourceSummary.name
-    );
-
-    if (!targetSummary) return;
-
-    tasks.push({
-      id: `repo_task_${timestamp}_${index}`,
-      title: sourceTask.name,
-      summaryId: targetSummary.id,
-      status: "Not Started",
-      person: "",
-      flag: "",
-      orderIndex: index
-    });
-  });
-
-  return { summaries, tasks };
+  return {
+    summaries: normalisedSummaries,
+    tasks: normalisedTasks
+  };
 }
