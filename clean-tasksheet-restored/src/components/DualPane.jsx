@@ -1,13 +1,12 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 9.1 – Workspace-Level Repository Entry Point
-   (Layout fix: header now reserves vertical space)
+   Stage 9.3 – Deterministic Placement (Honour Routing)
    ----------------------------------------------------------------------
-   ✔ Workspace header stacked above panes
-   ✔ Repository button is workspace-owned
-   ✔ No pane bias
-   ✔ No semantic changes
-   ✔ Stage 8.3 import logic unchanged
+   ✔ Deterministic summary → task binding
+   ✔ Explicit routing honoured (pane)
+   ✔ Replace-only semantics
+   ✔ Orphan task detection (non-UI)
+   ✔ Stage 9.2 scaffolding removed
    ====================================================================== */
 
 import React, { useState, useCallback } from "react";
@@ -17,10 +16,10 @@ export default function DualPane() {
   const [mgmtTasks, setMgmtTasks] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
   const [showRepository, setShowRepository] = useState(false);
-  const [activePane, setActivePane] = useState(null); // intentionally neutral
+  const [activePane, setActivePane] = useState(null); // neutral by design
 
   /* ==============================================================
-     STAGE 8.3 – DETERMINISTIC REPOSITORY IMPORT (UNCHANGED)
+     STAGE 9.3 – DETERMINISTIC PLACEMENT
      ============================================================== */
 
   const handleRepositoryExport = useCallback((adaptedPayload) => {
@@ -60,7 +59,7 @@ export default function DualPane() {
       if (resolved) assembledSummaries.push(resolved);
     });
 
-    // Replace-only commit (unchanged behaviour)
+    // Replace-only placement (honour routing)
     if (pane === "mgmt") {
       setMgmtTasks(assembledSummaries);
     } else if (pane === "dev") {
@@ -68,7 +67,7 @@ export default function DualPane() {
     }
 
     if (orphanTasks.length > 0) {
-      console.info("[Stage 8.3] Orphan tasks detected:", orphanTasks);
+      console.info("[Stage 9.3] Orphan tasks detected:", orphanTasks);
     }
 
     setShowRepository(false);
@@ -81,11 +80,7 @@ export default function DualPane() {
   return (
     <div
       className="dual-pane-workspace"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%"
-      }}
+      style={{ display: "flex", flexDirection: "column", height: "100%" }}
     >
       {/* ==========================================================
          Workspace Header (Stage 9.1)
@@ -112,11 +107,7 @@ export default function DualPane() {
          ========================================================== */}
       <div
         className="dual-pane-body"
-        style={{
-          display: "flex",
-          flex: 1,
-          overflow: "hidden"
-        }}
+        style={{ display: "flex", flex: 1, overflow: "hidden" }}
       >
         {/* Management Pane */}
         <div className="pane">
