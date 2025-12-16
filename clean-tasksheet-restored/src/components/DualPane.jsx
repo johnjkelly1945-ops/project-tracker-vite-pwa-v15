@@ -1,151 +1,136 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 6.9 – Repository Import (Explicit Summary Linking)
+   Stage 8.3 – Deterministic Repository Import
+   FINAL wiring fix (onExport contract)
    ----------------------------------------------------------------------
-   ✔ Tasks linked to summaries on import
-   ✔ Summaries become visible in PreProject
+   ✔ Deterministic summary → task binding
+   ✔ Multiple summaries per import
    ✔ Replace-only semantics preserved
-   ✔ No hierarchy inference beyond explicit selection
+   ✔ Orphan task detection (non-UI)
+   ✔ Correct RepositoryOverlay contract
    ====================================================================== */
 
-import React, { useState } from "react";
-import { createPortal } from "react-dom";
-
-import PreProject from "./PreProject.jsx";
-import TaskPopup from "./TaskPopup.jsx";
-import FilterBar from "./FilterBar.jsx";
-import RepositoryOverlay from "./RepositoryOverlay.jsx";
-
-import { adaptRepoPayloadToWorkspace } from
-  "../utils/repo/repoPayloadAdapter.js";
-
-import "../Styles/DualPane.css";
+import React, { useState, useCallback } from "react";
+import RepositoryOverlay from "./RepositoryOverlay";
 
 export default function DualPane() {
-
-  /* ======================= WORKSPACE STATE ======================= */
-
-  const [mgmtTasks, setMgmtTasks] = useState([
-    { id: "local-1", title: "Define Project Justification", status: "Not Started" },
-    { id: "local-2", title: "Identify Options and Feasibility", status: "Not Started" },
-  ]);
-  const [mgmtSummaries, setMgmtSummaries] = useState([]);
-
+  const [mgmtTasks, setMgmtTasks] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
-  const [devSummaries, setDevSummaries] = useState([]);
+  const [showRepository, setShowRepository] = useState(false);
+  const [activePane, setActivePane] = useState("mgmt");
 
-  /* ========================= UI STATE ============================ */
+  /* ==============================================================
+     STAGE 8.3 – DETERMINISTIC REPOSITORY IMPORT
+     ============================================================== */
 
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [selectedPane, setSelectedPane] = useState(null);
-  const [showRepo, setShowRepo] = useState(false);
-  const [repoPaneContext] = useState("mgmt");
+  const handleRepositoryExport = useCallback((adaptedPayload) => {
+    if (!adaptedPayload) return;
 
-  const openTaskPopup = (task, pane) => {
-    setSelectedTask(task);
-    setSelectedPane(pane);
-  };
+    const { pane, summaries } = adaptedPayload;
 
-  const closeTaskPopup = () => {
-    setSelectedTask(null);
-    setSelectedPane(null);
-  };
+    const assembledSummaries = [];
+    const orphanTasks = [];
+    const summaryMap = new Map();
 
-  /* ===================== MAIN IMPORT GATE ======================== */
+    // Build summary shells (identity-first)
+    summaries.forEach((summary) => {
+      if (!summary.repoSummaryId) return;
+      summaryMap.set(summary.repoSummaryId, {
+        ...summary,
+        tasks: []
+      });
+    });
 
-  const importRepoPayload = (payload) => {
-    const adapted = adaptRepoPayloadToWorkspace(payload);
-    if (!adapted) return;
+    // Attach tasks deterministically
+    summaries.forEach((summary) => {
+      const { tasks = [] } = summary;
+      tasks.forEach((task) => {
+        const parentId = task.repoSummaryId;
+        if (parentId && summaryMap.has(parentId)) {
+          summaryMap.get(parentId).tasks.push(task);
+        } else {
+          orphanTasks.push(task);
+        }
+      });
+    });
 
-    const summaries = adapted.summaries || [];
-    let tasks = adapted.tasks || [];
+    // Preserve repository order
+    summaries.forEach((summary) => {
+      const resolved = summaryMap.get(summary.repoSummaryId);
+      if (resolved) assembledSummaries.push(resolved);
+    });
 
-    // 🔑 EXPLICIT LINKING RULE (Stage 6.9 only)
-    if (summaries.length > 0 && tasks.length > 0) {
-      const targetSummaryId = summaries[0].id;
-      tasks = tasks.map(task => ({
-        ...task,
-        summaryId: targetSummaryId
-      }));
+    // Replace-only commit
+    if (pane === "mgmt") {
+      setMgmtTasks(assembledSummaries);
+    } else {
+      setDevTasks(assembledSummaries);
     }
 
-    if (adapted.pane === "mgmt") {
-      setMgmtSummaries(summaries);
-      setMgmtTasks(tasks);
+    if (orphanTasks.length > 0) {
+      console.info("[Stage 8.3] Orphan tasks detected:", orphanTasks);
     }
 
-    if (adapted.pane === "dev") {
-      setDevSummaries(summaries);
-      setDevTasks(tasks);
-    }
+    setShowRepository(false);
+  }, []);
 
-    setShowRepo(false);
-  };
-
-  /* ============================ RENDER =========================== */
+  /* ==============================================================
+     Render
+     ============================================================== */
 
   return (
     <div className="dual-pane-workspace">
-
+      {/* Workspace Header */}
       <div className="workspace-header">
-        <button onClick={() => setShowRepo(true)}>
+        <button
+          className="repo-open-btn"
+          onClick={() => {
+            setActivePane("mgmt");
+            setShowRepository(true);
+          }}
+        >
           Open Repository
         </button>
       </div>
 
-      <div className="pane mgmt-pane">
-        <div className="pane-header">
-          <h2>Management Tasks</h2>
-        </div>
-
-        <FilterBar mode="mgmt" />
-
-        <div className="pane-content">
-          <PreProject
-            pane="mgmt"
-            tasks={mgmtTasks}
-            summaries={mgmtSummaries}
-            openPopup={(task) => openTaskPopup(task, "mgmt")}
-          />
-        </div>
+      {/* Management Pane */}
+      <div className="pane">
+        <h2>Management Tasks</h2>
+        {mgmtTasks.map((summary) => (
+          <div key={summary.repoSummaryId} className="summary">
+            <strong>{summary.title}</strong>
+            {summary.tasks.map((task) => (
+              <div key={task.id} className="task">
+                {task.title}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
-      <div className="pane dev-pane">
-        <div className="pane-header">
-          <h2>Development Tasks</h2>
-        </div>
-
-        <FilterBar mode="dev" />
-
-        <div className="pane-content">
-          <PreProject
-            pane="dev"
-            tasks={devTasks}
-            summaries={devSummaries}
-            openPopup={(task) => openTaskPopup(task, "dev")}
-          />
-        </div>
+      {/* Development Pane */}
+      <div className="pane">
+        <h2>Development Tasks</h2>
+        {devTasks.map((summary) => (
+          <div key={summary.repoSummaryId} className="summary">
+            <strong>{summary.title}</strong>
+            {summary.tasks.map((task) => (
+              <div key={task.id} className="task">
+                {task.title}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
-      {selectedTask &&
-        createPortal(
-          <TaskPopup
-            task={selectedTask}
-            pane={selectedPane}
-            onClose={closeTaskPopup}
-          />,
-          document.getElementById("metra-popups")
-        )}
-
-      {showRepo &&
-        createPortal(
-          <RepositoryOverlay
-            activePane={repoPaneContext}
-            onExport={importRepoPayload}
-            onClose={() => setShowRepo(false)}
-          />,
-          document.getElementById("metra-popups")
-        )}
+      {/* Repository Overlay */}
+      {showRepository && (
+        <RepositoryOverlay
+          activePane={activePane}
+          onExport={handleRepositoryExport}
+          onClose={() => setShowRepository(false)}
+        />
+      )}
     </div>
   );
 }

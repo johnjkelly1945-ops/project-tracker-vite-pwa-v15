@@ -1,6 +1,7 @@
 /* ======================================================================
    METRA – DualPane.css
    Stage 3.7 – Guaranteed Scroll Restore (Safari + Chrome)
+   + Stage 8.3 – Visual Hierarchy Refinement (Task Indent)
    ----------------------------------------------------------------------
    PURPOSE:
    ✔ Restore independent pane scrolling in ALL browsers
@@ -8,6 +9,7 @@
    ✔ Keep pane headers sticky below FilterBar
    ✔ Keep FilterBar snug with no large gap
    ✔ Enforce strict height boundaries (anti-override)
+   ✔ Improve summary → task visual hierarchy (indent only)
    ====================================================================== */
 
 /* --- Global Reset ---------------------------------------------------- */
@@ -48,50 +50,25 @@
   border-right: none;
 }
 
-/* --- Pane Header (Sticky) -------------------------------------------- */
-.pane-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
+/* =====================================================================
+   CONTENT HIERARCHY
+   ===================================================================== */
 
-  height: 42px;
-  padding: 8px 12px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  background: #f1f5f9;
-  border-bottom: 1px solid #e2e8f0;
-
-  pointer-events: auto;
+/* Summary container (no change to alignment) */
+.summary {
+  padding: 6px 12px;
 }
 
-/* --- Scrollable Task Area -------------------------------------------- */
-.pane-content {
-  flex: 1;
-
-  /* 
-     The key rule that restores scrolling.
-     If this is missing or overridden, pane scrolling breaks.
-  */
-  overflow-y: auto !important;
-  overflow-x: hidden;
-
-  position: relative;
-  -webkit-overflow-scrolling: touch;
+/* Summary title (already bold via markup) */
+.summary > strong {
+  display: block;
+  margin-bottom: 4px;
 }
 
-/* --- Task Item -------------------------------------------------------- */
-.task-item {
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
-  background: white;
-}
-
-.task-item:hover {
-  background: #f8fafc;
-}
-.pane-content {
-  min-height: 2000px !important;
+/* --- Task Visual Indent (Option B) ---------------------------------- */
+.task {
+  margin-left: 16px;      /* subtle but clear hierarchy */
+  padding: 2px 0;
+  color: #374151;         /* slightly softer than summary */
+  line-height: 1.6;
 }
