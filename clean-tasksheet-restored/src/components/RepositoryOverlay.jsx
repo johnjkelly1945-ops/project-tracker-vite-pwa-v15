@@ -1,83 +1,115 @@
 /* ======================================================================
    METRA – RepositoryOverlay.jsx
-   HARD RESET – Guaranteed Mount Version
+   Stage 10.1 – Read-Only Repository Rendering
+   (Canonical Stage 8/9 Repository Shape)
    ----------------------------------------------------------------------
-   ✔ Always renders when mounted
-   ✔ Logs mount visibly
-   ✔ Renders sandbox directly
-   ✔ No conditions, no abstraction
+   ✔ Uses taskLibrary.bundles explicitly
+   ✔ Read-only
+   ✔ No selection
+   ✔ No routing
+   ✔ No export
    ====================================================================== */
 
 import React, { useEffect } from "react";
-import TaskRepositorySandbox from "../sandbox/repo-integration/TaskRepositorySandbox";
+import { taskLibrary } from "../repository/tasklibrary";
 
-export default function RepositoryOverlay({
-  activePane,
-  onExport,
-  onClose
-}) {
+export default function RepositoryOverlay({ onClose }) {
+  /* ==============================================================
+     Canonical repository access (Stage 8/9)
+     ============================================================== */
+
+  const bundles = taskLibrary.bundles;
+
   useEffect(() => {
-    console.log("🟣 RepositoryOverlay mounted (hard reset)");
-  }, []);
+    console.info("[Stage 10.1] RepositoryOverlay mounted (read-only)");
+    console.info("[Stage 10.1] Bundles loaded:", bundles.length);
+  }, [bundles]);
 
-  /* --------------------------------------------------------------
-     TEMPORARY STATIC DATA (INLINE, NO DEPENDENCIES)
-     -------------------------------------------------------------- */
-  const repositoryData = [
-    {
-      id: "bundle-1",
-      title: "Feasibility Study",
-      summaries: [
-        { id: "sum-1", title: "Feasibility Overview" }
-      ],
-      tasks: [
-        { id: "task-1", title: "Initial assessment" },
-        { id: "task-2", title: "Stakeholder interviews" }
-      ]
-    },
-    {
-      id: "bundle-2",
-      title: "Business Case",
-      summaries: [
-        { id: "sum-2", title: "Business Case Outline" }
-      ],
-      tasks: [
-        { id: "task-3", title: "Cost analysis" },
-        { id: "task-4", title: "Benefit analysis" }
-      ]
-    }
-  ];
+  /* ==============================================================
+     Render
+     ============================================================== */
 
-  /* --------------------------------------------------------------
-     RENDER (NO CONDITIONS)
-     -------------------------------------------------------------- */
   return (
     <div
+      className="repository-overlay"
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        zIndex: 2000,
+        background: "rgba(0,0,0,0.35)",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        zIndex: 1000
       }}
     >
       <div
         style={{
-          width: "80%",
-          height: "80%",
+          width: "80vw",
+          height: "80vh",
           background: "#fff",
           borderRadius: "8px",
-          overflow: "hidden"
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column"
         }}
       >
-        <TaskRepositorySandbox
-          repositoryData={repositoryData}
-          activePane={activePane}
-          onExport={onExport}
-          onClose={onClose}
-        />
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "12px"
+          }}
+        >
+          <h2>Repository</h2>
+          <button onClick={onClose}>Close</button>
+        </div>
+
+        {/* Repository Content (Read-Only) */}
+        <div style={{ overflow: "auto", flex: 1 }}>
+          {bundles.map((bundle) => (
+            <div
+              key={bundle.bundleId}
+              style={{
+                marginBottom: "16px",
+                paddingBottom: "8px",
+                borderBottom: "1px solid #e0e0e0"
+              }}
+            >
+              <h3>{bundle.title}</h3>
+
+              {bundle.summaries.map((summary) => (
+                <div
+                  key={summary.repoSummaryId}
+                  style={{ marginLeft: "16px", marginBottom: "8px" }}
+                >
+                  <strong>{summary.title}</strong>
+
+                  <ul style={{ marginLeft: "16px", marginTop: "4px" }}>
+                    {summary.tasks.map((task) => (
+                      <li key={task.id}>{task.title}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            marginTop: "12px",
+            paddingTop: "8px",
+            borderTop: "1px solid #e0e0e0",
+            textAlign: "right",
+            fontSize: "12px",
+            color: "#666"
+          }}
+        >
+          Repository is in read-only mode (Stage 10.1)
+        </div>
       </div>
     </div>
   );
