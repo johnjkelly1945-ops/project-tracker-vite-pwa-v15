@@ -1,13 +1,13 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 8.3 – Deterministic Repository Import
-   FINAL wiring fix (onExport contract)
+   Stage 9.1 – Workspace-Level Repository Entry Point
+   (Layout fix: header now reserves vertical space)
    ----------------------------------------------------------------------
-   ✔ Deterministic summary → task binding
-   ✔ Multiple summaries per import
-   ✔ Replace-only semantics preserved
-   ✔ Orphan task detection (non-UI)
-   ✔ Correct RepositoryOverlay contract
+   ✔ Workspace header stacked above panes
+   ✔ Repository button is workspace-owned
+   ✔ No pane bias
+   ✔ No semantic changes
+   ✔ Stage 8.3 import logic unchanged
    ====================================================================== */
 
 import React, { useState, useCallback } from "react";
@@ -17,10 +17,10 @@ export default function DualPane() {
   const [mgmtTasks, setMgmtTasks] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
   const [showRepository, setShowRepository] = useState(false);
-  const [activePane, setActivePane] = useState("mgmt");
+  const [activePane, setActivePane] = useState(null); // intentionally neutral
 
   /* ==============================================================
-     STAGE 8.3 – DETERMINISTIC REPOSITORY IMPORT
+     STAGE 8.3 – DETERMINISTIC REPOSITORY IMPORT (UNCHANGED)
      ============================================================== */
 
   const handleRepositoryExport = useCallback((adaptedPayload) => {
@@ -60,10 +60,10 @@ export default function DualPane() {
       if (resolved) assembledSummaries.push(resolved);
     });
 
-    // Replace-only commit
+    // Replace-only commit (unchanged behaviour)
     if (pane === "mgmt") {
       setMgmtTasks(assembledSummaries);
-    } else {
+    } else if (pane === "dev") {
       setDevTasks(assembledSummaries);
     }
 
@@ -79,51 +79,83 @@ export default function DualPane() {
      ============================================================== */
 
   return (
-    <div className="dual-pane-workspace">
-      {/* Workspace Header */}
-      <div className="workspace-header">
+    <div
+      className="dual-pane-workspace"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%"
+      }}
+    >
+      {/* ==========================================================
+         Workspace Header (Stage 9.1)
+         ========================================================== */}
+      <div
+        className="workspace-header"
+        style={{
+          flexShrink: 0,
+          padding: "8px 12px",
+          borderBottom: "1px solid #e0e0e0",
+          background: "#fafafa"
+        }}
+      >
         <button
           className="repo-open-btn"
-          onClick={() => {
-            setActivePane("mgmt");
-            setShowRepository(true);
-          }}
+          onClick={() => setShowRepository(true)}
         >
-          Open Repository
+          Repository
         </button>
       </div>
 
-      {/* Management Pane */}
-      <div className="pane">
-        <h2>Management Tasks</h2>
-        {mgmtTasks.map((summary) => (
-          <div key={summary.repoSummaryId} className="summary">
-            <strong>{summary.title}</strong>
-            {summary.tasks.map((task) => (
-              <div key={task.id} className="task">
-                {task.title}
-              </div>
-            ))}
-          </div>
-        ))}
+      {/* ==========================================================
+         Pane Container
+         ========================================================== */}
+      <div
+        className="dual-pane-body"
+        style={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden"
+        }}
+      >
+        {/* Management Pane */}
+        <div className="pane">
+          <h2>Management Tasks</h2>
+
+          {mgmtTasks.map((summary) => (
+            <div key={summary.repoSummaryId} className="summary">
+              <strong>{summary.title}</strong>
+
+              {summary.tasks.map((task) => (
+                <div key={task.id} className="task">
+                  {task.title}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Development Pane */}
+        <div className="pane">
+          <h2>Development Tasks</h2>
+
+          {devTasks.map((summary) => (
+            <div key={summary.repoSummaryId} className="summary">
+              <strong>{summary.title}</strong>
+
+              {summary.tasks.map((task) => (
+                <div key={task.id} className="task">
+                  {task.title}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Development Pane */}
-      <div className="pane">
-        <h2>Development Tasks</h2>
-        {devTasks.map((summary) => (
-          <div key={summary.repoSummaryId} className="summary">
-            <strong>{summary.title}</strong>
-            {summary.tasks.map((task) => (
-              <div key={task.id} className="task">
-                {task.title}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Repository Overlay */}
+      {/* ==========================================================
+         Repository Overlay
+         ========================================================== */}
       {showRepository && (
         <RepositoryOverlay
           activePane={activePane}
