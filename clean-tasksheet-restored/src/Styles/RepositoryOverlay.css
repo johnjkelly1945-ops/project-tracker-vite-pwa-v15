@@ -1,0 +1,33 @@
+/* ======================================================================
+   METRA – RepositoryOverlay.css
+   Stage 8.2 – Ensure Overlay Visibility
+   ----------------------------------------------------------------------
+   PURPOSE:
+   ✔ Guarantee overlay is visible above workspace
+   ✔ Independent of other layout styles
+   ✔ Safe baseline default
+   ====================================================================== */
+
+.repository-overlay {
+  position: fixed;
+  inset: 0;                    /* top:0 right:0 bottom:0 left:0 */
+  z-index: 2000;               /* higher than headers, panes, popups */
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inner sandbox container */
+.task-repo-sandbox {
+  width: 80vw;
+  height: 80vh;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
