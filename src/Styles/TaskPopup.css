@@ -1,0 +1,165 @@
+/* ======================================================================
+   METRA – TaskPopup.css
+   Stage 11.2a – Restored Stable Popup Layout
+   ----------------------------------------------------------------------
+   ✔ Balanced centred header
+   ✔ Safe scrolling body
+   ✔ Stable footer action rows
+   ✔ No document styling yet (Stage 11.2b)
+   ====================================================================== */
+
+/* ==============================
+   Overlay
+   ============================== */
+.taskpopup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* ==============================
+   Popup Window
+   ============================== */
+.taskpopup-window {
+  width: 70vw;
+  height: 70vh;
+  background: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* ==============================
+   Header (Balanced)
+   Left spacer | centred title | right controls
+   ============================== */
+.tp-header {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  background: #003366;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.tp-header-left {
+  width: 140px; /* visual balance spacer */
+}
+
+.tp-header h3 {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tp-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Person badge */
+.tp-person {
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #e5efff;
+}
+
+/* Close button */
+.tp-close-btn {
+  background: #d9534f;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ==============================
+   Body
+   ============================== */
+.tp-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tp-body h4 {
+  margin: 12px 20px 8px;
+  font-weight: 600;
+  color: #003366;
+}
+
+/* Notes area */
+.tp-note-draft {
+  flex: 1;
+  padding: 2px 20px;
+  border: none;
+  background: transparent;
+  outline: none;
+  resize: none;
+  white-space: pre-wrap;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #222;
+}
+
+/* ==============================
+   Footer
+   ============================== */
+.tp-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #d8dee6;
+  background: #f7f9fb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Governance buttons */
+.tp-gov-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.tp-gov-row button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-style: italic;
+  color: #003366;
+}
+
+/* Action buttons */
+.tp-action-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.tp-action-row button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-style: italic;
+  color: #003366;
+}
+
+/* Delete emphasis */
+.tp-delete {
+  color: #d9534f;
+}
