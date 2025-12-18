@@ -7,22 +7,35 @@
    • Preserve full provenance
    • No UI logic
    • No persistence
-   • No task / summary mutation
+   • No external dependencies
    ====================================================================== */
 
-import { v4 as uuidv4 } from "uuid";
+/* ----------------------------------------------------------------------
+   INTERNAL ID GENERATOR
+   ----------------------------------------------------------------------
+   • Deterministic
+   • Dependency-free
+   • Sufficient for in-memory + persisted documents
+   ---------------------------------------------------------------------- */
+function generateDocumentId() {
+  return (
+    "doc-" +
+    Date.now().toString(36) +
+    "-" +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
 
 /* ----------------------------------------------------------------------
    createDocumentFromTemplate
    ----------------------------------------------------------------------
    INPUT:
    • template  (from templateLibrary)
-   • options   (optional metadata: linkedTo, createdBy, notes)
+   • options   (linkedTo, linkedType, createdBy, notes)
    ----------------------------------------------------------------------
    OUTPUT:
    • Plain document object (data only)
    ---------------------------------------------------------------------- */
-
 export function createDocumentFromTemplate(template, options = {}) {
   if (!template || !template.id) {
     throw new Error("Invalid template supplied to document factory");
@@ -32,7 +45,7 @@ export function createDocumentFromTemplate(template, options = {}) {
 
   return {
     /* === Identity === */
-    id: `doc-${uuidv4()}`,
+    id: generateDocumentId(),
     originTemplateId: template.id,
     documentType: template.documentType,
 
@@ -42,14 +55,14 @@ export function createDocumentFromTemplate(template, options = {}) {
     governanceType: template.governanceType,
 
     /* === Structure === */
-    sections: template.sections.map(section => ({
+    sections: template.sections.map((section) => ({
       heading: section,
       content: ""
     })),
 
     /* === Linkage (no behaviour yet) === */
     linkedTo: options.linkedTo || null,
-    linkedType: options.linkedType || null, // "task" | "summary" | "project"
+    linkedType: options.linkedType || null, // "task" | "summary" | "project" | "test"
 
     /* === Governance-ready fields === */
     status: "draft",
