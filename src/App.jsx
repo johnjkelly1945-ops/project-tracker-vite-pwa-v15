@@ -2,28 +2,23 @@
    METRA – App.jsx
    Stage 3.2 – DualPane Active Mode (Isolated Layout Testing)
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Keep global header stable
-   ✔ Keep filter bar visible
-   ✔ Render DualPane.jsx for isolated scroll & layout debugging
-   ✔ DO NOT affect PreProjectDual.jsx until DualPane is verified
-   ----------------------------------------------------------------------
    TEMPORARY ADDITION:
-   ✔ Stage 10.3.1A – Document Pipeline Test Harness
+   ✔ Stage 10.3/10.4 – Document Pipeline + Persistence (DEV harness)
    ✔ Explicit user action only
-   ✔ No persistence
+   ✔ localStorage persistence
    ✔ Clearly removable
    ====================================================================== */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 /* === EXISTING IMPORTS (UNCHANGED) === */
 import DualPane from "./components/DualPane";
 import FilterBar from "./components/FilterBar";
 
-/* === STAGE 10 DOCUMENT PIPELINE IMPORTS === */
+/* === STAGE 10 IMPORTS === */
 import TemplatePickerOverlay from "./components/TemplatePickerOverlay";
 import { createDocumentFromTemplate } from "./documents/documentFactory";
+import { loadDocuments, saveDocuments } from "./documents/documentStore";
 
 /* === STYLES (UNCHANGED) === */
 import "./Styles/App.v2.css";
@@ -33,11 +28,23 @@ import "./Styles/FilterBar.css";
 export default function App() {
 
   /* ==============================================================
-     STAGE 10.3.1A – DOCUMENT PIPELINE TEST HARNESS (TEMPORARY)
+     STAGE 10.4 – DOCUMENT STATE (PERSISTED)
      ============================================================== */
+  const [documents, setDocuments] = useState([]);
 
+  useEffect(() => {
+    const restored = loadDocuments();
+    setDocuments(restored);
+  }, []);
+
+  useEffect(() => {
+    saveDocuments(documents);
+  }, [documents]);
+
+  /* ==============================================================
+     STAGE 10.3/10.4 – DEV TEST HARNESS
+     ============================================================== */
   const [showTemplateTest, setShowTemplateTest] = useState(false);
-  const [testDocument, setTestDocument] = useState(null);
 
   const handleTemplateTestSelect = (template) => {
     const doc = createDocumentFromTemplate(template, {
@@ -46,34 +53,26 @@ export default function App() {
       createdBy: "user"
     });
 
-    setTestDocument(doc);
+    setDocuments((prev) => [...prev, doc]);
     setShowTemplateTest(false);
 
-    console.log("📄 METRA document created (pipeline test harness):", doc);
+    console.log("📄 METRA document created & persisted:", doc);
   };
 
   return (
     <div className="app-container">
 
-      {/* ==========================================================
-          GLOBAL MAIN HEADER (UNCHANGED)
-         ========================================================== */}
+      {/* === GLOBAL HEADER (UNCHANGED) === */}
       <header className="global-header">
         METRA – PreProject
       </header>
 
-      {/* ==========================================================
-          FILTER BAR (UNCHANGED)
-         ========================================================== */}
+      {/* === FILTER BAR (UNCHANGED) === */}
       <FilterBar />
 
       {/* ==========================================================
-          STAGE 10.3.1A – FIXED VISIBILITY TEST PANEL
-          ----------------------------------------------------------
-          • Fixed position
-          • High z-index
-          • Dev-only
-          ========================================================== */}
+          STAGE 10.4 – FIXED DEV PANEL (VISIBILITY GUARANTEED)
+         ========================================================== */}
       <div
         style={{
           position: "fixed",
@@ -94,30 +93,21 @@ export default function App() {
           [DEV] Test Document Pipeline
         </button>
 
-        {testDocument && (
-          <div style={{ marginTop: "6px", fontSize: "0.85em" }}>
-            Document created:
-            <br />
-            <strong>{testDocument.title}</strong>
-          </div>
-        )}
+        <div style={{ marginTop: "6px", fontSize: "0.85em" }}>
+          Stored documents: <strong>{documents.length}</strong>
+        </div>
       </div>
 
-      {/* ==========================================================
-          DUAL PANE SCAFFOLD (UNCHANGED)
-         ========================================================== */}
+      {/* === DUAL PANE (UNCHANGED) === */}
       <DualPane />
 
-      {/* ==========================================================
-          TEMPLATE PICKER OVERLAY (TEST HARNESS)
-         ========================================================== */}
+      {/* === TEMPLATE PICKER OVERLAY === */}
       {showTemplateTest && (
         <TemplatePickerOverlay
           onSelect={handleTemplateTestSelect}
           onClose={() => setShowTemplateTest(false)}
         />
       )}
-
     </div>
   );
 }
