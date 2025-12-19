@@ -1,56 +1,52 @@
 /* ======================================================================
    METRA – RepositoryOverlay.jsx
-   HARD RESET – Guaranteed Mount Version
+   Stage 11.0 – Deterministic Repository Test Bed
    ----------------------------------------------------------------------
-   ✔ Always renders when mounted
-   ✔ Logs mount visibly
-   ✔ Renders sandbox directly
-   ✔ No conditions, no abstraction
+   ✔ Inline deterministic repo payload (NO real repo)
+   ✔ Intent-only selection
+   ✔ No adapter, no workspace mutation
+   ✔ To be removed after Stage 11.0
    ====================================================================== */
 
-import React, { useEffect } from "react";
+import React from "react";
 import TaskRepositorySandbox from "../sandbox/repo-integration/TaskRepositorySandbox";
 
-export default function RepositoryOverlay({
-  activePane,
-  onExport,
-  onClose
-}) {
-  useEffect(() => {
-    console.log("🟣 RepositoryOverlay mounted (hard reset)");
-  }, []);
-
-  /* --------------------------------------------------------------
-     TEMPORARY STATIC DATA (INLINE, NO DEPENDENCIES)
-     -------------------------------------------------------------- */
-  const repositoryData = [
+const STAGE_11_REPO_SEED = {
+  bundles: [
     {
-      id: "bundle-1",
-      title: "Feasibility Study",
+      id: "bundle-mgmt",
+      title: "Management",
       summaries: [
-        { id: "sum-1", title: "Feasibility Overview" }
-      ],
-      tasks: [
-        { id: "task-1", title: "Initial assessment" },
-        { id: "task-2", title: "Stakeholder interviews" }
+        {
+          id: "sum-mgmt-1",
+          title: "Management Summary",
+          tasks: [
+            { id: "task-mgmt-1", title: "Define Governance Approach" },
+            { id: "task-mgmt-2", title: "Identify Stakeholders" }
+          ]
+        }
       ]
     },
     {
-      id: "bundle-2",
-      title: "Business Case",
+      id: "bundle-dev",
+      title: "Development",
       summaries: [
-        { id: "sum-2", title: "Business Case Outline" }
-      ],
-      tasks: [
-        { id: "task-3", title: "Cost analysis" },
-        { id: "task-4", title: "Benefit analysis" }
+        {
+          id: "sum-dev-1",
+          title: "Development Summary",
+          tasks: [
+            { id: "task-dev-1", title: "Draft Requirements" },
+            { id: "task-dev-2", title: "Initial Technical Assessment" }
+          ]
+        }
       ]
     }
-  ];
+  ]
+};
 
-  /* --------------------------------------------------------------
-     RENDER (NO CONDITIONS)
-     -------------------------------------------------------------- */
+export default function RepositoryOverlay({ onClose, onExport }) {
+  console.log("🧪 Stage 11.0 repo seed injected", STAGE_11_REPO_SEED);
+
   return (
     <div
       style={{
@@ -73,8 +69,7 @@ export default function RepositoryOverlay({
         }}
       >
         <TaskRepositorySandbox
-          repositoryData={repositoryData}
-          activePane={activePane}
+          repositoryData={STAGE_11_REPO_SEED}
           onExport={onExport}
           onClose={onClose}
         />

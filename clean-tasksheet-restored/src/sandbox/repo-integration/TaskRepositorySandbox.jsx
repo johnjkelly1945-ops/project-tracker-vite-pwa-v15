@@ -1,169 +1,107 @@
 /* ======================================================================
    METRA – TaskRepositorySandbox.jsx
-   Stage 8.3 – Deterministic Export Payload
+   Stage 11.0 – Deterministic Repository Sandbox (LIVE)
    ----------------------------------------------------------------------
-   ✔ Builds summary → task structure
-   ✔ Emits Stage 8.3–compliant payload
-   ✔ No repository or adapter changes
-   ✔ UI behaviour unchanged
+   ✔ Renders bundles → summaries → tasks
+   ✔ Selection + intent export only
+   ✔ No workspace mutation
+   ✔ No governance / popup / documents
    ====================================================================== */
 
 import React, { useState } from "react";
 
 export default function TaskRepositorySandbox({
   repositoryData,
-  activePane,
   onExport,
   onClose
 }) {
+  console.log("🧪 LIVE TaskRepositorySandbox rendering", repositoryData);
+
   const bundles = repositoryData?.bundles || [];
 
-  const [openBundles, setOpenBundles] = useState({});
-  const [openSummaries, setOpenSummaries] = useState({});
   const [selectedSummaries, setSelectedSummaries] = useState({});
   const [selectedTasks, setSelectedTasks] = useState({});
 
-  /* ===================== TOGGLES ===================== */
-
-  const toggleBundle = (id) => {
-    setOpenBundles((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleSummaryOpen = (id) => {
-    setOpenSummaries((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleSummarySelect = (summary) => {
+  const toggleSummary = (summary) => {
     setSelectedSummaries((prev) => {
       const next = { ...prev };
-      const isSelected = !!next[summary.id];
-
-      if (isSelected) {
-        delete next[summary.id];
-      } else {
-        next[summary.id] = summary;
-        setOpenSummaries((o) => ({ ...o, [summary.id]: true }));
-      }
+      next[summary.id]
+        ? delete next[summary.id]
+        : (next[summary.id] = summary);
       return next;
     });
   };
 
-  const toggleTaskSelect = (task, summary) => {
+  const toggleTask = (task, summaryId) => {
     setSelectedTasks((prev) => {
       const next = { ...prev };
       next[task.id]
         ? delete next[task.id]
-        : (next[task.id] = {
-            ...task,
-            repoSummaryId: summary.id
-          });
+        : (next[task.id] = { ...task, repoSummaryId: summaryId });
       return next;
     });
   };
 
-  /* ===================== EXPORT (FIXED) ===================== */
+  const handleExport = () => {
+    const summaries = Object.values(selectedSummaries).map((s) => ({
+      repoSummaryId: s.id,
+      title: s.title,
+      tasks: Object.values(selectedTasks).filter(
+        (t) => t.repoSummaryId === s.id
+      )
+    }));
 
-  const handleAddSelected = () => {
-    if (
-      !Object.keys(selectedSummaries).length &&
-      !Object.keys(selectedTasks).length
-    ) {
-      return;
-    }
-
-    // Build deterministic summaries with nested tasks
-    const summaries = Object.values(selectedSummaries).map((summary) => {
-      return {
-        repoSummaryId: summary.id,
-        title: summary.title,
-        tasks: Object.values(selectedTasks).filter(
-          (task) => task.repoSummaryId === summary.id
-        )
-      };
-    });
-
-    onExport({
-      pane: activePane || "mgmt",
-      summaries
-    });
-
-    // Reset state
-    setSelectedSummaries({});
-    setSelectedTasks({});
-    setOpenBundles({});
-    setOpenSummaries({});
+    onExport({ summaries });
   };
 
-  /* ============================ RENDER =========================== */
-
   return (
-    <div className="task-repo-sandbox">
-      <div className="repo-header">
-        <h2>Repository</h2>
-        <button onClick={onClose}>Close</button>
-      </div>
+    <div style={{ padding: "16px", height: "100%", overflow: "auto" }}>
+      <h2>Repository</h2>
+      <button onClick={onClose}>Close</button>
 
-      <div className="repo-body">
-        {bundles.map((bundle) => (
-          <div key={bundle.id} className="repo-bundle">
-            <div className="repo-bundle-header">
-              <input
-                type="checkbox"
-                checked={!!openBundles[bundle.id]}
-                onChange={() => toggleBundle(bundle.id)}
-              />
-              <strong>{bundle.title}</strong>
-            </div>
+      {bundles.length === 0 && (
+        <div style={{ marginTop: "16px", opacity: 0.6 }}>
+          No repository items available
+        </div>
+      )}
 
-            {openBundles[bundle.id] &&
-              bundle.summaries.map((summary) => (
-                <div key={summary.id} className="repo-summary">
-                  <div className="repo-summary-header">
+      {bundles.map((bundle) => (
+        <div key={bundle.id} style={{ marginTop: "16px" }}>
+          <strong>{bundle.title}</strong>
+
+          {bundle.summaries.map((summary) => (
+            <div key={summary.id} style={{ marginLeft: "16px" }}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={!!selectedSummaries[summary.id]}
+                  onChange={() => toggleSummary(summary)}
+                />
+                {summary.title}
+              </label>
+
+              {summary.tasks.map((task) => (
+                <div key={task.id} style={{ marginLeft: "16px" }}>
+                  <label>
                     <input
                       type="checkbox"
-                      checked={!!selectedSummaries[summary.id]}
-                      onChange={() => toggleSummarySelect(summary)}
+                      checked={!!selectedTasks[task.id]}
+                      onChange={() => toggleTask(task, summary.id)}
                     />
-                    <span
-                      style={{ cursor: "pointer" }}
-                      onClick={() => toggleSummaryOpen(summary.id)}
-                    >
-                      {summary.title}
-                    </span>
-                  </div>
-
-                  {openSummaries[summary.id] &&
-                    summary.tasks.map((task) => (
-                      <div key={task.id} className="repo-task">
-                        <input
-                          type="checkbox"
-                          checked={!!selectedTasks[task.id]}
-                          onChange={() =>
-                            toggleTaskSelect(task, summary)
-                          }
-                        />
-                        {task.title}
-                      </div>
-                    ))}
+                    {task.title}
+                  </label>
                 </div>
               ))}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      ))}
 
-      <div className="repo-footer">
-        <button
-          disabled={
-            !Object.keys(selectedSummaries).length &&
-            !Object.keys(selectedTasks).length
-          }
-          onClick={handleAddSelected}
-        >
-          Add Selected (
-          {Object.keys(selectedSummaries).length} summaries,
-          {Object.keys(selectedTasks).length} tasks)
-        </button>
-      </div>
+      <button onClick={handleExport} style={{ marginTop: "24px" }}>
+        Add Selected (
+        {Object.keys(selectedSummaries).length} summaries,
+        {Object.keys(selectedTasks).length} tasks)
+      </button>
     </div>
   );
 }
