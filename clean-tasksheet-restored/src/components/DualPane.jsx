@@ -1,73 +1,98 @@
 /* ======================================================================
    METRA – DualPane.jsx
-   Stage 9.3 – Deterministic Placement (Honour Routing)
+   Stage 9.3+ – Deterministic Placement (Honour Routing)
    ----------------------------------------------------------------------
    ✔ Deterministic summary → task binding
-   ✔ Explicit routing honoured (pane)
+   ✔ Explicit routing honoured when provided
    ✔ Replace-only semantics
-   ✔ Orphan task detection (non-UI)
-   ✔ Stage 9.2 scaffolding removed
+   ✔ Standalone tasks rendered (first-class)
+   ✔ TEMPORARY default routing → Management (Stage 11 only)
    ====================================================================== */
 
 import React, { useState, useCallback } from "react";
 import RepositoryOverlay from "./RepositoryOverlay";
 
 export default function DualPane() {
-  const [mgmtTasks, setMgmtTasks] = useState([]);
-  const [devTasks, setDevTasks] = useState([]);
+  /* --------------------------------------------------------------
+     Workspace State
+     -------------------------------------------------------------- */
+
+  const [mgmtSummaries, setMgmtSummaries] = useState([]);
+  const [devSummaries, setDevSummaries] = useState([]);
+
+  const [mgmtStandaloneTasks, setMgmtStandaloneTasks] = useState([]);
+  const [devStandaloneTasks, setDevStandaloneTasks] = useState([]);
+
   const [showRepository, setShowRepository] = useState(false);
   const [activePane, setActivePane] = useState(null); // neutral by design
 
   /* ==============================================================
-     STAGE 9.3 – DETERMINISTIC PLACEMENT
+     REPOSITORY EXPORT HANDLER
      ============================================================== */
 
   const handleRepositoryExport = useCallback((adaptedPayload) => {
     if (!adaptedPayload) return;
 
-    const { pane, summaries } = adaptedPayload;
+    const {
+      pane,
+      summaries = [],
+      tasks = []
+    } = adaptedPayload;
+
+    console.log("📥 DualPane received payload", adaptedPayload);
 
     const assembledSummaries = [];
-    const orphanTasks = [];
     const summaryMap = new Map();
 
-    // Build summary shells (identity-first)
+    /* ------------------------------------------------------------
+       Build summary shells (identity-first)
+       ------------------------------------------------------------ */
     summaries.forEach((summary) => {
       if (!summary.repoSummaryId) return;
+
       summaryMap.set(summary.repoSummaryId, {
         ...summary,
         tasks: []
       });
     });
 
-    // Attach tasks deterministically
+    /* ------------------------------------------------------------
+       Attach tasks to summaries deterministically
+       ------------------------------------------------------------ */
     summaries.forEach((summary) => {
       const { tasks = [] } = summary;
+
       tasks.forEach((task) => {
         const parentId = task.repoSummaryId;
         if (parentId && summaryMap.has(parentId)) {
           summaryMap.get(parentId).tasks.push(task);
-        } else {
-          orphanTasks.push(task);
         }
       });
     });
 
-    // Preserve repository order
+    /* ------------------------------------------------------------
+       Preserve repository order
+       ------------------------------------------------------------ */
     summaries.forEach((summary) => {
       const resolved = summaryMap.get(summary.repoSummaryId);
       if (resolved) assembledSummaries.push(resolved);
     });
 
-    // Replace-only placement (honour routing)
+    /* ------------------------------------------------------------
+       Replace-only placement (honour routing)
+       ------------------------------------------------------------ */
     if (pane === "mgmt") {
-      setMgmtTasks(assembledSummaries);
+      setMgmtSummaries(assembledSummaries);
+      setMgmtStandaloneTasks(tasks);
     } else if (pane === "dev") {
-      setDevTasks(assembledSummaries);
-    }
-
-    if (orphanTasks.length > 0) {
-      console.info("[Stage 9.3] Orphan tasks detected:", orphanTasks);
+      setDevSummaries(assembledSummaries);
+      setDevStandaloneTasks(tasks);
+    } else {
+      console.warn(
+        "⚠️ No pane specified in repo payload — defaulting to Management (temporary, Stage 11)"
+      );
+      setMgmtSummaries(assembledSummaries);
+      setMgmtStandaloneTasks(tasks);
     }
 
     setShowRepository(false);
@@ -83,7 +108,7 @@ export default function DualPane() {
       style={{ display: "flex", flexDirection: "column", height: "100%" }}
     >
       {/* ==========================================================
-         Workspace Header (Stage 9.1)
+         Workspace Header
          ========================================================== */}
       <div
         className="workspace-header"
@@ -109,11 +134,12 @@ export default function DualPane() {
         className="dual-pane-body"
         style={{ display: "flex", flex: 1, overflow: "hidden" }}
       >
-        {/* Management Pane */}
-        <div className="pane">
+        {/* ===================== Management Pane ===================== */}
+        <div className="pane" style={{ flex: 1, padding: "8px" }}>
           <h2>Management Tasks</h2>
 
-          {mgmtTasks.map((summary) => (
+          {/* Summaries */}
+          {mgmtSummaries.map((summary) => (
             <div key={summary.repoSummaryId} className="summary">
               <strong>{summary.title}</strong>
 
@@ -124,13 +150,21 @@ export default function DualPane() {
               ))}
             </div>
           ))}
+
+          {/* Standalone Tasks */}
+          {mgmtStandaloneTasks.map((task) => (
+            <div key={task.id} className="task standalone-task">
+              {task.title}
+            </div>
+          ))}
         </div>
 
-        {/* Development Pane */}
-        <div className="pane">
+        {/* ===================== Development Pane ===================== */}
+        <div className="pane" style={{ flex: 1, padding: "8px" }}>
           <h2>Development Tasks</h2>
 
-          {devTasks.map((summary) => (
+          {/* Summaries */}
+          {devSummaries.map((summary) => (
             <div key={summary.repoSummaryId} className="summary">
               <strong>{summary.title}</strong>
 
@@ -139,6 +173,13 @@ export default function DualPane() {
                   {task.title}
                 </div>
               ))}
+            </div>
+          ))}
+
+          {/* Standalone Tasks */}
+          {devStandaloneTasks.map((task) => (
+            <div key={task.id} className="task standalone-task">
+              {task.title}
             </div>
           ))}
         </div>
@@ -149,7 +190,7 @@ export default function DualPane() {
          ========================================================== */}
       {showRepository && (
         <RepositoryOverlay
-          activePane={activePane}
+          activePane={activePane || undefined}
           onExport={handleRepositoryExport}
           onClose={() => setShowRepository(false)}
         />
