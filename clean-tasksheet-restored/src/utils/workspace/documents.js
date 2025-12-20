@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA — Workspace Document Helpers
-   Stage 11.2.6 — In-Memory, Workspace-Scoped Documents
+   Stage 11.2.8 — Helpers Wired to Workspace Store
    ----------------------------------------------------------------------
    RULES ENFORCED:
    • Documents are first-class workspace entities
@@ -10,6 +10,12 @@
    • In-memory only (no persistence)
    • No UI, no repo mutation
    ====================================================================== */
+
+import {
+  workspaceStore,
+  addDocument,
+  updateDocument
+} from "./workspaceStore";
 
 /* --------------------------------------------------------------
    Utilities
@@ -24,16 +30,12 @@ function nowISO() {
 }
 
 /* --------------------------------------------------------------
-   Create Document
+   Create Document (AUTO-REGISTERS)
    -------------------------------------------------------------- */
 
 /**
- * Creates a new workspace document.
- * @param {Object} options
- * @param {string} options.title
- * @param {"workspace"|"repo"} options.source
- * @param {string|null} options.templateId
- * @param {string} options.createdBy
+ * Creates a new workspace document and registers it
+ * with the neutral workspace store.
  */
 export function createWorkspaceDocument({
   title = "Untitled Document",
@@ -41,7 +43,7 @@ export function createWorkspaceDocument({
   templateId = null,
   createdBy = "user"
 }) {
-  return {
+  const document = {
     id: generateId(),
     title,
     type: "document",
@@ -68,6 +70,11 @@ export function createWorkspaceDocument({
       archived: false
     }
   };
+
+  // 🔗 Auto-register with workspace store
+  addDocument(document);
+
+  return document;
 }
 
 /* --------------------------------------------------------------
@@ -76,12 +83,12 @@ export function createWorkspaceDocument({
 
 /**
  * Links a document to a task.
- * Returns updated copies of both entities.
+ * Updates are propagated to the workspace store.
  */
 export function linkDocumentToTask(document, task) {
   if (!document || !task) return { document, task };
 
-  const docLinked =
+  const updatedDocument =
     document.links.tasks.includes(task.id)
       ? document
       : {
@@ -96,7 +103,11 @@ export function linkDocumentToTask(document, task) {
           }
         };
 
-  const taskLinked =
+  if (updatedDocument !== document) {
+    updateDocument(updatedDocument);
+  }
+
+  const updatedTask =
     task.documents?.includes(document.id)
       ? task
       : {
@@ -105,8 +116,8 @@ export function linkDocumentToTask(document, task) {
         };
 
   return {
-    document: docLinked,
-    task: taskLinked
+    document: updatedDocument,
+    task: updatedTask
   };
 }
 
@@ -116,12 +127,12 @@ export function linkDocumentToTask(document, task) {
 
 /**
  * Unlinks a document from a task.
- * Document is NOT deleted.
+ * Document remains in the workspace store.
  */
 export function unlinkDocumentFromTask(document, task) {
   if (!document || !task) return { document, task };
 
-  const docUnlinked = {
+  const updatedDocument = {
     ...document,
     links: {
       ...document.links,
@@ -133,13 +144,27 @@ export function unlinkDocumentFromTask(document, task) {
     }
   };
 
-  const taskUnlinked = {
+  updateDocument(updatedDocument);
+
+  const updatedTask = {
     ...task,
     documents: (task.documents || []).filter(id => id !== document.id)
   };
 
   return {
-    document: docUnlinked,
-    task: taskUnlinked
+    document: updatedDocument,
+    task: updatedTask
   };
+}
+
+/* --------------------------------------------------------------
+   Read Helpers (Optional, Safe)
+   -------------------------------------------------------------- */
+
+/**
+ * Returns all workspace documents.
+ * (Convenience passthrough; no mutation.)
+ */
+export function getAllWorkspaceDocuments() {
+  return workspaceStore.documents;
 }
