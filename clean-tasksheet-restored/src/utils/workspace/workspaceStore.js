@@ -1,78 +1,61 @@
 /* ======================================================================
-   METRA — Workspace Store (Neutral)
-   Stage 11.3.2 — Document Persistence (localStorage)
+   METRA — workspaceStore.js
+   Workspace Persistence Layer
    ----------------------------------------------------------------------
-   RULES:
-   • Persist documents only
-   • Versioned schema
-   • Safe load with fallback
-   • No UI, no tasks, no panes
+   RESPONSIBILITIES:
+   • Persist task notes
+   • Rehydrate task notes
+   • No UI logic
+   • No workspace mutation
    ====================================================================== */
 
-const STORAGE_KEY = "metra.workspace";
-const SCHEMA_VERSION = 1;
-
-export const workspaceStore = {
-  documents: []
-};
+const STORAGE_KEY = "metra-workspace-tasks";
 
 /* --------------------------------------------------------------
-   Persistence Helpers
+   Internal helpers
    -------------------------------------------------------------- */
-
-function loadFromStorage() {
+function loadStore() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-
-    const parsed = JSON.parse(raw);
-    if (parsed.schemaVersion !== SCHEMA_VERSION) return;
-
-    if (Array.isArray(parsed.documents)) {
-      workspaceStore.documents = parsed.documents;
-    }
+    return raw ? JSON.parse(raw) : {};
   } catch (err) {
-    // Silent fallback — do not crash app
+    console.warn("METRA workspaceStore: failed to load store", err);
+    return {};
   }
 }
 
-function saveToStorage() {
+function saveStore(store) {
   try {
-    const payload = {
-      schemaVersion: SCHEMA_VERSION,
-      documents: workspaceStore.documents
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
   } catch (err) {
-    // Silent failure — persistence must not break runtime
+    console.warn("METRA workspaceStore: failed to save store", err);
   }
 }
 
-/* --------------------------------------------------------------
-   Public Store API
-   -------------------------------------------------------------- */
+/* ==============================================================
+   WRITE — persist notes (existing behaviour)
+   ============================================================== */
+export function saveTaskNotes(taskId, notes) {
+  if (!taskId) return;
 
-export function initialiseWorkspaceStore() {
-  loadFromStorage();
+  const store = loadStore();
+
+  store[taskId] = {
+    ...(store[taskId] || {}),
+    notes: Array.isArray(notes) ? notes : []
+  };
+
+  saveStore(store);
 }
 
-export function addDocument(document) {
-  if (!document) return;
-  workspaceStore.documents.push(document);
-  saveToStorage();
-}
+/* ==============================================================
+   READ — rehydrate notes (Stage 11.3)
+   ============================================================== */
+export function loadTaskNotes(taskId) {
+  if (!taskId) return [];
 
-export function updateDocument(updated) {
-  if (!updated?.id) return;
-  const index = workspaceStore.documents.findIndex(
-    (doc) => doc.id === updated.id
-  );
-  if (index !== -1) {
-    workspaceStore.documents[index] = updated;
-    saveToStorage();
-  }
-}
-
-export function getDocumentById(id) {
-  return workspaceStore.documents.find((doc) => doc.id === id);
+  const store = loadStore();
+  return Array.isArray(store?.[taskId]?.notes)
+    ? store[taskId].notes
+    : [];
 }
