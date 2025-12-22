@@ -1,84 +1,110 @@
-/* ======================================================================
-   METRA – PreProject.jsx
-   v8.0 – Stateless Viewer (Architecture B)
-   ----------------------------------------------------------------------
-   ✔ Receives tasks from DualPane (no internal state)
-   ✔ Sends openPopup(task)
-   ✔ Sends onRequestAssign(taskID)
-   ✔ Applies same filtering rules as before
-   ✔ No data storage or business logic inside this component
-   ====================================================================== */
-
-import React from "react";
+// src/components/PreProject.jsx
+import React, { useState, useMemo } from "react";
+import TaskPopup from "./TaskPopup";
 import "../Styles/PreProject.css";
 
-export default function PreProject({
-  filter,
-  tasks,
-  openPopup,
-  onRequestAssign
-}) {
+/*
+=====================================================================
+METRA — Stage 11.5.x
+PreProject Workspace (Visible + Safe-by-Construction)
+---------------------------------------------------------------------
+• Workspace-authoritative
+• No repository coupling
+• No demo / seeded data
+• Renders safely even when empty
+=====================================================================
+*/
 
-  /* -------------------------------------------------------------------
-     FILTERING – identical behaviour to old system
-     ------------------------------------------------------------------- */
-  const filteredTasks = (() => {
-    switch (filter) {
-      case "notstarted":
-        return tasks.filter(t => t.status === "Not Started" && !t.flag);
-      case "inprogress":
-        return tasks.filter(t => t.status === "In Progress");
-      case "completed":
-        return tasks.filter(t => t.status === "Completed");
-      case "flagged":
-        return tasks.filter(t => t.flag === "red");
-      case "open":
-        return tasks.filter(t => t.updatedForPM === true);
-      default:
-        return tasks;
-    }
-  })();
+export default function PreProject() {
+  /* ------------------------------------------------------------------
+     WORKSPACE STATE (AUTHORITATIVE)
+     ------------------------------------------------------------------ */
 
-  /* -------------------------------------------------------------------
-     RENDER – simple stateless map of tasks
-     ------------------------------------------------------------------- */
+  // Tasks must ALWAYS be an array
+  const [tasks, setTasks] = useState([]);
+
+  const [activeTask, setActiveTask] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+
+  /* ------------------------------------------------------------------
+     DERIVED STATE (TOTAL — NEVER UNDEFINED)
+     ------------------------------------------------------------------ */
+
+  const filteredTasks = useMemo(() => {
+    return Array.isArray(tasks) ? tasks : [];
+  }, [tasks]);
+
+  /* ------------------------------------------------------------------
+     TASK INTERACTION
+     ------------------------------------------------------------------ */
+
+  function openPopup(task) {
+    if (!task) return;
+    setActiveTask(task);
+    setShowPopup(true);
+  }
+
+  function closePopup() {
+    setActiveTask(null);
+    setShowPopup(false);
+  }
+
+  function updateTask(updatedTask) {
+    if (!updatedTask || !updatedTask.id) return;
+
+    setTasks(prev =>
+      Array.isArray(prev)
+        ? prev.map(t => (t.id === updatedTask.id ? updatedTask : t))
+        : []
+    );
+  }
+
+  /* ------------------------------------------------------------------
+     RENDER (VISIBLE EVEN WHEN EMPTY)
+     ------------------------------------------------------------------ */
+
   return (
-    <>
-      {filteredTasks.map(task => (
-        <div
-          key={task.id}
-          className="pp-task-item"
+    <div className="preproject-root">
+      {/* Workspace header / scaffold */}
+      <div className="preproject-header">
+        <h2>PreProject Workspace</h2>
+      </div>
 
-          onClick={() => {
-            // If task not assigned → request person assignment
-            if (!task.person || task.person.trim() === "") {
-              onRequestAssign(task.id);
-            } else {
-              openPopup(task);
-            }
-          }}
-        >
+      {/* Task list */}
+      <div className="preproject-list">
+        {filteredTasks.length === 0 && (
+          <div className="pp-empty-state">
+            No tasks in workspace
+          </div>
+        )}
 
-          {/* Status Dot */}
+        {filteredTasks.map(task => (
           <div
-            className={`pp-status-dot ${
-              task.status === "Completed"
-                ? "status-green"
-                : task.person
-                ? "status-amber"
-                : "status-grey"
-            }`}
-          />
+            key={task.id}
+            className="pp-task-item"
+            onClick={() => openPopup(task)}
+          >
+            <div className="pp-task-title">
+              {task.title || "Untitled task"}
+            </div>
 
-          {/* Task Title */}
-          <div className="pp-task-title">{task.title}</div>
+            {task.status && (
+              <div className={`pp-task-status status-${task.status}`}>
+                {task.status}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
-          {/* Flag */}
-          {task.flag === "red" && (
-            <div className="pp-flag-dot">🚩</div>
-          )}
-        </div>
-      ))}
-    </>
+      {/* Task popup */}
+      {showPopup && activeTask && (
+        <TaskPopup
+          task={activeTask}
+          onClose={closePopup}
+          onUpdate={updateTask}
+        />
+      )}
+    </div>
   );
 }
