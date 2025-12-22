@@ -1,18 +1,21 @@
 // src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import PreProject from "./components/PreProject";
+
 import DualPane from "./components/DualPane";
+import PreProject from "./components/PreProject";
+import Summary from "./components/Summary";
+
 import "./Styles/App.css";
 
 /*
 =====================================================================
-METRA — Phase 1
-DualPane Container Wiring
+METRA — Stage 11.5.2-B
+DualPane Shell Reattachment
 ---------------------------------------------------------------------
-• DualPane is presentation-only
-• PreProject remains authoritative
-• No behavioural changes
+• PreProject mounted as LEFT pane content
+• RIGHT pane intentionally empty
+• No behaviour added
 =====================================================================
 */
 
@@ -20,15 +23,21 @@ function App() {
   return (
     <Router>
       <Routes>
+
+        {/* Summary Dashboard */}
+        <Route path="/" element={<Summary />} />
+
+        {/* PreProject Workspace inside DualPane */}
         <Route
-          path="/"
+          path="/preproject"
           element={
             <DualPane
               left={<PreProject />}
-              right={null}
+              right={<div />}   // placeholder only
             />
           }
         />
+
       </Routes>
     </Router>
   );

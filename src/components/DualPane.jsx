@@ -4,19 +4,20 @@ import "../Styles/DualPane.css";
 
 /*
 =====================================================================
-METRA — Phase 1
-DualPane Container (ACTIVE LAYOUT, NO BEHAVIOUR)
+METRA — Stage 11.5.2-B
+DualPane Shell (Presentation Only)
 ---------------------------------------------------------------------
-• Presentation container only
-• No state
+• Stateless
 • No behaviour
-• Workspace remains authoritative
+• No logic
+• No repository coupling
+• No governance
 =====================================================================
 */
 
 export default function DualPane({ left, right }) {
   return (
-    <div className="dual-pane">
+    <div className="dual-pane-root">
       <div className="dual-pane-left">
         {left}
       </div>

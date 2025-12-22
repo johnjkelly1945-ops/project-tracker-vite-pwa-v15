@@ -1,29 +1,25 @@
-/* src/Styles/DualPane.css */
+/* ============================================================================
+   METRA — DualPane.css
+   Stage 11.5.2-B
+   Presentation-only workspace shell
+   ========================================================================== */
 
-/*
-=====================================================================
-METRA — Phase 1
-DualPane Layout Styles
----------------------------------------------------------------------
-• Layout only
-• No behavioural styling
-=====================================================================
-*/
-
-.dual-pane {
+.dual-pane-root {
   display: flex;
   width: 100%;
   height: 100vh;
+  overflow: hidden;
 }
 
 .dual-pane-left {
   flex: 1;
-  overflow: auto;
-  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
 }
 
 .dual-pane-right {
   flex: 1;
-  overflow: auto;
-  background: #fafafa;
+  overflow-y: auto;
+  background: #f8fafc;
 }
