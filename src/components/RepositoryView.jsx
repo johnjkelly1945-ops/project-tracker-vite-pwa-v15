@@ -1,29 +1,60 @@
 /* ======================================================================
    METRA – RepositoryView.jsx
-   Stage 12.1-B – Repository (Intent-Only, Modal Hosted)
+   Stage 12.2-C – User-Confirmed Instantiation (Intent-Only)
    ----------------------------------------------------------------------
-   • Emits intent only
-   • Does not control workspace visibility
-   • Does not perform navigation
+   RESPONSIBILITIES:
+   • Present repository content
+   • Require explicit user confirmation to add a task
+   • Emit INSTANTIATE_TASK_INTENT only on confirmation
+   • Emit CLOSE_REPOSITORY_INTENT after successful add
+   ----------------------------------------------------------------------
+   NON-GOALS:
+   • No workspace mutation
+   • No task activation
+   • No assignment
+   • No routing
    ====================================================================== */
 
-import React from "react";
+import React, { useState } from "react";
 import "../Styles/RepositoryView.css";
 
 export default function RepositoryView() {
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const emitIntent = (type) => {
-    const payload = {
+  /* ------------------------------------------------------------------
+     Intent emitter (repository is intent-only)
+     ------------------------------------------------------------------ */
+  const emitIntent = (type, payload = null) => {
+    const intent = {
       type,
       source: "RepositoryView",
+      payload,
       timestamp: new Date().toISOString(),
     };
 
-    console.log("🧭 REPOSITORY INTENT", payload);
+    console.log("🧭 REPOSITORY INTENT", intent);
 
     window.dispatchEvent(
-      new CustomEvent("METRA_INTENT", { detail: payload })
+      new CustomEvent("METRA_INTENT", { detail: intent })
     );
+  };
+
+  /* ------------------------------------------------------------------
+     User-confirmed download
+     (single task, placeholder payload for now)
+     ------------------------------------------------------------------ */
+  const confirmDownload = () => {
+    emitIntent("INSTANTIATE_TASK_INTENT", {
+      repoTaskId: "repo-task-placeholder",
+      repoSummaryId: null,        // orphan by default
+      title: "Imported repository task",
+      description: "Imported via repository",
+      targetPane: "mgmt",
+    });
+
+    // Workspace rule: repo closes after add
+    emitIntent("CLOSE_REPOSITORY_INTENT");
+    setConfirmOpen(false);
   };
 
   return (
@@ -33,7 +64,6 @@ export default function RepositoryView() {
       <div className="repo-topbar">
         <h2>Repository</h2>
 
-        {/* X Close */}
         <button
           className="repo-close-btn"
           onClick={() => emitIntent("CLOSE_REPOSITORY_INTENT")}
@@ -45,7 +75,6 @@ export default function RepositoryView() {
       {/* ===== Main Layout ===== */}
       <div className="repo-content">
 
-        {/* Filters Section */}
         <div className="repo-filters">
           <h3>Filters</h3>
           <p className="repo-placeholder">
@@ -53,7 +82,6 @@ export default function RepositoryView() {
           </p>
         </div>
 
-        {/* Summary List */}
         <div className="repo-summaries">
           <h3>Summaries</h3>
           <p className="repo-placeholder">
@@ -61,11 +89,10 @@ export default function RepositoryView() {
           </p>
         </div>
 
-        {/* Task List */}
         <div className="repo-tasks">
           <h3>Tasks</h3>
           <p className="repo-placeholder">
-            Tasks for selected summary will appear here.
+            Task list will appear here.
           </p>
         </div>
 
@@ -74,7 +101,6 @@ export default function RepositoryView() {
       {/* ===== Bottom Bar ===== */}
       <div className="repo-bottombar">
 
-        {/* Return / Cancel */}
         <button
           className="repo-return-btn"
           onClick={() => emitIntent("CLOSE_REPOSITORY_INTENT")}
@@ -82,12 +108,43 @@ export default function RepositoryView() {
           Return to Project
         </button>
 
-        {/* Download (disabled until Stage 12.2) */}
-        <button className="repo-download-btn" disabled>
+        <button
+          className="repo-download-btn"
+          onClick={() => setConfirmOpen(true)}
+        >
           Download to Project
         </button>
 
       </div>
+
+      {/* ===== Confirmation Modal ===== */}
+      {confirmOpen && (
+        <div className="repo-confirm-overlay">
+          <div className="repo-confirm-modal">
+            <h3>Add task to workspace?</h3>
+            <p>
+              This will create a new <strong>inactive</strong> task in the
+              workspace. You can activate it by assigning a person.
+            </p>
+
+            <div className="repo-confirm-actions">
+              <button
+                className="repo-confirm-cancel"
+                onClick={() => setConfirmOpen(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="repo-confirm-accept"
+                onClick={confirmDownload}
+              >
+                Add to Workspace
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
