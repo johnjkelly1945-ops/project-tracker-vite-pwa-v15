@@ -1,11 +1,12 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
    FULL CLEAN VERIFIED VERSION – DEC 2025
+   Stage 11.3.2 – Governance INTENT hooks only
    ----------------------------------------------------------------------
    ✔ Notes with timestamp merge correctly
    ✔ No 5-minute lock
    ✔ Change Person works
-   ✔ CC / QC / Risk / Issue / Escalate
+   ✔ CC / QC / Risk / Issue / Escalate (INTENT LOGGING ONLY)
    ✔ Email placeholder
    ✔ Template button fully routed
    ✔ SAFE DELETE (two-step)
@@ -25,6 +26,20 @@ export default function TaskPopup({
   if (!task) return null;
 
   const isLocked = !task.person || task.person.trim() === "";
+
+  /* --------------------------------------------------------------
+     STAGE 11.3.2 — GOVERNANCE INTENT (NO SIDE EFFECTS)
+     Intent only. No persistence. No workflow.
+  -------------------------------------------------------------- */
+  const emitGovernanceIntent = (type) => {
+    console.log("🟡 GOVERNANCE INTENT", {
+      intent: "governance-entry",
+      type, // CC | QC | Risk | Issue | Escalate | Email
+      taskId: task.id,
+      pane,
+      origin: "workspace"
+    });
+  };
 
   /* --------------------------------------------------------------
      NORMALISE NOTES
@@ -61,11 +76,10 @@ export default function TaskPopup({
 
   /* --------------------------------------------------------------
      HANDLE TYPING
-     -------------------------------------------------------------- */
+  -------------------------------------------------------------- */
   const handleChange = (e) => {
     if (isLocked) return;
 
-    // dismiss CC / Delete toasts instantly
     setCcConfirm(false);
     setDeleteConfirm(false);
 
@@ -144,11 +158,14 @@ export default function TaskPopup({
 
   /* --------------------------------------------------------------
      CC (two-step confirm)
+     Stage 11.3.2 — INTENT HOOK ADDED
   -------------------------------------------------------------- */
   const [ccConfirm, setCcConfirm] = useState(false);
 
   const handleCC = async () => {
     if (isLocked) return;
+
+    emitGovernanceIntent("CC");
 
     if (!ccConfirm) {
       setCcConfirm(true);
@@ -181,8 +198,13 @@ export default function TaskPopup({
 
   /* --------------------------------------------------------------
      GENERIC ACTIONS
+     Stage 11.3.2 — GOVERNANCE INTENT HOOK
   -------------------------------------------------------------- */
   const doAction = async (fields) => {
+    if (fields.gov) {
+      emitGovernanceIntent(fields.gov);
+    }
+
     if (!isLocked) await commitEntry();
     onUpdate({ ...fields, pane });
     onClose();
@@ -233,8 +255,6 @@ export default function TaskPopup({
         className="taskpopup-window"
         onClick={(e) => e.stopPropagation()}
       >
-
-        {/* HEADER */}
         <div className="tp-header">
           <h3 className="tp-header-title">{task.title}</h3>
 
@@ -246,7 +266,6 @@ export default function TaskPopup({
           </div>
         </div>
 
-        {/* NOTES */}
         <div
           className="tp-body"
           onClick={() => {
@@ -268,23 +287,19 @@ export default function TaskPopup({
           />
         </div>
 
-        {/* CC TOAST */}
         {ccConfirm && (
           <div className="tp-cc-toast">
             Click CC again to activate Change Control.
           </div>
         )}
 
-        {/* DELETE TOAST */}
         {deleteConfirm && (
           <div className="tp-delete-toast">
             Click DELETE again to permanently remove this task.
           </div>
         )}
 
-        {/* FOOTER */}
         <div className="tp-footer">
-
           <div className="tp-gov-row">
             <button onClick={handleCC}>CC</button>
             <button onClick={() => doAction({ gov: "QC" })}>QC</button>
@@ -310,9 +325,9 @@ export default function TaskPopup({
               Delete
             </button>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
+
