@@ -3,18 +3,23 @@ import React, { useState } from "react";
 
 /*
 =====================================================================
-METRA — Stage 11.2.3
-TaskPopup — Status Updates + Append-Only Notes
+METRA — Stage 11.3.2
+TaskPopup — Governance Entry Points (INTENT ONLY)
 ---------------------------------------------------------------------
-• Status selector added
-• Immediate workspace update
-• Notes remain append-only
-• No governance
-• No persistence
+• Governance actions emit intent only
+• No execution, no persistence
+• Notes + status remain functional
 =====================================================================
 */
 
 const STATUSES = ["Not started", "In progress", "Completed"];
+const GOVERNANCE_ACTIONS = [
+  { key: "CC", label: "Change Control" },
+  { key: "Risk", label: "Risk" },
+  { key: "Issue", label: "Issue" },
+  { key: "Quality", label: "Quality" },
+  { key: "Escalate", label: "Escalate" },
+];
 
 export default function TaskPopup({
   task,
@@ -30,6 +35,18 @@ export default function TaskPopup({
     if (!draft.trim()) return;
     onAppendNote(draft.trim());
     setDraft("");
+  };
+
+  const emitGovernanceIntent = (action) => {
+    const intent = {
+      type: "governance-intent",
+      action,
+      taskId: task.id,
+      origin: task.origin,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("🧭 GOVERNANCE INTENT", intent);
   };
 
   return (
@@ -49,8 +66,8 @@ export default function TaskPopup({
           background: "#ffffff",
           padding: "1rem 1.25rem",
           borderRadius: "8px",
-          minWidth: "360px",
-          maxWidth: "520px",
+          minWidth: "380px",
+          maxWidth: "560px",
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
         }}
       >
@@ -66,12 +83,8 @@ export default function TaskPopup({
           <button onClick={onClose}>Close</button>
         </div>
 
-        <p>
-          <strong>Text:</strong> {task.text}
-        </p>
-        <p>
-          <strong>Origin:</strong> {task.origin}
-        </p>
+        <p><strong>Text:</strong> {task.text}</p>
+        <p><strong>Origin:</strong> {task.origin}</p>
 
         <div style={{ margin: "0.75rem 0" }}>
           <label style={{ fontWeight: "bold", marginRight: "0.5rem" }}>
@@ -82,16 +95,29 @@ export default function TaskPopup({
             onChange={(e) => onStatusChange(e.target.value)}
           >
             {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
         </div>
 
+        <hr />
+
+        <h4>Governance (intent only)</h4>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {GOVERNANCE_ACTIONS.map((g) => (
+            <button
+              key={g.key}
+              onClick={() => emitGovernanceIntent(g.key)}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+
         <hr style={{ margin: "0.75rem 0" }} />
 
-        <h4 style={{ marginBottom: "0.25rem" }}>Notes</h4>
+        <h4>Notes</h4>
 
         {task.notes.length === 0 && (
           <p style={{ opacity: 0.6 }}>No notes yet.</p>
@@ -119,7 +145,7 @@ export default function TaskPopup({
         </div>
 
         <p style={{ opacity: 0.6, marginTop: "0.75rem" }}>
-          (Status + append-only notes — Stage 11.2.3)
+          (Governance intent only — Stage 11.3.2)
         </p>
       </div>
     </div>
