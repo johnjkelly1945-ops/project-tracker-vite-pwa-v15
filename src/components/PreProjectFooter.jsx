@@ -1,34 +1,41 @@
-/* ============================================================================
-   METRA – PreProjectFooter.jsx
-   SAFE RESILIENT VERSION — prevents undefined callback crash
-   ----------------------------------------------------------------------------
-   Works even if DualPane or PreProject does NOT pass handlers yet.
-   ============================================================================= */
-
+// src/components/PreProjectFooter.jsx
 import React from "react";
 import "../Styles/PreProjectFooter.css";
 
-export default function PreProjectFooter({
-  onAddSummary,
-  onAddTask,
-  onViewRepo
-}) {
-  // Safe fallbacks so React NEVER crashes
-  const safeAddSummary = onAddSummary || (() => {});
-  const safeAddTask = onAddTask || (() => {});
-  const safeViewRepo = onViewRepo || (() => {});
+/*
+=====================================================================
+METRA — Stage 11.5.3
+PreProject Footer (INTENT ONLY)
+---------------------------------------------------------------------
+• Emits intent only
+• No state mutation
+• No creation logic
+• No navigation
+=====================================================================
+*/
+
+export default function PreProjectFooter() {
+  const emitIntent = (type) => {
+    const payload = {
+      type,
+      source: "PreProjectFooter",
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("🧭 FOOTER INTENT", payload);
+  };
 
   return (
     <div className="pp-footer-bar">
-      <button className="pp-footer-btn" onClick={safeAddSummary}>
+      <button onClick={() => emitIntent("ADD_SUMMARY_INTENT")}>
         Add Summary
       </button>
 
-      <button className="pp-footer-btn" onClick={safeAddTask}>
+      <button onClick={() => emitIntent("ADD_TASK_INTENT")}>
         Add Task
       </button>
 
-      <button className="pp-footer-btn" onClick={safeViewRepo}>
+      <button onClick={() => emitIntent("OPEN_REPOSITORY_INTENT")}>
         View Repository
       </button>
     </div>

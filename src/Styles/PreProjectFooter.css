@@ -1,10 +1,7 @@
 /* ============================================================================
-   METRA – PreProjectFooter.css
-   v1.0 – Full-Width Sticky Bottom Footer
-   ----------------------------------------------------------------------------
-   Works with DualPane.jsx scroll region.
-   Safari + Chrome compatible.
-   Text-only buttons.
+   METRA — PreProjectFooter.css
+   Stage 11.5.3
+   Footer intent bar (presentation only)
    ========================================================================== */
 
 .pp-footer-bar {
@@ -21,16 +18,14 @@
   z-index: 999;
 }
 
-.pp-footer-btn {
+.pp-footer-bar button {
   background: none;
   border: none;
-  padding: 6px 10px;
-  font-size: 14px;
+  font-size: 16px;
   color: #1e293b;
   cursor: pointer;
 }
 
-.pp-footer-btn:hover {
+.pp-footer-bar button:hover {
   text-decoration: underline;
-  color: #0f172a;
 }
