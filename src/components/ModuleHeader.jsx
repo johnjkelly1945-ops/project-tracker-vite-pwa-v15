@@ -1,22 +1,24 @@
 /* ======================================================================
    METRA – ModuleHeader.jsx
-   Stable v3 – PreProject / Repository Header Bar
+   Stable v4 – Workspace Shell Header
    ----------------------------------------------------------------------
    Provides:
-   ✔ Title for active module
-   ✔ Buttons for switching modules (if needed)
-   ✔ Sticky under global header
+   ✔ Default application identity (METRA — Workspace)
+   ✔ Optional module-specific title override
+   ✔ Right-side action buttons (intent-only)
    ====================================================================== */
 
 import React from "react";
 import "../Styles/ModuleHeader.css";
 
 export default function ModuleHeader({ title, rightButtons = [] }) {
+  const displayTitle = title || "METRA — Workspace";
+
   return (
     <div className="mh-wrapper">
       
       <div className="mh-title">
-        {title}
+        {displayTitle}
       </div>
 
       <div className="mh-right">

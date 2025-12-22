@@ -4,13 +4,14 @@ import "../Styles/PreProjectFooter.css";
 
 /*
 =====================================================================
-METRA — Stage 11.5.3
+METRA — Stage 11.5.3 (unchanged discipline)
 PreProject Footer (INTENT ONLY)
 ---------------------------------------------------------------------
 • Emits intent only
 • No state mutation
 • No creation logic
 • No navigation
+• Observable via window event
 =====================================================================
 */
 
@@ -23,6 +24,12 @@ export default function PreProjectFooter() {
     };
 
     console.log("🧭 FOOTER INTENT", payload);
+
+    // Stage 12.1-B:
+    // Make intent observable without introducing authority or logic
+    window.dispatchEvent(
+      new CustomEvent("METRA_INTENT", { detail: payload })
+    );
   };
 
   return (
