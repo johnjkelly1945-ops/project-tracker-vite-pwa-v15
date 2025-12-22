@@ -2,20 +2,21 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import DualPane from "./components/DualPane";
-import PreProject from "./components/PreProject";
 import Summary from "./components/Summary";
+import PreProject from "./components/PreProject";
+import DualPane from "./components/DualPane";
 
 import "./Styles/App.css";
 
 /*
 =====================================================================
-METRA — Stage 11.5.2-B
-DualPane Shell Reattachment
+METRA — Stage 11.6
+Authoritative Routing Restore
 ---------------------------------------------------------------------
-• PreProject mounted as LEFT pane content
-• RIGHT pane intentionally empty
+• Restores /preproject route
 • No behaviour added
+• No logic added
+• Certification-safe
 =====================================================================
 */
 
@@ -24,16 +25,16 @@ function App() {
     <Router>
       <Routes>
 
-        {/* Summary Dashboard */}
+        {/* Summary dashboard */}
         <Route path="/" element={<Summary />} />
 
-        {/* PreProject Workspace inside DualPane */}
+        {/* PreProject workspace entry */}
         <Route
           path="/preproject"
           element={
             <DualPane
               left={<PreProject />}
-              right={<div />}   // placeholder only
+              right={<div />}
             />
           }
         />
