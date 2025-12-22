@@ -6,20 +6,16 @@ import TaskPopup from "./TaskPopup";
 
 /*
 =====================================================================
-METRA — Stage 11.2.2
-Append-Only Notes (Workspace Behaviour)
+METRA — Stage 11.2.3
+Task Status Updates (Workspace Behaviour)
 ---------------------------------------------------------------------
-• Workspace summaries retained
-• TaskPopup supports append-only notes
-• Notes stored in workspace state
+• Status field added to tasks
+• Status updates reflected immediately
+• Notes remain append-only
 • No persistence
-• No status changes
+• No governance
 =====================================================================
 */
-
-// ------------------------------------------------------------------
-// Workspace structures with notes (Stage 11.2.2)
-// ------------------------------------------------------------------
 
 const initialSummaries = [
   {
@@ -30,12 +26,14 @@ const initialSummaries = [
         id: "ws-task-1",
         text: "Define project objectives",
         origin: "workspace",
+        status: "Not started",
         notes: [],
       },
       {
         id: "repo-task-1",
         text: "Prepare feasibility assessment",
         origin: "repository",
+        status: "Not started",
         notes: [],
       },
     ],
@@ -46,23 +44,29 @@ export default function PreProject() {
   const [summaries, setSummaries] = useState(initialSummaries);
   const [selected, setSelected] = useState(null);
 
-  const appendNote = (taskId, noteText) => {
+  const updateTask = (taskId, updater) => {
     setSummaries((prev) =>
       prev.map((s) => ({
         ...s,
         tasks: s.tasks.map((t) =>
-          t.id === taskId
-            ? {
-                ...t,
-                notes: [
-                  ...t.notes,
-                  { text: noteText, ts: new Date().toISOString() },
-                ],
-              }
-            : t
+          t.id === taskId ? updater(t) : t
         ),
       }))
     );
+  };
+
+  const appendNote = (taskId, noteText) => {
+    updateTask(taskId, (t) => ({
+      ...t,
+      notes: [...t.notes, { text: noteText, ts: new Date().toISOString() }],
+    }));
+  };
+
+  const changeStatus = (taskId, status) => {
+    updateTask(taskId, (t) => ({
+      ...t,
+      status,
+    }));
   };
 
   return (
@@ -82,14 +86,17 @@ export default function PreProject() {
               >
                 <div className="row">
                   <span>{task.text}</span>
+                  <span style={{ opacity: 0.6, marginLeft: "0.5rem" }}>
+                    [{task.origin}]
+                  </span>
                   <span
                     style={{
                       fontSize: "0.8rem",
-                      opacity: 0.6,
-                      marginLeft: "0.5rem",
+                      marginLeft: "0.75rem",
+                      opacity: 0.8,
                     }}
                   >
-                    [{task.origin}]
+                    ({task.status})
                   </span>
                 </div>
               </li>
@@ -103,6 +110,7 @@ export default function PreProject() {
           task={selected}
           onClose={() => setSelected(null)}
           onAppendNote={(text) => appendNote(selected.id, text)}
+          onStatusChange={(status) => changeStatus(selected.id, status)}
         />
       )}
     </div>
