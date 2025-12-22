@@ -1,97 +1,29 @@
-/* ======================================================================
-   METRA – DualPane.css
-   v7 A7 – Pane Footers Restored to Popup Style (Text Only)
-   ----------------------------------------------------------------------
-   Panes:
-   - independent scrolling
-   - sticky headers
-   - clean spacing
-   - no boxed buttons in footers
-   ====================================================================== */
+/* src/Styles/DualPane.css */
 
-/* --- Workspace Layout -------------------------------------------------- */
-.dual-pane-workspace {
+/*
+=====================================================================
+METRA — Phase 1
+DualPane Layout Styles
+---------------------------------------------------------------------
+• Layout only
+• No behavioural styling
+=====================================================================
+*/
+
+.dual-pane {
   display: flex;
-  height: calc(100vh - 80px); /* leave room for global header */
-  overflow: hidden;
-  background: #f8fafc;
+  width: 100%;
+  height: 100vh;
 }
 
-/* --- Panes ------------------------------------------------------------- */
-.pane {
+.dual-pane-left {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #d8dee6;
+  overflow: auto;
+  border-right: 1px solid #ddd;
 }
 
-.dev-pane {
-  border-right: none;
-}
-
-/* --- Pane Header ------------------------------------------------------- */
-.pane-header {
-  background: #ffffff;
-  padding: 16px 20px;
-  border-bottom: 1px solid #d8dee6;
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.pane-header h2 {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #003366;
-}
-
-/* --- Pane Content (Scrollable) ---------------------------------------- */
-.pane-content {
+.dual-pane-right {
   flex: 1;
-  overflow-y: auto;
-  padding: 12px 16px 0 16px;
-}
-
-.dev-empty {
-  display: flex;
-  justify-content: center;
-  align-items: start;
-  padding-top: 40px;
-}
-
-.dev-placeholder {
-  color: #667085;
-  font-style: italic;
-}
-
-/* ======================================================================
-   FOOTERS – MATCH POPUP STYLE EXACTLY
-   ----------------------------------------------------------------------
-   - No border
-   - No background box
-   - Italic dark-blue text
-   - Hover color shift
-   ====================================================================== */
-
-.pane-footer {
-  padding: 10px 0 14px 0;
-  text-align: center;
-  background: #ffffff;
-  border-top: 1px solid #d8dee6;
-}
-
-.footer-text-btn {
-  background: none;
-  border: none;
-  padding: 4px 10px;
-  font-size: 1rem;
-  font-style: italic;        /* MATCH POPUP */
-  color: #003366;            /* MATCH POPUP */
-  cursor: pointer;
-}
-
-.footer-text-btn:hover {
-  color: #1a4f8b;
-  text-decoration: underline;
+  overflow: auto;
+  background: #fafafa;
 }
