@@ -1,24 +1,23 @@
 // src/components/PreProject.jsx
-import React from "react";
+import React, { useState } from "react";
 import "../Styles/Checklist.css";
 import ModuleHeader from "./ModuleHeader";
+import TaskPopup from "./TaskPopup";
 
 /*
 =====================================================================
-METRA — Stage 11.1
-Workspace Summary & Task Instantiation (STRUCTURAL ONLY)
+METRA — Stage 11.2.1
+Task Selection & Popup Open / Close
 ---------------------------------------------------------------------
-• Explicit workspace summaries and tasks
-• Mixed-origin tasks (workspace + repository)
-• Inert rendering (no behaviour)
-• No persistence
-• No popup
-• No governance
+• Workspace summaries retained
+• Clicking a task opens TaskPopup
+• Popup closes cleanly
+• No behaviour beyond selection
 =====================================================================
 */
 
 // ------------------------------------------------------------------
-// Temporary workspace structures (Stage 11.1 only)
+// Temporary workspace structures (Stage 11.2.1)
 // ------------------------------------------------------------------
 
 const workspaceSummaries = [
@@ -41,18 +40,23 @@ const workspaceSummaries = [
 ];
 
 export default function PreProject() {
+  const [selectedTask, setSelectedTask] = useState(null);
+
   return (
     <div className="checklist">
       <ModuleHeader title="PreProject Module" />
 
-      {/* Stage 11.1: Render summaries and tasks inertly */}
       {workspaceSummaries.map((summary) => (
         <div key={summary.id} style={{ marginTop: "1.5rem" }}>
           <h3 style={{ marginBottom: "0.5rem" }}>{summary.title}</h3>
 
           <ul>
             {summary.tasks.map((task) => (
-              <li key={task.id}>
+              <li
+                key={task.id}
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelectedTask(task)}
+              >
                 <div className="row">
                   <span>{task.text}</span>
                   <span
@@ -70,6 +74,14 @@ export default function PreProject() {
           </ul>
         </div>
       ))}
+
+      {/* Stage 11.2.1 — Popup open / close only */}
+      {selectedTask && (
+        <TaskPopup
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </div>
   );
 }
