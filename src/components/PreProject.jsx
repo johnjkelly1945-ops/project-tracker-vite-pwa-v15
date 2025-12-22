@@ -6,21 +6,22 @@ import TaskPopup from "./TaskPopup";
 
 /*
 =====================================================================
-METRA — Stage 11.2.1
-Task Selection & Popup Open / Close
+METRA — Stage 11.2.2
+Append-Only Notes (Workspace Behaviour)
 ---------------------------------------------------------------------
 • Workspace summaries retained
-• Clicking a task opens TaskPopup
-• Popup closes cleanly
-• No behaviour beyond selection
+• TaskPopup supports append-only notes
+• Notes stored in workspace state
+• No persistence
+• No status changes
 =====================================================================
 */
 
 // ------------------------------------------------------------------
-// Temporary workspace structures (Stage 11.2.1)
+// Workspace structures with notes (Stage 11.2.2)
 // ------------------------------------------------------------------
 
-const workspaceSummaries = [
+const initialSummaries = [
   {
     id: "ws-summary-1",
     title: "PreProject — Initial Planning",
@@ -29,24 +30,46 @@ const workspaceSummaries = [
         id: "ws-task-1",
         text: "Define project objectives",
         origin: "workspace",
+        notes: [],
       },
       {
         id: "repo-task-1",
         text: "Prepare feasibility assessment",
         origin: "repository",
+        notes: [],
       },
     ],
   },
 ];
 
 export default function PreProject() {
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [summaries, setSummaries] = useState(initialSummaries);
+  const [selected, setSelected] = useState(null);
+
+  const appendNote = (taskId, noteText) => {
+    setSummaries((prev) =>
+      prev.map((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                notes: [
+                  ...t.notes,
+                  { text: noteText, ts: new Date().toISOString() },
+                ],
+              }
+            : t
+        ),
+      }))
+    );
+  };
 
   return (
     <div className="checklist">
       <ModuleHeader title="PreProject Module" />
 
-      {workspaceSummaries.map((summary) => (
+      {summaries.map((summary) => (
         <div key={summary.id} style={{ marginTop: "1.5rem" }}>
           <h3 style={{ marginBottom: "0.5rem" }}>{summary.title}</h3>
 
@@ -55,7 +78,7 @@ export default function PreProject() {
               <li
                 key={task.id}
                 style={{ cursor: "pointer" }}
-                onClick={() => setSelectedTask(task)}
+                onClick={() => setSelected(task)}
               >
                 <div className="row">
                   <span>{task.text}</span>
@@ -75,11 +98,11 @@ export default function PreProject() {
         </div>
       ))}
 
-      {/* Stage 11.2.1 — Popup open / close only */}
-      {selectedTask && (
+      {selected && (
         <TaskPopup
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
+          task={selected}
+          onClose={() => setSelected(null)}
+          onAppendNote={(text) => appendNote(selected.id, text)}
         />
       )}
     </div>
