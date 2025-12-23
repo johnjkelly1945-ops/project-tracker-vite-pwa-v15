@@ -1,106 +1,199 @@
-/* ======================================================================
-   METRA – AddItemPopup.jsx
-   Stage 12.6-A – Task Creation with Optional Summary Assignment (Mgmt)
-   ----------------------------------------------------------------------
-   RESPONSIBILITIES:
-   • Create summaries (unchanged)
-   • Create tasks (extended)
-   • Emit explicit user intent only
-   • No execution authority
-   ====================================================================== */
+import { useState, useEffect } from "react";
 
-import React, { useState } from "react";
-import "../Styles/AddItemPopup.css";
+/**
+ * AddItemPopup
+ *
+ * Modes:
+ * - "add-task"   (existing behaviour)
+ * - "reassign"   (Stage 12.6-C)
+ *
+ * Emits intent only.
+ * Workspace remains sole execution authority.
+ */
 
 export default function AddItemPopup({
-  type,                 // "task" | "summary"
+  mode = "add-task",
+
+  // Shared
+  summaries = [],
+  tasks = [],
   onCancel,
+
+  // Add-task props
   onConfirm,
-  workspaceSummaries = [] // <-- NEW (mgmt summaries only)
+  defaultSummaryId = null,
+
+  // Reassign props
+  onReassign
 }) {
+  /* ------------------------------
+     Shared state
+  ------------------------------ */
+  const [selectedSummaryId, setSelectedSummaryId] =
+    useState(defaultSummaryId);
+
+  /* ------------------------------
+     Add-task state
+  ------------------------------ */
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [summaryId, setSummaryId] = useState(null); // <-- NEW
 
-  const isTask = type === "task";
+  /* ------------------------------
+     Reassign state
+  ------------------------------ */
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
-  const handleConfirm = () => {
-    if (!title.trim()) return;
+  const selectedTask =
+    tasks.find(t => t.id === selectedTaskId) || null;
 
-    if (isTask) {
-      onConfirm({
-        title: title.trim(),
-        description: description.trim(),
-        summaryId: summaryId || null // explicit orphan if null
-      });
-    } else {
-      onConfirm({
-        title: title.trim()
-      });
+  /* ------------------------------
+     Initialise by mode
+  ------------------------------ */
+  useEffect(() => {
+    if (mode === "add-task") {
+      setSelectedSummaryId(defaultSummaryId ?? null);
+      setSelectedTaskId(null);
     }
 
-    // reset local state
-    setTitle("");
-    setDescription("");
-    setSummaryId(null);
-  };
+    if (mode === "reassign") {
+      setSelectedSummaryId(null);
+      setSelectedTaskId(null);
+    }
+  }, [mode, defaultSummaryId]);
 
+  /* ------------------------------
+     Handlers
+  ------------------------------ */
+  function handleConfirm() {
+    if (mode === "add-task") {
+      onConfirm?.({
+        title,
+        description,
+        summaryId: selectedSummaryId
+      });
+      return;
+    }
+
+    if (mode === "reassign" && selectedTask) {
+      onReassign?.({
+        type: "reassign-task",
+        taskId: selectedTask.id,
+        fromSummaryId: selectedTask.summaryId ?? null,
+        toSummaryId: selectedSummaryId ?? null
+      });
+    }
+  }
+
+  /* ------------------------------
+     Render helpers
+  ------------------------------ */
+  function renderSummaryOptions() {
+    return (
+      <>
+        <option value="">Unassigned</option>
+        {summaries.map(summary => (
+          <option key={summary.id} value={summary.id}>
+            {summary.title}
+          </option>
+        ))}
+      </>
+    );
+  }
+
+  function renderTaskOptions() {
+    return (
+      <>
+        <option value="">Select task…</option>
+        {tasks.map(task => (
+          <option key={task.id} value={task.id}>
+            {task.title}
+          </option>
+        ))}
+      </>
+    );
+  }
+
+  /* ------------------------------
+     Render
+  ------------------------------ */
   return (
-    <div className="add-item-overlay">
-      <div className="add-item-popup">
+    <div className="popup">
+      <h3>
+        {mode === "reassign" ? "Reassign Task" : "Add Task"}
+      </h3>
 
-        <h2>
-          {isTask ? "Add Task" : "Add Summary"}
-        </h2>
+      {mode === "add-task" && (
+        <>
+          <input
+            type="text"
+            placeholder="Task title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+          />
 
-        {/* Title */}
-        <input
-          type="text"
-          placeholder={isTask ? "Task title" : "Summary title"}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          autoFocus
-        />
-
-        {/* Description (tasks only) */}
-        {isTask && (
           <textarea
             placeholder="Task description (optional)"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={e => setDescription(e.target.value)}
           />
-        )}
+        </>
+      )}
 
-        {/* Summary assignment (tasks only) */}
-        {isTask && (
-          <div className="add-item-field">
-            <label>Assign to summary (optional)</label>
+      {mode === "reassign" && (
+        <>
+          <label>
+            Select task
             <select
-              value={summaryId || ""}
-              onChange={(e) =>
-                setSummaryId(e.target.value || null)
+              value={selectedTaskId ?? ""}
+              onChange={e =>
+                setSelectedTaskId(
+                  e.target.value === ""
+                    ? null
+                    : e.target.value
+                )
               }
             >
-              <option value="">Unassigned</option>
-              {workspaceSummaries.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title}
-                </option>
-              ))}
+              {renderTaskOptions()}
             </select>
-          </div>
-        )}
+          </label>
 
-        {/* Actions */}
-        <div className="add-item-actions">
-          <button onClick={onCancel}>
-            Cancel
-          </button>
-          <button onClick={handleConfirm}>
-            Confirm
-          </button>
-        </div>
+          {selectedTask && (
+            <p>
+              <strong>Current summary:</strong>{" "}
+              {selectedTask.summaryId
+                ? summaries.find(
+                    s => s.id === selectedTask.summaryId
+                  )?.title || "Unknown"
+                : "Unassigned"}
+            </p>
+          )}
+        </>
+      )}
 
+      <label>
+        Assign to summary (optional)
+        <select
+          value={selectedSummaryId ?? ""}
+          onChange={e =>
+            setSelectedSummaryId(
+              e.target.value === "" ? null : e.target.value
+            )
+          }
+        >
+          {renderSummaryOptions()}
+        </select>
+      </label>
+
+      <div className="popup-actions">
+        <button onClick={onCancel}>Cancel</button>
+        <button
+          onClick={handleConfirm}
+          disabled={mode === "reassign" && !selectedTask}
+        >
+          {mode === "reassign"
+            ? "Confirm Reassignment"
+            : "Confirm"}
+        </button>
       </div>
     </div>
   );

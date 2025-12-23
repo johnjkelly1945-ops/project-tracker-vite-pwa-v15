@@ -1,126 +1,121 @@
-/* ======================================================================
-   METRA – PreProject.jsx
-   Workspace Root
-   ----------------------------------------------------------------------
-   • Owns workspace state
-   • Renders ModuleHeader, Workspace, Footer
-   • Handles footer intent and popups
-   • No execution leakage
-   ====================================================================== */
-
-import React, { useEffect, useState } from "react";
-import ModuleHeader from "./ModuleHeader";
-import PreProjectFooter from "./PreProjectFooter";
+import { useState } from "react";
 import AddItemPopup from "./AddItemPopup";
-import PreProjectDual from "./PreProjectDual";
 
-const TASK_STORAGE_KEY = "metra-workspace-tasks";
-const SUMMARY_STORAGE_KEY = "metra-workspace-summaries";
+/*
+=====================================================================
+METRA — PreProject.jsx
+Stage 12.6-C — Popup-Driven Task Reassignment (Workspace-Safe)
 
-export default function PreProject() {
-  /* ===================== STATE ===================== */
+Notes:
+• Workspace is sole execution authority
+• Tasks remain inactive
+• Summaries are placeholders only
+• Temporary test task creation is present for validation only
+=====================================================================
+*/
 
-  const [tasks, setTasks] = useState([]);
-  const [summaries, setSummaries] = useState([]);
+export default function PreProject({
+  initialTasks = [],
+  initialSummaries = []
+}) {
+  /* ------------------------------
+     Workspace state
+  ------------------------------ */
+  const [tasks, setTasks] = useState(initialTasks);
+  const [summaries] = useState(initialSummaries);
 
-  const [popupState, setPopupState] = useState(null);
-  // popupState = { type: "task" | "summary" } | null
+  const [popupMode, setPopupMode] = useState(null);
 
-  /* ===================== LOAD / SAVE ===================== */
-
-  useEffect(() => {
-    const savedTasks = localStorage.getItem(TASK_STORAGE_KEY);
-    const savedSummaries = localStorage.getItem(SUMMARY_STORAGE_KEY);
-
-    if (savedTasks) setTasks(JSON.parse(savedTasks));
-    if (savedSummaries) setSummaries(JSON.parse(savedSummaries));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(tasks));
-  }, [tasks]);
-
-  useEffect(() => {
-    localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(summaries));
-  }, [summaries]);
-
-  /* ===================== FOOTER INTENT LISTENER ===================== */
-
-  useEffect(() => {
-    const handleFooterIntent = (event) => {
-      const payload = event.detail;
-      if (!payload || !payload.type) return;
-
-      if (payload.type === "ADD_TASK_INTENT") {
-        setPopupState({ type: "task" });
-      }
-
-      if (payload.type === "ADD_SUMMARY_INTENT") {
-        setPopupState({ type: "summary" });
-      }
+  /* ------------------------------
+     TEMP — test task creation
+     (remove in Stage 12.7)
+  ------------------------------ */
+  function createTestTask() {
+    const newTask = {
+      id: `task-${Date.now()}`,
+      title: "Test Task (Stage 12.6-C)",
+      summaryId: null
     };
 
-    window.addEventListener("metra-footer-intent", handleFooterIntent);
-    return () =>
-      window.removeEventListener("metra-footer-intent", handleFooterIntent);
-  }, []);
+    setTasks(prev => [...prev, newTask]);
 
-  /* ===================== POPUP CONFIRM ===================== */
+    console.info("[Stage 12.6-C] Test task created", newTask);
+  }
 
-  const handlePopupConfirm = (data) => {
-    if (popupState?.type === "task") {
-      const newTask = {
-        id: crypto.randomUUID(),
-        title: data.title,
-        description: data.description || "",
-        status: "inactive",
-        summaryId: data.summaryId || null,
-        targetPane: "mgmt",
-      };
+  /* ------------------------------
+     Reassignment execution
+  ------------------------------ */
+  function handleReassign(intent) {
+    const { taskId, fromSummaryId, toSummaryId } = intent;
 
-      setTasks((prev) => [...prev, newTask]);
+    if (fromSummaryId === toSummaryId) {
+      console.info("[Stage 12.6-C] Reassign noop", intent);
+      setPopupMode(null);
+      return;
     }
 
-    if (popupState?.type === "summary") {
-      const newSummary = {
-        id: crypto.randomUUID(),
-        title: data.title,
-        targetPane: "mgmt",
-      };
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === taskId
+          ? { ...task, summaryId: toSummaryId ?? null }
+          : task
+      )
+    );
 
-      setSummaries((prev) => [...prev, newSummary]);
-    }
+    console.info("[Stage 12.6-C] Task reassigned", intent);
+    setPopupMode(null);
+  }
 
-    setPopupState(null);
-  };
+  /* ------------------------------
+     Render helpers
+  ------------------------------ */
+  function renderOrphanTasks() {
+    return tasks.filter(task => task.summaryId == null);
+  }
 
-  /* ===================== RENDER ===================== */
+  function renderTasksForSummary(summaryId) {
+    return tasks.filter(task => task.summaryId === summaryId);
+  }
 
+  /* ------------------------------
+     Render
+  ------------------------------ */
   return (
-    <div className="preproject-wrapper">
+    <div className="preproject-workspace">
+      <div style={{ marginBottom: "1rem" }}>
+        <button onClick={createTestTask}>
+          Add Test Task (TEMP)
+        </button>{" "}
+        <button onClick={() => setPopupMode("reassign")}>
+          Reassign Existing Task
+        </button>
+      </div>
 
-      {/* Workspace Header */}
-      <ModuleHeader />
+      <section>
+        <h3>Unassigned</h3>
+        {renderOrphanTasks().map(task => (
+          <div key={task.id}>{task.title}</div>
+        ))}
+      </section>
 
-      {/* Workspace Body */}
-      <PreProjectDual
-        workspaceTasks={tasks}
-        workspaceSummaries={summaries}
-      />
+      {summaries.map(summary => (
+        <section key={summary.id}>
+          <h3>{summary.title}</h3>
+          {renderTasksForSummary(summary.id).map(task => (
+            <div key={task.id}>{task.title}</div>
+          ))}
+        </section>
+      ))}
 
-      {/* Workspace Footer */}
-      <PreProjectFooter />
-
-      {/* Popup */}
-      {popupState && (
+      {popupMode === "reassign" && (
         <AddItemPopup
-          type={popupState.type}
-          workspaceSummaries={summaries}
-          onCancel={() => setPopupState(null)}
-          onConfirm={handlePopupConfirm}
+          mode="reassign"
+          tasks={tasks}
+          summaries={summaries}
+          onReassign={handleReassign}
+          onCancel={() => setPopupMode(null)}
         />
       )}
-
     </div>
   );
 }
