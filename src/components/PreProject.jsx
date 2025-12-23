@@ -1,156 +1,122 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Stage 12.2-B – Workspace Instantiation (PreProject-scoped persistence)
+   Stage 12.6-A – Footer Intent → Popup → Task Creation (Mgmt Only)
    ----------------------------------------------------------------------
    RESPONSIBILITIES:
-   • Own PreProject workspace task list (scoped, temporary)
-   • Persist tasks to localStorage (explicit key)
-   • Listen for user-confirmed instantiation intent
-   • Create tasks as INACTIVE
-   • Attach to summary if present, else orphan
-   • Close repository after successful add
-   ----------------------------------------------------------------------
-   NON-GOALS (EXPLICIT):
-   • No summary creation
-   • No task activation
-   • No assignment logic
-   • No routing
-   • No global store
+   • Own workspace task state
+   • Listen for footer intent
+   • Open AddItemPopup
+   • Create tasks as inactive
+   • Optionally associate summaryId
+   • No execution authority beyond creation
    ====================================================================== */
 
 import React, { useEffect, useState } from "react";
-import PreProjectDual from "./PreProjectDual";
 import PreProjectFooter from "./PreProjectFooter";
-import RepositoryView from "./RepositoryView";
+import AddItemPopup from "./AddItemPopup";
+import PreProjectDual from "./PreProjectDual";
 
-/* ----------------------------------------------------------------------
-   Stage 12.2-B storage key (EXPLICIT & SCOPED)
-   ---------------------------------------------------------------------- */
-const STORAGE_KEY = "metra-preproject-workspace-tasks";
+const TASK_STORAGE_KEY = "metra-workspace-tasks";
+const SUMMARY_STORAGE_KEY = "metra-workspace-summaries";
 
-/* ----------------------------------------------------------------------
-   Helpers
-   ---------------------------------------------------------------------- */
-function loadWorkspaceTasks() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveWorkspaceTasks(tasks) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-
-function generateWorkspaceTaskId() {
-  return `wk-task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-/* ----------------------------------------------------------------------
-   Component
-   ---------------------------------------------------------------------- */
 export default function PreProject() {
-  const [isRepoOpen, setRepoOpen] = useState(false);
-  const [workspaceTasks, setWorkspaceTasks] = useState([]);
+  /* ===================== STATE ===================== */
 
-  /* ------------------------------------------------------------------
-     Load tasks on mount
-     ------------------------------------------------------------------ */
+  const [tasks, setTasks] = useState([]);
+  const [summaries, setSummaries] = useState([]);
+
+  const [popupState, setPopupState] = useState(null);
+  // popupState = { type: "task" | "summary" } | null
+
+  /* ===================== LOAD / SAVE ===================== */
+
   useEffect(() => {
-    setWorkspaceTasks(loadWorkspaceTasks());
+    const savedTasks = localStorage.getItem(TASK_STORAGE_KEY);
+    const savedSummaries = localStorage.getItem(SUMMARY_STORAGE_KEY);
+
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
+    if (savedSummaries) setSummaries(JSON.parse(savedSummaries));
   }, []);
 
-  /* ------------------------------------------------------------------
-     Persist tasks on change
-     ------------------------------------------------------------------ */
   useEffect(() => {
-    saveWorkspaceTasks(workspaceTasks);
-  }, [workspaceTasks]);
+    localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(tasks));
+  }, [tasks]);
 
-  /* ------------------------------------------------------------------
-     Intent handler (authoritative)
-     ------------------------------------------------------------------ */
   useEffect(() => {
-    const handleIntent = (event) => {
-      const { type, payload } = event.detail || {};
+    localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(summaries));
+  }, [summaries]);
 
-      /* ---- Open / Close repository ---- */
-      if (type === "OPEN_REPOSITORY_INTENT") {
-        setRepoOpen(true);
-        return;
+  /* ===================== FOOTER INTENT LISTENER ===================== */
+
+  useEffect(() => {
+    const handleFooterIntent = (event) => {
+      const payload = event.detail;
+      if (!payload || !payload.type) return;
+
+      if (payload.type === "ADD_TASK_INTENT") {
+        setPopupState({ type: "task" });
       }
 
-      if (type === "CLOSE_REPOSITORY_INTENT") {
-        setRepoOpen(false);
-        return;
-      }
-
-      /* ---- Stage 12.2-B: Instantiate task (USER-CONFIRMED) ---- */
-      if (type === "INSTANTIATE_TASK_INTENT" && payload) {
-        const {
-          repoTaskId,
-          repoSummaryId = null,
-          title,
-          description = null,
-          targetPane = "mgmt",
-        } = payload;
-
-        const newTask = {
-          id: generateWorkspaceTaskId(),
-
-          /* --- origin metadata (one-way, non-authoritative) --- */
-          origin: {
-            source: "repository",
-            repoTaskId,
-            repoSummaryId,
-          },
-
-          /* --- execution semantics --- */
-          title,
-          description,
-          status: "inactive",
-          assignedTo: null,
-
-          /* --- structural placement --- */
-          summaryId: repoSummaryId || null, // orphan-safe
-          pane: targetPane,                  // mgmt / dev
-
-          /* --- audit --- */
-          createdAt: new Date().toISOString(),
-          activatedAt: null,
-        };
-
-        setWorkspaceTasks((prev) => [...prev, newTask]);
-
-        /* Close repository after successful add (LOCKED RULE) */
-        setRepoOpen(false);
+      if (payload.type === "ADD_SUMMARY_INTENT") {
+        setPopupState({ type: "summary" });
       }
     };
 
-    window.addEventListener("METRA_INTENT", handleIntent);
-    return () => window.removeEventListener("METRA_INTENT", handleIntent);
+    window.addEventListener("metra-footer-intent", handleFooterIntent);
+    return () =>
+      window.removeEventListener("metra-footer-intent", handleFooterIntent);
   }, []);
 
-  /* ------------------------------------------------------------------
-     Render
-     ------------------------------------------------------------------ */
+  /* ===================== POPUP CONFIRM ===================== */
+
+  const handlePopupConfirm = (data) => {
+    if (popupState?.type === "task") {
+      const newTask = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        description: data.description || "",
+        status: "inactive",
+        summaryId: data.summaryId || null,
+        targetPane: "mgmt"
+      };
+
+      setTasks((prev) => [...prev, newTask]);
+    }
+
+    if (popupState?.type === "summary") {
+      const newSummary = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        targetPane: "mgmt"
+      };
+
+      setSummaries((prev) => [...prev, newSummary]);
+    }
+
+    setPopupState(null);
+  };
+
+  /* ===================== RENDER ===================== */
+
   return (
-    <div className="preproject-container">
-      {/* Workspace shell */}
-      <PreProjectDual workspaceTasks={workspaceTasks} />
+    <div className="preproject-wrapper">
+
+      <PreProjectDual
+        workspaceTasks={tasks}
+        workspaceSummaries={summaries}
+      />
 
       <PreProjectFooter />
 
-      {/* Repository modal (dominant, co-existing) */}
-      {isRepoOpen && (
-        <div className="repo-modal-overlay">
-          <div className="repo-modal">
-            <RepositoryView />
-          </div>
-        </div>
+      {popupState && (
+        <AddItemPopup
+          type={popupState.type}
+          workspaceSummaries={summaries}
+          onCancel={() => setPopupState(null)}
+          onConfirm={handlePopupConfirm}
+        />
       )}
+
     </div>
   );
 }

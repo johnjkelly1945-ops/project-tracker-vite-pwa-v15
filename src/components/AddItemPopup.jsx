@@ -1,55 +1,105 @@
 /* ======================================================================
    METRA – AddItemPopup.jsx
-   v7 A2 – restored from last verified stable logic (v4.6B.13)
+   Stage 12.6-A – Task Creation with Optional Summary Assignment (Mgmt)
    ----------------------------------------------------------------------
-   PURPOSE:
-   ✔ Popup for adding new tasks
-   ✔ Simple title input + validation
-   ✔ Clean overlay styling
-   ✔ Works with PreProject.jsx (A2)
+   RESPONSIBILITIES:
+   • Create summaries (unchanged)
+   • Create tasks (extended)
+   • Emit explicit user intent only
+   • No execution authority
    ====================================================================== */
 
 import React, { useState } from "react";
 import "../Styles/AddItemPopup.css";
 
-export default function AddItemPopup({ onAdd, onClose }) {
+export default function AddItemPopup({
+  type,                 // "task" | "summary"
+  onCancel,
+  onConfirm,
+  workspaceSummaries = [] // <-- NEW (mgmt summaries only)
+}) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [summaryId, setSummaryId] = useState(null); // <-- NEW
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const isTask = type === "task";
+
+  const handleConfirm = () => {
     if (!title.trim()) return;
-    onAdd({ title });
-    onClose();
+
+    if (isTask) {
+      onConfirm({
+        title: title.trim(),
+        description: description.trim(),
+        summaryId: summaryId || null // explicit orphan if null
+      });
+    } else {
+      onConfirm({
+        title: title.trim()
+      });
+    }
+
+    // reset local state
+    setTitle("");
+    setDescription("");
+    setSummaryId(null);
   };
 
   return (
-    <div className="additem-overlay">
-      <div className="additem-window">
+    <div className="add-item-overlay">
+      <div className="add-item-popup">
 
-        {/* HEADER */}
-        <div className="additem-header">
-          <h3>Add New Task</h3>
-          <button className="additem-close-btn" onClick={onClose}>✕</button>
-        </div>
+        <h2>
+          {isTask ? "Add Task" : "Add Summary"}
+        </h2>
 
-        {/* FORM */}
-        <form onSubmit={handleSubmit} className="additem-form">
+        {/* Title */}
+        <input
+          type="text"
+          placeholder={isTask ? "Task title" : "Summary title"}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          autoFocus
+        />
 
-          <label>Task Title</label>
-          <input
-            type="text"
-            value={title}
-            placeholder="Enter task title"
-            onChange={(e) => setTitle(e.target.value)}
-            className="additem-input"
-            autoFocus
+        {/* Description (tasks only) */}
+        {isTask && (
+          <textarea
+            placeholder="Task description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
+        )}
 
-          <button type="submit" className="additem-submit-btn">
-            Add Task
+        {/* Summary assignment (tasks only) */}
+        {isTask && (
+          <div className="add-item-field">
+            <label>Assign to summary (optional)</label>
+            <select
+              value={summaryId || ""}
+              onChange={(e) =>
+                setSummaryId(e.target.value || null)
+              }
+            >
+              <option value="">Unassigned</option>
+              {workspaceSummaries.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="add-item-actions">
+          <button onClick={onCancel}>
+            Cancel
           </button>
-
-        </form>
+          <button onClick={handleConfirm}>
+            Confirm
+          </button>
+        </div>
 
       </div>
     </div>

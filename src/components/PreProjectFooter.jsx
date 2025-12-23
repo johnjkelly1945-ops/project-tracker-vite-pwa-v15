@@ -4,30 +4,32 @@ import "../Styles/PreProjectFooter.css";
 
 /*
 =====================================================================
-METRA — Stage 12.2-C
-PreProject Footer (INTENT EMITTER – DISPATCH ENABLED)
+METRA — PreProject Footer
+Stage 12.6-A — Intent Emission (Footer)
 ---------------------------------------------------------------------
-• Emits user intent ONLY
+• Emits intent only
 • No state mutation
 • No creation logic
-• No navigation
-• Dispatches METRA_INTENT events
+• No routing
+• Dispatches explicit CustomEvent
 =====================================================================
 */
 
 export default function PreProjectFooter() {
   const emitIntent = (type) => {
-    const intent = {
+    const payload = {
       type,
       source: "PreProjectFooter",
       timestamp: new Date().toISOString(),
     };
 
-    console.log("🧭 FOOTER INTENT", intent);
+    // Trace (keep this)
+    console.log("🧭 FOOTER INTENT", payload);
 
+    // Dispatch intent to workspace
     window.dispatchEvent(
-      new CustomEvent("METRA_INTENT", {
-        detail: intent,
+      new CustomEvent("metra-footer-intent", {
+        detail: payload,
       })
     );
   };
