@@ -1,60 +1,90 @@
 /* ======================================================================
    METRA – RepositoryView.jsx
-   Stage 12.2-C – User-Confirmed Instantiation (Intent-Only)
+   Stage 12.3-B – Single Task Selection & Download Enablement
    ----------------------------------------------------------------------
    RESPONSIBILITIES:
-   • Present repository content
-   • Require explicit user confirmation to add a task
-   • Emit INSTANTIATE_TASK_INTENT only on confirmation
-   • Emit CLOSE_REPOSITORY_INTENT after successful add
+   • Render repository tasks (placeholder data)
+   • Allow SINGLE selection (switching selection allowed)
+   • Enable "Download to Project" only when selected
+   • Emit INSTANTIATE_TASK_INTENT with real task payload
+   • Close repository after successful add
    ----------------------------------------------------------------------
    NON-GOALS:
-   • No workspace mutation
-   • No task activation
-   • No assignment
-   • No routing
+   • No bulk selection
+   • No summary creation
+   • No workspace mutation here
+   • No activation logic
    ====================================================================== */
 
 import React, { useState } from "react";
 import "../Styles/RepositoryView.css";
 
-export default function RepositoryView() {
-  const [confirmOpen, setConfirmOpen] = useState(false);
+/* ----------------------------------------------------------------------
+   Placeholder repository tasks
+   NOTE: Temporary for Stage 12.3; replaced with real repo data in Stage 13
+   ---------------------------------------------------------------------- */
+const PLACEHOLDER_REPO_TASKS = [
+  {
+    id: "repo-task-001",
+    title: "Prepare project initiation notes",
+    description: "Draft initial scope, assumptions, and constraints."
+  },
+  {
+    id: "repo-task-002",
+    title: "Identify key stakeholders",
+    description: "List internal and external stakeholders."
+  },
+  {
+    id: "repo-task-003",
+    title: "Define success criteria",
+    description: "Document measurable success factors."
+  }
+];
 
-  /* ------------------------------------------------------------------
-     Intent emitter (repository is intent-only)
-     ------------------------------------------------------------------ */
-  const emitIntent = (type, payload = null) => {
-    const intent = {
-      type,
-      source: "RepositoryView",
-      payload,
-      timestamp: new Date().toISOString(),
-    };
-
-    console.log("🧭 REPOSITORY INTENT", intent);
-
-    window.dispatchEvent(
-      new CustomEvent("METRA_INTENT", { detail: intent })
-    );
+/* ----------------------------------------------------------------------
+   Intent emitter (intent-only)
+   ---------------------------------------------------------------------- */
+function emitIntent(type, payload = null) {
+  const intent = {
+    type,
+    source: "RepositoryView",
+    payload,
+    timestamp: new Date().toISOString()
   };
 
+  console.log("🧭 REPOSITORY INTENT", intent);
+
+  window.dispatchEvent(
+    new CustomEvent("METRA_INTENT", { detail: intent })
+  );
+}
+
+export default function RepositoryView() {
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+  const selectedTask =
+    PLACEHOLDER_REPO_TASKS.find(t => t.id === selectedTaskId) || null;
+
   /* ------------------------------------------------------------------
-     User-confirmed download
-     (single task, placeholder payload for now)
+     Handlers
      ------------------------------------------------------------------ */
-  const confirmDownload = () => {
+  const handleSelect = (taskId) => {
+    setSelectedTaskId(taskId);
+  };
+
+  const handleDownload = () => {
+    if (!selectedTask) return;
+
     emitIntent("INSTANTIATE_TASK_INTENT", {
-      repoTaskId: "repo-task-placeholder",
-      repoSummaryId: null,        // orphan by default
-      title: "Imported repository task",
-      description: "Imported via repository",
-      targetPane: "mgmt",
+      repoTaskId: selectedTask.id,
+      repoSummaryId: null,           // orphan-safe for now
+      title: selectedTask.title,
+      description: selectedTask.description,
+      targetPane: "mgmt"
     });
 
-    // Workspace rule: repo closes after add
+    // Locked rule: repo closes after add
     emitIntent("CLOSE_REPOSITORY_INTENT");
-    setConfirmOpen(false);
   };
 
   return (
@@ -75,25 +105,37 @@ export default function RepositoryView() {
       {/* ===== Main Layout ===== */}
       <div className="repo-content">
 
+        {/* Filters (placeholder) */}
         <div className="repo-filters">
           <h3>Filters</h3>
           <p className="repo-placeholder">
-            Filter controls will appear here.
+            Filtering will be enabled in a later stage.
           </p>
         </div>
 
-        <div className="repo-summaries">
-          <h3>Summaries</h3>
-          <p className="repo-placeholder">
-            Summary list will appear here.
-          </p>
-        </div>
-
+        {/* Tasks (SINGLE SELECTION) */}
         <div className="repo-tasks">
           <h3>Tasks</h3>
-          <p className="repo-placeholder">
-            Task list will appear here.
-          </p>
+
+          {PLACEHOLDER_REPO_TASKS.map(task => {
+            const isSelected = task.id === selectedTaskId;
+
+            return (
+              <div
+                key={task.id}
+                className={`repo-task-row ${isSelected ? "selected" : ""}`}
+                onClick={() => handleSelect(task.id)}
+              >
+                <div className="repo-task-title">
+                  {task.title}
+                </div>
+
+                <div className="repo-task-desc">
+                  {task.description}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
       </div>
@@ -110,41 +152,13 @@ export default function RepositoryView() {
 
         <button
           className="repo-download-btn"
-          onClick={() => setConfirmOpen(true)}
+          disabled={!selectedTask}
+          onClick={handleDownload}
         >
           Download to Project
         </button>
 
       </div>
-
-      {/* ===== Confirmation Modal ===== */}
-      {confirmOpen && (
-        <div className="repo-confirm-overlay">
-          <div className="repo-confirm-modal">
-            <h3>Add task to workspace?</h3>
-            <p>
-              This will create a new <strong>inactive</strong> task in the
-              workspace. You can activate it by assigning a person.
-            </p>
-
-            <div className="repo-confirm-actions">
-              <button
-                className="repo-confirm-cancel"
-                onClick={() => setConfirmOpen(false)}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="repo-confirm-accept"
-                onClick={confirmDownload}
-              >
-                Add to Workspace
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
