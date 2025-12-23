@@ -4,13 +4,13 @@ import AddItemPopup from "./AddItemPopup";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 12.7 — UX Consolidation (Cleanup Step 1)
+Stage 12.7-B — Add Task UX (Workspace-only)
 
-Notes:
 • Workspace is sole execution authority
-• Tasks remain inactive
+• Tasks are created inactive
+• Assignment optional at creation
 • Summaries are placeholders only
-• Temporary test harness removed
+• Footer is temporary action host
 =====================================================================
 */
 
@@ -18,22 +18,37 @@ export default function PreProject({
   initialTasks = [],
   initialSummaries = []
 }) {
-  /* ------------------------------
-     Workspace state
-  ------------------------------ */
   const [tasks, setTasks] = useState(initialTasks);
   const [summaries] = useState(initialSummaries);
-
   const [popupMode, setPopupMode] = useState(null);
 
   /* ------------------------------
-     Reassignment execution
+     Task creation
+  ------------------------------ */
+  function handleAddTask(payload) {
+    const { title, summaryId = null } = payload;
+
+    const newTask = {
+      id: crypto.randomUUID(),
+      title,
+      summaryId,
+      status: "inactive"
+    };
+
+    setTasks(prev => [...prev, newTask]);
+
+    console.info("[Stage 12.7-B] Task created", newTask);
+    setPopupMode(null);
+  }
+
+  /* ------------------------------
+     Reassignment (existing, locked)
   ------------------------------ */
   function handleReassign(intent) {
     const { taskId, fromSummaryId, toSummaryId } = intent;
 
     if (fromSummaryId === toSummaryId) {
-      console.info("[Stage 12.7] Reassign noop", intent);
+      console.info("[Stage 12.7-B] Reassign noop", intent);
       setPopupMode(null);
       return;
     }
@@ -46,35 +61,34 @@ export default function PreProject({
       )
     );
 
-    console.info("[Stage 12.7] Task reassigned", intent);
+    console.info("[Stage 12.7-B] Task reassigned", intent);
     setPopupMode(null);
   }
 
   /* ------------------------------
      Render helpers
   ------------------------------ */
-  function renderOrphanTasks() {
-    return tasks.filter(task => task.summaryId == null);
-  }
-
-  function renderTasksForSummary(summaryId) {
-    return tasks.filter(task => task.summaryId === summaryId);
-  }
+  const orphanTasks = tasks.filter(t => t.summaryId == null);
+  const tasksForSummary = id => tasks.filter(t => t.summaryId === id);
 
   /* ------------------------------
      Render
   ------------------------------ */
   return (
     <div className="preproject-workspace">
+      {/* Footer-level actions (temporary host) */}
       <div style={{ marginBottom: "1rem" }}>
+        <button onClick={() => setPopupMode("add-task")}>
+          Add Task
+        </button>
         <button onClick={() => setPopupMode("reassign")}>
-          Reassign Existing Task
+          Reassign Task
         </button>
       </div>
 
       <section>
         <h3>Unassigned</h3>
-        {renderOrphanTasks().map(task => (
+        {orphanTasks.map(task => (
           <div key={task.id}>{task.title}</div>
         ))}
       </section>
@@ -82,11 +96,20 @@ export default function PreProject({
       {summaries.map(summary => (
         <section key={summary.id}>
           <h3>{summary.title}</h3>
-          {renderTasksForSummary(summary.id).map(task => (
+          {tasksForSummary(summary.id).map(task => (
             <div key={task.id}>{task.title}</div>
           ))}
         </section>
       ))}
+
+      {popupMode === "add-task" && (
+        <AddItemPopup
+          mode="add-task"
+          summaries={summaries}
+          onConfirm={handleAddTask}
+          onCancel={() => setPopupMode(null)}
+        />
+      )}
 
       {popupMode === "reassign" && (
         <AddItemPopup
