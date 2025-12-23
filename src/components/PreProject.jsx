@@ -1,17 +1,15 @@
 /* ======================================================================
    METRA – PreProject.jsx
-   Stage 12.6-A – Footer Intent → Popup → Task Creation (Mgmt Only)
+   Workspace Root
    ----------------------------------------------------------------------
-   RESPONSIBILITIES:
-   • Own workspace task state
-   • Listen for footer intent
-   • Open AddItemPopup
-   • Create tasks as inactive
-   • Optionally associate summaryId
-   • No execution authority beyond creation
+   • Owns workspace state
+   • Renders ModuleHeader, Workspace, Footer
+   • Handles footer intent and popups
+   • No execution leakage
    ====================================================================== */
 
 import React, { useEffect, useState } from "react";
+import ModuleHeader from "./ModuleHeader";
 import PreProjectFooter from "./PreProjectFooter";
 import AddItemPopup from "./AddItemPopup";
 import PreProjectDual from "./PreProjectDual";
@@ -77,7 +75,7 @@ export default function PreProject() {
         description: data.description || "",
         status: "inactive",
         summaryId: data.summaryId || null,
-        targetPane: "mgmt"
+        targetPane: "mgmt",
       };
 
       setTasks((prev) => [...prev, newTask]);
@@ -87,7 +85,7 @@ export default function PreProject() {
       const newSummary = {
         id: crypto.randomUUID(),
         title: data.title,
-        targetPane: "mgmt"
+        targetPane: "mgmt",
       };
 
       setSummaries((prev) => [...prev, newSummary]);
@@ -101,13 +99,19 @@ export default function PreProject() {
   return (
     <div className="preproject-wrapper">
 
+      {/* Workspace Header */}
+      <ModuleHeader />
+
+      {/* Workspace Body */}
       <PreProjectDual
         workspaceTasks={tasks}
         workspaceSummaries={summaries}
       />
 
+      {/* Workspace Footer */}
       <PreProjectFooter />
 
+      {/* Popup */}
       {popupState && (
         <AddItemPopup
           type={popupState.type}
