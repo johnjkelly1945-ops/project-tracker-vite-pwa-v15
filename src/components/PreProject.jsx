@@ -4,13 +4,13 @@ import AddItemPopup from "./AddItemPopup";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 12.6-C — Popup-Driven Task Reassignment (Workspace-Safe)
+Stage 12.7 — UX Consolidation (Cleanup Step 1)
 
 Notes:
 • Workspace is sole execution authority
 • Tasks remain inactive
 • Summaries are placeholders only
-• Temporary test task creation is present for validation only
+• Temporary test harness removed
 =====================================================================
 */
 
@@ -27,29 +27,13 @@ export default function PreProject({
   const [popupMode, setPopupMode] = useState(null);
 
   /* ------------------------------
-     TEMP — test task creation
-     (remove in Stage 12.7)
-  ------------------------------ */
-  function createTestTask() {
-    const newTask = {
-      id: `task-${Date.now()}`,
-      title: "Test Task (Stage 12.6-C)",
-      summaryId: null
-    };
-
-    setTasks(prev => [...prev, newTask]);
-
-    console.info("[Stage 12.6-C] Test task created", newTask);
-  }
-
-  /* ------------------------------
      Reassignment execution
   ------------------------------ */
   function handleReassign(intent) {
     const { taskId, fromSummaryId, toSummaryId } = intent;
 
     if (fromSummaryId === toSummaryId) {
-      console.info("[Stage 12.6-C] Reassign noop", intent);
+      console.info("[Stage 12.7] Reassign noop", intent);
       setPopupMode(null);
       return;
     }
@@ -62,7 +46,7 @@ export default function PreProject({
       )
     );
 
-    console.info("[Stage 12.6-C] Task reassigned", intent);
+    console.info("[Stage 12.7] Task reassigned", intent);
     setPopupMode(null);
   }
 
@@ -83,9 +67,6 @@ export default function PreProject({
   return (
     <div className="preproject-workspace">
       <div style={{ marginBottom: "1rem" }}>
-        <button onClick={createTestTask}>
-          Add Test Task (TEMP)
-        </button>{" "}
         <button onClick={() => setPopupMode("reassign")}>
           Reassign Existing Task
         </button>
