@@ -1,35 +1,62 @@
 /* ======================================================================
    METRA – PreProjectDual.jsx
-   Step 3 – Simple Popup Integration
+   Stage 12.4-A – Workspace Task Rendering (Read-Only)
+   ----------------------------------------------------------------------
+   RESPONSIBILITIES:
+   • Render workspace tasks passed from PreProject
+   • Read-only presentation
+   • No execution authority
+   • No activation logic
+   • No mutation
    ====================================================================== */
 
-import React, { useState } from "react";
-import PaneMgmt from "./PaneMgmt.jsx";
-import PaneDev from "./PaneDev.jsx";
-import TaskPopup from "./TaskPopup.jsx";
+import React from "react";
 
-import "../Styles/PreProject.css";
-
-export default function PreProjectDual() {
-
-  const [selectedTask, setSelectedTask] = useState(null);
-
+export default function PreProjectDual({
+  workspaceTasks = []
+}) {
   return (
-    <div className="preproject-inner">
+    <div className="pp-dual-wrapper">
 
-      {/* === Popup (if task selected) === */}
-      <TaskPopup task={selectedTask} onClose={() => setSelectedTask(null)} />
+      {/* ===== Management Pane ===== */}
+      <div className="pp-pane pp-pane-mgmt">
+        <h2 className="pp-pane-title">Management</h2>
 
-      {/* === MANAGEMENT PANE === */}
-      <div className="preproject-pane preproject-pane-mgmt">
-        <h2 className="preproject-header">Management</h2>
-        <PaneMgmt onTaskClick={(t) => setSelectedTask(t)} />
+        {workspaceTasks.length === 0 && (
+          <div className="pp-empty">
+            No tasks in workspace.
+          </div>
+        )}
+
+        {workspaceTasks.map(task => (
+          <div
+            key={task.id}
+            className="pp-task-card inactive"
+          >
+            <div className="pp-task-title">
+              {task.title}
+            </div>
+
+            {task.description && (
+              <div className="pp-task-desc">
+                {task.description}
+              </div>
+            )}
+
+            <div className="pp-task-status">
+              Status: inactive
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* === DEVELOPMENT PANE === */}
-      <div className="preproject-pane preproject-pane-dev">
-        <h2 className="preproject-header">Development</h2>
-        <PaneDev onTaskClick={(t) => setSelectedTask(t)} />
+      {/* ===== Development Pane (reserved) ===== */}
+      <div className="pp-pane pp-pane-dev">
+        <h2 className="pp-pane-title">Development</h2>
+
+        <div className="pp-empty">
+          Development pane not active yet.
+        </div>
       </div>
 
     </div>
