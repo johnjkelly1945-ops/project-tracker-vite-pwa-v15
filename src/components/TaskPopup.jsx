@@ -1,12 +1,10 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v8.0 – Unified Pane-Aware Popup (Architecture B)
+   v8.1 – Stage 15.0 Activation Enforcement
    ----------------------------------------------------------------------
-   ✔ Pane-aware updates for both mgmt + dev
-   ✔ Safe commitEntry (never sends undefined fields)
-   ✔ Correct Change Person routing
-   ✔ Correct CC two-step logic
-   ✔ Notes merge + timestamp stable
+   ✔ Assignment = activation (derived, not stored)
+   ✔ Unassigned tasks are inert (non-executable)
+   ✔ No new semantics, no UI redesign
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -16,9 +14,13 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   if (!task) return null;
 
   /* -------------------------------------------------------------------
-     Locked if no assigned person
+     Stage 15.0 — Activation (Derived)
+     Assignment present → active
+     Assignment absent  → inactive
   ------------------------------------------------------------------- */
-  const isLocked = !task.person || task.person.trim() === "";
+  const isAssigned = Boolean(task.person && task.person.trim());
+  const isActive = isAssigned;
+  const isLocked = !isActive;
 
   /* -------------------------------------------------------------------
      Normalise notes into text
@@ -42,7 +44,6 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
     const merged = historyText + (historyText ? "\n\n" : "") + draftText;
     setVisibleText(merged);
 
-    // Move cursor to start of draft region
     setTimeout(() => {
       if (areaRef.current) {
         const boundary = historyText.length + (historyText ? 2 : 0);
@@ -56,7 +57,7 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
      Typing handler
   ------------------------------------------------------------------- */
   const handleChange = (e) => {
-    if (isLocked) return;
+    if (!isActive) return;
 
     const newValue = e.target.value;
     const boundary = historyText.length + (historyText ? 2 : 0);
@@ -83,7 +84,7 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
      Commit entry safely
   ------------------------------------------------------------------- */
   const commitEntry = async () => {
-    if (isLocked) return null;
+    if (!isActive) return null;
 
     const trimmed = draftText.trim();
     if (trimmed === "") return null;
@@ -117,15 +118,13 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
      CC handler (two-step)
   ------------------------------------------------------------------- */
   const handleCC = async () => {
-    if (isLocked) return;
+    if (!isActive) return;
 
-    // First click → show toast
     if (!ccConfirm) {
       setCcConfirm(true);
       return;
     }
 
-    // Second click → commit CC entry
     const systemNote = makeCCSystemNote();
     const updatedHistory =
       historyText ? `${historyText}\n\n${systemNote}` : systemNote;
@@ -150,7 +149,7 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     Change Person
+     Change Person (allowed even if inactive)
   ------------------------------------------------------------------- */
   const handleChangePerson = async () => {
     await commitEntry();
@@ -159,13 +158,12 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     Footer governance actions
+     Footer governance / execution actions
   ------------------------------------------------------------------- */
   const doAction = async (fields) => {
-    if (!isLocked) {
-      await commitEntry();
-      onUpdate({ ...fields, pane });
-    }
+    if (!isActive) return;
+    await commitEntry();
+    onUpdate({ ...fields, pane });
     onClose();
   };
 
@@ -199,7 +197,7 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
             className="tp-note-draft"
             value={visibleText}
             onChange={handleChange}
-            readOnly={isLocked}
+            readOnly={!isActive}
           />
         </div>
 
@@ -229,23 +227,24 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
         {/* FOOTER */}
         <div className="tp-footer">
           <div className="tp-gov-row">
-            <button onClick={handleCC}>CC</button>
-            <button onClick={() => doAction({ gov: "QC" })}>QC</button>
-            <button onClick={() => doAction({ gov: "Risk", flag: "red" })}>Risk</button>
-            <button onClick={() => doAction({ gov: "Issue", flag: "red" })}>Issue</button>
-            <button onClick={() => doAction({ gov: "Escalate", flag: "red" })}>Escalate</button>
-            <button onClick={() => doAction({ gov: "Email" })}>Email</button>
-            <button onClick={() => doAction({ gov: "Docs" })}>Docs</button>
-            <button onClick={() => doAction({ gov: "Template" })}>Template</button>
+            <button disabled={!isActive} onClick={handleCC}>CC</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "QC" })}>QC</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "Risk", flag: "red" })}>Risk</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "Issue", flag: "red" })}>Issue</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "Escalate", flag: "red" })}>Escalate</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "Email" })}>Email</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "Docs" })}>Docs</button>
+            <button disabled={!isActive} onClick={() => doAction({ gov: "Template" })}>Template</button>
           </div>
 
           <div className="tp-action-row">
             <button onClick={handleChangePerson}>Change Person</button>
-            <button onClick={() => doAction({ status: "Completed" })}>
+            <button disabled={!isActive} onClick={() => doAction({ status: "Completed" })}>
               Mark Completed
             </button>
             <button
               className="tp-delete"
+              disabled={!isActive}
               onClick={() => doAction({ delete: true })}
             >
               Delete
