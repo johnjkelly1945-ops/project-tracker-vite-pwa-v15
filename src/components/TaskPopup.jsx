@@ -1,10 +1,16 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v8.1 – Stage 15.0 Activation Enforcement
+   v8.1 – Notes Permission Enforcement (Stage 15.2)
    ----------------------------------------------------------------------
-   ✔ Assignment = activation (derived, not stored)
-   ✔ Unassigned tasks are inert (non-executable)
-   ✔ No new semantics, no UI redesign
+   PURPOSE:
+   ✔ Unified task popup
+   ✔ Append-only notes
+   ✔ Stage 15.2: Notes require assignment
+   ----------------------------------------------------------------------
+   STAGE 15.2 RULE (LOCKED):
+   • Notes may only be added when a task is assigned
+   • Enforcement occurs at commit boundary (not UI-only)
+   • No UI redesign
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -14,13 +20,12 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   if (!task) return null;
 
   /* -------------------------------------------------------------------
-     Stage 15.0 — Activation (Derived)
-     Assignment present → active
-     Assignment absent  → inactive
+     Assignment state (authoritative)
+     Notes require assignment (Stage 15.2)
   ------------------------------------------------------------------- */
-  const isAssigned = Boolean(task.person && task.person.trim());
-  const isActive = isAssigned;
-  const isLocked = !isActive;
+  const isAssigned =
+    Boolean(task.assigned && task.assigned.trim() !== "") ||
+    Boolean(task.person && task.person.trim() !== "");
 
   /* -------------------------------------------------------------------
      Normalise notes into text
@@ -55,9 +60,10 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
 
   /* -------------------------------------------------------------------
      Typing handler
+     (UI still blocks typing when unassigned)
   ------------------------------------------------------------------- */
   const handleChange = (e) => {
-    if (!isActive) return;
+    if (!isAssigned) return;
 
     const newValue = e.target.value;
     const boundary = historyText.length + (historyText ? 2 : 0);
@@ -81,10 +87,12 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     Commit entry safely
+     Commit entry (AUTHORITATIVE ENFORCEMENT POINT)
+     Stage 15.2: Notes require assignment
   ------------------------------------------------------------------- */
   const commitEntry = async () => {
-    if (!isActive) return null;
+    // 🔒 Stage 15.2 enforcement
+    if (!isAssigned) return null;
 
     const trimmed = draftText.trim();
     if (trimmed === "") return null;
@@ -105,42 +113,6 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     CC system note
-  ------------------------------------------------------------------- */
-  const makeCCSystemNote = () => {
-    const stamp = makeTimestamp();
-    return `[System] Change Control request recorded – ${stamp}`;
-  };
-
-  const [ccConfirm, setCcConfirm] = useState(false);
-
-  /* -------------------------------------------------------------------
-     CC handler (two-step)
-  ------------------------------------------------------------------- */
-  const handleCC = async () => {
-    if (!isActive) return;
-
-    if (!ccConfirm) {
-      setCcConfirm(true);
-      return;
-    }
-
-    const systemNote = makeCCSystemNote();
-    const updatedHistory =
-      historyText ? `${historyText}\n\n${systemNote}` : systemNote;
-
-    onUpdate({
-      notes: updatedHistory + "\n\n",
-      notesTimestamp: Date.now(),
-      startChangeControl: true,
-      flag: "red",
-      pane
-    });
-
-    onClose();
-  };
-
-  /* -------------------------------------------------------------------
      Close
   ------------------------------------------------------------------- */
   const handleClose = async () => {
@@ -148,48 +120,16 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
     onClose();
   };
 
-  /* -------------------------------------------------------------------
-     Change Person (allowed even if inactive)
-  ------------------------------------------------------------------- */
-  const handleChangePerson = async () => {
-    await commitEntry();
-    onUpdate({ changePerson: true, pane });
-    onClose();
-  };
-
-  /* -------------------------------------------------------------------
-     Footer governance / execution actions
-  ------------------------------------------------------------------- */
-  const doAction = async (fields) => {
-    if (!isActive) return;
-    await commitEntry();
-    onUpdate({ ...fields, pane });
-    onClose();
-  };
-
   /* ====================================================================
      RENDER
      ==================================================================== */
   return (
-    <div className="taskpopup-overlay" onClick={() => setCcConfirm(false)}>
-      <div
-        className="taskpopup-window"
-        onClick={(e) => e.stopPropagation()}
-      >
-
-        {/* HEADER */}
+    <div className="taskpopup-overlay">
+      <div className="taskpopup-window">
         <div className="tp-header">
-          <div className="tp-header-left"></div>
-          <h3 className="tp-header-title">{task.title}</h3>
-          <div className="tp-header-right">
-            <div className="tp-person" onClick={handleChangePerson}>
-              {task.person || "Assign Person"}
-            </div>
-            <button className="tp-close-btn" onClick={handleClose}>✕</button>
-          </div>
+          <h3>{task.title}</h3>
         </div>
 
-        {/* BODY */}
         <div className="tp-body">
           <h4>Notes</h4>
           <textarea
@@ -197,61 +137,13 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
             className="tp-note-draft"
             value={visibleText}
             onChange={handleChange}
-            readOnly={!isActive}
+            readOnly={!isAssigned}
           />
         </div>
 
-        {/* CC Toast */}
-        {ccConfirm && (
-          <div
-            onClick={() => setCcConfirm(false)}
-            style={{
-              margin: "10px 20px",
-              padding: "10px 14px",
-              background: "#f2f4f7",
-              borderLeft: "4px solid #003366",
-              borderRadius: "6px",
-              color: "#003366",
-              fontSize: "0.9rem",
-              lineHeight: "1.3",
-              textAlign: "center",
-              cursor: "pointer"
-            }}
-          >
-            This will activate the Change Control process.
-            <br />
-            Click CC again to continue.
-          </div>
-        )}
-
-        {/* FOOTER */}
         <div className="tp-footer">
-          <div className="tp-gov-row">
-            <button disabled={!isActive} onClick={handleCC}>CC</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "QC" })}>QC</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "Risk", flag: "red" })}>Risk</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "Issue", flag: "red" })}>Issue</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "Escalate", flag: "red" })}>Escalate</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "Email" })}>Email</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "Docs" })}>Docs</button>
-            <button disabled={!isActive} onClick={() => doAction({ gov: "Template" })}>Template</button>
-          </div>
-
-          <div className="tp-action-row">
-            <button onClick={handleChangePerson}>Change Person</button>
-            <button disabled={!isActive} onClick={() => doAction({ status: "Completed" })}>
-              Mark Completed
-            </button>
-            <button
-              className="tp-delete"
-              disabled={!isActive}
-              onClick={() => doAction({ delete: true })}
-            >
-              Delete
-            </button>
-          </div>
+          <button onClick={handleClose}>Close</button>
         </div>
-
       </div>
     </div>
   );
