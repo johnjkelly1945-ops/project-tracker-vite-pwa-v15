@@ -1,18 +1,16 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   Stage 17.3.2 — Write Permission Enforcement (Read-Only)
+   Stage 17.3.3 — Notes Immutability Enforcement (Read-Only)
    ----------------------------------------------------------------------
    PURPOSE:
    ✔ Unified task popup
-   ✔ Append-only notes (existing)
-   ✔ Assignment-gated interaction (existing)
-   ✔ Stage 17.3.2: Enforce write permissions
+   ✔ Permission-gated writing (Stage 17.3.2)
+   ✔ Append-only notes with hard immutability (Stage 17.3.3)
    ----------------------------------------------------------------------
    ENFORCED RULES (LOCKED):
-   • Before assignment: no writing
-   • After assignment: PM / Assigned / Admin may write
-   • Archived: read-only for all
-   • Notes are append-only; drafts editable pre-commit only
+   • Historical notes are permanently read-only
+   • Editing allowed only in draft region
+   • Notes remain append-only under all conditions
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -53,19 +51,18 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
 
   const isAssignedUser = () => {
     if (!currentUserId) return false;
-    // Prefer explicit id match if present; fallback to string match
     if (task.assignedId && task.assignedId === currentUserId) return true;
     if (task.assigned && task.assigned === currentUserId) return true;
     if (task.person && task.person === currentUserId) return true;
     return false;
   };
 
-  // Admin delegate hook (NOT WIRED YET — Stage 17)
+  // Admin delegate hook (NOT WIRED YET)
   const isAdminDelegate = false;
 
   /* -------------------------------------------------------------------
      WRITE PERMISSION (Stage 17.3.2)
-     ------------------------------------------------------------------- */
+  ------------------------------------------------------------------- */
   const canWrite =
     Boolean(currentUserId) &&
     !isArchived &&
@@ -93,33 +90,43 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   const [confirmArchive, setConfirmArchive] = useState(false);
 
   /* -------------------------------------------------------------------
-     Merge history + draft
+     Compute immutable boundary
+  ------------------------------------------------------------------- */
+  const boundary =
+    historyText.length + (historyText ? 2 : 0); // account for separator
+
+  /* -------------------------------------------------------------------
+     Merge history + draft (with cursor enforcement)
   ------------------------------------------------------------------- */
   useEffect(() => {
     const merged = historyText + (historyText ? "\n\n" : "") + draftText;
     setVisibleText(merged);
 
+    // Force cursor to remain in draft region
     setTimeout(() => {
       if (areaRef.current) {
-        const boundary = historyText.length + (historyText ? 2 : 0);
-        areaRef.current.selectionStart = boundary;
-        areaRef.current.selectionEnd = boundary;
+        const pos = Math.max(boundary, areaRef.current.selectionStart || 0);
+        areaRef.current.selectionStart = pos;
+        areaRef.current.selectionEnd = pos;
       }
     }, 0);
-  }, [historyText]);
+  }, [historyText, draftText, boundary]);
 
   /* -------------------------------------------------------------------
-     Typing handler (WRITE ENFORCED)
+     Typing handler (IMMUTABILITY ENFORCED)
   ------------------------------------------------------------------- */
   const handleChange = (e) => {
     if (!canWrite) return;
 
-    const newValue = e.target.value;
-    const boundary = historyText.length + (historyText ? 2 : 0);
-    const newDraft = newValue.slice(boundary);
+    const value = e.target.value;
 
+    // Hard guard: history must be identical
+    if (value.slice(0, boundary) !== visibleText.slice(0, boundary)) {
+      return; // reject mutation of historical notes
+    }
+
+    const newDraft = value.slice(boundary);
     setDraftText(newDraft);
-    setVisibleText(historyText + (historyText ? "\n\n" : "") + newDraft);
   };
 
   /* -------------------------------------------------------------------
@@ -136,7 +143,7 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     Commit note entry (WRITE ENFORCED)
+     Commit note entry (IMMUTABLE HISTORY)
   ------------------------------------------------------------------- */
   const commitEntry = async () => {
     if (!canWrite) return null;
@@ -156,14 +163,15 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
       pane
     });
 
+    setDraftText("");
     return entry;
   };
 
   /* -------------------------------------------------------------------
-     Archive handler (Stage 15.3 — unchanged)
+     Archive handler (unchanged)
   ------------------------------------------------------------------- */
   const handleArchive = async () => {
-    if (!isPmAuthority()) return; // archive remains PM-only
+    if (!isPmAuthority()) return;
 
     if (!confirmArchive) {
       setConfirmArchive(true);
