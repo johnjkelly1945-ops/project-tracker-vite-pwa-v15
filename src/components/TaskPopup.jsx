@@ -1,18 +1,18 @@
 /* ======================================================================
    METRA – TaskPopup.jsx
-   v8.2 – Archival Enforcement (Stage 15.3)
+   Stage 17.3.2 — Write Permission Enforcement (Read-Only)
    ----------------------------------------------------------------------
    PURPOSE:
    ✔ Unified task popup
-   ✔ Append-only notes
-   ✔ Assignment-gated interaction
-   ✔ Stage 15.3: Delete = Archive (non-destructive)
+   ✔ Append-only notes (existing)
+   ✔ Assignment-gated interaction (existing)
+   ✔ Stage 17.3.2: Enforce write permissions
    ----------------------------------------------------------------------
-   STAGE 15.3 RULES (LOCKED):
-   • Delete archives the task
-   • Archive is irreversible
-   • Archived tasks are read-only
-   • Archival is audited via system note + timestamp
+   ENFORCED RULES (LOCKED):
+   • Before assignment: no writing
+   • After assignment: PM / Assigned / Admin may write
+   • Archived: read-only for all
+   • Notes are append-only; drafts editable pre-commit only
    ====================================================================== */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -22,12 +22,55 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   if (!task) return null;
 
   /* -------------------------------------------------------------------
+     Identity (TEMPORARY — Stage 17)
+     ------------------------------------------------------------------- */
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser"));
+    } catch {
+      return null;
+    }
+  })();
+  const currentUserId = currentUser?.id ?? null;
+
+  /* -------------------------------------------------------------------
      Lifecycle states
   ------------------------------------------------------------------- */
   const isArchived = Boolean(task.archived);
   const isAssigned =
-    Boolean(task.assigned && task.assigned.trim() !== "") ||
-    Boolean(task.person && task.person.trim() !== "");
+    Boolean(task.assigned && String(task.assigned).trim() !== "") ||
+    Boolean(task.person && String(task.person).trim() !== "");
+
+  /* -------------------------------------------------------------------
+     Authority helpers (Stage 17.2)
+  ------------------------------------------------------------------- */
+  const getPmAuthorityId = () => task.pmId || task.creatorId || null;
+
+  const isPmAuthority = () => {
+    const pmId = getPmAuthorityId();
+    return Boolean(pmId && currentUserId && pmId === currentUserId);
+  };
+
+  const isAssignedUser = () => {
+    if (!currentUserId) return false;
+    // Prefer explicit id match if present; fallback to string match
+    if (task.assignedId && task.assignedId === currentUserId) return true;
+    if (task.assigned && task.assigned === currentUserId) return true;
+    if (task.person && task.person === currentUserId) return true;
+    return false;
+  };
+
+  // Admin delegate hook (NOT WIRED YET — Stage 17)
+  const isAdminDelegate = false;
+
+  /* -------------------------------------------------------------------
+     WRITE PERMISSION (Stage 17.3.2)
+     ------------------------------------------------------------------- */
+  const canWrite =
+    Boolean(currentUserId) &&
+    !isArchived &&
+    isAssigned &&
+    (isPmAuthority() || isAssignedUser() || isAdminDelegate);
 
   /* -------------------------------------------------------------------
      Notes helpers
@@ -66,10 +109,10 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   }, [historyText]);
 
   /* -------------------------------------------------------------------
-     Typing handler
+     Typing handler (WRITE ENFORCED)
   ------------------------------------------------------------------- */
   const handleChange = (e) => {
-    if (!isAssigned || isArchived) return;
+    if (!canWrite) return;
 
     const newValue = e.target.value;
     const boundary = historyText.length + (historyText ? 2 : 0);
@@ -93,10 +136,10 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     Commit note entry (Stage 15.2 enforced)
+     Commit note entry (WRITE ENFORCED)
   ------------------------------------------------------------------- */
   const commitEntry = async () => {
-    if (!isAssigned || isArchived) return null;
+    if (!canWrite) return null;
 
     const trimmed = draftText.trim();
     if (trimmed === "") return null;
@@ -117,10 +160,11 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
   };
 
   /* -------------------------------------------------------------------
-     Archive handler (Stage 15.3)
+     Archive handler (Stage 15.3 — unchanged)
   ------------------------------------------------------------------- */
   const handleArchive = async () => {
-    // First click → show confirmation
+    if (!isPmAuthority()) return; // archive remains PM-only
+
     if (!confirmArchive) {
       setConfirmArchive(true);
       return;
@@ -179,7 +223,7 @@ export default function TaskPopup({ task, pane, onClose, onUpdate }) {
             className="tp-note-draft"
             value={visibleText}
             onChange={handleChange}
-            readOnly={!isAssigned || isArchived}
+            readOnly={!canWrite}
           />
         </div>
 
