@@ -1,51 +1,53 @@
 // src/components/PreProjectFooter.jsx
+// Stage 18.2 — Workspace Task Creation (Read-Only, Enforcement-Safe)
+
 import React from "react";
-import "../Styles/PreProjectFooter.css";
 
-/*
-=====================================================================
-METRA — PreProject Footer
-Stage 12.6-A — Intent Emission (Footer)
----------------------------------------------------------------------
-• Emits intent only
-• No state mutation
-• No creation logic
-• No routing
-• Dispatches explicit CustomEvent
-=====================================================================
-*/
+// NOTE:
+// emitIntent is intentionally local and mirrors RepositoryView.
+// We reuse the existing intent system rather than creating tasks directly.
 
-export default function PreProjectFooter() {
-  const emitIntent = (type) => {
-    const payload = {
-      type,
-      source: "PreProjectFooter",
-      timestamp: new Date().toISOString(),
-    };
-
-    // Trace (keep this)
-    console.log("🧭 FOOTER INTENT", payload);
-
-    // Dispatch intent to workspace
+export default function PreProjectFooter({ currentUser, effectivePM }) {
+  const emitIntent = (type, payload = null) => {
     window.dispatchEvent(
-      new CustomEvent("metra-footer-intent", {
-        detail: payload,
+      new CustomEvent("METRA_INTENT", {
+        detail: { type, payload },
       })
     );
   };
 
+  const handleAddTask = () => {
+    // PM-only guard (fallback already resolved upstream)
+    if (!effectivePM || currentUser.id !== effectivePM.id) {
+      return;
+    }
+
+    emitIntent("INSTANTIATE_TASK_INTENT", {
+      source: "workspace",
+      task: {
+        id: crypto.randomUUID(),
+        title: "New Task",
+        createdBy: currentUser.id,
+        pmOwner: effectivePM.id,
+        assignedTo: null,
+        notes: [],
+      },
+    });
+  };
+
   return (
-    <div className="pp-footer-bar">
+    <div className="preproject-footer">
       <button onClick={() => emitIntent("ADD_SUMMARY_INTENT")}>
         Add Summary
       </button>
 
-      <button onClick={() => emitIntent("ADD_TASK_INTENT")}>
+      {/* Stage 18.2 — Workspace task creation */}
+      <button onClick={handleAddTask}>
         Add Task
       </button>
 
       <button onClick={() => emitIntent("OPEN_REPOSITORY_INTENT")}>
-        View Repository
+        Open Repository
       </button>
     </div>
   );
