@@ -1,16 +1,16 @@
 import { useState } from "react";
 import AddItemPopup from "./AddItemPopup";
+import TaskPopup from "./TaskPopup";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 13.0-C — Confirmed Summary Deletion (Workspace-only)
-
-• Summaries are inert workspace entities
-• Deletion requires explicit confirmation
-• Tasks are NOT affected (summaryId → null only)
-• No “Unassigned” pseudo-summary rendered
-• Toast shown on successful deletion
+Stage 17 — Popup Wiring with Permission Enforcement (Read-Only)
+---------------------------------------------------------------------
+• TaskPopup wired from PreProject
+• Stage 17.2 rules enforced from first render
+• Identity sourced temporarily from localStorage.currentUser
+• Fail-closed permission model
 =====================================================================
 */
 
@@ -22,6 +22,9 @@ export default function PreProject({
   const [summaries, setSummaries] = useState(initialSummaries);
   const [popupMode, setPopupMode] = useState(null);
 
+  // Task popup state
+  const [activeTask, setActiveTask] = useState(null);
+
   // Inline delete confirmation state
   const [pendingDeleteSummaryId, setPendingDeleteSummaryId] = useState(null);
 
@@ -29,8 +32,52 @@ export default function PreProject({
   const [toast, setToast] = useState(null);
 
   /* -------------------------------------------------
-     Add Summary (already wired elsewhere)
-  ------------------------------------------------- */
+     Identity (TEMPORARY — Stage 17)
+     ------------------------------------------------- */
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser"));
+    } catch {
+      return null;
+    }
+  })();
+
+  const currentUserId = currentUser?.id ?? null;
+
+  /* -------------------------------------------------
+     Permission helpers (Stage 17.2)
+     ------------------------------------------------- */
+  const getPmAuthorityId = (task) => {
+    // Explicit PM wins; otherwise creator defaults to PM
+    return task.pmId || task.creatorId || null;
+  };
+
+  const isAssigned = (task) =>
+    Boolean(
+      (typeof task.assigned === "string" && task.assigned.trim()) ||
+      (typeof task.person === "string" && task.person.trim())
+    );
+
+  const canOpenTaskPopup = (task) => {
+    if (!currentUserId || !task) return false;
+
+    const pmAuthorityId = getPmAuthorityId(task);
+    if (pmAuthorityId && pmAuthorityId === currentUserId) return true;
+
+    if (!isAssigned(task)) return false;
+
+    // Assigned person (by id match if present, else name match as fallback)
+    if (task.assignedId && task.assignedId === currentUserId) return true;
+    if (task.assigned && task.assigned === currentUserId) return true;
+    if (task.person && task.person === currentUserId) return true;
+
+    // Admin delegate logic comes later (Stage 17.3+)
+    return false;
+  };
+
+  /* -------------------------------------------------
+     Add Summary (unchanged)
+     ------------------------------------------------- */
   function handleAddSummary({ title }) {
     const newSummary = {
       id: crypto.randomUUID(),
@@ -42,8 +89,8 @@ export default function PreProject({
   }
 
   /* -------------------------------------------------
-     Stage 13.0-C — Confirmed Summary Deletion
-  ------------------------------------------------- */
+     Stage 13.0-C — Confirmed Summary Deletion (unchanged)
+     ------------------------------------------------- */
   function requestDeleteSummary(summaryId) {
     setPendingDeleteSummaryId(summaryId);
   }
@@ -53,12 +100,10 @@ export default function PreProject({
   }
 
   function confirmDeleteSummary(summaryId) {
-    // Remove summary entity
     setSummaries(prev =>
       prev.filter(summary => summary.id !== summaryId)
     );
 
-    // Orphan tasks only (no deletion)
     setTasks(prev =>
       prev.map(task =>
         task.summaryId === summaryId
@@ -69,13 +114,20 @@ export default function PreProject({
 
     setPendingDeleteSummaryId(null);
     setToast("Summary removed from workspace — tasks unaffected");
-
     setTimeout(() => setToast(null), 3000);
   }
 
   /* -------------------------------------------------
+     Task click → attempt popup open (Stage 17.2)
+     ------------------------------------------------- */
+  const handleTaskClick = (task) => {
+    if (!canOpenTaskPopup(task)) return; // fail closed
+    setActiveTask(task);
+  };
+
+  /* -------------------------------------------------
      Render helpers
-  ------------------------------------------------- */
+     ------------------------------------------------- */
   const tasksForSummary = id =>
     tasks.filter(task => task.summaryId === id);
 
@@ -83,7 +135,7 @@ export default function PreProject({
 
   /* -------------------------------------------------
      Render
-  ------------------------------------------------- */
+     ------------------------------------------------- */
   return (
     <div className="preproject-workspace">
       {/* Footer actions (temporary host) */}
@@ -106,9 +158,15 @@ export default function PreProject({
         </div>
       )}
 
-      {/* Orphan tasks — NO “Unassigned” header */}
+      {/* Orphan tasks — clickable */}
       {orphanTasks.map(task => (
-        <div key={task.id}>{task.title}</div>
+        <div
+          key={task.id}
+          style={{ cursor: "pointer" }}
+          onClick={() => handleTaskClick(task)}
+        >
+          {task.title}
+        </div>
       ))}
 
       {/* Summaries */}
@@ -151,7 +209,13 @@ export default function PreProject({
           </h3>
 
           {tasksForSummary(summary.id).map(task => (
-            <div key={task.id}>{task.title}</div>
+            <div
+              key={task.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => handleTaskClick(task)}
+            >
+              {task.title}
+            </div>
           ))}
         </section>
       ))}
@@ -162,6 +226,22 @@ export default function PreProject({
           mode="add-summary"
           onConfirm={handleAddSummary}
           onCancel={() => setPopupMode(null)}
+        />
+      )}
+
+      {/* Task Popup (permission-gated before render) */}
+      {activeTask && (
+        <TaskPopup
+          task={activeTask}
+          pane="preproject"
+          onClose={() => setActiveTask(null)}
+          onUpdate={(update) => {
+            setTasks(prev =>
+              prev.map(t =>
+                t.id === activeTask.id ? { ...t, ...update } : t
+              )
+            );
+          }}
         />
       )}
     </div>
