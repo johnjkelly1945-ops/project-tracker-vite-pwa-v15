@@ -1,36 +1,55 @@
-// src/utils/identity.js
-// METRA — Canonical Identity Utilities (Stage 20.1.2)
+/**
+ * METRA — Identity Utilities
+ * Stage 20.2.1.a
+ *
+ * Canonical identity handling.
+ * SEMANTICS GOVERNED — DO NOT EXTEND WITHOUT SEM APPROVAL.
+ */
 
 /**
- * Safely compare two person references using canonical personId.
- * Accepts either full Person objects or plain personId strings
- * (to allow controlled transition away from string-based logic).
+ * Derive canonical person.id from any supported shape.
+ * Fail-closed: returns null if identity cannot be resolved.
+ */
+export function getPersonId(input) {
+  if (!input) return null;
+
+  // Canonical Person object
+  if (typeof input === "object" && input.id) {
+    return input.id;
+  }
+
+  // Defensive support for legacy shapes
+  if (typeof input === "object") {
+    if (input.person && input.person.id) return input.person.id;
+    if (input.personId) return input.personId;
+  }
+
+  // Explicitly reject strings (email, name, etc.)
+  return null;
+}
+
+/**
+ * Canonical identity comparison.
+ * Returns true only if both inputs resolve to the same person.id.
  */
 export function isSamePerson(a, b) {
-  if (!a || !b) return false;
-
-  const idA = typeof a === "string" ? a : a.personId;
-  const idB = typeof b === "string" ? b : b.personId;
+  const idA = getPersonId(a);
+  const idB = getPersonId(b);
 
   if (!idA || !idB) return false;
-
   return idA === idB;
 }
 
 /**
- * Derive initials from a display name.
- * DATA utility only — no formatting or UI assumptions.
- *
- * Examples:
- *  "John Kelly"      → "JK"
- *  "Mary Ann Smith" → "MAS"
+ * Assert identity presence (explicit use only).
+ * Throws when identity cannot be resolved.
  */
-export function deriveInitials(displayName) {
-  if (!displayName || typeof displayName !== "string") return "";
-
-  return displayName
-    .trim()
-    .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase())
-    .join("");
+export function assertPersonIdentity(input, context = "unknown") {
+  const id = getPersonId(input);
+  if (!id) {
+    throw new Error(
+      `METRA Identity Error: Unable to resolve person.id (${context})`
+    );
+  }
+  return id;
 }
