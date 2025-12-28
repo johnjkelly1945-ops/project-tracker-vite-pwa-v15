@@ -8,20 +8,38 @@ import Closure from "./components/Closure";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 12.7 — Regression Correction
-
-Summary Dashboard:
-• Explicitly dormant
-• Not rendered
-• Not default
-• Not reachable in Stage 12.x
-
-Workspace (PreProject) is the unconditional default.
+Stage 21.3.A — Workspace Owner Introduced
+---------------------------------------------------------------------
+• App is authoritative owner of workspace state
+• Owns tasks and summaries
+• Exposes summary-creation handler
+• No persistence yet (session-only)
+• No task creation yet
+• No activation / assignment changes
 =====================================================================
 */
 
 export default function App() {
   const [activeModule, setActiveModule] = useState("PreProject");
+
+  // Authoritative workspace state (session-only for now)
+  const [tasks, setTasks] = useState([]);
+  const [summaries, setSummaries] = useState([]);
+
+  /* -------------------------------------------------
+     Summary creation (PM-by-convention; enforcement deferred)
+     ------------------------------------------------- */
+  function handleAddSummary(title) {
+    if (!title || !title.trim()) return;
+
+    const newSummary = {
+      id: crypto.randomUUID(),
+      title: title.trim()
+    };
+
+    // Append to bottom
+    setSummaries(prev => [...prev, newSummary]);
+  }
 
   function renderActiveModule() {
     switch (activeModule) {
@@ -33,7 +51,13 @@ export default function App() {
         return <Closure />;
       case "PreProject":
       default:
-        return <PreProject />;
+        return (
+          <PreProject
+            tasks={tasks}
+            summaries={summaries}
+            onAddSummary={handleAddSummary}
+          />
+        );
     }
   }
 
