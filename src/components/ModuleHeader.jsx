@@ -1,38 +1,60 @@
-/* ======================================================================
-   METRA – ModuleHeader.jsx
-   Stable v4 – Workspace Shell Header
-   ----------------------------------------------------------------------
-   Provides:
-   ✔ Default application identity (METRA — Workspace)
-   ✔ Optional module-specific title override
-   ✔ Right-side action buttons (intent-only)
-   ====================================================================== */
+/*
+=====================================================================
+METRA — ModuleHeader.jsx
+Stage 24 (Diagnostic Override)
+---------------------------------------------------------------------
+• FORCED visible header + dev button
+• No CSS dependency
+• No conditional rendering
+• No semantics or persistence
+• DEV / DIAGNOSTIC ONLY
+=====================================================================
+*/
 
-import React from "react";
-import "../Styles/ModuleHeader.css";
-
-export default function ModuleHeader({ title, rightButtons = [] }) {
-  const displayTitle = title || "METRA — Workspace";
-
+export default function ModuleHeader({
+  activeModule,
+  setActiveModule,
+  rightButtons = []
+}) {
   return (
-    <div className="mh-wrapper">
-      
-      <div className="mh-title">
-        {displayTitle}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "12px 16px",
+        background: "#003366",
+        color: "white",
+        fontSize: "16px",
+        fontWeight: "bold",
+        borderBottom: "2px solid #001a33"
+      }}
+    >
+      {/* LEFT: Title */}
+      <div>
+        METRA — Workspace — HEADER TEST ACTIVE
       </div>
 
-      <div className="mh-right">
+      {/* RIGHT: Forced Dev Buttons */}
+      <div style={{ display: "flex", gap: "8px" }}>
         {rightButtons.map((btn, index) => (
           <button
             key={index}
-            className="mh-btn"
             onClick={btn.onClick}
+            style={{
+              padding: "6px 10px",
+              background: "#ffcc00",
+              color: "#000",
+              border: "1px solid #333",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "normal"
+            }}
           >
             {btn.label}
           </button>
         ))}
       </div>
-
     </div>
   );
 }

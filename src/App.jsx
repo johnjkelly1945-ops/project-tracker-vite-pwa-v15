@@ -8,37 +8,46 @@ import Closure from "./components/Closure";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 21.3.A — Workspace Owner Introduced
+Stage 24 (Diagnostic / Support)
 ---------------------------------------------------------------------
-• App is authoritative owner of workspace state
-• Owns tasks and summaries
-• Exposes summary-creation handler
-• No persistence yet (session-only)
-• No task creation yet
-• No activation / assignment changes
+• Authoritative workspace owner
+• DEV-ONLY task instantiation bridge
+• No persistence
+• No popup auto-open
+• No semantics / governance / timing
 =====================================================================
 */
 
 export default function App() {
   const [activeModule, setActiveModule] = useState("PreProject");
 
-  // Authoritative workspace state (session-only for now)
+  // Authoritative workspace state (session-only)
   const [tasks, setTasks] = useState([]);
   const [summaries, setSummaries] = useState([]);
 
   /* -------------------------------------------------
-     Summary creation (PM-by-convention; enforcement deferred)
+     DEV ONLY — Force task instantiation
+     ------------------------------------------------- */
+  function instantiateDevTask() {
+    const task = {
+      id: crypto.randomUUID(),
+      title: "Session Task (dev)",
+      summaryId: null
+    };
+
+    setTasks(prev => [...prev, task]);
+  }
+
+  /* -------------------------------------------------
+     Summary creation
      ------------------------------------------------- */
   function handleAddSummary(title) {
     if (!title || !title.trim()) return;
 
-    const newSummary = {
-      id: crypto.randomUUID(),
-      title: title.trim()
-    };
-
-    // Append to bottom
-    setSummaries(prev => [...prev, newSummary]);
+    setSummaries(prev => [
+      ...prev,
+      { id: crypto.randomUUID(), title: title.trim() }
+    ]);
   }
 
   function renderActiveModule() {
@@ -66,6 +75,12 @@ export default function App() {
       <ModuleHeader
         activeModule={activeModule}
         setActiveModule={setActiveModule}
+        rightButtons={[
+          {
+            label: "Instantiate session task (dev)",
+            onClick: instantiateDevTask
+          }
+        ]}
       />
       {renderActiveModule()}
     </>
