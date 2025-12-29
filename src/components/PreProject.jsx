@@ -1,29 +1,43 @@
+import { useState } from "react";
+import TaskPopup from "./TaskPopup";
+
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 21.3.A — Summary Creation via Workspace Owner
+Stage 24 — Behaviour Activation (Corrected)
 ---------------------------------------------------------------------
-• PreProject is a renderer / intent-raiser
-• Does NOT own tasks or summaries
-• Calls onAddSummary to mutate authoritative state in App
-• No task creation
-• No activation / popup changes
+• PreProject remains renderer / intent-raiser
+• Workspace remains authoritative
+• Activates: click task → open TaskPopup
+• No persistence
+• No semantic changes
+• No governance / role / timing logic
 =====================================================================
 */
 
-export default function PreProject({
-  tasks = [],
-  summaries = [],
-  onAddSummary
-}) {
+export default function PreProject(props) {
+  const { tasks = [], summaries = [], onAddSummary } = props;
+
+  const [selectedTask, setSelectedTask] = useState(null);
+
   /* -------------------------------------------------
      Summary creation (PM-by-convention)
      ------------------------------------------------- */
   function handleAddSummary() {
-    // PM-only authority is semantic; enforcement deferred (no login yet)
     const title = window.prompt("Summary title");
     if (!title || !title.trim()) return;
     onAddSummary(title);
+  }
+
+  /* -------------------------------------------------
+     Task selection
+     ------------------------------------------------- */
+  function handleTaskClick(task) {
+    setSelectedTask(task);
+  }
+
+  function handleClosePopup() {
+    setSelectedTask(null);
   }
 
   /* -------------------------------------------------
@@ -39,14 +53,18 @@ export default function PreProject({
      ------------------------------------------------- */
   return (
     <div className="preproject-workspace">
-      {/* Add Summary (PM-by-convention; enforcement deferred) */}
+      {/* Add Summary */}
       <button onClick={handleAddSummary}>
         Add Summary
       </button>
 
       {/* Orphan tasks */}
       {orphanTasks.map(task => (
-        <div key={task.id} style={{ cursor: "pointer" }}>
+        <div
+          key={task.id}
+          style={{ cursor: "pointer" }}
+          onClick={() => handleTaskClick(task)}
+        >
           {task.title}
         </div>
       ))}
@@ -57,12 +75,24 @@ export default function PreProject({
           <h3>{summary.title}</h3>
 
           {tasksForSummary(summary.id).map(task => (
-            <div key={task.id} style={{ cursor: "pointer" }}>
+            <div
+              key={task.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => handleTaskClick(task)}
+            >
               {task.title}
             </div>
           ))}
         </section>
       ))}
+
+      {/* Task Popup */}
+      {selectedTask && (
+        <TaskPopup
+          task={selectedTask}
+          onClose={handleClosePopup}
+        />
+      )}
     </div>
   );
 }
