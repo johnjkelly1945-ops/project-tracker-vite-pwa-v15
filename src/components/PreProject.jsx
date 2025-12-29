@@ -5,155 +5,93 @@ import TaskPopup from "./TaskPopup";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 26 — Phase 2
-Summary Linkage (Explicit Linkage Operations)
+Stage 28A — Step 1
+Summary Instantiation (Minimal, Non-Authoritative)
 =====================================================================
 
 AUTHORITATIVE RULES:
-• PreProject.jsx is the sole authority for task existence.
-• PreProject.jsx is the sole authority for task ↔ summary linkage.
-• UI components may request linkage but never mutate state.
-• All linkage is explicit; no inference or auto-linking.
-• Orphan tasks are valid, durable, first-class entities.
+• PreProject.jsx remains the sole authority for tasks.
+• Summaries are non-authoritative entities.
+• Summaries do not own tasks.
+• No linkage, grouping, or movement logic is introduced here.
+• New summaries are appended as the last rendered item in the workspace.
 
 PRESERVES:
-• Stage 25 — Canonical task creation, persistence, rehydration
-• Stage 24 — Task click → popup behaviour (unchanged)
-• Stage 26 Phase 1 — Data shape & authority (immutable)
-
+• Stage 24 — Task click → popup behaviour
+• Stage 25 — Canonical task creation & persistence
+• Stage 26 — Summary linkage authority (unchanged)
 =====================================================================
 */
 
-/* ---------------------------------------------------------------
-   PERSISTENCE CONTRACT (SINGLE KEY)
-   --------------------------------------------------------------- */
-const STORAGE_KEY = "metra.workspace.tasks";
+const TASK_STORAGE_KEY = "metra.workspace.tasks";
+const SUMMARY_STORAGE_KEY = "metra.workspace.summaries";
 
 export default function PreProject() {
   /* ---------------------------------------------------------------
      AUTHORITATIVE WORKSPACE STATE
      --------------------------------------------------------------- */
   const [tasks, setTasks] = useState([]);
+  const [summaries, setSummaries] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
-  const [rehydrationError, setRehydrationError] = useState(null);
 
-  // Visible linkage failure (workspace-owned)
-  const [linkageError, setLinkageError] = useState(null);
+  const [rehydrationError, setRehydrationError] = useState(null);
+  const [summaryError, setSummaryError] = useState(null);
 
   /* ---------------------------------------------------------------
-     PHASE 4B — REHYDRATION (READ ONCE, ON LOAD)
+     REHYDRATION — TASKS & SUMMARIES (READ ONCE)
      --------------------------------------------------------------- */
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-
-    // No stored data → valid empty workspace
-    if (!stored) return;
-
-    let parsed;
-    try {
-      parsed = JSON.parse(stored);
-    } catch {
-      setRehydrationError("Stored task data is not valid JSON.");
-      return;
-    }
-
-    // Must be an array
-    if (!Array.isArray(parsed)) {
-      setRehydrationError("Stored task data is not an array.");
-      return;
-    }
-
-    // Validate every task strictly
-    for (const task of parsed) {
-      const valid =
-        task &&
-        typeof task.id === "string" &&
-        typeof task.title === "string" &&
-        typeof task.status === "string" &&
-        typeof task.createdAt === "number" &&
-        "summaryId" in task;
-
-      if (!valid) {
-        setRehydrationError(
-          "Stored task data is invalid. Workspace cannot be loaded."
-        );
+    // --- Tasks ---
+    const storedTasks = localStorage.getItem(TASK_STORAGE_KEY);
+    if (storedTasks) {
+      try {
+        const parsed = JSON.parse(storedTasks);
+        if (Array.isArray(parsed)) {
+          setTasks(parsed);
+        }
+      } catch {
+        setRehydrationError("Stored task data is invalid.");
         return;
       }
     }
 
-    // All tasks valid → populate authoritative state
-    setTasks(parsed);
+    // --- Summaries ---
+    const storedSummaries = localStorage.getItem(SUMMARY_STORAGE_KEY);
+    if (storedSummaries) {
+      try {
+        const parsed = JSON.parse(storedSummaries);
+        if (Array.isArray(parsed)) {
+          setSummaries(parsed);
+        }
+      } catch {
+        setRehydrationError("Stored summary data is invalid.");
+        return;
+      }
+    }
   }, []);
 
   /* ---------------------------------------------------------------
-     STAGE 26 — PHASE 1 VALIDATION HELPERS (IMMUTABLE)
+     STAGE 28A — SUMMARY CREATION (MINIMAL)
      --------------------------------------------------------------- */
-  function requireTask(taskId) {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) {
-      setLinkageError(`Linkage error: task '${taskId}' does not exist.`);
-      return null;
+  function createSummary(title) {
+    setSummaryError(null);
+
+    if (typeof title !== "string") return;
+    const trimmed = title.trim();
+    if (!trimmed) {
+      setSummaryError("Summary name is required.");
+      return;
     }
-    return task;
-  }
 
-  function requireSummaryId(summaryId) {
-    if (typeof summaryId !== "string" || !summaryId.trim()) {
-      setLinkageError("Linkage error: summaryId must be a non-empty string.");
-      return null;
-    }
-    return summaryId.trim();
-  }
+    const newSummary = {
+      id: crypto.randomUUID(),
+      title: trimmed,
+      createdAt: Date.now(),
+    };
 
-  /* ---------------------------------------------------------------
-     STAGE 26 — PHASE 2 LINKAGE OPERATIONS (EXPLICIT & CONTROLLED)
-     --------------------------------------------------------------- */
-
-  // Link task → summary (single authoritative task mutation)
-  function linkTaskToSummary(taskId, summaryId) {
-    setLinkageError(null);
-
-    const task = requireTask(taskId);
-    const validSummaryId = requireSummaryId(summaryId);
-    if (!task || !validSummaryId) return;
-
-    const updatedTasks = tasks.map((t) =>
-      t.id === taskId ? { ...t, summaryId: validSummaryId } : t
-    );
-
-    setTasks(updatedTasks);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
-  }
-
-  // Unlink task → orphan state preserved
-  function unlinkTaskFromSummary(taskId) {
-    setLinkageError(null);
-
-    const task = requireTask(taskId);
-    if (!task) return;
-
-    const updatedTasks = tasks.map((t) =>
-      t.id === taskId ? { ...t, summaryId: null } : t
-    );
-
-    setTasks(updatedTasks);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
-  }
-
-  // Move task between summaries (explicit relink; no derived logic)
-  function moveTaskToSummary(taskId, summaryId) {
-    setLinkageError(null);
-
-    const task = requireTask(taskId);
-    const validSummaryId = requireSummaryId(summaryId);
-    if (!task || !validSummaryId) return;
-
-    const updatedTasks = tasks.map((t) =>
-      t.id === taskId ? { ...t, summaryId: validSummaryId } : t
-    );
-
-    setTasks(updatedTasks);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
+    const updated = [...summaries, newSummary];
+    setSummaries(updated);
+    localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(updated));
   }
 
   /* ---------------------------------------------------------------
@@ -161,29 +99,33 @@ export default function PreProject() {
      --------------------------------------------------------------- */
   function createTask(title) {
     if (typeof title !== "string") return;
-
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) return;
+    const trimmed = title.trim();
+    if (!trimmed) return;
 
     const newTask = {
       id: crypto.randomUUID(),
-      title: trimmedTitle,
+      title: trimmed,
       status: "open",
       createdAt: Date.now(),
       summaryId: null,
     };
 
-    const updatedTasks = [...tasks, newTask];
-    setTasks(updatedTasks);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
+    const updated = [...tasks, newTask];
+    setTasks(updated);
+    localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(updated));
   }
 
   /* ---------------------------------------------------------------
-     TEMPORARY WORKSPACE-LEVEL CREATION CONTROL
+     FOOTER ACTIONS (TEMPORARY, EXPLICIT)
      --------------------------------------------------------------- */
   function handleCreateTaskClick() {
     const title = prompt("Enter task title");
     createTask(title);
+  }
+
+  function handleCreateSummaryClick() {
+    const title = prompt("Enter summary name");
+    createSummary(title);
   }
 
   /* ---------------------------------------------------------------
@@ -200,23 +142,24 @@ export default function PreProject() {
 
   return (
     <div style={{ padding: "16px" }}>
-      {linkageError && (
+      {summaryError && (
         <div style={{ marginBottom: "12px", color: "red" }}>
-          <strong>{linkageError}</strong>
+          <strong>{summaryError}</strong>
         </div>
       )}
 
+      {/* FOOTER CONTROLS */}
       <div style={{ marginBottom: "16px" }}>
         <button onClick={handleCreateTaskClick}>
-          Create Task (Stage 25 – Temporary)
+          Create Task
+        </button>{" "}
+        <button onClick={handleCreateSummaryClick}>
+          Create Summary
         </button>
       </div>
 
+      {/* WORKSPACE LIST (UNIFIED, ORDER-ONLY) */}
       <div>
-        {tasks.length === 0 && (
-          <div style={{ opacity: 0.6 }}>No tasks in workspace</div>
-        )}
-
         {tasks.map((task) => (
           <div
             key={task.id}
@@ -228,9 +171,29 @@ export default function PreProject() {
               cursor: "pointer",
             }}
           >
-            {task.title}
+            🗂️ {task.title}
           </div>
         ))}
+
+        {summaries.map((summary) => (
+          <div
+            key={summary.id}
+            style={{
+              padding: "8px",
+              border: "1px dashed #999",
+              marginBottom: "6px",
+              opacity: 0.85,
+            }}
+          >
+            📌 {summary.title}
+          </div>
+        ))}
+
+        {tasks.length === 0 && summaries.length === 0 && (
+          <div style={{ opacity: 0.6 }}>
+            Workspace is empty
+          </div>
+        )}
       </div>
 
       {activeTask && (
