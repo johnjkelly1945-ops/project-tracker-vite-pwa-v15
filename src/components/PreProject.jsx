@@ -5,19 +5,21 @@ import TaskPopup from "./TaskPopup";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 26 — Phase 1
-Summary Linkage (Data Shape & Authority Only)
+Stage 26 — Phase 2
+Summary Linkage (Explicit Linkage Operations)
 =====================================================================
 
 AUTHORITATIVE RULES:
 • PreProject.jsx is the sole authority for task existence.
 • PreProject.jsx is the sole authority for task ↔ summary linkage.
 • UI components may request linkage but never mutate state.
-• No UI affordances, inference, or auto-linking in this phase.
+• All linkage is explicit; no inference or auto-linking.
+• Orphan tasks are valid, durable, first-class entities.
 
 PRESERVES:
 • Stage 25 — Canonical task creation, persistence, rehydration
 • Stage 24 — Task click → popup behaviour (unchanged)
+• Stage 26 Phase 1 — Data shape & authority (immutable)
 
 =====================================================================
 */
@@ -35,7 +37,7 @@ export default function PreProject() {
   const [activeTask, setActiveTask] = useState(null);
   const [rehydrationError, setRehydrationError] = useState(null);
 
-  // Stage 26 — Phase 1: visible linkage failure (workspace-owned)
+  // Visible linkage failure (workspace-owned)
   const [linkageError, setLinkageError] = useState(null);
 
   /* ---------------------------------------------------------------
@@ -84,7 +86,7 @@ export default function PreProject() {
   }, []);
 
   /* ---------------------------------------------------------------
-     STAGE 26 — PHASE 1 VALIDATION HELPERS
+     STAGE 26 — PHASE 1 VALIDATION HELPERS (IMMUTABLE)
      --------------------------------------------------------------- */
   function requireTask(taskId) {
     const task = tasks.find((t) => t.id === taskId);
@@ -104,8 +106,10 @@ export default function PreProject() {
   }
 
   /* ---------------------------------------------------------------
-     STAGE 26 — PHASE 1 LINKAGE MUTATION HELPERS
+     STAGE 26 — PHASE 2 LINKAGE OPERATIONS (EXPLICIT & CONTROLLED)
      --------------------------------------------------------------- */
+
+  // Link task → summary (single authoritative task mutation)
   function linkTaskToSummary(taskId, summaryId) {
     setLinkageError(null);
 
@@ -121,6 +125,7 @@ export default function PreProject() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
   }
 
+  // Unlink task → orphan state preserved
   function unlinkTaskFromSummary(taskId) {
     setLinkageError(null);
 
@@ -135,8 +140,20 @@ export default function PreProject() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
   }
 
+  // Move task between summaries (explicit relink; no derived logic)
   function moveTaskToSummary(taskId, summaryId) {
-    linkTaskToSummary(taskId, summaryId);
+    setLinkageError(null);
+
+    const task = requireTask(taskId);
+    const validSummaryId = requireSummaryId(summaryId);
+    if (!task || !validSummaryId) return;
+
+    const updatedTasks = tasks.map((t) =>
+      t.id === taskId ? { ...t, summaryId: validSummaryId } : t
+    );
+
+    setTasks(updatedTasks);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTasks));
   }
 
   /* ---------------------------------------------------------------
