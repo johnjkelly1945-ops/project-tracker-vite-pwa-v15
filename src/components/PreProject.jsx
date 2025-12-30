@@ -6,8 +6,8 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 28 — Step 2 (FINAL)
-Alignment Semantics — Global Creation Order
+Stage 30A — Summary Ordering Controls (Explicit & Non-Spatial)
+Render-only, reversible, non-persistent
 =====================================================================
 */
 
@@ -17,9 +17,13 @@ const SUMMARY_STORAGE_KEY = "metra.workspace.summaries";
 export default function PreProject() {
   const [tasks, setTasks] = useState([]);
   const [summaries, setSummaries] = useState([]);
+  const [summaryOrder, setSummaryOrder] = useState(null); // render-only
   const [activeTask, setActiveTask] = useState(null);
   const [rehydrationError, setRehydrationError] = useState(null);
 
+  // ------------------------------------------------------------------
+  // Rehydration (unchanged)
+  // ------------------------------------------------------------------
   useEffect(() => {
     try {
       const t = JSON.parse(localStorage.getItem(TASK_STORAGE_KEY) || "[]");
@@ -31,7 +35,16 @@ export default function PreProject() {
     }
   }, []);
 
-  // Option A: create task once, with optional summaryId
+  // Initialise render-only summary order once summaries are available
+  useEffect(() => {
+    if (!summaryOrder && summaries.length > 0) {
+      setSummaryOrder(summaries.map((s) => s.id));
+    }
+  }, [summaries, summaryOrder]);
+
+  // ------------------------------------------------------------------
+  // Task creation (unchanged)
+  // ------------------------------------------------------------------
   function createTask({ title, summaryId }) {
     const newTask = {
       id: crypto.randomUUID(),
@@ -54,12 +67,11 @@ export default function PreProject() {
     );
   }
 
-  // ------------------------------------------------------------
-  // Stage 28 — Step 2
-  // Global creation order with summary anchoring
-  // ------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // Stage 30A — Render-only summary ordering
+  // ------------------------------------------------------------------
 
-  // Index tasks by summaryId
+  // Index tasks by summaryId (unchanged semantics)
   const tasksBySummary = {};
   tasks.forEach((task) => {
     if (task.summaryId) {
@@ -70,31 +82,75 @@ export default function PreProject() {
     }
   });
 
-  // Sort linked tasks by creation time
+  // Sort linked tasks by creation time (unchanged)
   Object.values(tasksBySummary).forEach((group) =>
     group.sort((a, b) => a.createdAt - b.createdAt)
   );
 
-  // Timeline consists of:
-  // • all summaries
-  // • all tasks WITHOUT summaryId
-  const timeline = [
-    ...summaries.map((s) => ({ type: "summary", item: s })),
-    ...tasks
-      .filter((t) => !t.summaryId)
-      .map((t) => ({ type: "task", item: t })),
-  ].sort((a, b) => a.item.createdAt - b.item.createdAt);
+  // Resolve ordered summaries (fail closed)
+  const orderedSummaries =
+    Array.isArray(summaryOrder) && summaryOrder.length === summaries.length
+      ? summaryOrder
+          .map((id) => summaries.find((s) => s.id === id))
+          .filter(Boolean)
+      : summaries;
 
-  // ------------------------------------------------------------
+  // Orphan tasks (unchanged)
+  const orphanTasks = tasks
+    .filter((t) => !t.summaryId)
+    .sort((a, b) => a.createdAt - b.createdAt);
+
+  // Move handlers — atomic, guarded, reversible
+  function moveSummary(index, direction) {
+    if (!Array.isArray(summaryOrder)) return;
+    const target = index + direction;
+    if (target < 0 || target >= summaryOrder.length) return;
+
+    const next = [...summaryOrder];
+    const temp = next[index];
+    next[index] = next[target];
+    next[target] = temp;
+    setSummaryOrder(next);
+  }
+
+  // ------------------------------------------------------------------
 
   return (
     <div style={{ padding: "16px" }}>
-      {/* WORKSPACE LIST — Stage 28 Step 2 (final semantics) */}
+      {/* WORKSPACE LIST — Stage 30A render-only ordering */}
       <div>
-        {timeline.map((entry) => {
-          if (entry.type === "task") {
-            const task = entry.item;
-            return (
+        {orderedSummaries.map((summary, index) => (
+          <div key={summary.id} style={{ marginBottom: "8px" }}>
+            <div
+              style={{
+                padding: "8px",
+                border: "1px dashed #999",
+                marginBottom: "4px",
+                opacity: 0.85,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>📌 {summary.title}</span>
+              <span>
+                <button
+                  onClick={() => moveSummary(index, -1)}
+                  disabled={index === 0}
+                  style={{ marginRight: "4px" }}
+                >
+                  ↑
+                </button>
+                <button
+                  onClick={() => moveSummary(index, +1)}
+                  disabled={index === orderedSummaries.length - 1}
+                >
+                  ↓
+                </button>
+              </span>
+            </div>
+
+            {(tasksBySummary[summary.id] || []).map((task) => (
               <div
                 key={task.id}
                 onClick={() => setActiveTask(task)}
@@ -102,47 +158,31 @@ export default function PreProject() {
                   padding: "8px",
                   border: "1px solid #ccc",
                   marginBottom: "6px",
+                  marginLeft: "16px",
                   cursor: "pointer",
                 }}
               >
                 🗂️ {task.title}
               </div>
-            );
-          }
+            ))}
+          </div>
+        ))}
 
-          // summary
-          const summary = entry.item;
-          return (
-            <div key={summary.id} style={{ marginBottom: "8px" }}>
-              <div
-                style={{
-                  padding: "8px",
-                  border: "1px dashed #999",
-                  marginBottom: "4px",
-                  opacity: 0.85,
-                }}
-              >
-                📌 {summary.title}
-              </div>
-
-              {(tasksBySummary[summary.id] || []).map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => setActiveTask(task)}
-                  style={{
-                    padding: "8px",
-                    border: "1px solid #ccc",
-                    marginBottom: "6px",
-                    marginLeft: "16px",
-                    cursor: "pointer",
-                  }}
-                >
-                  🗂️ {task.title}
-                </div>
-              ))}
-            </div>
-          );
-        })}
+        {/* Orphan tasks render after summaries (unchanged semantics) */}
+        {orphanTasks.map((task) => (
+          <div
+            key={task.id}
+            onClick={() => setActiveTask(task)}
+            style={{
+              padding: "8px",
+              border: "1px solid #ccc",
+              marginBottom: "6px",
+              cursor: "pointer",
+            }}
+          >
+            🗂️ {task.title}
+          </div>
+        ))}
       </div>
 
       <PreProjectFooter
