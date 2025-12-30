@@ -6,8 +6,8 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 28 — Step 1
-Create Task via Modal (Option A)
+Stage 28 — Step 2 (FINAL)
+Alignment Semantics — Global Creation Order
 =====================================================================
 */
 
@@ -54,38 +54,95 @@ export default function PreProject() {
     );
   }
 
+  // ------------------------------------------------------------
+  // Stage 28 — Step 2
+  // Global creation order with summary anchoring
+  // ------------------------------------------------------------
+
+  // Index tasks by summaryId
+  const tasksBySummary = {};
+  tasks.forEach((task) => {
+    if (task.summaryId) {
+      if (!tasksBySummary[task.summaryId]) {
+        tasksBySummary[task.summaryId] = [];
+      }
+      tasksBySummary[task.summaryId].push(task);
+    }
+  });
+
+  // Sort linked tasks by creation time
+  Object.values(tasksBySummary).forEach((group) =>
+    group.sort((a, b) => a.createdAt - b.createdAt)
+  );
+
+  // Timeline consists of:
+  // • all summaries
+  // • all tasks WITHOUT summaryId
+  const timeline = [
+    ...summaries.map((s) => ({ type: "summary", item: s })),
+    ...tasks
+      .filter((t) => !t.summaryId)
+      .map((t) => ({ type: "task", item: t })),
+  ].sort((a, b) => a.item.createdAt - b.item.createdAt);
+
+  // ------------------------------------------------------------
+
   return (
     <div style={{ padding: "16px" }}>
-      {/* WORKSPACE LIST (unchanged presentation for now) */}
+      {/* WORKSPACE LIST — Stage 28 Step 2 (final semantics) */}
       <div>
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            onClick={() => setActiveTask(task)}
-            style={{
-              padding: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "6px",
-              cursor: "pointer",
-            }}
-          >
-            🗂️ {task.title}
-          </div>
-        ))}
+        {timeline.map((entry) => {
+          if (entry.type === "task") {
+            const task = entry.item;
+            return (
+              <div
+                key={task.id}
+                onClick={() => setActiveTask(task)}
+                style={{
+                  padding: "8px",
+                  border: "1px solid #ccc",
+                  marginBottom: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                🗂️ {task.title}
+              </div>
+            );
+          }
 
-        {summaries.map((summary) => (
-          <div
-            key={summary.id}
-            style={{
-              padding: "8px",
-              border: "1px dashed #999",
-              marginBottom: "6px",
-              opacity: 0.85,
-            }}
-          >
-            📌 {summary.title}
-          </div>
-        ))}
+          // summary
+          const summary = entry.item;
+          return (
+            <div key={summary.id} style={{ marginBottom: "8px" }}>
+              <div
+                style={{
+                  padding: "8px",
+                  border: "1px dashed #999",
+                  marginBottom: "4px",
+                  opacity: 0.85,
+                }}
+              >
+                📌 {summary.title}
+              </div>
+
+              {(tasksBySummary[summary.id] || []).map((task) => (
+                <div
+                  key={task.id}
+                  onClick={() => setActiveTask(task)}
+                  style={{
+                    padding: "8px",
+                    border: "1px solid #ccc",
+                    marginBottom: "6px",
+                    marginLeft: "16px",
+                    cursor: "pointer",
+                  }}
+                >
+                  🗂️ {task.title}
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       <PreProjectFooter
