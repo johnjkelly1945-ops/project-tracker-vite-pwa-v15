@@ -2,20 +2,21 @@
 import { useState, useEffect } from "react";
 import TaskPopup from "./TaskPopup";
 import PreProjectFooter from "./PreProjectFooter";
-import { getCurrentUser } from "../utils/currentUser";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 32.1 — Summary Instantiation (Render-Only Authority Gating)
+Stage 32.2 — Summary Instantiation (Explicit Workspace Owner Assumption)
 
-• Render-only change
-• No persistence
-• No behaviour
-• No task lifecycle interaction
-• Workspace owner derived provisionally from currentUser
-• Explicitly marked for future replacement when workspace ownership
-  is formally modelled
+IMPORTANT:
+• Temporary single-user workspace assumption
+• Workspace owner explicitly assumed TRUE
+• This bypasses currentUser timing issues
+• To be replaced when workspace ownership is formally modelled
+
+NO persistence
+NO behaviour change
+NO lifecycle interaction
 =====================================================================
 */
 
@@ -31,13 +32,12 @@ export default function PreProject() {
   const [rehydrationError, setRehydrationError] = useState(null);
 
   // ------------------------------------------------------------------
-  // Stage 32.1 — Workspace owner resolution (PROVISIONAL)
+  // Stage 32.2 — Explicit workspace owner assumption (TEMPORARY)
   // ------------------------------------------------------------------
-  // Until workspace ownership is formally modelled, the current user
-  // is treated as the workspace owner for render-gating purposes only.
-  // This introduces NO persistence and NO behavioural authority.
-  const currentUser = getCurrentUser();
-  const isWorkspaceOwner = Boolean(currentUser);
+  // The workspace is currently single-user.
+  // Workspace ownership is therefore assumed for render-gating purposes.
+  // This MUST be replaced when workspace authority is formally defined.
+  const isWorkspaceOwner = true;
 
   // ------------------------------------------------------------------
   // Workspace rehydration (tasks + summaries)
@@ -202,7 +202,6 @@ export default function PreProject() {
             >
               <span>📌 {summary.title}</span>
 
-              {/* Stage 32.1 — owner-only ordering controls (unchanged behaviour) */}
               {isWorkspaceOwner && (
                 <span>
                   <button
@@ -256,7 +255,6 @@ export default function PreProject() {
         ))}
       </div>
 
-      {/* Stage 32.1 — Create Summary affordance gated at render-time only */}
       <PreProjectFooter
         summaries={summaries}
         onCreateTaskIntent={createTask}
