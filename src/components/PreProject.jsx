@@ -2,12 +2,20 @@
 import { useState, useEffect } from "react";
 import TaskPopup from "./TaskPopup";
 import PreProjectFooter from "./PreProjectFooter";
+import { getCurrentUser } from "../utils/currentUser";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 30C.1 — Summary Ordering Persistence (Advisory, Owner-Only)
-Workspace-scoped, fail-closed, non-authoritative
+Stage 32.1 — Summary Instantiation (Render-Only Authority Gating)
+
+• Render-only change
+• No persistence
+• No behaviour
+• No task lifecycle interaction
+• Workspace owner derived provisionally from currentUser
+• Explicitly marked for future replacement when workspace ownership
+  is formally modelled
 =====================================================================
 */
 
@@ -21,6 +29,15 @@ export default function PreProject() {
   const [summaryOrder, setSummaryOrder] = useState(null); // advisory
   const [activeTask, setActiveTask] = useState(null);
   const [rehydrationError, setRehydrationError] = useState(null);
+
+  // ------------------------------------------------------------------
+  // Stage 32.1 — Workspace owner resolution (PROVISIONAL)
+  // ------------------------------------------------------------------
+  // Until workspace ownership is formally modelled, the current user
+  // is treated as the workspace owner for render-gating purposes only.
+  // This introduces NO persistence and NO behavioural authority.
+  const currentUser = getCurrentUser();
+  const isWorkspaceOwner = Boolean(currentUser);
 
   // ------------------------------------------------------------------
   // Workspace rehydration (tasks + summaries)
@@ -45,7 +62,6 @@ export default function PreProject() {
     try {
       const raw = localStorage.getItem(SUMMARY_ORDER_STORAGE_KEY);
       if (!raw) {
-        // No persisted preference → default render order
         setSummaryOrder(summaries.map((s) => s.id));
         return;
       }
@@ -53,11 +69,7 @@ export default function PreProject() {
       const parsed = JSON.parse(raw);
       const order = parsed?.order;
 
-      // Strict validation — fail closed
-      if (
-        !Array.isArray(order) ||
-        new Set(order).size !== order.length
-      ) {
+      if (!Array.isArray(order) || new Set(order).size !== order.length) {
         throw new Error("Invalid summary order shape.");
       }
 
@@ -68,7 +80,6 @@ export default function PreProject() {
         throw new Error("Summary order contains unknown ids.");
       }
 
-      // Append any new summaries not present in persisted order
       const completeOrder = [
         ...order,
         ...summaryIds.filter((id) => !order.includes(id)),
@@ -76,7 +87,6 @@ export default function PreProject() {
 
       setSummaryOrder(completeOrder);
     } catch {
-      // Fail closed — ignore persisted order entirely
       setSummaryOrder(summaries.map((s) => s.id));
     }
   }, [summaries]);
@@ -94,7 +104,7 @@ export default function PreProject() {
         })
       );
     } catch {
-      // Persistence failure is non-fatal (advisory)
+      // Advisory persistence only — fail silently
     }
   }
 
@@ -150,7 +160,6 @@ export default function PreProject() {
           .filter(Boolean)
       : summaries;
 
-  // Orphan tasks (unchanged)
   const orphanTasks = tasks
     .filter((t) => !t.summaryId)
     .sort((a, b) => a.createdAt - b.createdAt);
@@ -192,21 +201,25 @@ export default function PreProject() {
               }}
             >
               <span>📌 {summary.title}</span>
-              <span>
-                <button
-                  onClick={() => moveSummary(index, -1)}
-                  disabled={index === 0}
-                  style={{ marginRight: "4px" }}
-                >
-                  ↑
-                </button>
-                <button
-                  onClick={() => moveSummary(index, +1)}
-                  disabled={index === orderedSummaries.length - 1}
-                >
-                  ↓
-                </button>
-              </span>
+
+              {/* Stage 32.1 — owner-only ordering controls (unchanged behaviour) */}
+              {isWorkspaceOwner && (
+                <span>
+                  <button
+                    onClick={() => moveSummary(index, -1)}
+                    disabled={index === 0}
+                    style={{ marginRight: "4px" }}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => moveSummary(index, +1)}
+                    disabled={index === orderedSummaries.length - 1}
+                  >
+                    ↓
+                  </button>
+                </span>
+              )}
             </div>
 
             {(tasksBySummary[summary.id] || []).map((task) => (
@@ -227,7 +240,6 @@ export default function PreProject() {
           </div>
         ))}
 
-        {/* Orphan tasks render after summaries (unchanged semantics) */}
         {orphanTasks.map((task) => (
           <div
             key={task.id}
@@ -244,9 +256,11 @@ export default function PreProject() {
         ))}
       </div>
 
+      {/* Stage 32.1 — Create Summary affordance gated at render-time only */}
       <PreProjectFooter
         summaries={summaries}
         onCreateTaskIntent={createTask}
+        showCreateSummary={isWorkspaceOwner}
       />
 
       {activeTask && (
