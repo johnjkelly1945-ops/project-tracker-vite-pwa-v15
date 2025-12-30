@@ -6,23 +6,24 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 30A — Summary Ordering Controls (Explicit & Non-Spatial)
-Render-only, reversible, non-persistent
+Stage 30C.1 — Summary Ordering Persistence (Advisory, Owner-Only)
+Workspace-scoped, fail-closed, non-authoritative
 =====================================================================
 */
 
 const TASK_STORAGE_KEY = "metra.workspace.tasks";
 const SUMMARY_STORAGE_KEY = "metra.workspace.summaries";
+const SUMMARY_ORDER_STORAGE_KEY = "metra.workspace.summaryOrder";
 
 export default function PreProject() {
   const [tasks, setTasks] = useState([]);
   const [summaries, setSummaries] = useState([]);
-  const [summaryOrder, setSummaryOrder] = useState(null); // render-only
+  const [summaryOrder, setSummaryOrder] = useState(null); // advisory
   const [activeTask, setActiveTask] = useState(null);
   const [rehydrationError, setRehydrationError] = useState(null);
 
   // ------------------------------------------------------------------
-  // Rehydration (unchanged)
+  // Workspace rehydration (tasks + summaries)
   // ------------------------------------------------------------------
   useEffect(() => {
     try {
@@ -35,15 +36,70 @@ export default function PreProject() {
     }
   }, []);
 
-  // Initialise render-only summary order once summaries are available
+  // ------------------------------------------------------------------
+  // Advisory summary ordering rehydration (fail-closed)
+  // ------------------------------------------------------------------
   useEffect(() => {
-    if (!summaryOrder && summaries.length > 0) {
+    if (!summaries.length) return;
+
+    try {
+      const raw = localStorage.getItem(SUMMARY_ORDER_STORAGE_KEY);
+      if (!raw) {
+        // No persisted preference → default render order
+        setSummaryOrder(summaries.map((s) => s.id));
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      const order = parsed?.order;
+
+      // Strict validation — fail closed
+      if (
+        !Array.isArray(order) ||
+        new Set(order).size !== order.length
+      ) {
+        throw new Error("Invalid summary order shape.");
+      }
+
+      const summaryIds = summaries.map((s) => s.id);
+      const allIdsExist = order.every((id) => summaryIds.includes(id));
+
+      if (!allIdsExist) {
+        throw new Error("Summary order contains unknown ids.");
+      }
+
+      // Append any new summaries not present in persisted order
+      const completeOrder = [
+        ...order,
+        ...summaryIds.filter((id) => !order.includes(id)),
+      ];
+
+      setSummaryOrder(completeOrder);
+    } catch {
+      // Fail closed — ignore persisted order entirely
       setSummaryOrder(summaries.map((s) => s.id));
     }
-  }, [summaries, summaryOrder]);
+  }, [summaries]);
 
   // ------------------------------------------------------------------
-  // Task creation (unchanged)
+  // Persist advisory summary order (explicit user action only)
+  // ------------------------------------------------------------------
+  function persistSummaryOrder(nextOrder) {
+    try {
+      localStorage.setItem(
+        SUMMARY_ORDER_STORAGE_KEY,
+        JSON.stringify({
+          order: nextOrder,
+          updatedAt: Date.now(),
+        })
+      );
+    } catch {
+      // Persistence failure is non-fatal (advisory)
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Task creation (unchanged semantics)
   // ------------------------------------------------------------------
   function createTask({ title, summaryId }) {
     const newTask = {
@@ -68,10 +124,8 @@ export default function PreProject() {
   }
 
   // ------------------------------------------------------------------
-  // Stage 30A — Render-only summary ordering
-  // ------------------------------------------------------------------
-
   // Index tasks by summaryId (unchanged semantics)
+  // ------------------------------------------------------------------
   const tasksBySummary = {};
   tasks.forEach((task) => {
     if (task.summaryId) {
@@ -82,14 +136,15 @@ export default function PreProject() {
     }
   });
 
-  // Sort linked tasks by creation time (unchanged)
   Object.values(tasksBySummary).forEach((group) =>
     group.sort((a, b) => a.createdAt - b.createdAt)
   );
 
+  // ------------------------------------------------------------------
   // Resolve ordered summaries (fail closed)
+  // ------------------------------------------------------------------
   const orderedSummaries =
-    Array.isArray(summaryOrder) && summaryOrder.length === summaries.length
+    Array.isArray(summaryOrder) && summaryOrder.length
       ? summaryOrder
           .map((id) => summaries.find((s) => s.id === id))
           .filter(Boolean)
@@ -100,7 +155,9 @@ export default function PreProject() {
     .filter((t) => !t.summaryId)
     .sort((a, b) => a.createdAt - b.createdAt);
 
-  // Move handlers — atomic, guarded, reversible
+  // ------------------------------------------------------------------
+  // Move handlers — atomic, guarded, reversible + persisted
+  // ------------------------------------------------------------------
   function moveSummary(index, direction) {
     if (!Array.isArray(summaryOrder)) return;
     const target = index + direction;
@@ -110,14 +167,16 @@ export default function PreProject() {
     const temp = next[index];
     next[index] = next[target];
     next[target] = temp;
+
     setSummaryOrder(next);
+    persistSummaryOrder(next);
   }
 
   // ------------------------------------------------------------------
 
   return (
     <div style={{ padding: "16px" }}>
-      {/* WORKSPACE LIST — Stage 30A render-only ordering */}
+      {/* WORKSPACE LIST — advisory persisted ordering */}
       <div>
         {orderedSummaries.map((summary, index) => (
           <div key={summary.id} style={{ marginBottom: "8px" }}>
