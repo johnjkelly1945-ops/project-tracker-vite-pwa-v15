@@ -1,57 +1,75 @@
-// @ts-nocheck
-import { useState } from "react";
-import CreateTaskModal from "./CreateTaskModal";
+import React, { useState } from "react";
 
 /*
 =====================================================================
 METRA — PreProjectFooter.jsx
-Stage 32.2 — Summary Instantiation (Render-Only Footer Gating)
+Stage 33 — Summary Creation Intent (FOOTER-ONLY)
+=====================================================================
 
-• Render-only change
-• No persistence
-• No summary creation behaviour
-• Summary control visibility gated by parent
+TypeScript-safe, footer-only intent acknowledgement.
+
+No persistence.
+No summary creation.
+No ordering mutation.
+No task or governance interaction.
 =====================================================================
 */
 
-export default function PreProjectFooter({
-  summaries,
-  onCreateTaskIntent,
-  showCreateSummary = false, // Stage 32.2 — explicit, render-only gate
-}) {
-  const [open, setOpen] = useState(false);
+/**
+ * @typedef {Object} PreProjectFooterProps
+ * @property {boolean} showCreateSummary
+ */
+
+export default function PreProjectFooter(
+  /** @type {PreProjectFooterProps} */
+  { showCreateSummary = false }
+) {
+  /** @type {[boolean, Function]} */
+  const [showIntentAck, setShowIntentAck] = useState(false);
+
+  const handleCreateSummaryClick = () => {
+    setShowIntentAck(true);
+    console.log(
+      "Summary creation intent registered (Stage 33 — no persistence)"
+    );
+  };
 
   return (
-    <>
-      <div style={{ marginTop: "16px", display: "flex", gap: "8px" }}>
-        {/* Existing behaviour — unchanged */}
-        <button onClick={() => setOpen(true)}>Add Task</button>
+    <footer className="preproject-footer">
+      {showCreateSummary && (
+        <button
+          type="button"
+          className="create-summary-button"
+          onClick={handleCreateSummaryClick}
+        >
+          Create Summary
+        </button>
+      )}
 
-        {/* Stage 32.2 — Create Summary (render-only, inert) */}
-        {showCreateSummary && (
+      {showIntentAck && (
+        <div
+          style={{
+            marginTop: "10px",
+            padding: "8px 10px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            backgroundColor: "#f8f9fa",
+            fontSize: "0.85rem",
+            maxWidth: "420px",
+          }}
+        >
+          <strong>Summary creation intent registered.</strong>
+          <div>No summary has been created.</div>
+
           <button
             type="button"
-            onClick={() => {
-              // Intentionally inert — Stage 32.2 is render-only
-              console.info(
-                "Create Summary clicked (Stage 32.2 — no behaviour yet)"
-              );
-            }}
+            style={{ marginTop: "6px", fontSize: "0.8rem" }}
+            onClick={() => setShowIntentAck(false)}
           >
-            Create Summary
+            Dismiss
           </button>
-        )}
-      </div>
-
-      <CreateTaskModal
-        isOpen={open}
-        summaries={summaries}
-        onCancel={() => setOpen(false)}
-        onSubmit={(intent) => {
-          onCreateTaskIntent(intent);
-          setOpen(false);
-        }}
-      />
-    </>
+        </div>
+      )}
+    </footer>
   );
 }
