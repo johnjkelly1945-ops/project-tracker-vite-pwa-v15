@@ -3,39 +3,76 @@ import React, { useState } from "react";
 /*
 =====================================================================
 METRA — PreProjectFooter.jsx
-Stage 33 — Summary Creation Intent (FOOTER-ONLY)
-=====================================================================
-
-TypeScript-safe, footer-only intent acknowledgement.
-
-No persistence.
-No summary creation.
-No ordering mutation.
-No task or governance interaction.
+Stage 35 — Summary Shell Persistence (Footer-Adjacent, Corrected)
 =====================================================================
 */
 
-/**
- * @typedef {Object} PreProjectFooterProps
- * @property {boolean} showCreateSummary
- */
+// Stage 35 — domain imports
+import { canCreateSummary } from "../domain/summary/SummaryAuthorityGate.js";
+import { createSummaryShell } from "../domain/summary/SummaryShellFactory.js";
+import { persistSummaryShell } from "../domain/summary/SummaryRepository.js";
 
-export default function PreProjectFooter(
-  /** @type {PreProjectFooterProps} */
-  { showCreateSummary = false }
-) {
-  /** @type {[boolean, Function]} */
+export default function PreProjectFooter({
+  summaries, // passed but not used here (intentionally)
+  showCreateSummary = false,
+
+  // CANONICAL task creation hook (from PreProject.jsx)
+  onCreateTaskIntent,
+
+  // Context
+  workspaceId,
+  actorId,
+  workspaceOwnerId,
+}) {
   const [showIntentAck, setShowIntentAck] = useState(false);
 
+  /* ---------------- Create Task (RESTORED, CANONICAL) ---------------- */
+  const handleCreateTaskClick = () => {
+    if (typeof onCreateTaskIntent !== "function") {
+      console.error(
+        "Create Task clicked but onCreateTaskIntent prop is not provided"
+      );
+      return;
+    }
+
+    onCreateTaskIntent();
+  };
+
+  /* ---------------- Create Summary (Stage 33 + 35) ---------------- */
   const handleCreateSummaryClick = () => {
+    // Stage 33 — intent acknowledgement
     setShowIntentAck(true);
-    console.log(
-      "Summary creation intent registered (Stage 33 — no persistence)"
-    );
+
+    // Stage 35 — authority gate
+    const authorised = canCreateSummary({
+      actorId,
+      workspaceOwnerId,
+    });
+
+    if (!authorised) return;
+
+    const summaryShell = createSummaryShell({
+      workspaceId,
+      createdBy: actorId,
+    });
+
+    if (!summaryShell) return;
+
+    persistSummaryShell(summaryShell);
   };
 
   return (
     <footer className="preproject-footer">
+      {/* ================= CREATE TASK ================= */}
+      <button
+        type="button"
+        className="create-task-button"
+        onClick={handleCreateTaskClick}
+      >
+        Create Task
+      </button>
+
+      {/* ================= CREATE SUMMARY ================= */}
       {showCreateSummary && (
         <button
           type="button"
@@ -46,6 +83,7 @@ export default function PreProjectFooter(
         </button>
       )}
 
+      {/* ================= STAGE 33 INTENT ACK ================= */}
       {showIntentAck && (
         <div
           style={{
@@ -59,7 +97,7 @@ export default function PreProjectFooter(
           }}
         >
           <strong>Summary creation intent registered.</strong>
-          <div>No summary has been created.</div>
+          <div>No summary has been activated.</div>
 
           <button
             type="button"
