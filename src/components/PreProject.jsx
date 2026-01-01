@@ -6,17 +6,22 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 32.2 — Summary Instantiation (Explicit Workspace Owner Assumption)
+Stage 37 — Summary Visibility (Render-Only Implementation)
 
-IMPORTANT:
-• Temporary single-user workspace assumption
-• Workspace owner explicitly assumed TRUE
-• This bypasses currentUser timing issues
-• To be replaced when workspace ownership is formally modelled
+BASED ON:
+Stage 35 — Persist existence-only Summary Shell
 
-NO persistence
-NO behaviour change
-NO lifecycle interaction
+CONSTRAINTS (LOCKED):
+• Render-only
+• No activation
+• No selection
+• No focus
+• No interaction
+• No ordering mutation
+• No task association
+• No persistence changes
+• Fail-closed
+
 =====================================================================
 */
 
@@ -34,9 +39,6 @@ export default function PreProject() {
   // ------------------------------------------------------------------
   // Stage 32.2 — Explicit workspace owner assumption (TEMPORARY)
   // ------------------------------------------------------------------
-  // The workspace is currently single-user.
-  // Workspace ownership is therefore assumed for render-gating purposes.
-  // This MUST be replaced when workspace authority is formally defined.
   const isWorkspaceOwner = true;
 
   // ------------------------------------------------------------------
@@ -92,23 +94,6 @@ export default function PreProject() {
   }, [summaries]);
 
   // ------------------------------------------------------------------
-  // Persist advisory summary order (explicit user action only)
-  // ------------------------------------------------------------------
-  function persistSummaryOrder(nextOrder) {
-    try {
-      localStorage.setItem(
-        SUMMARY_ORDER_STORAGE_KEY,
-        JSON.stringify({
-          order: nextOrder,
-          updatedAt: Date.now(),
-        })
-      );
-    } catch {
-      // Advisory persistence only — fail silently
-    }
-  }
-
-  // ------------------------------------------------------------------
   // Task creation (unchanged semantics)
   // ------------------------------------------------------------------
   function createTask({ title, summaryId }) {
@@ -134,24 +119,7 @@ export default function PreProject() {
   }
 
   // ------------------------------------------------------------------
-  // Index tasks by summaryId (unchanged semantics)
-  // ------------------------------------------------------------------
-  const tasksBySummary = {};
-  tasks.forEach((task) => {
-    if (task.summaryId) {
-      if (!tasksBySummary[task.summaryId]) {
-        tasksBySummary[task.summaryId] = [];
-      }
-      tasksBySummary[task.summaryId].push(task);
-    }
-  });
-
-  Object.values(tasksBySummary).forEach((group) =>
-    group.sort((a, b) => a.createdAt - b.createdAt)
-  );
-
-  // ------------------------------------------------------------------
-  // Resolve ordered summaries (fail closed)
+  // Resolve ordered summaries (fail-closed)
   // ------------------------------------------------------------------
   const orderedSummaries =
     Array.isArray(summaryOrder) && summaryOrder.length
@@ -160,99 +128,34 @@ export default function PreProject() {
           .filter(Boolean)
       : summaries;
 
-  const orphanTasks = tasks
-    .filter((t) => !t.summaryId)
-    .sort((a, b) => a.createdAt - b.createdAt);
-
   // ------------------------------------------------------------------
-  // Move handlers — atomic, guarded, reversible + persisted
+  // STAGE 37 — RENDER ONLY
   // ------------------------------------------------------------------
-  function moveSummary(index, direction) {
-    if (!Array.isArray(summaryOrder)) return;
-    const target = index + direction;
-    if (target < 0 || target >= summaryOrder.length) return;
-
-    const next = [...summaryOrder];
-    const temp = next[index];
-    next[index] = next[target];
-    next[target] = temp;
-
-    setSummaryOrder(next);
-    persistSummaryOrder(next);
-  }
-
+  // • Summaries visible
+  // • No arrows
+  // • No task grouping
+  // • No interaction
   // ------------------------------------------------------------------
 
   return (
     <div style={{ padding: "16px" }}>
-      {/* WORKSPACE LIST — advisory persisted ordering */}
       <div>
-        {orderedSummaries.map((summary, index) => (
+        {orderedSummaries.map((summary) => (
           <div key={summary.id} style={{ marginBottom: "8px" }}>
             <div
               style={{
                 padding: "8px",
                 border: "1px dashed #999",
                 marginBottom: "4px",
-                opacity: 0.85,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                opacity: 0.6,
               }}
             >
               <span>📌 {summary.title}</span>
-
-              {isWorkspaceOwner && (
-                <span>
-                  <button
-                    onClick={() => moveSummary(index, -1)}
-                    disabled={index === 0}
-                    style={{ marginRight: "4px" }}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => moveSummary(index, +1)}
-                    disabled={index === orderedSummaries.length - 1}
-                  >
-                    ↓
-                  </button>
-                </span>
-              )}
             </div>
-
-            {(tasksBySummary[summary.id] || []).map((task) => (
-              <div
-                key={task.id}
-                onClick={() => setActiveTask(task)}
-                style={{
-                  padding: "8px",
-                  border: "1px solid #ccc",
-                  marginBottom: "6px",
-                  marginLeft: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                🗂️ {task.title}
-              </div>
-            ))}
           </div>
         ))}
 
-        {orphanTasks.map((task) => (
-          <div
-            key={task.id}
-            onClick={() => setActiveTask(task)}
-            style={{
-              padding: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "6px",
-              cursor: "pointer",
-            }}
-          >
-            🗂️ {task.title}
-          </div>
-        ))}
+        {/* Tasks intentionally NOT rendered in Stage 37 */}
       </div>
 
       <PreProjectFooter
@@ -261,6 +164,7 @@ export default function PreProject() {
         showCreateSummary={isWorkspaceOwner}
       />
 
+      {/* TaskPopup intentionally unreachable in Stage 37 */}
       {activeTask && (
         <TaskPopup
           task={activeTask}
