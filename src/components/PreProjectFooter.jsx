@@ -3,30 +3,25 @@ import React, { useState } from "react";
 /*
 =====================================================================
 METRA — PreProjectFooter.jsx
-Stage 35 — Summary Shell Persistence (Footer-Adjacent, Corrected)
+Stage 38 — Summary Creation (App-Owned State)
+
+CHANGES FROM STAGE 35:
+• Summary creation delegated to App.jsx via onAddSummary
+• No domain persistence here
+• Intent acknowledgement preserved
+• Title required to create a summary
 =====================================================================
 */
 
-// Stage 35 — domain imports
-import { canCreateSummary } from "../domain/summary/SummaryAuthorityGate.js";
-import { createSummaryShell } from "../domain/summary/SummaryShellFactory.js";
-import { persistSummaryShell } from "../domain/summary/SummaryRepository.js";
-
 export default function PreProjectFooter({
-  summaries, // passed but not used here (intentionally)
   showCreateSummary = false,
-
-  // CANONICAL task creation hook (from PreProject.jsx)
   onCreateTaskIntent,
-
-  // Context
-  workspaceId,
-  actorId,
-  workspaceOwnerId,
+  onAddSummary,
 }) {
   const [showIntentAck, setShowIntentAck] = useState(false);
+  const [summaryTitle, setSummaryTitle] = useState("");
 
-  /* ---------------- Create Task (RESTORED, CANONICAL) ---------------- */
+  /* ---------------- Create Task ---------------- */
   const handleCreateTaskClick = () => {
     if (typeof onCreateTaskIntent !== "function") {
       console.error(
@@ -34,31 +29,31 @@ export default function PreProjectFooter({
       );
       return;
     }
-
     onCreateTaskIntent();
   };
 
-  /* ---------------- Create Summary (Stage 33 + 35) ---------------- */
+  /* ---------------- Create Summary ---------------- */
   const handleCreateSummaryClick = () => {
-    // Stage 33 — intent acknowledgement
+    if (typeof onAddSummary !== "function") {
+      console.error(
+        "Create Summary clicked but onAddSummary prop is not provided"
+      );
+      return;
+    }
+
+    if (!summaryTitle.trim()) {
+      alert("Please enter a summary title.");
+      return;
+    }
+
+    // Intent acknowledgement (Stage 33 semantics preserved)
     setShowIntentAck(true);
 
-    // Stage 35 — authority gate
-    const authorised = canCreateSummary({
-      actorId,
-      workspaceOwnerId,
-    });
+    // Actual summary creation (Stage 38 canonical path)
+    onAddSummary(summaryTitle.trim());
 
-    if (!authorised) return;
-
-    const summaryShell = createSummaryShell({
-      workspaceId,
-      createdBy: actorId,
-    });
-
-    if (!summaryShell) return;
-
-    persistSummaryShell(summaryShell);
+    // Reset input
+    setSummaryTitle("");
   };
 
   return (
@@ -74,16 +69,29 @@ export default function PreProjectFooter({
 
       {/* ================= CREATE SUMMARY ================= */}
       {showCreateSummary && (
-        <button
-          type="button"
-          className="create-summary-button"
-          onClick={handleCreateSummaryClick}
-        >
-          Create Summary
-        </button>
+        <div style={{ marginTop: "8px" }}>
+          <input
+            type="text"
+            placeholder="Summary title"
+            value={summaryTitle}
+            onChange={(e) => setSummaryTitle(e.target.value)}
+            style={{
+              marginRight: "6px",
+              padding: "4px 6px",
+              fontSize: "0.85rem",
+            }}
+          />
+          <button
+            type="button"
+            className="create-summary-button"
+            onClick={handleCreateSummaryClick}
+          >
+            Create Summary
+          </button>
+        </div>
       )}
 
-      {/* ================= STAGE 33 INTENT ACK ================= */}
+      {/* ================= INTENT ACK ================= */}
       {showIntentAck && (
         <div
           style={{

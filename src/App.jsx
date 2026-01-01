@@ -15,6 +15,12 @@ Stage 24 (Diagnostic / Support)
 • No persistence
 • No popup auto-open
 • No semantics / governance / timing
+
+Stage 38 — Workspace UI-State (Ephemeral)
+---------------------------------------------------------------------
+• Owner UI focus (in-memory, fail-closed)
+• Summary-relative expand/collapse (visibility only)
+• UI-state only — no behaviour yet
 =====================================================================
 */
 
@@ -24,6 +30,18 @@ export default function App() {
   // Authoritative workspace state (session-only)
   const [tasks, setTasks] = useState([]);
   const [summaries, setSummaries] = useState([]);
+
+  // -------------------------------------------------
+  // Stage 38 — Ephemeral workspace UI state (fail-closed)
+  // -------------------------------------------------
+  // UI focus indicator (owner-only, later stages)
+  const [focusedSummaryId, setFocusedSummaryId] = useState(null);
+
+  // Visibility toggle for tasks aligned to summaries
+  // (UI-only, non-persistent)
+  const [collapsedSummaryIds, setCollapsedSummaryIds] = useState(
+    () => new Set()
+  );
 
   /* -------------------------------------------------
      DEV ONLY — Force task instantiation

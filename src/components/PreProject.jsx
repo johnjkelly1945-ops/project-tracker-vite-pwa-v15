@@ -1,126 +1,39 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
-import TaskPopup from "./TaskPopup";
+import { useEffect, useState } from "react";
 import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 37 — Summary Visibility (Render-Only Implementation)
+Stage 38 — Expand / Collapse (Workspace Visibility)
 
-BASED ON:
-Stage 35 — Persist existence-only Summary Shell
-
-CONSTRAINTS (LOCKED):
-• Render-only
-• No activation
-• No selection
-• No focus
-• No interaction
-• No ordering mutation
-• No task association
-• No persistence changes
-• Fail-closed
-
+HARDENING:
+• Render-safe handling of collapsedSummaryIds
+• Prevents undefined.has() during React/HMR replay
+• Fully fail-closed
 =====================================================================
 */
 
-const TASK_STORAGE_KEY = "metra.workspace.tasks";
-const SUMMARY_STORAGE_KEY = "metra.workspace.summaries";
-const SUMMARY_ORDER_STORAGE_KEY = "metra.workspace.summaryOrder";
+export default function PreProject({
+  tasks = [],
+  summaries = [],
+  onAddSummary,
 
-export default function PreProject() {
-  const [tasks, setTasks] = useState([]);
-  const [summaries, setSummaries] = useState([]);
-  const [summaryOrder, setSummaryOrder] = useState(null); // advisory
-  const [activeTask, setActiveTask] = useState(null);
-  const [rehydrationError, setRehydrationError] = useState(null);
-
-  // ------------------------------------------------------------------
-  // Stage 32.2 — Explicit workspace owner assumption (TEMPORARY)
-  // ------------------------------------------------------------------
+  // Stage 38 workspace UI-state (defensive defaults)
+  collapsedSummaryIds,
+  setCollapsedSummaryIds = () => {},
+}) {
+  const [summaryOrder, setSummaryOrder] = useState(null);
   const isWorkspaceOwner = true;
 
-  // ------------------------------------------------------------------
-  // Workspace rehydration (tasks + summaries)
-  // ------------------------------------------------------------------
   useEffect(() => {
-    try {
-      const t = JSON.parse(localStorage.getItem(TASK_STORAGE_KEY) || "[]");
-      const s = JSON.parse(localStorage.getItem(SUMMARY_STORAGE_KEY) || "[]");
-      if (Array.isArray(t)) setTasks(t);
-      if (Array.isArray(s)) setSummaries(s);
-    } catch {
-      setRehydrationError("Workspace data is invalid.");
+    if (!summaries.length) {
+      setSummaryOrder(null);
+      return;
     }
-  }, []);
-
-  // ------------------------------------------------------------------
-  // Advisory summary ordering rehydration (fail-closed)
-  // ------------------------------------------------------------------
-  useEffect(() => {
-    if (!summaries.length) return;
-
-    try {
-      const raw = localStorage.getItem(SUMMARY_ORDER_STORAGE_KEY);
-      if (!raw) {
-        setSummaryOrder(summaries.map((s) => s.id));
-        return;
-      }
-
-      const parsed = JSON.parse(raw);
-      const order = parsed?.order;
-
-      if (!Array.isArray(order) || new Set(order).size !== order.length) {
-        throw new Error("Invalid summary order shape.");
-      }
-
-      const summaryIds = summaries.map((s) => s.id);
-      const allIdsExist = order.every((id) => summaryIds.includes(id));
-
-      if (!allIdsExist) {
-        throw new Error("Summary order contains unknown ids.");
-      }
-
-      const completeOrder = [
-        ...order,
-        ...summaryIds.filter((id) => !order.includes(id)),
-      ];
-
-      setSummaryOrder(completeOrder);
-    } catch {
-      setSummaryOrder(summaries.map((s) => s.id));
-    }
+    setSummaryOrder(summaries.map((s) => s.id));
   }, [summaries]);
 
-  // ------------------------------------------------------------------
-  // Task creation (unchanged semantics)
-  // ------------------------------------------------------------------
-  function createTask({ title, summaryId }) {
-    const newTask = {
-      id: crypto.randomUUID(),
-      title,
-      status: "open",
-      createdAt: Date.now(),
-      summaryId: summaryId || null,
-    };
-    const updated = [...tasks, newTask];
-    setTasks(updated);
-    localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(updated));
-  }
-
-  if (rehydrationError) {
-    return (
-      <div style={{ padding: "16px", color: "red" }}>
-        <strong>Workspace Error</strong>
-        <div>{rehydrationError}</div>
-      </div>
-    );
-  }
-
-  // ------------------------------------------------------------------
-  // Resolve ordered summaries (fail-closed)
-  // ------------------------------------------------------------------
   const orderedSummaries =
     Array.isArray(summaryOrder) && summaryOrder.length
       ? summaryOrder
@@ -128,51 +41,80 @@ export default function PreProject() {
           .filter(Boolean)
       : summaries;
 
-  // ------------------------------------------------------------------
-  // STAGE 37 — RENDER ONLY
-  // ------------------------------------------------------------------
-  // • Summaries visible
-  // • No arrows
-  // • No task grouping
-  // • No interaction
-  // ------------------------------------------------------------------
+  function toggleCollapse(summaryId) {
+    setCollapsedSummaryIds((prev) => {
+      const safePrev = prev instanceof Set ? prev : new Set();
+      const next = new Set(safePrev);
+      if (next.has(summaryId)) next.delete(summaryId);
+      else next.add(summaryId);
+      return next;
+    });
+  }
 
   return (
     <div style={{ padding: "16px" }}>
-      <div>
-        {orderedSummaries.map((summary) => (
-          <div key={summary.id} style={{ marginBottom: "8px" }}>
+      {orderedSummaries.map((summary) => {
+        const isCollapsed =
+          collapsedSummaryIds instanceof Set
+            ? collapsedSummaryIds.has(summary.id)
+            : false;
+
+        return (
+          <div key={summary.id} style={{ marginBottom: "12px" }}>
+            {/* Summary row */}
             <div
               style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 padding: "8px",
                 border: "1px dashed #999",
-                marginBottom: "4px",
                 opacity: 0.6,
               }}
             >
-              <span>📌 {summary.title}</span>
-            </div>
-          </div>
-        ))}
+              <span>{summary.title}</span>
 
-        {/* Tasks intentionally NOT rendered in Stage 37 */}
-      </div>
+              {/* Expand / collapse arrow */}
+              <button
+                onClick={() => toggleCollapse(summary.id)}
+                aria-label="Toggle task visibility"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                {isCollapsed ? "▶" : "▼"}
+              </button>
+            </div>
+
+            {/* Tasks aligned to this summary */}
+            {!isCollapsed &&
+              tasks
+                .filter((t) => t.summaryId === summary.id)
+                .map((task) => (
+                  <div
+                    key={task.id}
+                    style={{
+                      padding: "6px 8px",
+                      marginLeft: "8px",
+                      borderLeft: "2px solid #ddd",
+                    }}
+                  >
+                    {task.title}
+                  </div>
+                ))}
+          </div>
+        );
+      })}
 
       <PreProjectFooter
         summaries={summaries}
-        onCreateTaskIntent={createTask}
         showCreateSummary={isWorkspaceOwner}
+        onAddSummary={onAddSummary}
+        onCreateTaskIntent={() => {}}
       />
-
-      {/* TaskPopup intentionally unreachable in Stage 37 */}
-      {activeTask && (
-        <TaskPopup
-          task={activeTask}
-          pane="workspace"
-          onClose={() => setActiveTask(null)}
-          onUpdate={() => {}}
-        />
-      )}
     </div>
   );
 }
