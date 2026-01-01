@@ -6,11 +6,12 @@ import PreProjectFooter from "./PreProjectFooter";
 =====================================================================
 METRA — PreProject.jsx
 Stage 38 — Expand / Collapse (Workspace Visibility)
-Stage 40 — Phase 4 — Visual Focus (Pattern A: de-emphasis of others)
+Stage 40 — Visual Focus (UI-only)
+Stage 28 — Task Creation (RESTORED, SEM-05 COMPLIANT)
 
-REFINEMENT:
-• Focus visual softened (opacity 0.6 instead of 0.35)
-• No semantic or behavioural change
+NOTE:
+• Orphan tasks (summaryId === null) MUST be visible
+• This section is render-only and does not imply assignment
 =====================================================================
 */
 
@@ -18,12 +19,11 @@ export default function PreProject({
   tasks = [],
   summaries = [],
   onAddSummary,
+  onCreateTaskIntent,
 
-  // Stage 38 workspace UI-state (defensive defaults)
   collapsedSummaryIds,
   setCollapsedSummaryIds = () => {},
 
-  // Stage 40 focus state (App-owned)
   focusedSummaryId,
   setFocusedSummaryId,
 }) {
@@ -63,8 +63,39 @@ export default function PreProject({
 
   const hasFocus = focusedSummaryId !== null;
 
+  const orphanTasks = tasks.filter((t) => t.summaryId === null);
+
   return (
     <div style={{ padding: "16px" }}>
+      {/* ================= UNASSIGNED TASKS ================= */}
+      {orphanTasks.length > 0 && (
+        <div style={{ marginBottom: "16px" }}>
+          <div
+            style={{
+              padding: "8px",
+              fontWeight: "bold",
+              borderBottom: "1px solid #ccc",
+            }}
+          >
+            Unassigned Tasks
+          </div>
+
+          {orphanTasks.map((task) => (
+            <div
+              key={task.id}
+              style={{
+                padding: "6px 8px",
+                marginLeft: "8px",
+                borderLeft: "2px solid #bbb",
+              }}
+            >
+              {task.title}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ================= SUMMARIES ================= */}
       {orderedSummaries.map((summary) => {
         const isCollapsed =
           collapsedSummaryIds instanceof Set
@@ -73,7 +104,6 @@ export default function PreProject({
 
         const isFocused = focusedSummaryId === summary.id;
 
-        // Pattern A — de-emphasis of others (softened)
         const rowOpacity =
           hasFocus && !isFocused ? 0.6 : 1;
 
@@ -82,7 +112,6 @@ export default function PreProject({
             key={summary.id}
             style={{ marginBottom: "12px", opacity: rowOpacity }}
           >
-            {/* Summary row */}
             <div
               style={{
                 display: "flex",
@@ -95,7 +124,6 @@ export default function PreProject({
               <span>{summary.title}</span>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                {/* Stage 40 — Focus toggle (owner-only, UI-only) */}
                 {isWorkspaceOwner && (
                   <button
                     type="button"
@@ -112,7 +140,6 @@ export default function PreProject({
                   </button>
                 )}
 
-                {/* Expand / collapse arrow (unchanged) */}
                 <button
                   onClick={() => toggleCollapse(summary.id)}
                   aria-label="Toggle task visibility"
@@ -128,7 +155,6 @@ export default function PreProject({
               </div>
             </div>
 
-            {/* Tasks aligned to this summary */}
             {!isCollapsed &&
               tasks
                 .filter((t) => t.summaryId === summary.id)
@@ -152,7 +178,7 @@ export default function PreProject({
         summaries={summaries}
         showCreateSummary={isWorkspaceOwner}
         onAddSummary={onAddSummary}
-        onCreateTaskIntent={() => {}}
+        onCreateTaskIntent={onCreateTaskIntent}
       />
     </div>
   );

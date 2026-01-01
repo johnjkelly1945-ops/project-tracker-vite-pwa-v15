@@ -6,9 +6,13 @@ import ModuleHeader from "./components/ModuleHeader";
  * App.jsx
  * Workspace owner.
  *
- * Stage 40
- * - Restores summary creation contract
- * - Preserves focus state (UI-only, ephemeral)
+ * Stage 28 (RESTORED):
+ * - Task creation via intent
+ * - Summary optional (SEM-05)
+ *
+ * Stage 40:
+ * - Summary creation preserved
+ * - Focus state preserved (UI-only, ephemeral)
  */
 
 export default function App() {
@@ -39,6 +43,26 @@ export default function App() {
     }));
   }
 
+  /**
+   * RESTORED — Task creation (Stage 28 contract)
+   * Receives intent from UI and creates a workspace task.
+   */
+  function handleCreateTaskIntent(intent) {
+    if (!intent || !intent.title) return;
+
+    setWorkspaceState((prev) => ({
+      ...prev,
+      tasks: [
+        ...prev.tasks,
+        {
+          id: crypto.randomUUID(),
+          title: intent.title,
+          summaryId: intent.summaryId ?? null,
+        },
+      ],
+    }));
+  }
+
   return (
     <div className="app-root">
       <ModuleHeader />
@@ -47,6 +71,7 @@ export default function App() {
         summaries={workspaceState.summaries}
         tasks={workspaceState.tasks}
         onAddSummary={handleAddSummary}
+        onCreateTaskIntent={handleCreateTaskIntent}
         focusedSummaryId={focusedSummaryId}
         setFocusedSummaryId={setFocusedSummaryId}
       />
