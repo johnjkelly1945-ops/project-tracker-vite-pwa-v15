@@ -6,11 +6,11 @@ import PreProjectFooter from "./PreProjectFooter";
 =====================================================================
 METRA — PreProject.jsx
 Stage 38 — Expand / Collapse (Workspace Visibility)
+Stage 40 — Phase 4 — Visual Focus (Pattern A: de-emphasis of others)
 
-HARDENING:
-• Render-safe handling of collapsedSummaryIds
-• Prevents undefined.has() during React/HMR replay
-• Fully fail-closed
+REFINEMENT:
+• Focus visual softened (opacity 0.6 instead of 0.35)
+• No semantic or behavioural change
 =====================================================================
 */
 
@@ -22,6 +22,10 @@ export default function PreProject({
   // Stage 38 workspace UI-state (defensive defaults)
   collapsedSummaryIds,
   setCollapsedSummaryIds = () => {},
+
+  // Stage 40 focus state (App-owned)
+  focusedSummaryId,
+  setFocusedSummaryId,
 }) {
   const [summaryOrder, setSummaryOrder] = useState(null);
   const isWorkspaceOwner = true;
@@ -51,6 +55,14 @@ export default function PreProject({
     });
   }
 
+  function toggleFocus(summaryId) {
+    setFocusedSummaryId((current) =>
+      current === summaryId ? null : summaryId
+    );
+  }
+
+  const hasFocus = focusedSummaryId !== null;
+
   return (
     <div style={{ padding: "16px" }}>
       {orderedSummaries.map((summary) => {
@@ -59,8 +71,17 @@ export default function PreProject({
             ? collapsedSummaryIds.has(summary.id)
             : false;
 
+        const isFocused = focusedSummaryId === summary.id;
+
+        // Pattern A — de-emphasis of others (softened)
+        const rowOpacity =
+          hasFocus && !isFocused ? 0.6 : 1;
+
         return (
-          <div key={summary.id} style={{ marginBottom: "12px" }}>
+          <div
+            key={summary.id}
+            style={{ marginBottom: "12px", opacity: rowOpacity }}
+          >
             {/* Summary row */}
             <div
               style={{
@@ -69,24 +90,42 @@ export default function PreProject({
                 alignItems: "center",
                 padding: "8px",
                 border: "1px dashed #999",
-                opacity: 0.6,
               }}
             >
               <span>{summary.title}</span>
 
-              {/* Expand / collapse arrow */}
-              <button
-                onClick={() => toggleCollapse(summary.id)}
-                aria-label="Toggle task visibility"
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                }}
-              >
-                {isCollapsed ? "▶" : "▼"}
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                {/* Stage 40 — Focus toggle (owner-only, UI-only) */}
+                {isWorkspaceOwner && (
+                  <button
+                    type="button"
+                    onClick={() => toggleFocus(summary.id)}
+                    aria-pressed={isFocused}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {isFocused ? "Clear focus" : "Focus"}
+                  </button>
+                )}
+
+                {/* Expand / collapse arrow (unchanged) */}
+                <button
+                  onClick={() => toggleCollapse(summary.id)}
+                  aria-label="Toggle task visibility"
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                >
+                  {isCollapsed ? "▶" : "▼"}
+                </button>
+              </div>
             </div>
 
             {/* Tasks aligned to this summary */}
