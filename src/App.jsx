@@ -13,10 +13,16 @@ import ModuleHeader from "./components/ModuleHeader";
  * Stage 40:
  * - Summary creation preserved
  * - Focus state preserved (UI-only, ephemeral)
+ *
+ * Stage 51:
+ * - Task ↔ Summary association mechanism VERIFIED
+ * - No UI or verification scaffolding remains
  */
 
 export default function App() {
+  // ------------------------------------------------------------------
   // Workspace-owned state
+  // ------------------------------------------------------------------
   const [workspaceState, setWorkspaceState] = useState(() => ({
     summaries: [],
     tasks: [],
@@ -45,7 +51,6 @@ export default function App() {
 
   /**
    * RESTORED — Task creation (Stage 28 contract)
-   * Receives intent from UI and creates a workspace task.
    */
   function handleCreateTaskIntent(intent) {
     if (!intent || !intent.title) return;
