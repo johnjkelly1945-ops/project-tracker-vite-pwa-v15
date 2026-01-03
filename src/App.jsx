@@ -1,23 +1,46 @@
-import React, { useState } from "react";
-import PreProject from "./components/PreProject";
-import ModuleHeader from "./components/ModuleHeader";
-
 /**
- * App.jsx
- * Workspace owner.
+ * =====================================================================
+ * METRA — App.jsx
+ * =====================================================================
  *
- * Stage 28 (RESTORED):
+ * ROLE
+ * ---------------------------------------------------------------------
+ * Workspace owner and top-level state coordinator.
+ *
+ * STAGE HISTORY
+ * ---------------------------------------------------------------------
+ * Stage 28 (RESTORED)
  * - Task creation via intent
  * - Summary optional (SEM-05)
  *
- * Stage 40:
+ * Stage 40
  * - Summary creation preserved
  * - Focus state preserved (UI-only, ephemeral)
  *
- * Stage 51:
- * - Task ↔ Summary association mechanism VERIFIED
+ * Stage 51
+ * - Task ↔ Summary association MECHANISM verified
  * - No UI or verification scaffolding remains
+ *
+ * Stage 53.1 (CURRENT)
+ * - Reintroduces task popup as a TASK-SCOPED INVOCATION SURFACE ONLY
+ * - Popup is READ-ONLY
+ * - No summary selection
+ * - No editing
+ * - No authority logic
+ *
+ * IMPORTANT INVARIANTS
+ * ---------------------------------------------------------------------
+ * - activeTask is UI-only and non-persistent
+ * - Opening the popup MUST NOT mutate task state
+ * - Closing the popup MUST be non-destructive
+ * - Any behavioural expansion requires a later stage
+ * =====================================================================
  */
+
+import React, { useState } from "react";
+import PreProject from "./components/PreProject";
+import ModuleHeader from "./components/ModuleHeader";
+import TaskPopup from "./components/TaskPopup";
 
 export default function App() {
   // ------------------------------------------------------------------
@@ -34,7 +57,12 @@ export default function App() {
   const [focusedSummaryId, setFocusedSummaryId] = useState(null);
 
   /**
-   * Restore summary creation (as before)
+   * Stage 53.1 — Active task for popup (UI-only, non-persistent)
+   */
+  const [activeTask, setActiveTask] = useState(null);
+
+  /**
+   * Restore summary creation (unchanged behaviour)
    */
   function handleAddSummary() {
     setWorkspaceState((prev) => ({
@@ -68,6 +96,20 @@ export default function App() {
     }));
   }
 
+  /**
+   * Stage 53.1 — Open task popup (invocation only)
+   */
+  function handleOpenTask(task) {
+    setActiveTask(task);
+  }
+
+  /**
+   * Stage 53.1 — Close task popup (non-destructive)
+   */
+  function handleCloseTask() {
+    setActiveTask(null);
+  }
+
   return (
     <div className="app-root">
       <ModuleHeader />
@@ -79,7 +121,12 @@ export default function App() {
         onCreateTaskIntent={handleCreateTaskIntent}
         focusedSummaryId={focusedSummaryId}
         setFocusedSummaryId={setFocusedSummaryId}
+        onOpenTask={handleOpenTask}
       />
+
+      {activeTask && (
+        <TaskPopup task={activeTask} onClose={handleCloseTask} />
+      )}
     </div>
   );
 }

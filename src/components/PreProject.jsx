@@ -5,13 +5,33 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 38 — Expand / Collapse (Workspace Visibility)
-Stage 40 — Visual Focus (UI-only)
-Stage 28 — Task Creation (RESTORED, SEM-05 COMPLIANT)
+=====================================================================
 
-NOTE:
-• Orphan tasks (summaryId === null) MUST be visible
-• This section is render-only and does not imply assignment
+ROLE
+---------------------------------------------------------------------
+Primary workspace renderer for tasks and summaries.
+
+STAGE HISTORY
+---------------------------------------------------------------------
+Stage 28 — Task Creation (RESTORED, SEM-05 compliant)
+Stage 38 — Expand / Collapse (Workspace visibility)
+Stage 40 — Visual Focus (UI-only, ephemeral)
+Stage 51 — Task ↔ Summary association mechanism verified
+Stage 53.1 — Task popup invocation surface reintroduced
+
+STAGE 53.1 CONSTRAINTS
+---------------------------------------------------------------------
+• Task title is a DELIBERATE invocation surface
+• Clicking a task title opens the task popup
+• Read-only only — no editing, no association
+• No lifecycle, focus, or authority changes
+• No state mutation beyond invocation
+
+IMPORTANT INVARIANTS
+---------------------------------------------------------------------
+• Rendering remains task-scoped
+• No ambient row click
+• No summary-first behaviour
 =====================================================================
 */
 
@@ -20,6 +40,7 @@ export default function PreProject({
   summaries = [],
   onAddSummary,
   onCreateTaskIntent,
+  onOpenTask,
 
   collapsedSummaryIds,
   setCollapsedSummaryIds = () => {},
@@ -62,7 +83,6 @@ export default function PreProject({
   }
 
   const hasFocus = focusedSummaryId !== null;
-
   const orphanTasks = tasks.filter((t) => t.summaryId === null);
 
   return (
@@ -89,7 +109,13 @@ export default function PreProject({
                 borderLeft: "2px solid #bbb",
               }}
             >
-              {task.title}
+              {/* Stage 53.1 — deliberate task-scoped invocation */}
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => onOpenTask(task)}
+              >
+                {task.title}
+              </span>
             </div>
           ))}
         </div>
@@ -103,9 +129,7 @@ export default function PreProject({
             : false;
 
         const isFocused = focusedSummaryId === summary.id;
-
-        const rowOpacity =
-          hasFocus && !isFocused ? 0.6 : 1;
+        const rowOpacity = hasFocus && !isFocused ? 0.6 : 1;
 
         return (
           <div
@@ -167,7 +191,13 @@ export default function PreProject({
                       borderLeft: "2px solid #ddd",
                     }}
                   >
-                    {task.title}
+                    {/* Stage 53.1 — deliberate task-scoped invocation */}
+                    <span
+                      style={{ cursor: "pointer" }}
+                      onClick={() => onOpenTask(task)}
+                    >
+                      {task.title}
+                    </span>
                   </div>
                 ))}
           </div>
