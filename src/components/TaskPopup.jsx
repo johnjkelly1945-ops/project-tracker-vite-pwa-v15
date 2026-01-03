@@ -7,24 +7,45 @@
  * ---------------------------------------------------------------------
  * Task-scoped popup.
  *
- * STAGE 53.2 RESPONSIBILITY
+ * STAGE 53.3 RESPONSIBILITY
  * ---------------------------------------------------------------------
- * - Allow a user to explicitly SELECT a summary
- * - Allow explicit affirmation of NO summary
- * - Selection is UI-only and non-persistent
+ * - Enforce authority at the moment of confirmation
+ * - Authority enforcement is SILENT and FAIL-CLOSED
  *
  * EXPLICIT NON-RESPONSIBILITIES
  * ---------------------------------------------------------------------
- * - Does NOT associate the task
+ * - Does NOT reveal authority state
+ * - Does NOT disable controls
  * - Does NOT mutate task or summary state
- * - Does NOT enforce authority
- * - Does NOT imply workflow, lifecycle, or priority
+ * - Does NOT associate task to summary
+ * - Does NOT log user-visible errors
+ * - Does NOT change UX on denial
  *
- * Selection state is discarded on close.
+ * SEM APPLICABILITY (IN FORCE)
+ * ---------------------------------------------------------------------
+ * • SEM-05 — Task / Summary Independence
+ * • SEM-44.x — Authority semantics (fail-closed, non-discoverable)
+ * • SEM-45.x — Behavioural non-implication
+ * • SEM-51.x — Association atomicity
+ *
+ * Selection state remains UI-only and is discarded on close.
  * =====================================================================
  */
 
 import React, { useState } from "react";
+
+/**
+ * Authority decision stub.
+ *
+ * DESIGN NOTE:
+ * - Stage 53.3 CONSULTS authority; it does not define it.
+ * - This stub intentionally returns true.
+ * - Replacement with real authority logic must preserve
+ *   fail-closed and non-discoverable semantics.
+ */
+function canAssociateTask(/* task, userContext */) {
+  return true; // STUB — replace later with real authority check
+}
 
 export default function TaskPopup({ task, summaries = [], onClose }) {
   /**
@@ -37,7 +58,23 @@ export default function TaskPopup({ task, summaries = [], onClose }) {
   const [selectedSummaryId, setSelectedSummaryId] = useState(undefined);
 
   function handleConfirm() {
-    console.log("Stage 53.2 selection intent:", {
+    // ---------------- AUTHORITY GATE (STAGE 53.3) ----------------
+    const authorised = canAssociateTask(/* task, userContext */);
+
+    if (!authorised) {
+      // FAIL-CLOSED:
+      // - Do nothing
+      // - Do not mutate state
+      // - Do not close popup
+      // - Do not log
+      // - Do not signal denial
+      return;
+    }
+
+    // AUTHORISED PATH (NO MUTATION YET):
+    // Stage 53.3 does not apply association.
+    // Selection intent remains conceptual only.
+    console.log("Stage 53.3 authorised selection intent:", {
       taskId: task.id,
       selectedSummaryId,
     });
