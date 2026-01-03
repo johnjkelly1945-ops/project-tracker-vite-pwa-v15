@@ -1,27 +1,3 @@
-/**
- * =====================================================================
- * METRA — App.jsx
- * =====================================================================
- *
- * ROLE
- * ---------------------------------------------------------------------
- * Workspace owner and top-level state coordinator.
- *
- * STAGE HISTORY
- * ---------------------------------------------------------------------
- * Stage 28 — Task creation via intent (SEM-05)
- * Stage 40 — Focus state (UI-only)
- * Stage 51 — Task ↔ Summary association mechanism verified
- * Stage 53.1 — Task popup invocation surface (read-only)
- * Stage 53.2 — Summary selection act (UI-only, non-persistent)
- *
- * IMPORTANT INVARIANTS
- * ---------------------------------------------------------------------
- * - No task or summary mutation in this file for Stage 53.2
- * - summaries are passed read-only into the popup
- * =====================================================================
- */
-
 import React, { useState } from "react";
 import PreProject from "./components/PreProject";
 import ModuleHeader from "./components/ModuleHeader";
@@ -34,7 +10,6 @@ export default function App() {
   }));
 
   const [focusedSummaryId, setFocusedSummaryId] = useState(null);
-
   const [activeTask, setActiveTask] = useState(null);
 
   function handleAddSummary() {
@@ -61,6 +36,7 @@ export default function App() {
           id: crypto.randomUUID(),
           title: intent.title,
           summaryId: intent.summaryId ?? null,
+          notes: [],
         },
       ],
     }));
@@ -73,6 +49,29 @@ export default function App() {
   function handleCloseTask() {
     setActiveTask(null);
   }
+
+  function handleAddNote(taskId, noteText) {
+    const timestamp = new Date().toLocaleString();
+    const note = `${noteText} (${timestamp})`;
+
+    setWorkspaceState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              notes: Array.isArray(t.notes)
+                ? [...t.notes, note]
+                : [note],
+            }
+          : t
+      ),
+    }));
+  }
+
+  const resolvedActiveTask =
+    activeTask &&
+    workspaceState.tasks.find((t) => t.id === activeTask.id);
 
   return (
     <div className="app-root">
@@ -88,11 +87,12 @@ export default function App() {
         onOpenTask={handleOpenTask}
       />
 
-      {activeTask && (
+      {resolvedActiveTask && (
         <TaskPopup
-          task={activeTask}
+          task={resolvedActiveTask}
           summaries={workspaceState.summaries}
           onClose={handleCloseTask}
+          onAddNote={handleAddNote}
         />
       )}
     </div>
