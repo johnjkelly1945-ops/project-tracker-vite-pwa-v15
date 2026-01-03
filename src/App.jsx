@@ -9,31 +9,16 @@
  *
  * STAGE HISTORY
  * ---------------------------------------------------------------------
- * Stage 28 (RESTORED)
- * - Task creation via intent
- * - Summary optional (SEM-05)
- *
- * Stage 40
- * - Summary creation preserved
- * - Focus state preserved (UI-only, ephemeral)
- *
- * Stage 51
- * - Task ↔ Summary association MECHANISM verified
- * - No UI or verification scaffolding remains
- *
- * Stage 53.1 (CURRENT)
- * - Reintroduces task popup as a TASK-SCOPED INVOCATION SURFACE ONLY
- * - Popup is READ-ONLY
- * - No summary selection
- * - No editing
- * - No authority logic
+ * Stage 28 — Task creation via intent (SEM-05)
+ * Stage 40 — Focus state (UI-only)
+ * Stage 51 — Task ↔ Summary association mechanism verified
+ * Stage 53.1 — Task popup invocation surface (read-only)
+ * Stage 53.2 — Summary selection act (UI-only, non-persistent)
  *
  * IMPORTANT INVARIANTS
  * ---------------------------------------------------------------------
- * - activeTask is UI-only and non-persistent
- * - Opening the popup MUST NOT mutate task state
- * - Closing the popup MUST be non-destructive
- * - Any behavioural expansion requires a later stage
+ * - No task or summary mutation in this file for Stage 53.2
+ * - summaries are passed read-only into the popup
  * =====================================================================
  */
 
@@ -43,27 +28,15 @@ import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
 
 export default function App() {
-  // ------------------------------------------------------------------
-  // Workspace-owned state
-  // ------------------------------------------------------------------
   const [workspaceState, setWorkspaceState] = useState(() => ({
     summaries: [],
     tasks: [],
   }));
 
-  /**
-   * Stage 40 — Focus state (UI-only, non-persistent)
-   */
   const [focusedSummaryId, setFocusedSummaryId] = useState(null);
 
-  /**
-   * Stage 53.1 — Active task for popup (UI-only, non-persistent)
-   */
   const [activeTask, setActiveTask] = useState(null);
 
-  /**
-   * Restore summary creation (unchanged behaviour)
-   */
   function handleAddSummary() {
     setWorkspaceState((prev) => ({
       ...prev,
@@ -77,9 +50,6 @@ export default function App() {
     }));
   }
 
-  /**
-   * RESTORED — Task creation (Stage 28 contract)
-   */
   function handleCreateTaskIntent(intent) {
     if (!intent || !intent.title) return;
 
@@ -96,16 +66,10 @@ export default function App() {
     }));
   }
 
-  /**
-   * Stage 53.1 — Open task popup (invocation only)
-   */
   function handleOpenTask(task) {
     setActiveTask(task);
   }
 
-  /**
-   * Stage 53.1 — Close task popup (non-destructive)
-   */
   function handleCloseTask() {
     setActiveTask(null);
   }
@@ -125,7 +89,11 @@ export default function App() {
       />
 
       {activeTask && (
-        <TaskPopup task={activeTask} onClose={handleCloseTask} />
+        <TaskPopup
+          task={activeTask}
+          summaries={workspaceState.summaries}
+          onClose={handleCloseTask}
+        />
       )}
     </div>
   );
