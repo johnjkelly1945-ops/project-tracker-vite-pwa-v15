@@ -69,6 +69,24 @@ export default function App() {
     }));
   }
 
+  // ================= ASSIGNMENT (AUTHORITATIVE) =================
+  function handleAssignTask(taskId, assigneeId) {
+    const timestamp = new Date().toLocaleString();
+
+    setWorkspaceState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              assignedTo: assigneeId,
+              assignedAt: timestamp,
+            }
+          : t
+      ),
+    }));
+  }
+
   const resolvedActiveTask =
     activeTask &&
     workspaceState.tasks.find((t) => t.id === activeTask.id);
@@ -93,6 +111,7 @@ export default function App() {
           summaries={workspaceState.summaries}
           onClose={handleCloseTask}
           onAddNote={handleAddNote}
+          onAssignTask={handleAssignTask}
         />
       )}
     </div>
