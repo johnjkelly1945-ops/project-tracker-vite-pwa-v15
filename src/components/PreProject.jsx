@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useEffect, useState } from "react";
 import PreProjectFooter from "./PreProjectFooter";
+import CanonicalTaskRow from "./CanonicalTaskRow";
 
 /*
 =====================================================================
@@ -18,8 +19,9 @@ Stage 38 — Expand / Collapse (Workspace visibility)
 Stage 40 — Visual Focus (UI-only, ephemeral)
 Stage 51 — Task ↔ Summary association mechanism verified
 Stage 53.1 — Task popup invocation surface reintroduced
+Stage 83.1 — Canonical Task Row wired (visual-only)
 
-STAGE 53.1 CONSTRAINTS
+STAGE 53.1 CONSTRAINTS (PRESERVED)
 ---------------------------------------------------------------------
 • Task title is a DELIBERATE invocation surface
 • Clicking a task title opens the task popup
@@ -101,22 +103,12 @@ export default function PreProject({
           </div>
 
           {orphanTasks.map((task) => (
-            <div
+            <CanonicalTaskRow
               key={task.id}
-              style={{
-                padding: "6px 8px",
-                marginLeft: "8px",
-                borderLeft: "2px solid #bbb",
-              }}
-            >
-              {/* Stage 53.1 — deliberate task-scoped invocation */}
-              <span
-                style={{ cursor: "pointer" }}
-                onClick={() => onOpenTask(task)}
-              >
-                {task.title}
-              </span>
-            </div>
+              task={task}
+              isReadOnly={true}
+              onTitleClick={() => onOpenTask(task)}
+            />
           ))}
         </div>
       )}
@@ -183,22 +175,12 @@ export default function PreProject({
               tasks
                 .filter((t) => t.summaryId === summary.id)
                 .map((task) => (
-                  <div
+                  <CanonicalTaskRow
                     key={task.id}
-                    style={{
-                      padding: "6px 8px",
-                      marginLeft: "8px",
-                      borderLeft: "2px solid #ddd",
-                    }}
-                  >
-                    {/* Stage 53.1 — deliberate task-scoped invocation */}
-                    <span
-                      style={{ cursor: "pointer" }}
-                      onClick={() => onOpenTask(task)}
-                    >
-                      {task.title}
-                    </span>
-                  </div>
+                    task={task}
+                    isReadOnly={true}
+                    onTitleClick={() => onOpenTask(task)}
+                  />
                 ))}
           </div>
         );

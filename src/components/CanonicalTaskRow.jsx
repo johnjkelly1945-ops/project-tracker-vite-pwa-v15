@@ -1,40 +1,18 @@
-import React from "react";
-
 /*
 =====================================================================
 METRA — CanonicalTaskRow.jsx
 Stage 81 — Step 1 (Task Row Implementation)
+Stage 83.1 — Invocation wiring correction
 ---------------------------------------------------------------------
-Design-only → Controlled implementation
-
-IMPORTANT:
-• This component is NOT wired into the UI.
-• It introduces NO new semantics.
-• It causes NO browser regression.
-• Rendering only — no mutation, no workflow.
+Render-only. No semantics added.
 =====================================================================
 */
 
-/**
- * Props contract (locked):
- *
- * task: {
- *   id: string
- *   title: string
- *
- *   executionState: "NOT_STARTED" | "IN_PROGRESS" | "EXECUTION_ENDED"
- *   reviewState: "NONE" | "IN_REVIEW"
- *   reviewOutcome: "NONE" | "ACCEPTED" | "REJECTED"
- *
- *   isFlagged: boolean        // reminder (clock)
- *   isEscalated: boolean     // governance
- *   isArchived: boolean
- * }
- *
- * isReadOnly: boolean
- */
-
-export default function CanonicalTaskRow({ task, isReadOnly }) {
+export default function CanonicalTaskRow({
+  task,
+  isReadOnly,
+  onTitleClick,
+}) {
   if (!task) return null;
 
   // -----------------------------
@@ -75,7 +53,7 @@ export default function CanonicalTaskRow({ task, isReadOnly }) {
   const showRejected = task.reviewOutcome === "REJECTED";
 
   // -----------------------------
-  // Styling (inline, non-opinionated)
+  // Styling (row remains non-clickable)
   // -----------------------------
   const rowStyle = {
     display: "flex",
@@ -85,7 +63,6 @@ export default function CanonicalTaskRow({ task, isReadOnly }) {
     borderBottom: "1px solid #e5e7eb",
     color: baseColor,
     opacity: task.isArchived ? 0.6 : 1,
-    cursor: "default",
     userSelect: "none",
   };
 
@@ -102,6 +79,7 @@ export default function CanonicalTaskRow({ task, isReadOnly }) {
     flexGrow: 1,
     color: "#111827",
     textDecoration: task.isArchived ? "line-through" : "none",
+    cursor: "pointer",
   };
 
   const iconStyle = {
@@ -109,43 +87,35 @@ export default function CanonicalTaskRow({ task, isReadOnly }) {
     color: "#374151",
   };
 
-  const readOnlyStyle = isReadOnly
-    ? { pointerEvents: "none", opacity: 0.7 }
-    : {};
-
   // -----------------------------
   // Render
   // -----------------------------
   return (
-    <div style={{ ...rowStyle, ...readOnlyStyle }}>
+    <div style={rowStyle}>
       {/* Lifecycle */}
       <span style={labelStyle}>{lifecycleLabel}</span>
 
-      {/* Review state */}
       {showInReview && <span style={labelStyle}>In Review</span>}
-
-      {/* Review outcome */}
       {showAccepted && <span style={labelStyle}>Accepted</span>}
       {showRejected && <span style={labelStyle}>Rejected</span>}
 
-      {/* Title */}
-      <span style={titleStyle}>{task.title}</span>
+      {/* Title — sole invocation surface */}
+      <span
+        style={titleStyle}
+        onClick={onTitleClick}
+        role="button"
+      >
+        {task.title}
+      </span>
 
-      {/* Reminder (Flag → Clock) */}
       {task.isFlagged && (
-        <span style={iconStyle} title="Reminder">
-          🕒
-        </span>
+        <span style={iconStyle} title="Reminder">🕒</span>
       )}
 
-      {/* Escalation */}
       {task.isEscalated && (
-        <span style={iconStyle} title="Escalated">
-          ⚑
-        </span>
+        <span style={iconStyle} title="Escalated">⚑</span>
       )}
 
-      {/* Archived */}
       {task.isArchived && <span style={labelStyle}>Archived</span>}
     </div>
   );
