@@ -43,6 +43,8 @@ export default function App() {
   }
 
   function handleOpenTask(task) {
+    // Stage 53.1 — deliberate task-scoped invocation
+    // IMPORTANT: task is already sourced from workspaceState.tasks
     setActiveTask(task);
   }
 
@@ -87,9 +89,16 @@ export default function App() {
     }));
   }
 
-  const resolvedActiveTask =
-    activeTask &&
-    workspaceState.tasks.find((t) => t.id === activeTask.id);
+  /*
+  =====================================================================
+  FIX — REGRESSION REMOVAL (Stage 81 Recovery)
+  ---------------------------------------------------------------------
+  activeTask already originates from workspaceState.tasks.
+  Re-resolving by ID caused popup suppression due to identity mismatch.
+  =====================================================================
+  */
+
+  const resolvedActiveTask = activeTask;
 
   return (
     <div className="app-root">
