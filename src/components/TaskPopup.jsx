@@ -12,6 +12,7 @@ STAGE
 ---------------------------------------------------------------------
 Stage 55 — Controlled Action Reintroduction (55.3)
 Stage 60.1 — Assignment Modal Wiring (Authoritative Commit)
+Stage 83.2 — Canonical Popup Header wired (visual-only)
 
 CONSTRAINTS
 ---------------------------------------------------------------------
@@ -24,6 +25,7 @@ CONSTRAINTS
 
 import { useState } from "react";
 import AssignmentModal from "./AssignmentModal";
+import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 
 export default function TaskPopup({
   task,
@@ -89,7 +91,8 @@ export default function TaskPopup({
             padding: "16px",
           }}
         >
-          <h2>{task.title}</h2>
+          {/* ================= CANONICAL HEADER (STAGE 83.2) ================= */}
+          <CanonicalTaskPopupHeader task={task} />
 
           {/* ================= NOTES ================= */}
           <div>
@@ -111,14 +114,10 @@ export default function TaskPopup({
 
           {/* ================= FOOTER ================= */}
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <button onClick={() => setAssignOpen(true)}>
-              Change person
-            </button>
+            <button onClick={() => setAssignOpen(true)}>Change person</button>
 
             {!isAddingNote && (
-              <button onClick={() => setIsAddingNote(true)}>
-                Add note
-              </button>
+              <button onClick={() => setIsAddingNote(true)}>Add note</button>
             )}
 
             <button onClick={onClose}>Close</button>
