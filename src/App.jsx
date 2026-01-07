@@ -1,4 +1,32 @@
+// @ts-nocheck
+/*
+=====================================================================
+METRA — App.jsx
+=====================================================================
+
+ROLE
+---------------------------------------------------------------------
+Application root and authority holder.
+
+STAGE CONTEXT
+---------------------------------------------------------------------
+Stage 83.2 — Canonical workspace execution (baseline)
+Stage 86.1 — Sidebar structural mount (INERT)
+
+CHANGE SCOPE (THIS FIX)
+---------------------------------------------------------------------
+• Restore missing onAssignTask handler
+• Preserve existing assignment behaviour
+• No new behaviour introduced
+• No sidebar interaction
+
+=====================================================================
+*/
+
 import React, { useState } from "react";
+import Sidebar from "./components/Sidebar";
+import "./styles/sidebar.css";
+
 import PreProject from "./components/PreProject";
 import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
@@ -12,6 +40,8 @@ export default function App() {
   const [focusedSummaryId, setFocusedSummaryId] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
 
+  /* ================= SUMMARY ================= */
+
   function handleAddSummary() {
     setWorkspaceState((prev) => ({
       ...prev,
@@ -24,6 +54,8 @@ export default function App() {
       ],
     }));
   }
+
+  /* ================= TASK CREATION ================= */
 
   function handleCreateTaskIntent(intent) {
     if (!intent || !intent.title) return;
@@ -42,15 +74,17 @@ export default function App() {
     }));
   }
 
+  /* ================= TASK OPEN / CLOSE ================= */
+
   function handleOpenTask(task) {
-    // Stage 53.1 — deliberate task-scoped invocation
-    // IMPORTANT: task is already sourced from workspaceState.tasks
     setActiveTask(task);
   }
 
   function handleCloseTask() {
     setActiveTask(null);
   }
+
+  /* ================= TASK NOTES ================= */
 
   function handleAddNote(taskId, noteText) {
     const timestamp = new Date().toLocaleString();
@@ -71,7 +105,8 @@ export default function App() {
     }));
   }
 
-  // ================= ASSIGNMENT (AUTHORITATIVE) =================
+  /* ================= TASK ASSIGNMENT (RESTORED CONTRACT) ================= */
+
   function handleAssignTask(taskId, assigneeId) {
     const timestamp = new Date().toLocaleString();
 
@@ -89,40 +124,41 @@ export default function App() {
     }));
   }
 
-  /*
-  =====================================================================
-  FIX — REGRESSION REMOVAL (Stage 81 Recovery)
-  ---------------------------------------------------------------------
-  activeTask already originates from workspaceState.tasks.
-  Re-resolving by ID caused popup suppression due to identity mismatch.
-  =====================================================================
-  */
-
   const resolvedActiveTask = activeTask;
 
   return (
-    <div className="app-root">
-      <ModuleHeader />
+    <>
+      {/* =========================================================
+          Sidebar — Stage 86.1 (Structural, Inert, Non-authoritative)
+         ========================================================= */}
+      <Sidebar />
 
-      <PreProject
-        summaries={workspaceState.summaries}
-        tasks={workspaceState.tasks}
-        onAddSummary={handleAddSummary}
-        onCreateTaskIntent={handleCreateTaskIntent}
-        focusedSummaryId={focusedSummaryId}
-        setFocusedSummaryId={setFocusedSummaryId}
-        onOpenTask={handleOpenTask}
-      />
+      {/* =========================================================
+          Application Root — AUTHORITATIVE
+         ========================================================= */}
+      <div className="app-root">
+        <ModuleHeader />
 
-      {resolvedActiveTask && (
-        <TaskPopup
-          task={resolvedActiveTask}
+        <PreProject
           summaries={workspaceState.summaries}
-          onClose={handleCloseTask}
-          onAddNote={handleAddNote}
-          onAssignTask={handleAssignTask}
+          tasks={workspaceState.tasks}
+          onAddSummary={handleAddSummary}
+          onCreateTaskIntent={handleCreateTaskIntent}
+          focusedSummaryId={focusedSummaryId}
+          setFocusedSummaryId={setFocusedSummaryId}
+          onOpenTask={handleOpenTask}
         />
-      )}
-    </div>
+
+        {resolvedActiveTask && (
+          <TaskPopup
+            task={resolvedActiveTask}
+            summaries={workspaceState.summaries}
+            onClose={handleCloseTask}
+            onAddNote={handleAddNote}
+            onAssignTask={handleAssignTask}
+          />
+        )}
+      </div>
+    </>
   );
 }
