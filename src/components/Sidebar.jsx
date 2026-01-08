@@ -6,12 +6,13 @@ METRA — Sidebar.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 86.2 — Sidebar Expand / Collapse (UI-Only)
+Stage 86.3 — Sidebar Read-Only Structure (Inert)
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide a collapsible sidebar shell using local UI state
-passed from App. Sidebar remains non-authoritative.
+Provide a visible, populated sidebar structure representing METRA
+modules and sub-modules. Sidebar remains strictly non-authoritative
+and inert.
 
 CONSTRAINTS (LOCKED)
 ---------------------------------------------------------------------
@@ -20,7 +21,8 @@ CONSTRAINTS (LOCKED)
 • No navigation
 • No routing
 • No data mutation
-• UI-only behaviour
+• No event emission
+• UI-only, visual structure
 =====================================================================
 */
 
@@ -67,8 +69,53 @@ export default function Sidebar({ expanded, onToggle }) {
         </button>
       </div>
 
-      {/* Body — intentionally empty */}
-      <div style={{ flex: 1 }} />
+      {/* Body — populated but inert */}
+      <div
+        style={{
+          flex: 1,
+          padding: expanded ? "12px" : "0",
+          fontSize: "13px",
+          color: "#333",
+        }}
+      >
+        {expanded && (
+          <>
+            <div style={{ marginBottom: "12px", fontWeight: "bold" }}>
+              Modules
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              
+              {/* Governance */}
+              <div>
+                <div style={{ fontWeight: "600" }}>Governance</div>
+                <div
+                  style={{
+                    marginTop: "6px",
+                    marginLeft: "12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                    color: "#555",
+                  }}
+                >
+                  <div>Change Control</div>
+                  <div>Risks</div>
+                  <div>Issues</div>
+                  <div>Escalation</div>
+                </div>
+              </div>
+
+              {/* Other modules */}
+              <div>Template Repository</div>
+              <div>Summary / Task Repository</div>
+              <div>Personnel</div>
+              <div>Help</div>
+              <div style={{ opacity: 0.6 }}>Future Modules</div>
+            </div>
+          </>
+        )}
+      </div>
     </aside>
   );
 }
