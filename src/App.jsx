@@ -6,24 +6,26 @@ METRA — App.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 86.1 — Sidebar Structural Mount (Inert)
+Stage 86.2 — Sidebar Expand / Collapse (UI-Only)
 
 CHANGE SUMMARY
 ---------------------------------------------------------------------
-• Mount Sidebar component structurally
-• Sidebar must be inert and render nothing
-• Zero behavioural or visual regression permitted
-
+• Preserve full App authority (tasks, summaries, popup)
+• Introduce sidebarExpanded UI state
+• Wrap existing application layout safely
+• Zero behavioural regression permitted
 =====================================================================
 */
 
 import React, { useState } from "react";
+
 import Sidebar from "./components/Sidebar";
 import PreProject from "./components/PreProject";
 import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
 
 export default function App() {
+  /* ===================== WORKSPACE STATE ===================== */
   const [workspaceState, setWorkspaceState] = useState(() => ({
     summaries: [],
     tasks: [],
@@ -31,6 +33,11 @@ export default function App() {
 
   const [focusedSummaryId, setFocusedSummaryId] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
+
+  /* ===================== SIDEBAR UI STATE ===================== */
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  /* ===================== HANDLERS (AUTHORITATIVE) ===================== */
 
   function handleAddSummary() {
     setWorkspaceState((prev) => ({
@@ -106,34 +113,46 @@ export default function App() {
     }));
   }
 
+  /* ===================== RENDER ===================== */
+
   return (
     <>
-      {/* Stage 86.1 — Sidebar mounted structurally (inert) */}
-      <Sidebar />
+      <ModuleHeader />
 
-      {/* Original application root — unchanged */}
-      <div className="app-root">
-        <ModuleHeader />
-
-        <PreProject
-          summaries={workspaceState.summaries}
-          tasks={workspaceState.tasks}
-          onAddSummary={handleAddSummary}
-          onCreateTaskIntent={handleCreateTaskIntent}
-          focusedSummaryId={focusedSummaryId}
-          setFocusedSummaryId={setFocusedSummaryId}
-          onOpenTask={handleOpenTask}
+      <div
+        style={{
+          display: "flex",
+          height: "calc(100vh - 56px)",
+        }}
+      >
+        {/* Sidebar — UI only */}
+        <Sidebar
+          expanded={sidebarExpanded}
+          onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        {activeTask && (
-          <TaskPopup
-            task={activeTask}
+        {/* Main application — unchanged */}
+        <div className="app-root" style={{ flex: 1 }}>
+          <PreProject
             summaries={workspaceState.summaries}
-            onClose={handleCloseTask}
-            onAddNote={handleAddNote}
-            onAssignTask={handleAssignTask}
+            tasks={workspaceState.tasks}
+            onAddSummary={handleAddSummary}
+            onCreateTaskIntent={handleCreateTaskIntent}
+            focusedSummaryId={focusedSummaryId}
+            setFocusedSummaryId={setFocusedSummaryId}
+            onOpenTask={handleOpenTask}
           />
-        )}
+
+          {activeTask && (
+            <TaskPopup
+              task={activeTask}
+              summaries={workspaceState.summaries}
+              onClose={handleCloseTask}
+              onAddNote={handleAddNote}
+              onAssignTask={handleAssignTask}
+            />
+          )}
+        </div>
       </div>
     </>
   );
