@@ -1,4 +1,24 @@
+// @ts-nocheck
+/*
+=====================================================================
+METRA — App.jsx
+=====================================================================
+
+STAGE
+---------------------------------------------------------------------
+Stage 86.1 — Sidebar Structural Mount (Inert)
+
+CHANGE SUMMARY
+---------------------------------------------------------------------
+• Mount Sidebar component structurally
+• Sidebar must be inert and render nothing
+• Zero behavioural or visual regression permitted
+
+=====================================================================
+*/
+
 import React, { useState } from "react";
+import Sidebar from "./components/Sidebar";
 import PreProject from "./components/PreProject";
 import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
@@ -43,8 +63,6 @@ export default function App() {
   }
 
   function handleOpenTask(task) {
-    // Stage 53.1 — deliberate task-scoped invocation
-    // IMPORTANT: task is already sourced from workspaceState.tasks
     setActiveTask(task);
   }
 
@@ -71,7 +89,6 @@ export default function App() {
     }));
   }
 
-  // ================= ASSIGNMENT (AUTHORITATIVE) =================
   function handleAssignTask(taskId, assigneeId) {
     const timestamp = new Date().toLocaleString();
 
@@ -89,40 +106,35 @@ export default function App() {
     }));
   }
 
-  /*
-  =====================================================================
-  FIX — REGRESSION REMOVAL (Stage 81 Recovery)
-  ---------------------------------------------------------------------
-  activeTask already originates from workspaceState.tasks.
-  Re-resolving by ID caused popup suppression due to identity mismatch.
-  =====================================================================
-  */
-
-  const resolvedActiveTask = activeTask;
-
   return (
-    <div className="app-root">
-      <ModuleHeader />
+    <>
+      {/* Stage 86.1 — Sidebar mounted structurally (inert) */}
+      <Sidebar />
 
-      <PreProject
-        summaries={workspaceState.summaries}
-        tasks={workspaceState.tasks}
-        onAddSummary={handleAddSummary}
-        onCreateTaskIntent={handleCreateTaskIntent}
-        focusedSummaryId={focusedSummaryId}
-        setFocusedSummaryId={setFocusedSummaryId}
-        onOpenTask={handleOpenTask}
-      />
+      {/* Original application root — unchanged */}
+      <div className="app-root">
+        <ModuleHeader />
 
-      {resolvedActiveTask && (
-        <TaskPopup
-          task={resolvedActiveTask}
+        <PreProject
           summaries={workspaceState.summaries}
-          onClose={handleCloseTask}
-          onAddNote={handleAddNote}
-          onAssignTask={handleAssignTask}
+          tasks={workspaceState.tasks}
+          onAddSummary={handleAddSummary}
+          onCreateTaskIntent={handleCreateTaskIntent}
+          focusedSummaryId={focusedSummaryId}
+          setFocusedSummaryId={setFocusedSummaryId}
+          onOpenTask={handleOpenTask}
         />
-      )}
-    </div>
+
+        {activeTask && (
+          <TaskPopup
+            task={activeTask}
+            summaries={workspaceState.summaries}
+            onClose={handleCloseTask}
+            onAddNote={handleAddNote}
+            onAssignTask={handleAssignTask}
+          />
+        )}
+      </div>
+    </>
   );
 }
