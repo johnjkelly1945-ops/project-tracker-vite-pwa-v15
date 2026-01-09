@@ -6,19 +6,22 @@ METRA — TaskPopup.jsx
 
 ROLE
 ---------------------------------------------------------------------
-Inspection-first task popup with controlled, append-only note entry.
+Inspection-first task popup with controlled, explicit task mutations.
 
-STAGE
+STAGES
 ---------------------------------------------------------------------
-Stage 55 — Controlled Action Reintroduction (55.3)
-Stage 60.1 — Assignment Modal Wiring (Authoritative Commit)
-Stage 83.2 — Canonical Popup Header wired (visual-only)
+Stage 55   — Controlled Action Reintroduction (Notes)
+Stage 60.1 — Assignment Modal Wiring
+Stage 83.2 — Canonical Popup Header
+Stage 97.3.2 — Task ↔ Summary Reassignment (Move)
 
 CONSTRAINTS
 ---------------------------------------------------------------------
 • Inspection-only by default
-• Only authorised mutation here: append-only notes
-• Assignment execution delegated upward
+• Authorised mutations here:
+    - Append-only notes
+    - Assignment (delegated)
+    - Summary reassignment (delegated)
 • No lifecycle, governance, or escalation authority
 =====================================================================
 */
@@ -33,6 +36,7 @@ export default function TaskPopup({
   onClose,
   onAddNote,
   onAssignTask,
+  onChangeTaskSummary,
 }) {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
@@ -40,11 +44,18 @@ export default function TaskPopup({
   const [assignOpen, setAssignOpen] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState("");
 
+  /* ================= MOVE (STAGE 97.3.2) ================= */
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [selectedSummaryId, setSelectedSummaryId] = useState(
+    task?.summaryId ?? ""
+  );
+
   if (!task) return null;
+
+  /* ================= ASSIGNMENT ================= */
 
   function handleConfirmAssignment() {
     if (!selectedAssignee) return;
-
     onAssignTask(task.id, selectedAssignee);
     setSelectedAssignee("");
     setAssignOpen(false);
@@ -54,6 +65,8 @@ export default function TaskPopup({
     setSelectedAssignee("");
     setAssignOpen(false);
   }
+
+  /* ================= NOTES ================= */
 
   function handleConfirmNote() {
     if (!noteDraft.trim()) return;
@@ -67,9 +80,22 @@ export default function TaskPopup({
     setIsAddingNote(false);
   }
 
+  /* ================= MOVE ================= */
+
+  function handleConfirmMove() {
+    const newSummaryId =
+      selectedSummaryId === "" ? null : selectedSummaryId;
+    onChangeTaskSummary(task.id, newSummaryId);
+    setMoveOpen(false);
+  }
+
+  function handleCancelMove() {
+    setSelectedSummaryId(task.summaryId ?? "");
+    setMoveOpen(false);
+  }
+
   return (
     <>
-      {/* ================= POPUP ================= */}
       <div
         style={{
           position: "fixed",
@@ -91,10 +117,8 @@ export default function TaskPopup({
             padding: "16px",
           }}
         >
-          {/* ================= CANONICAL HEADER (STAGE 83.2) ================= */}
           <CanonicalTaskPopupHeader task={task} />
 
-          {/* ================= NOTES ================= */}
           <div>
             <strong>Notes</strong>
             {Array.isArray(task.notes) &&
@@ -112,12 +136,45 @@ export default function TaskPopup({
             </div>
           )}
 
-          {/* ================= FOOTER ================= */}
+          {moveOpen && (
+            <div style={{ marginTop: "12px" }}>
+              <strong>Move task</strong>
+              <select
+                value={selectedSummaryId}
+                onChange={(e) => setSelectedSummaryId(e.target.value)}
+              >
+                <option value="">No summary</option>
+                {summaries.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+              <button onClick={handleConfirmMove}>Apply</button>
+              <button onClick={handleCancelMove}>Cancel</button>
+            </div>
+          )}
+
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <button onClick={() => setAssignOpen(true)}>Change person</button>
+            <button onClick={() => setAssignOpen(true)}>
+              Change person
+            </button>
 
             {!isAddingNote && (
-              <button onClick={() => setIsAddingNote(true)}>Add note</button>
+              <button onClick={() => setIsAddingNote(true)}>
+                Add note
+              </button>
+            )}
+
+            {!moveOpen && (
+              <button
+                onClick={() => {
+                  setSelectedSummaryId(task.summaryId ?? "");
+                  setMoveOpen(true);
+                }}
+              >
+                Move
+              </button>
             )}
 
             <button onClick={onClose}>Close</button>
@@ -125,7 +182,6 @@ export default function TaskPopup({
         </div>
       </div>
 
-      {/* ================= ASSIGNMENT MODAL ================= */}
       <AssignmentModal
         isOpen={assignOpen}
         currentAssignee={task.assignedTo || ""}

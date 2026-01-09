@@ -6,14 +6,16 @@ METRA — App.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 86.2 — Sidebar Expand / Collapse (UI-Only)
+Stage 93.3 — Task ↔ Summary Association (Authoritative Mutation)
 
 CHANGE SUMMARY
 ---------------------------------------------------------------------
-• Preserve full App authority (tasks, summaries, popup)
-• Introduce sidebarExpanded UI state
-• Wrap existing application layout safely
-• Zero behavioural regression permitted
+• Introduce a single, explicit handler to change task ↔ summary
+  association by mutating task.summaryId
+• Preserve all existing behaviour
+• No UI changes
+• No sidebar changes
+• No audit emission (design-only at this stage)
 =====================================================================
 */
 
@@ -113,25 +115,36 @@ export default function App() {
     }));
   }
 
+  /* ============================================================
+     STAGE 93.3 — TASK ↔ SUMMARY ASSOCIATION (AUTHORITATIVE)
+     ============================================================ */
+
+  function handleChangeTaskSummary(taskId, newSummaryId) {
+    setWorkspaceState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              summaryId: newSummaryId ?? null,
+            }
+          : t
+      ),
+    }));
+  }
+
   /* ===================== RENDER ===================== */
 
   return (
     <>
       <ModuleHeader />
 
-      <div
-        style={{
-          display: "flex",
-          height: "calc(100vh - 56px)",
-        }}
-      >
-        {/* Sidebar — UI only */}
+      <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        {/* Main application — unchanged */}
         <div className="app-root" style={{ flex: 1 }}>
           <PreProject
             summaries={workspaceState.summaries}
@@ -150,6 +163,7 @@ export default function App() {
               onClose={handleCloseTask}
               onAddNote={handleAddNote}
               onAssignTask={handleAssignTask}
+              onChangeTaskSummary={handleChangeTaskSummary}
             />
           )}
         </div>
