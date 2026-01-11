@@ -6,20 +6,11 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 104.2 — Summary Activation Controls (REINTRODUCED)
+Stage 104.3.C — Layout Authority Correction
 =====================================================================
-
-ROLE
----------------------------------------------------------------------
-Workspace summary display with explicit, user-controlled activation.
-
-SEMANTICS (LOCKED)
----------------------------------------------------------------------
-• Activation is explicit and reversible
-• Activation is visual-only (no mutation authority)
-• Only one summary may be active at a time
-• Tasks remain first-class and independent
-• No ordering changes at this stage
+- Root establishes a height contract
+- Content scrolls; footer remains visible
+- No semantic or authority changes
 =====================================================================
 */
 
@@ -29,11 +20,10 @@ export default function PreProject({
   onOpenTask,
   onCreateTaskIntent,
   onAddSummary,
+  moveActiveSummary,
 }) {
-  /* ================= ACTIVATION STATE ================= */
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
-  /* ================= ORPHAN TASKS ================= */
   const orphanTasks = tasks.filter((t) => t.summaryId == null);
 
   function toggleActivation(summaryId) {
@@ -43,76 +33,93 @@ export default function PreProject({
   }
 
   return (
-    <div style={{ padding: "12px" }}>
-      {/* ================= ORPHAN TASKS ================= */}
-      {orphanTasks.length > 0 && (
-        <div style={{ marginBottom: "18px" }}>
-          <h3>Unassigned Tasks</h3>
-          {orphanTasks.map((task) => (
-            <CanonicalTaskRow
-              key={task.id}
-              task={task}
-              isReadOnly={true}
-              onTitleClick={() => onOpenTask(task)}
-            />
-          ))}
-        </div>
-      )}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",            // establishes height contract
+        minHeight: 0,              // allows child to scroll
+      }}
+    >
+      {/* ================= SCROLLABLE CONTENT ================= */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,            // critical for flex scroll
+          overflowY: "auto",
+          padding: "12px",
+        }}
+      >
+        {orphanTasks.length > 0 && (
+          <div style={{ marginBottom: "18px" }}>
+            <h3>Unassigned Tasks</h3>
+            {orphanTasks.map((task) => (
+              <CanonicalTaskRow
+                key={task.id}
+                task={task}
+                isReadOnly={true}
+                onTitleClick={() => onOpenTask(task)}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* ================= SUMMARIES ================= */}
-      {summaries.map((summary) => {
-        const isActive = activeSummaryId === summary.id;
-        const isDimmed = activeSummaryId && !isActive;
+        {summaries.map((summary) => {
+          const isActive = activeSummaryId === summary.id;
+          const isDimmed = activeSummaryId && !isActive;
 
-        return (
-          <div
-            key={summary.id}
-            style={{
-              marginBottom: "14px",
-              padding: "8px",
-              border: "1px dashed #999",
-              backgroundColor: isActive ? "#eef6ff" : "#fff",
-              opacity: isDimmed ? 0.6 : 1,
-            }}
-          >
+          return (
             <div
+              key={summary.id}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "6px",
+                marginBottom: "14px",
+                padding: "8px",
+                border: "1px dashed #999",
+                backgroundColor: isActive ? "#eef6ff" : "#fff",
+                opacity: isDimmed ? 0.6 : 1,
               }}
             >
-              <strong>
-                {summary.title}
-                {isActive && " (active)"}
-              </strong>
-
-              <button
-                type="button"
-                onClick={() => toggleActivation(summary.id)}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "6px",
+                }}
               >
-                {isActive ? "Deactivate" : "Activate"}
-              </button>
+                <strong>
+                  {summary.title}
+                  {isActive && " (active)"}
+                </strong>
+
+                <button
+                  type="button"
+                  onClick={() => toggleActivation(summary.id)}
+                >
+                  {isActive ? "Deactivate" : "Activate"}
+                </button>
+              </div>
+
+              {tasks
+                .filter((t) => t.summaryId === summary.id)
+                .map((task) => (
+                  <CanonicalTaskRow
+                    key={task.id}
+                    task={task}
+                    isReadOnly={true}
+                    onTitleClick={() => onOpenTask(task)}
+                  />
+                ))}
             </div>
+          );
+        })}
+      </div>
 
-            {tasks
-              .filter((t) => t.summaryId === summary.id)
-              .map((task) => (
-                <CanonicalTaskRow
-                  key={task.id}
-                  task={task}
-                  isReadOnly={true}
-                  onTitleClick={() => onOpenTask(task)}
-                />
-              ))}
-          </div>
-        );
-      })}
-
-      {/* ================= FOOTER ================= */}
+      {/* ================= FOOTER (NON-SCROLLING) ================= */}
       <PreProjectFooter
         summaries={summaries}
+        activeSummaryId={activeSummaryId}
+        moveActiveSummary={moveActiveSummary}
         showCreateSummary={true}
         onAddSummary={onAddSummary}
         onCreateTaskIntent={onCreateTaskIntent}

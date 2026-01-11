@@ -1,4 +1,18 @@
 // @ts-nocheck
+/*
+=====================================================================
+METRA — App.jsx
+=====================================================================
+
+STAGES
+---------------------------------------------------------------------
+Stage 97.3  — Task ↔ Summary Reassignment
+Stage 104.2 — Summary Activation Controls
+Stage 104.3.A — Summary Ordering State & Data
+Stage 104.3.B — Footer Wiring (Authority Completion)
+=====================================================================
+*/
+
 import React, { useState } from "react";
 
 import Sidebar from "./components/Sidebar";
@@ -7,15 +21,19 @@ import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
 
 export default function App() {
+  /* ===================== WORKSPACE STATE ===================== */
   const [workspaceState, setWorkspaceState] = useState(() => ({
     summaries: [],
     tasks: [],
   }));
 
+  /* ===================== SUMMARY ORDER ===================== */
+  const [summaryOrder, setSummaryOrder] = useState([]);
+
   const [activeTask, setActiveTask] = useState(null);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
-  /* ================= TASK CREATION ================= */
+  /* ===================== TASK CREATION ===================== */
 
   function handleCreateTaskIntent(intent) {
     if (!intent || !intent.title) return;
@@ -35,24 +53,50 @@ export default function App() {
     setActiveTask(newTask);
   }
 
-  /* ================= SUMMARY CREATION (TITLE-SAFE) ================= */
+  /* ===================== SUMMARY CREATION ===================== */
 
   function handleAddSummary(title) {
     const trimmed = typeof title === "string" ? title.trim() : "";
+    const id = crypto.randomUUID();
 
     setWorkspaceState((prev) => ({
       ...prev,
       summaries: [
         ...prev.summaries,
         {
-          id: crypto.randomUUID(),
+          id,
           title: trimmed || `Summary ${prev.summaries.length + 1}`,
         },
       ],
     }));
+
+    setSummaryOrder((prev) => [...prev, id]);
   }
 
-  /* ================= TASK ↔ SUMMARY MOVE ================= */
+  /* ===================== SUMMARY ORDERING ===================== */
+
+  function moveActiveSummary(activeSummaryId, direction) {
+    if (!activeSummaryId) return;
+
+    setSummaryOrder((prev) => {
+      const index = prev.indexOf(activeSummaryId);
+      if (index === -1) return prev;
+
+      const targetIndex =
+        direction === "up" ? index - 1 : index + 1;
+
+      if (targetIndex < 0 || targetIndex >= prev.length) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+  }
+
+  /* ===================== TASK ↔ SUMMARY MOVE ===================== */
 
   function handleChangeTaskSummary(taskId, newSummaryId) {
     setWorkspaceState((prev) => ({
@@ -65,7 +109,7 @@ export default function App() {
     }));
   }
 
-  /* ================= TASK POPUP ================= */
+  /* ===================== TASK POPUP ===================== */
 
   function handleOpenTask(task) {
     setActiveTask(task);
@@ -74,6 +118,19 @@ export default function App() {
   function handleCloseTask() {
     setActiveTask(null);
   }
+
+  /* ===================== DERIVED ORDER ===================== */
+
+  const orderedSummaries =
+    summaryOrder.length > 0
+      ? summaryOrder
+          .map((id) =>
+            workspaceState.summaries.find((s) => s.id === id)
+          )
+          .filter(Boolean)
+      : workspaceState.summaries;
+
+  /* ===================== RENDER ===================== */
 
   return (
     <>
@@ -87,17 +144,18 @@ export default function App() {
 
         <div style={{ flex: 1 }}>
           <PreProject
-            summaries={workspaceState.summaries}
+            summaries={orderedSummaries}
             tasks={workspaceState.tasks}
             onOpenTask={handleOpenTask}
             onCreateTaskIntent={handleCreateTaskIntent}
             onAddSummary={handleAddSummary}
+            moveActiveSummary={moveActiveSummary}
           />
 
           {activeTask && (
             <TaskPopup
               task={activeTask}
-              summaries={workspaceState.summaries}
+              summaries={orderedSummaries}
               onClose={handleCloseTask}
               onAddNote={() => {}}
               onAssignTask={() => {}}

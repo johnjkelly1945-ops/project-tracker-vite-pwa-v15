@@ -5,73 +5,40 @@ import CreateTaskModal from "./CreateTaskModal";
 /*
 =====================================================================
 METRA — PreProjectFooter.jsx
-RESTORED FROM:
-baseline-2025-12-30-stage28-step1-create-task-modal
-
-RESTORATION PURPOSE:
-• Reinstate modal-based task creation (regression fix)
-• Preserve Stage 38+ summary creation (App-owned)
-• Preserve SEM-05 (summary optional for tasks)
-
-NO DESIGN CHANGES
+Stage 104.3.B — Summary Ordering Controls (Activation-Gated)
 =====================================================================
 */
 
 export default function PreProjectFooter({
-  showCreateSummary = false,
   summaries = [],
+  activeSummaryId = null,
+  moveActiveSummary,
+  showCreateSummary = false,
   onCreateTaskIntent,
   onAddSummary,
 }) {
-  /* ---------------- Task Creation (RESTORED) ---------------- */
   const [taskModalOpen, setTaskModalOpen] = useState(false);
-
-  /* ---------------- Summary Creation (UNCHANGED) ---------------- */
-  const [showIntentAck, setShowIntentAck] = useState(false);
   const [summaryTitle, setSummaryTitle] = useState("");
 
-  /* ---------------- Create Task ---------------- */
-  const handleCreateTaskClick = () => {
-    setTaskModalOpen(true);
-  };
+  const activeIndex =
+    activeSummaryId != null
+      ? summaries.findIndex((s) => s.id === activeSummaryId)
+      : -1;
 
-  /* ---------------- Create Summary ---------------- */
-  const handleCreateSummaryClick = () => {
-    if (typeof onAddSummary !== "function") {
-      console.error(
-        "Create Summary clicked but onAddSummary prop is not provided"
-      );
-      return;
-    }
-
-    if (!summaryTitle.trim()) {
-      alert("Please enter a summary title.");
-      return;
-    }
-
-    // Intent acknowledgement (Stage 33 semantics preserved)
-    setShowIntentAck(true);
-
-    // Actual summary creation (Stage 38 canonical path)
-    onAddSummary(summaryTitle.trim());
-
-    // Reset input
-    setSummaryTitle("");
-  };
+  const hasActiveSummary = activeIndex !== -1;
+  const atTopBoundary = hasActiveSummary && activeIndex === 0;
+  const atBottomBoundary =
+    hasActiveSummary && activeIndex === summaries.length - 1;
 
   return (
     <>
       <footer className="preproject-footer">
-        {/* ================= CREATE TASK ================= */}
-        <button
-          type="button"
-          className="create-task-button"
-          onClick={handleCreateTaskClick}
-        >
+        {/* Create Task */}
+        <button type="button" onClick={() => setTaskModalOpen(true)}>
           Create Task
         </button>
 
-        {/* ================= CREATE SUMMARY ================= */}
+        {/* Create Summary */}
         {showCreateSummary && (
           <div style={{ marginTop: "8px" }}>
             <input
@@ -79,60 +46,51 @@ export default function PreProjectFooter({
               placeholder="Summary title"
               value={summaryTitle}
               onChange={(e) => setSummaryTitle(e.target.value)}
-              style={{
-                marginRight: "6px",
-                padding: "4px 6px",
-                fontSize: "0.85rem",
-              }}
+              style={{ marginRight: "6px" }}
             />
             <button
               type="button"
-              className="create-summary-button"
-              onClick={handleCreateSummaryClick}
+              onClick={() => {
+                if (!summaryTitle.trim()) return;
+                onAddSummary(summaryTitle.trim());
+                setSummaryTitle("");
+              }}
             >
               Create Summary
             </button>
           </div>
         )}
 
-        {/* ================= INTENT ACK ================= */}
-        {showIntentAck && (
+        {/* Ordering Controls */}
+        {hasActiveSummary && (
           <div
-            style={{
-              marginTop: "10px",
-              padding: "8px 10px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              backgroundColor: "#f8f9fa",
-              fontSize: "0.85rem",
-              maxWidth: "420px",
-            }}
+            className="summary-order-controls"
+            style={{ marginTop: "10px", display: "flex", gap: "6px" }}
           >
-            <strong>Summary creation intent registered.</strong>
-            <div>No summary has been activated.</div>
-
             <button
               type="button"
-              style={{ marginTop: "6px", fontSize: "0.8rem" }}
-              onClick={() => setShowIntentAck(false)}
+              disabled={atTopBoundary}
+              onClick={() => moveActiveSummary(activeSummaryId, "up")}
             >
-              Dismiss
+              ↑ Move Up
+            </button>
+            <button
+              type="button"
+              disabled={atBottomBoundary}
+              onClick={() => moveActiveSummary(activeSummaryId, "down")}
+            >
+              ↓ Move Down
             </button>
           </div>
         )}
       </footer>
 
-      {/* ================= TASK CREATION MODAL (RESTORED) ================= */}
       <CreateTaskModal
         isOpen={taskModalOpen}
         summaries={summaries}
         onCancel={() => setTaskModalOpen(false)}
         onSubmit={(intent) => {
-          if (typeof onCreateTaskIntent === "function") {
-            onCreateTaskIntent(intent);
-          } else {
-            console.error("onCreateTaskIntent is not provided");
-          }
+          onCreateTaskIntent?.(intent);
           setTaskModalOpen(false);
         }}
       />
