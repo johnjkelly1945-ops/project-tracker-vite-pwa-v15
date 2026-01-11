@@ -1,7 +1,27 @@
 // @ts-nocheck
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CanonicalTaskRow from "./CanonicalTaskRow";
 import PreProjectFooter from "./PreProjectFooter";
+
+/*
+=====================================================================
+METRA — PreProject.jsx
+Stage 104.2 — Summary Activation Controls (REINTRODUCED)
+=====================================================================
+
+ROLE
+---------------------------------------------------------------------
+Workspace summary display with explicit, user-controlled activation.
+
+SEMANTICS (LOCKED)
+---------------------------------------------------------------------
+• Activation is explicit and reversible
+• Activation is visual-only (no mutation authority)
+• Only one summary may be active at a time
+• Tasks remain first-class and independent
+• No ordering changes at this stage
+=====================================================================
+*/
 
 export default function PreProject({
   summaries = [],
@@ -10,30 +30,11 @@ export default function PreProject({
   onCreateTaskIntent,
   onAddSummary,
 }) {
-  const [summaryOrder, setSummaryOrder] = useState(null);
-  const [collapsedSummaries, setCollapsedSummaries] = useState({});
+  /* ================= ACTIVATION STATE ================= */
   const [activeSummaryId, setActiveSummaryId] = useState(null);
-  const isWorkspaceOwner = true;
 
-  useEffect(() => {
-    if (!Array.isArray(summaryOrder) && summaries.length) {
-      setSummaryOrder(summaries.map((s) => s.id));
-    }
-  }, [summaries, summaryOrder]);
-
-  const orderedSummaries =
-    Array.isArray(summaryOrder) && summaryOrder.length
-      ? summaryOrder
-          .map((id) => summaries.find((s) => s.id === id))
-          .filter(Boolean)
-      : summaries;
-
-  function toggleCollapse(summaryId) {
-    setCollapsedSummaries((prev) => ({
-      ...prev,
-      [summaryId]: !prev[summaryId],
-    }));
-  }
+  /* ================= ORPHAN TASKS ================= */
+  const orphanTasks = tasks.filter((t) => t.summaryId == null);
 
   function toggleActivation(summaryId) {
     setActiveSummaryId((current) =>
@@ -43,9 +44,25 @@ export default function PreProject({
 
   return (
     <div style={{ padding: "12px" }}>
-      {orderedSummaries.map((summary) => {
-        const isCollapsed = collapsedSummaries[summary.id];
+      {/* ================= ORPHAN TASKS ================= */}
+      {orphanTasks.length > 0 && (
+        <div style={{ marginBottom: "18px" }}>
+          <h3>Unassigned Tasks</h3>
+          {orphanTasks.map((task) => (
+            <CanonicalTaskRow
+              key={task.id}
+              task={task}
+              isReadOnly={true}
+              onTitleClick={() => onOpenTask(task)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ================= SUMMARIES ================= */}
+      {summaries.map((summary) => {
         const isActive = activeSummaryId === summary.id;
+        const isDimmed = activeSummaryId && !isActive;
 
         return (
           <div
@@ -55,7 +72,7 @@ export default function PreProject({
               padding: "8px",
               border: "1px dashed #999",
               backgroundColor: isActive ? "#eef6ff" : "#fff",
-              opacity: activeSummaryId && !isActive ? 0.6 : 1,
+              opacity: isDimmed ? 0.6 : 1,
             }}
           >
             <div
@@ -71,41 +88,32 @@ export default function PreProject({
                 {isActive && " (active)"}
               </strong>
 
-              <div style={{ display: "flex", gap: "6px" }}>
-                <button
-                  type="button"
-                  onClick={() => toggleCollapse(summary.id)}
-                >
-                  {isCollapsed ? "▶" : "▼"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => toggleActivation(summary.id)}
-                >
-                  {isActive ? "Deactivate" : "Activate"}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleActivation(summary.id)}
+              >
+                {isActive ? "Deactivate" : "Activate"}
+              </button>
             </div>
 
-            {!isCollapsed &&
-              tasks
-                .filter((t) => t.summaryId === summary.id)
-                .map((task) => (
-                  <CanonicalTaskRow
-                    key={task.id}
-                    task={task}
-                    isReadOnly={true}
-                    onTitleClick={() => onOpenTask(task)}
-                  />
-                ))}
+            {tasks
+              .filter((t) => t.summaryId === summary.id)
+              .map((task) => (
+                <CanonicalTaskRow
+                  key={task.id}
+                  task={task}
+                  isReadOnly={true}
+                  onTitleClick={() => onOpenTask(task)}
+                />
+              ))}
           </div>
         );
       })}
 
+      {/* ================= FOOTER ================= */}
       <PreProjectFooter
         summaries={summaries}
-        showCreateSummary={isWorkspaceOwner}
+        showCreateSummary={true}
         onAddSummary={onAddSummary}
         onCreateTaskIntent={onCreateTaskIntent}
       />
