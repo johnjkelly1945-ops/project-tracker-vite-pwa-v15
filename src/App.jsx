@@ -1,24 +1,4 @@
 // @ts-nocheck
-/*
-=====================================================================
-METRA — App.jsx
-=====================================================================
-
-STAGE
----------------------------------------------------------------------
-Stage 93.3 — Task ↔ Summary Association (Authoritative Mutation)
-
-CHANGE SUMMARY
----------------------------------------------------------------------
-• Introduce a single, explicit handler to change task ↔ summary
-  association by mutating task.summaryId
-• Preserve all existing behaviour
-• No UI changes
-• No sidebar changes
-• No audit emission (design-only at this stage)
-=====================================================================
-*/
-
 import React, { useState } from "react";
 
 import Sidebar from "./components/Sidebar";
@@ -27,49 +7,65 @@ import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
 
 export default function App() {
-  /* ===================== WORKSPACE STATE ===================== */
   const [workspaceState, setWorkspaceState] = useState(() => ({
     summaries: [],
     tasks: [],
   }));
 
-  const [focusedSummaryId, setFocusedSummaryId] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
-
-  /* ===================== SIDEBAR UI STATE ===================== */
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
-  /* ===================== HANDLERS (AUTHORITATIVE) ===================== */
+  /* ================= TASK CREATION ================= */
 
-  function handleAddSummary() {
+  function handleCreateTaskIntent(intent) {
+    if (!intent || !intent.title) return;
+
+    const newTask = {
+      id: crypto.randomUUID(),
+      title: intent.title,
+      summaryId: intent.summaryId ?? null,
+      notes: [],
+    };
+
+    setWorkspaceState((prev) => ({
+      ...prev,
+      tasks: [...prev.tasks, newTask],
+    }));
+
+    setActiveTask(newTask);
+  }
+
+  /* ================= SUMMARY CREATION (TITLE-SAFE) ================= */
+
+  function handleAddSummary(title) {
+    const trimmed = typeof title === "string" ? title.trim() : "";
+
     setWorkspaceState((prev) => ({
       ...prev,
       summaries: [
         ...prev.summaries,
         {
           id: crypto.randomUUID(),
-          title: `Summary ${prev.summaries.length + 1}`,
+          title: trimmed || `Summary ${prev.summaries.length + 1}`,
         },
       ],
     }));
   }
 
-  function handleCreateTaskIntent(intent) {
-    if (!intent || !intent.title) return;
+  /* ================= TASK ↔ SUMMARY MOVE ================= */
 
+  function handleChangeTaskSummary(taskId, newSummaryId) {
     setWorkspaceState((prev) => ({
       ...prev,
-      tasks: [
-        ...prev.tasks,
-        {
-          id: crypto.randomUUID(),
-          title: intent.title,
-          summaryId: intent.summaryId ?? null,
-          notes: [],
-        },
-      ],
+      tasks: prev.tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, summaryId: newSummaryId ?? null }
+          : t
+      ),
     }));
   }
+
+  /* ================= TASK POPUP ================= */
 
   function handleOpenTask(task) {
     setActiveTask(task);
@@ -78,62 +74,6 @@ export default function App() {
   function handleCloseTask() {
     setActiveTask(null);
   }
-
-  function handleAddNote(taskId, noteText) {
-    const timestamp = new Date().toLocaleString();
-    const note = `${noteText} (${timestamp})`;
-
-    setWorkspaceState((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              notes: Array.isArray(t.notes)
-                ? [...t.notes, note]
-                : [note],
-            }
-          : t
-      ),
-    }));
-  }
-
-  function handleAssignTask(taskId, assigneeId) {
-    const timestamp = new Date().toLocaleString();
-
-    setWorkspaceState((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              assignedTo: assigneeId,
-              assignedAt: timestamp,
-            }
-          : t
-      ),
-    }));
-  }
-
-  /* ============================================================
-     STAGE 93.3 — TASK ↔ SUMMARY ASSOCIATION (AUTHORITATIVE)
-     ============================================================ */
-
-  function handleChangeTaskSummary(taskId, newSummaryId) {
-    setWorkspaceState((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              summaryId: newSummaryId ?? null,
-            }
-          : t
-      ),
-    }));
-  }
-
-  /* ===================== RENDER ===================== */
 
   return (
     <>
@@ -145,15 +85,13 @@ export default function App() {
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        <div className="app-root" style={{ flex: 1 }}>
+        <div style={{ flex: 1 }}>
           <PreProject
             summaries={workspaceState.summaries}
             tasks={workspaceState.tasks}
-            onAddSummary={handleAddSummary}
-            onCreateTaskIntent={handleCreateTaskIntent}
-            focusedSummaryId={focusedSummaryId}
-            setFocusedSummaryId={setFocusedSummaryId}
             onOpenTask={handleOpenTask}
+            onCreateTaskIntent={handleCreateTaskIntent}
+            onAddSummary={handleAddSummary}
           />
 
           {activeTask && (
@@ -161,8 +99,8 @@ export default function App() {
               task={activeTask}
               summaries={workspaceState.summaries}
               onClose={handleCloseTask}
-              onAddNote={handleAddNote}
-              onAssignTask={handleAssignTask}
+              onAddNote={() => {}}
+              onAssignTask={() => {}}
               onChangeTaskSummary={handleChangeTaskSummary}
             />
           )}
