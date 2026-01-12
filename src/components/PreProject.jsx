@@ -7,6 +7,7 @@ import PreProjectFooter from "./PreProjectFooter";
 =====================================================================
 METRA — PreProject.jsx
 Stage 104.3.C — Layout Authority Correction
+Stage 106.2C  — Summary Removal Wiring (Footer Pass-Through)
 =====================================================================
 - Root establishes a height contract
 - Content scrolls; footer remains visible
@@ -21,6 +22,7 @@ export default function PreProject({
   onCreateTaskIntent,
   onAddSummary,
   moveActiveSummary,
+  onRemoveSummary,
 }) {
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
@@ -37,15 +39,15 @@ export default function PreProject({
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100%",            // establishes height contract
-        minHeight: 0,              // allows child to scroll
+        height: "100%",
+        minHeight: 0,
       }}
     >
       {/* ================= SCROLLABLE CONTENT ================= */}
       <div
         style={{
           flex: 1,
-          minHeight: 0,            // critical for flex scroll
+          minHeight: 0,
           overflowY: "auto",
           padding: "12px",
         }}
@@ -123,6 +125,7 @@ export default function PreProject({
         showCreateSummary={true}
         onAddSummary={onAddSummary}
         onCreateTaskIntent={onCreateTaskIntent}
+        onRemoveSummary={onRemoveSummary}
       />
     </div>
   );

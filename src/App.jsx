@@ -10,6 +10,7 @@ Stage 97.3  — Task ↔ Summary Reassignment
 Stage 104.2 — Summary Activation Controls
 Stage 104.3.A — Summary Ordering State & Data
 Stage 104.3.B — Footer Wiring (Authority Completion)
+Stage 106.1B — Summary Removal (Logic Only)
 =====================================================================
 */
 
@@ -71,6 +72,21 @@ export default function App() {
     }));
 
     setSummaryOrder((prev) => [...prev, id]);
+  }
+
+  /* ===================== SUMMARY REMOVAL (STAGE 106) ===================== */
+
+  function handleRemoveSummary(summaryId) {
+    if (!summaryId) return;
+
+    setWorkspaceState((prev) => ({
+      summaries: prev.summaries.filter((s) => s.id !== summaryId),
+      tasks: prev.tasks.map((t) =>
+        t.summaryId === summaryId ? { ...t, summaryId: null } : t
+      ),
+    }));
+
+    setSummaryOrder((prev) => prev.filter((id) => id !== summaryId));
   }
 
   /* ===================== SUMMARY ORDERING ===================== */
@@ -150,6 +166,7 @@ export default function App() {
             onCreateTaskIntent={handleCreateTaskIntent}
             onAddSummary={handleAddSummary}
             moveActiveSummary={moveActiveSummary}
+            onRemoveSummary={handleRemoveSummary}
           />
 
           {activeTask && (
