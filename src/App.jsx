@@ -6,11 +6,15 @@ METRA — App.jsx
 
 STAGES
 ---------------------------------------------------------------------
-Stage 97.3  — Task ↔ Summary Reassignment
-Stage 104.2 — Summary Activation Controls
+Stage 97.3    — Task ↔ Summary Reassignment
+Stage 104.2   — Summary Activation Controls
 Stage 104.3.A — Summary Ordering State & Data
 Stage 104.3.B — Footer Wiring (Authority Completion)
-Stage 106.1B — Summary Removal (Logic Only)
+Stage 106.1B  — Summary Removal (Logic Only)
+Stage 130.A   — Dual Workspace Render Activation (TEMPORARY)
+Stage 130.A2  — Behaviour Preservation Bridging (PARITY RESTORE)
+Stage 130.B   — Pane Visibility Gating (LOCKED)
+Stage 130.C   — Visibility-Only Correction (Single Working Surface)
 =====================================================================
 */
 
@@ -18,8 +22,19 @@ import React, { useState } from "react";
 
 import Sidebar from "./components/Sidebar";
 import PreProject from "./components/PreProject";
+import DualPane from "./components/DualPane";
 import ModuleHeader from "./components/ModuleHeader";
 import TaskPopup from "./components/TaskPopup";
+
+/* ===================================================================
+STAGE 130 — DUAL WORKSPACE DEFAULT
+----------------------------------------------------------------------
+• Dual-pane is the default workspace model
+• ONLY ONE working surface is rendered at any time
+• Non-active pane is NOT visible
+• Sidebar remains present
+=================================================================== */
+const STAGE_130_DUAL_WORKSPACE = true;
 
 export default function App() {
   /* ===================== WORKSPACE STATE ===================== */
@@ -74,7 +89,7 @@ export default function App() {
     setSummaryOrder((prev) => [...prev, id]);
   }
 
-  /* ===================== SUMMARY REMOVAL (STAGE 106) ===================== */
+  /* ===================== SUMMARY REMOVAL ===================== */
 
   function handleRemoveSummary(summaryId) {
     if (!summaryId) return;
@@ -101,9 +116,7 @@ export default function App() {
       const targetIndex =
         direction === "up" ? index - 1 : index + 1;
 
-      if (targetIndex < 0 || targetIndex >= prev.length) {
-        return prev;
-      }
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
 
       const next = [...prev];
       const [moved] = next.splice(index, 1);
@@ -159,15 +172,32 @@ export default function App() {
         />
 
         <div style={{ flex: 1 }}>
-          <PreProject
-            summaries={orderedSummaries}
-            tasks={workspaceState.tasks}
-            onOpenTask={handleOpenTask}
-            onCreateTaskIntent={handleCreateTaskIntent}
-            onAddSummary={handleAddSummary}
-            moveActiveSummary={moveActiveSummary}
-            onRemoveSummary={handleRemoveSummary}
-          />
+          {STAGE_130_DUAL_WORKSPACE ? (
+            <DualPane
+              left={
+                <PreProject
+                  summaries={orderedSummaries}
+                  tasks={workspaceState.tasks}
+                  onOpenTask={handleOpenTask}
+                  onCreateTaskIntent={handleCreateTaskIntent}
+                  onAddSummary={handleAddSummary}
+                  moveActiveSummary={moveActiveSummary}
+                  onRemoveSummary={handleRemoveSummary}
+                />
+              }
+              right={null}
+            />
+          ) : (
+            <PreProject
+              summaries={orderedSummaries}
+              tasks={workspaceState.tasks}
+              onOpenTask={handleOpenTask}
+              onCreateTaskIntent={handleCreateTaskIntent}
+              onAddSummary={handleAddSummary}
+              moveActiveSummary={moveActiveSummary}
+              onRemoveSummary={handleRemoveSummary}
+            />
+          )}
 
           {activeTask && (
             <TaskPopup
