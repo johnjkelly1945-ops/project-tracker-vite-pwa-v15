@@ -7,15 +7,14 @@ METRA — App.jsx
 STAGES
 ---------------------------------------------------------------------
 Stage 138.1A — Dual-Pane Shell (Inspection Only)
-Stage 138.2A — Execution Arrow (Design, Locked)
-Stage 139     — Phase 3: Population Verification with Fixture Data
+Stage 145.1  — Empty Single-Pane Workspace (Structural Baseline)
 =====================================================================
 
 NOTE
 ---------------------------------------------------------------------
-Fixture data below is intentionally oversized to force scrolling in
-both single-pane and dual-pane contexts. This does NOT re-authorise
-Create or execution semantics.
+All fixture population has been removed.
+This file now realises the canonical empty single-pane workspace.
+No authority is enabled.
 =====================================================================
 */
 
@@ -25,36 +24,6 @@ import Sidebar from "./components/Sidebar";
 import DualPane from "./components/DualPane";
 import ModuleHeader from "./components/ModuleHeader";
 import PreProject from "./components/PreProject";
-
-/* ================================================================
-   PHASE 3 — FIXTURE DATA (READ-ONLY)
-   ================================================================ */
-
-const fixtureSummaries = [
-  { id: "s1", title: "Summary Alpha" },
-  { id: "s2", title: "Summary Beta" },
-  { id: "s3", title: "Summary Gamma" },
-  { id: "s4", title: "Summary Delta" },
-  { id: "s5", title: "Summary Epsilon" },
-];
-
-const fixtureTasks = [
-  // Orphan tasks (force early scroll)
-  ...Array.from({ length: 10 }).map((_, i) => ({
-    id: `o${i + 1}`,
-    title: `Orphan Task ${i + 1}`,
-    summaryId: null,
-  })),
-
-  // Tasks per summary (oversized on purpose)
-  ...fixtureSummaries.flatMap((s, si) =>
-    Array.from({ length: 10 }).map((_, ti) => ({
-      id: `t-${si + 1}-${ti + 1}`,
-      title: `Task ${si + 1}.${ti + 1}`,
-      summaryId: s.id,
-    }))
-  ),
-];
 
 /* ================================================================
    UI CHROME
@@ -151,7 +120,7 @@ export default function App() {
                 />
               }
               leftBody={
-                <PaneBodyPlaceholder label="LEFT PANE — inspection-only (fixtures not rendered here)" />
+                <PaneBodyPlaceholder label="LEFT PANE — inspection-only" />
               }
               rightHeader={
                 <PaneHeader
@@ -161,11 +130,11 @@ export default function App() {
                 />
               }
               rightBody={
-                <PaneBodyPlaceholder label="RIGHT PANE — inspection-only (fixtures not rendered here)" />
+                <PaneBodyPlaceholder label="RIGHT PANE — inspection-only" />
               }
             />
           ) : (
-            /* ===== SINGLE-PANE EXECUTION (READ-ONLY, FIXTURES) ===== */
+            /* ===== SINGLE-PANE WORKSPACE (EMPTY, CANONICAL) ===== */
             <div
               style={{
                 display: "flex",
@@ -175,20 +144,16 @@ export default function App() {
               }}
             >
               <PaneHeader
-                title="SINGLE PANE WORKSPACE (fixtures)"
+                title="SINGLE PANE WORKSPACE"
                 arrow="↙"
                 onArrow={() => setWorkspaceMode("dual")}
               />
 
               <div style={{ flex: 1, minHeight: 0 }}>
                 <PreProject
-                  summaries={fixtureSummaries}
-                  tasks={fixtureTasks}
+                  summaries={[]}
+                  tasks={[]}
                   onOpenTask={() => {}}
-                  onCreateTaskIntent={() => {}}
-                  onAddSummary={() => {}}
-                  moveActiveSummary={() => {}}
-                  onRemoveSummary={() => {}}
                 />
               </div>
             </div>

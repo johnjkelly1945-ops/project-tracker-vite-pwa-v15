@@ -1,17 +1,16 @@
 // @ts-nocheck
 import { useState } from "react";
 import CanonicalTaskRow from "./CanonicalTaskRow";
-import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 104.3.C — Layout Authority Correction
-Stage 106.2C  — Summary Removal Wiring (Footer Pass-Through)
+Stage 145.1 — Empty Workspace Baseline Realisation
 =====================================================================
-- Root establishes a height contract
-- Content scrolls; footer remains visible
-- No semantic or authority changes
+- Read-only rendering only
+- No creation affordances
+- No footer rendered
+- No authority implied
 =====================================================================
 */
 
@@ -19,10 +18,6 @@ export default function PreProject({
   summaries = [],
   tasks = [],
   onOpenTask,
-  onCreateTaskIntent,
-  onAddSummary,
-  moveActiveSummary,
-  onRemoveSummary,
 }) {
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
@@ -116,17 +111,6 @@ export default function PreProject({
           );
         })}
       </div>
-
-      {/* ================= FOOTER (NON-SCROLLING) ================= */}
-      <PreProjectFooter
-        summaries={summaries}
-        activeSummaryId={activeSummaryId}
-        moveActiveSummary={moveActiveSummary}
-        showCreateSummary={true}
-        onAddSummary={onAddSummary}
-        onCreateTaskIntent={onCreateTaskIntent}
-        onRemoveSummary={onRemoveSummary}
-      />
     </div>
   );
 }
