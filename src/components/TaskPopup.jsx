@@ -10,25 +10,21 @@ Inspection-first task popup with controlled, explicit task mutations.
 
 STAGES
 ---------------------------------------------------------------------
-Stage 55   — Controlled Action Reintroduction (Notes)
-Stage 60.1 — Assignment Modal Wiring
-Stage 83.2 — Canonical Popup Header
-Stage 97.3.2 — Task ↔ Summary Reassignment (Move)
+Stage 148 — Gate G3: Task Assignment Authority (Single-Pane)
 
 CONSTRAINTS
 ---------------------------------------------------------------------
 • Inspection-only by default
-• Authorised mutations here:
-    - Append-only notes
-    - Assignment (delegated)
-    - Summary reassignment (delegated)
-• No lifecycle, governance, or escalation authority
+• Authorised mutation here:
+    - Gate G3 assignment (one-shot, explicit)
+• No reassignment
+• No lifecycle, personnel, or summary coupling
 =====================================================================
 */
 
 import { useState } from "react";
-import AssignmentModal from "./AssignmentModal";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
+import { localAssignees } from "../data/localAssignees";
 
 export default function TaskPopup({
   task,
@@ -41,32 +37,24 @@ export default function TaskPopup({
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
 
-  const [assignOpen, setAssignOpen] = useState(false);
-  const [selectedAssignee, setSelectedAssignee] = useState("");
-
-  /* ================= MOVE (STAGE 97.3.2) ================= */
-  const [moveOpen, setMoveOpen] = useState(false);
-  const [selectedSummaryId, setSelectedSummaryId] = useState(
-    task?.summaryId ?? ""
-  );
+  const [assigning, setAssigning] = useState(false);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
 
   if (!task) return null;
 
-  /* ================= ASSIGNMENT ================= */
+  const isAssigned = Boolean(task.assigneeId);
 
   function handleConfirmAssignment() {
-    if (!selectedAssignee) return;
-    onAssignTask(task.id, selectedAssignee);
-    setSelectedAssignee("");
-    setAssignOpen(false);
+    if (!selectedAssigneeId) return;
+    onAssignTask(task.id, selectedAssigneeId);
+    setSelectedAssigneeId("");
+    setAssigning(false);
   }
 
   function handleCancelAssignment() {
-    setSelectedAssignee("");
-    setAssignOpen(false);
+    setSelectedAssigneeId("");
+    setAssigning(false);
   }
-
-  /* ================= NOTES ================= */
 
   function handleConfirmNote() {
     if (!noteDraft.trim()) return;
@@ -78,20 +66,6 @@ export default function TaskPopup({
   function handleCancelNote() {
     setNoteDraft("");
     setIsAddingNote(false);
-  }
-
-  /* ================= MOVE ================= */
-
-  function handleConfirmMove() {
-    const newSummaryId =
-      selectedSummaryId === "" ? null : selectedSummaryId;
-    onChangeTaskSummary(task.id, newSummaryId);
-    setMoveOpen(false);
-  }
-
-  function handleCancelMove() {
-    setSelectedSummaryId(task.summaryId ?? "");
-    setMoveOpen(false);
   }
 
   return (
@@ -119,11 +93,62 @@ export default function TaskPopup({
         >
           <CanonicalTaskPopupHeader task={task} />
 
-          <div>
+          {!isAssigned && !assigning && (
+            <button onClick={() => setAssigning(true)}>
+              Assign task
+            </button>
+          )}
+
+          {!isAssigned && assigning && (
+            <div style={{ marginTop: "8px" }}>
+              <select
+                value={selectedAssigneeId}
+                onChange={(e) => setSelectedAssigneeId(e.target.value)}
+              >
+                <option value="">— Select —</option>
+                {localAssignees.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.displayName}
+                  </option>
+                ))}
+              </select>
+
+              <div style={{ marginTop: "6px" }}>
+                <button
+                  disabled={!selectedAssigneeId}
+                  onClick={handleConfirmAssignment}
+                >
+                  Confirm assignment
+                </button>
+                <button onClick={handleCancelAssignment}>
+                  Cancel
+                </button>
+              </div>
+
+              <div style={{ marginTop: "6px", fontSize: "12px", color: "#555" }}>
+                Assignment locks task identity and cannot be undone.
+              </div>
+            </div>
+          )}
+
+          {isAssigned && (
+            <div style={{ marginTop: "8px" }}>
+              <strong>Assigned:</strong>{" "}
+              {task.assigneeLabel || task.assigneeId}
+            </div>
+          )}
+
+          <div style={{ marginTop: "12px" }}>
             <strong>Notes</strong>
             {Array.isArray(task.notes) &&
               task.notes.map((n, i) => <div key={i}>{n}</div>)}
           </div>
+
+          {!isAddingNote && (
+            <button onClick={() => setIsAddingNote(true)}>
+              Add note
+            </button>
+          )}
 
           {isAddingNote && (
             <div>
@@ -136,60 +161,9 @@ export default function TaskPopup({
             </div>
           )}
 
-          {moveOpen && (
-            <div style={{ marginTop: "12px" }}>
-              <strong>Move task</strong>
-              <select
-                value={selectedSummaryId}
-                onChange={(e) => setSelectedSummaryId(e.target.value)}
-              >
-                <option value="">No summary</option>
-                {summaries.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-              <button onClick={handleConfirmMove}>Apply</button>
-              <button onClick={handleCancelMove}>Cancel</button>
-            </div>
-          )}
-
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <button onClick={() => setAssignOpen(true)}>
-              Change person
-            </button>
-
-            {!isAddingNote && (
-              <button onClick={() => setIsAddingNote(true)}>
-                Add note
-              </button>
-            )}
-
-            {!moveOpen && (
-              <button
-                onClick={() => {
-                  setSelectedSummaryId(task.summaryId ?? "");
-                  setMoveOpen(true);
-                }}
-              >
-                Move
-              </button>
-            )}
-
-            <button onClick={onClose}>Close</button>
-          </div>
+          <button onClick={onClose}>Close</button>
         </div>
       </div>
-
-      <AssignmentModal
-        isOpen={assignOpen}
-        currentAssignee={task.assignedTo || ""}
-        selectedAssignee={selectedAssignee}
-        onSelectAssignee={setSelectedAssignee}
-        onConfirm={handleConfirmAssignment}
-        onClose={handleCancelAssignment}
-      />
     </>
   );
 }

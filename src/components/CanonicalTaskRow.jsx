@@ -1,40 +1,38 @@
 /*
 =====================================================================
 METRA — CanonicalTaskRow.jsx
-Stage 81 — Step 1 (Task Row Implementation)
-Stage 83.1 — Invocation wiring correction
+Stage 81    — Task Row Rendering
+Stage 147   — Gate G2: Task Identity Editing (Unassigned Only)
+Stage 148   — Popup Reachability Fix (Instrumented)
 ---------------------------------------------------------------------
-Render-only. No semantics added.
+- Row click opens inspection popup
+- Title click edits identity when permitted
+- TEMP: console log to prove click firing
 =====================================================================
 */
+
+import { useState } from "react";
 
 export default function CanonicalTaskRow({
   task,
   isReadOnly,
   onTitleClick,
+  canEditIdentity,
+  onUpdateTitle,
 }) {
   if (!task) return null;
 
-  // -----------------------------
-  // Colour resolution (Stage 80)
-  // -----------------------------
-  let baseColor = "#d97706"; // amber default (unresolved)
+  const isAssigned = !!task.assigneeId;
+  const allowEdit = canEditIdentity && !isAssigned && !isReadOnly;
 
-  if (task.executionState === "NOT_STARTED") {
-    baseColor = "#6b7280"; // grey
-  }
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftTitle, setDraftTitle] = useState(task.title || "");
 
-  if (task.reviewOutcome === "ACCEPTED") {
-    baseColor = "#16a34a"; // green (ONLY allowed green)
-  }
+  let baseColor = "#d97706";
+  if (task.executionState === "NOT_STARTED") baseColor = "#6b7280";
+  if (task.reviewOutcome === "ACCEPTED") baseColor = "#16a34a";
+  if (task.isArchived) baseColor = "#9ca3af";
 
-  if (task.isArchived) {
-    baseColor = "#9ca3af"; // muted / archived
-  }
-
-  // -----------------------------
-  // Labels
-  // -----------------------------
   const lifecycleLabel = (() => {
     switch (task.executionState) {
       case "NOT_STARTED":
@@ -48,13 +46,6 @@ export default function CanonicalTaskRow({
     }
   })();
 
-  const showInReview = task.reviewState === "IN_REVIEW";
-  const showAccepted = task.reviewOutcome === "ACCEPTED";
-  const showRejected = task.reviewOutcome === "REJECTED";
-
-  // -----------------------------
-  // Styling (row remains non-clickable)
-  // -----------------------------
   const rowStyle = {
     display: "flex",
     alignItems: "center",
@@ -64,6 +55,7 @@ export default function CanonicalTaskRow({
     color: baseColor,
     opacity: task.isArchived ? 0.6 : 1,
     userSelect: "none",
+    cursor: "pointer",
   };
 
   const labelStyle = {
@@ -78,45 +70,56 @@ export default function CanonicalTaskRow({
   const titleStyle = {
     flexGrow: 1,
     color: "#111827",
-    textDecoration: task.isArchived ? "line-through" : "none",
-    cursor: "pointer",
+    cursor: allowEdit ? "text" : "pointer",
   };
 
-  const iconStyle = {
+  const inputStyle = {
+    flexGrow: 1,
     fontSize: "14px",
-    color: "#374151",
+    padding: "2px 4px",
   };
 
-  // -----------------------------
-  // Render
-  // -----------------------------
+  function commitTitle() {
+    setIsEditing(false);
+    if (draftTitle !== task.title) {
+      onUpdateTitle(task.id, draftTitle);
+    }
+  }
+
   return (
-    <div style={rowStyle}>
-      {/* Lifecycle */}
+    <div
+      style={rowStyle}
+      onClick={() => {
+        console.log("ROW CLICK FIRED:", task.id);
+        if (!isEditing && onTitleClick) onTitleClick(task);
+      }}
+    >
       <span style={labelStyle}>{lifecycleLabel}</span>
 
-      {showInReview && <span style={labelStyle}>In Review</span>}
-      {showAccepted && <span style={labelStyle}>Accepted</span>}
-      {showRejected && <span style={labelStyle}>Rejected</span>}
-
-      {/* Title — sole invocation surface */}
-      <span
-        style={titleStyle}
-        onClick={onTitleClick}
-        role="button"
-      >
-        {task.title}
-      </span>
-
-      {task.isFlagged && (
-        <span style={iconStyle} title="Reminder">🕒</span>
+      {isEditing ? (
+        <input
+          value={draftTitle}
+          onChange={(e) => setDraftTitle(e.target.value)}
+          onBlur={commitTitle}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commitTitle();
+            if (e.key === "Escape") setIsEditing(false);
+          }}
+          autoFocus
+          style={inputStyle}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <span
+          style={titleStyle}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (allowEdit) setIsEditing(true);
+          }}
+        >
+          {task.title || "Untitled Task"}
+        </span>
       )}
-
-      {task.isEscalated && (
-        <span style={iconStyle} title="Escalated">⚑</span>
-      )}
-
-      {task.isArchived && <span style={labelStyle}>Archived</span>}
     </div>
   );
 }

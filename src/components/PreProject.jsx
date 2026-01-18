@@ -6,13 +6,13 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 145.1 — Empty Workspace Baseline Realisation
-Stage 146   — Gate G1 Wiring (Footer Active)
+Stage 145.1 — Empty Workspace Baseline
+Stage 146   — Gate G1 Wiring
+Stage 147   — Gate G2 Identity Enablement
 =====================================================================
-- Read-only task rendering
-- Footer rendered explicitly
-- Task creation authority expressed only via footer
-- No summary creation
+- Container only
+- No identity logic here
+- Read-only lifted only when Gate G2 open
 =====================================================================
 */
 
@@ -22,6 +22,8 @@ export default function PreProject({
   onOpenTask,
   onCreateTask,
   canCreateTask,
+  canEditIdentity,
+  onUpdateTitle,
 }) {
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
@@ -58,7 +60,9 @@ export default function PreProject({
               <CanonicalTaskRow
                 key={task.id}
                 task={task}
-                isReadOnly={true}
+                isReadOnly={!canEditIdentity}
+                canEditIdentity={canEditIdentity}
+                onUpdateTitle={onUpdateTitle}
                 onTitleClick={() => onOpenTask(task)}
               />
             ))}
@@ -107,7 +111,9 @@ export default function PreProject({
                   <CanonicalTaskRow
                     key={task.id}
                     task={task}
-                    isReadOnly={true}
+                    isReadOnly={!canEditIdentity}
+                    canEditIdentity={canEditIdentity}
+                    onUpdateTitle={onUpdateTitle}
                     onTitleClick={() => onOpenTask(task)}
                   />
                 ))}
@@ -116,7 +122,7 @@ export default function PreProject({
         })}
       </div>
 
-      {/* ================= FOOTER (STAGE 146: G1 ACTIVE) ================= */}
+      {/* ================= FOOTER ================= */}
       <PreProjectFooter
         canCreateTask={canCreateTask}
         onCreateTask={onCreateTask}
