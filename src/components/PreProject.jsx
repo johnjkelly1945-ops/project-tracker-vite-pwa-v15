@@ -1,16 +1,18 @@
 // @ts-nocheck
 import { useState } from "react";
 import CanonicalTaskRow from "./CanonicalTaskRow";
+import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
 Stage 145.1 — Empty Workspace Baseline Realisation
+Stage 146   — Gate G1 Wiring (Footer Active)
 =====================================================================
-- Read-only rendering only
-- No creation affordances
-- No footer rendered
-- No authority implied
+- Read-only task rendering
+- Footer rendered explicitly
+- Task creation authority expressed only via footer
+- No summary creation
 =====================================================================
 */
 
@@ -18,6 +20,8 @@ export default function PreProject({
   summaries = [],
   tasks = [],
   onOpenTask,
+  onCreateTask,
+  canCreateTask,
 }) {
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
@@ -111,6 +115,12 @@ export default function PreProject({
           );
         })}
       </div>
+
+      {/* ================= FOOTER (STAGE 146: G1 ACTIVE) ================= */}
+      <PreProjectFooter
+        canCreateTask={canCreateTask}
+        onCreateTask={onCreateTask}
+      />
     </div>
   );
 }

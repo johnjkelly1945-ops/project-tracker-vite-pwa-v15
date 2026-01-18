@@ -8,13 +8,14 @@ STAGES
 ---------------------------------------------------------------------
 Stage 138.1A — Dual-Pane Shell (Inspection Only)
 Stage 145.1  — Empty Single-Pane Workspace (Structural Baseline)
+Stage 146    — Gate G1: Task Creation Authority (State Wiring Only)
 =====================================================================
 
 NOTE
 ---------------------------------------------------------------------
-All fixture population has been removed.
-This file now realises the canonical empty single-pane workspace.
-No authority is enabled.
+This file introduces Gate G1 state ONLY.
+No UI affordance is rendered here.
+No implicit authority is enabled.
 =====================================================================
 */
 
@@ -97,6 +98,31 @@ export default function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [workspaceMode, setWorkspaceMode] = useState("dual"); // 'dual' | 'single'
 
+  /* ================================================================
+     STAGE 146 — GATE G1 STATE (EXPLICIT, STAGE-LOCAL)
+     ================================================================ */
+
+  const [gateG1Open] = useState(true); // Stage 146 only
+
+  /* ================================================================
+     TASK STATE (EMPTY → POPULATED ONLY VIA G1)
+     ================================================================ */
+
+  const [tasks, setTasks] = useState([]);
+
+  function createTaskViaG1() {
+    if (!gateG1Open) return;
+    if (workspaceMode !== "single") return;
+
+    setTasks((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        __createdVia: "G1",
+      },
+    ]);
+  }
+
   const isDual = workspaceMode === "dual";
 
   return (
@@ -134,7 +160,7 @@ export default function App() {
               }
             />
           ) : (
-            /* ===== SINGLE-PANE WORKSPACE (EMPTY, CANONICAL) ===== */
+            /* ===== SINGLE-PANE WORKSPACE (G1-WIRED, UI-NEUTRAL) ===== */
             <div
               style={{
                 display: "flex",
@@ -152,8 +178,10 @@ export default function App() {
               <div style={{ flex: 1, minHeight: 0 }}>
                 <PreProject
                   summaries={[]}
-                  tasks={[]}
+                  tasks={tasks}
                   onOpenTask={() => {}}
+                  onCreateTask={createTaskViaG1}
+                  canCreateTask={gateG1Open && workspaceMode === "single"}
                 />
               </div>
             </div>
