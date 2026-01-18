@@ -7,11 +7,12 @@ import { localAssignees } from "./data/localAssignees";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 148 — Gate G3: Task Assignment Authority
+Stage 150 — Gate G5: Execution State (Read-Only, Popup-Only)
 =====================================================================
 - Owns task state
 - Owns popup activation
 - Assignment is explicit and irreversible
+- Execution state is inspection-only
 =====================================================================
 */
 
@@ -19,10 +20,7 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [summaries, setSummaries] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
-
   const [auditLog, setAuditLog] = useState([]);
-
-  /* ================= POPUP CONTROL ================= */
 
   function onOpenTask(task) {
     setActiveTask(task);
@@ -32,8 +30,6 @@ export default function App() {
     setActiveTask(null);
   }
 
-  /* ================= G3 ASSIGNMENT ================= */
-
   function onAssignTask(taskId, assigneeId) {
     setTasks((current) => {
       const idx = current.findIndex((t) => t.id === taskId);
@@ -42,16 +38,12 @@ export default function App() {
       const task = current[idx];
       if (task.assigneeId) return current;
 
-      const assignee = localAssignees.find(
-        (a) => a.id === assigneeId
-      );
+      const assignee = localAssignees.find((a) => a.id === assigneeId);
 
       const updatedTask = {
         ...task,
         assigneeId,
-        assigneeLabel: assignee
-          ? assignee.displayName
-          : assigneeId,
+        assigneeLabel: assignee ? assignee.displayName : assigneeId,
         assignedAt: new Date().toISOString(),
       };
 
@@ -74,8 +66,6 @@ export default function App() {
     });
   }
 
-  /* ================= NOTES ================= */
-
   function onAddNote(taskId, note) {
     setTasks((current) =>
       current.map((t) =>
@@ -86,8 +76,6 @@ export default function App() {
     );
   }
 
-  /* ================= SUMMARY MOVE ================= */
-
   function onChangeTaskSummary(taskId, summaryId) {
     setTasks((current) =>
       current.map((t) =>
@@ -96,13 +84,17 @@ export default function App() {
     );
   }
 
-  /* ================= CREATE TASK ================= */
-
   function onCreateTask() {
     const id = `task-${Date.now()}`;
     setTasks((current) => [
       ...current,
-      { id, title: "New Task", notes: [], summaryId: null },
+      {
+        id,
+        title: "New Task",
+        notes: [],
+        summaryId: null,
+        executionState: "NOT_STARTED", // Stage 150 default
+      },
     ]);
   }
 
