@@ -1,46 +1,131 @@
-// src/components/DualPane.jsx
-import React from "react";
-import "../Styles/DualPane.css";
-
+// @ts-nocheck
 /*
 =====================================================================
-METRA — Stage 139 (Implementation Continuation)
-DualPane with Minimal Pane Header Chrome
+METRA — DualPane.jsx
+Stage 159 — Section B
 ---------------------------------------------------------------------
-• Stateless
-• No behaviour
-• No logic
-• No authority
-• Pane header is structural only
-• Header hosts only explicitly provided content
+• DualPane remains mounted at all times
+• Layout is explicitly mode-aware (dual | single)
+• Divider renders ONLY in dual mode
+• Single-pane is a true structural collapse
+• No authority over tasks, summaries, sidebar, or footer
 =====================================================================
 */
 
-export default function DualPane({
-  leftHeader,
-  leftBody,
-  rightHeader,
-  rightBody,
-}) {
-  return (
-    <div className="dual-pane-root">
-      <div className="dual-pane-left">
-        <div className="pane-header">
-          {leftHeader}
-        </div>
-        <div className="pane-body">
-          {leftBody}
-        </div>
-      </div>
+import React from "react";
 
-      <div className="dual-pane-right">
-        <div className="pane-header">
-          {rightHeader}
+export default function DualPane({
+  mode = "dual",                 // "dual" | "single"
+  focusedPane = null,            // "management" | "development" | null
+  onFocusPane,                   // function(pane)
+  onReturnToDual,                // function()
+  managementBody,
+  developmentBody,
+}) {
+  const isDual = mode === "dual";
+
+  return (
+    <div
+      className="dual-pane-root"
+      style={{
+        display: "flex",
+        flex: 1,
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
+      {(isDual || focusedPane === "management") && (
+        <div
+          className="dual-pane-management"
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            borderRight: isDual ? "1px solid #ddd" : "none",
+          }}
+        >
+          <div
+            className="pane-header"
+            style={{
+              padding: "12px 16px",
+              borderBottom: "1px solid #ddd",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontWeight: "bold",
+            }}
+          >
+            <span>Management</span>
+
+            {isDual ? (
+              <button type="button" onClick={() => onFocusPane("management")}>
+                ↗
+              </button>
+            ) : (
+              <button type="button" onClick={onReturnToDual}>
+                ↙
+              </button>
+            )}
+          </div>
+
+          <div
+            className="pane-body"
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "16px",
+            }}
+          >
+            {managementBody}
+          </div>
         </div>
-        <div className="pane-body">
-          {rightBody}
+      )}
+
+      {(isDual || focusedPane === "development") && (
+        <div
+          className="dual-pane-development"
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="pane-header"
+            style={{
+              padding: "12px 16px",
+              borderBottom: "1px solid #ddd",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontWeight: "bold",
+            }}
+          >
+            <span>Development</span>
+
+            {isDual ? (
+              <button type="button" onClick={() => onFocusPane("development")}>
+                ↗
+              </button>
+            ) : (
+              <button type="button" onClick={onReturnToDual}>
+                ↙
+              </button>
+            )}
+          </div>
+
+          <div
+            className="pane-body"
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "16px",
+            }}
+          >
+            {developmentBody}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
