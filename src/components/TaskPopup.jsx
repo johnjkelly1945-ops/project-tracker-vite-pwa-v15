@@ -11,14 +11,17 @@ Inspection-first task popup with controlled, explicit task mutations.
 STAGES
 ---------------------------------------------------------------------
 Stage 148 — Gate G3: Task Assignment Authority (Single-Pane)
+Stage 151A — Gate G6: Assignee Start Acknowledgement (Popup-Only)
 
 CONSTRAINTS
 ---------------------------------------------------------------------
 • Inspection-only by default
-• Authorised mutation here:
+• Authorised mutations here:
     - Gate G3 assignment (one-shot, explicit)
+    - Gate G6 execution start (assignee-only)
 • No reassignment
-• No lifecycle, personnel, or summary coupling
+• No completion
+• No workspace signalling
 =====================================================================
 */
 
@@ -32,6 +35,7 @@ export default function TaskPopup({
   onClose,
   onAddNote,
   onAssignTask,
+  onStartExecution,
   onChangeTaskSummary,
 }) {
   const [isAddingNote, setIsAddingNote] = useState(false);
@@ -43,6 +47,18 @@ export default function TaskPopup({
   if (!task) return null;
 
   const isAssigned = Boolean(task.assigneeId);
+
+  // Normalise executionState for comparison only
+  const executionState =
+    (task.executionState || "NOT_STARTED").replace(" ", "_");
+
+  // Simplified identity convention for current stage
+  const isAssignee = task.assigneeId === "current-user";
+
+  const canStartExecution =
+    isAssigned &&
+    isAssignee &&
+    executionState === "NOT_STARTED";
 
   function handleConfirmAssignment() {
     if (!selectedAssigneeId) return;
@@ -66,6 +82,11 @@ export default function TaskPopup({
   function handleCancelNote() {
     setNoteDraft("");
     setIsAddingNote(false);
+  }
+
+  function handleStartWork() {
+    if (!canStartExecution) return;
+    onStartExecution(task.id);
   }
 
   return (
@@ -135,6 +156,14 @@ export default function TaskPopup({
             <div style={{ marginTop: "8px" }}>
               <strong>Assigned:</strong>{" "}
               {task.assigneeLabel || task.assigneeId}
+            </div>
+          )}
+
+          {canStartExecution && (
+            <div style={{ marginTop: "12px" }}>
+              <button onClick={handleStartWork}>
+                Start work
+              </button>
             </div>
           )}
 
