@@ -2,11 +2,11 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 166 — Restore G1 Task Creation & Popup Wiring
+Stage 167 — Task List Visualisation Wiring (Read-Only)
 ---------------------------------------------------------------------
-• Restores task state ownership
-• Restores G1 task creation
-• Restores popup wiring (G3 / G6)
+• Passes existing task state to PreProject
+• Passes onOpenTask handler (inspection-only)
+• NO new authority or state
 • NO layout or pane logic changes
 =====================================================================
 */
@@ -48,7 +48,7 @@ export default function App() {
     setFocusedPane(null);
   }
 
-  /* ===================== TASK CREATION (G1) ===================== */
+  /* ===================== G1 TASK CREATION ===================== */
 
   function onCreateTask() {
     const id = `task-${Date.now()}`;
@@ -168,6 +168,8 @@ export default function App() {
               workspaceMode === "single" && focusedPane === "management" ? (
                 <PreProject
                   focus="management"
+                  tasks={tasks}
+                  onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
                   onReturnToDual={onReturnToDual}
@@ -183,6 +185,8 @@ export default function App() {
               workspaceMode === "single" && focusedPane === "development" ? (
                 <PreProject
                   focus="development"
+                  tasks={tasks}
+                  onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
                   onReturnToDual={onReturnToDual}

@@ -1,78 +1,60 @@
 // @ts-nocheck
 import React from "react";
+import CanonicalTaskRow from "./CanonicalTaskRow";
 import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 166 — Restore G1 Footer Mount (Single-Pane Only)
+Stage 167 — Content-Only Workspace Body (DualPane-Owned Shell)
 ---------------------------------------------------------------------
-• Rendered only in true single-pane mode
-• ↙ return arrow restores dual-pane
-• Mounts G1 task-creation footer (gated)
-• No layout or authority changes
+• Content-only component
+• NO pane headers
+• NO arrows
+• NO layout ownership
+• Renders task list
+• Mounts G1 footer (single-pane only, via props)
 =====================================================================
 */
 
 export default function PreProject({
-  focus,
-  onReturnToDual,
+  tasks = [],
+  onOpenTask,
   canCreateTask = false,
   onCreateTask,
 }) {
-  const paneTitle =
-    focus === "management"
-      ? "Management"
-      : focus === "development"
-      ? "Development"
-      : "Workspace";
-
   return (
     <div
-      className="single-pane-root"
+      className="preproject-content"
       style={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        borderTop: "1px solid #ccc",
+        overflow: "hidden",
       }}
     >
-      {/* ================= PANE HEADER ================= */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 14px",
-          borderBottom: "1px solid #ddd",
-          background: "#fafafa",
-        }}
-      >
-        <strong>{paneTitle}</strong>
-
-        <button
-          type="button"
-          title="Return to dual pane"
-          onClick={onReturnToDual}
-          style={{
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          ↙
-        </button>
-      </div>
-
-      {/* ================= SCROLLABLE CONTENT ================= */}
+      {/* ================= TASK LIST / EMPTY STATE ================= */}
       <div
         style={{
           flex: 1,
-          padding: "14px",
           overflowY: "auto",
+          padding: "14px",
         }}
       >
-        <p>No tasks in workspace.</p>
-        <p>{paneTitle} operational view.</p>
+        {tasks.length === 0 ? (
+          <>
+            <p>No tasks in workspace.</p>
+            <p>Operational view.</p>
+          </>
+        ) : (
+          tasks.map((task) => (
+            <CanonicalTaskRow
+              key={task.id}
+              task={task}
+              onOpenTask={onOpenTask}
+            />
+          ))
+        )}
       </div>
 
       {/* ================= FOOTER (G1 — SINGLE-PANE ONLY) ================= */}
