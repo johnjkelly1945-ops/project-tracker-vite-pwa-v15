@@ -2,14 +2,12 @@
 /*
 =====================================================================
 METRA — App.jsx
-STAGE 164 — Workspace Shell Correction & Sidebar Decoupling
+Stage 166 — Restore G1 Task Creation & Popup Wiring
 ---------------------------------------------------------------------
-• App frames the workspace; it does NOT own viewport math
-• Exactly one scroll owner exists inside the workspace
-• Sidebar is structurally decoupled from workspace width
-• DualPane remains always mounted and owns pane layout only
-• Single-pane is a structural collapse, not a replacement
-• No task, execution, or authority semantics changed
+• Restores task state ownership
+• Restores G1 task creation
+• Restores popup wiring (G3 / G6)
+• NO layout or pane logic changes
 =====================================================================
 */
 
@@ -20,6 +18,7 @@ import ModuleHeader from "./components/ModuleHeader";
 import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
+import { localAssignees } from "./data/localAssignees";
 
 export default function App() {
   /* ===================== WORKSPACE AUTHORITY ===================== */
@@ -27,7 +26,7 @@ export default function App() {
   const [workspaceMode, setWorkspaceMode] = useState("dual"); // "dual" | "single"
   const [focusedPane, setFocusedPane] = useState(null);       // "management" | "development" | null
 
-  /* ===================== DATA (UNCHANGED) ===================== */
+  /* ===================== DATA ===================== */
 
   const [summaries, setSummaries] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -37,7 +36,7 @@ export default function App() {
 
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
-  /* ===================== PANE FOCUS HANDLERS ===================== */
+  /* ===================== PANE FOCUS ===================== */
 
   function onFocusPane(pane) {
     setWorkspaceMode("single");
@@ -49,7 +48,23 @@ export default function App() {
     setFocusedPane(null);
   }
 
-  /* ===================== TASK HANDLERS (AS-IS) ===================== */
+  /* ===================== TASK CREATION (G1) ===================== */
+
+  function onCreateTask() {
+    const id = `task-${Date.now()}`;
+    const newTask = {
+      id,
+      title: "New Task",
+      notes: [],
+      summaryId: null,
+      executionState: "NOT_STARTED",
+    };
+
+    setTasks((current) => [...current, newTask]);
+    setActiveTask(newTask);
+  }
+
+  /* ===================== POPUP CONTROL ===================== */
 
   function onOpenTask(task) {
     setActiveTask(task);
@@ -59,89 +74,138 @@ export default function App() {
     setActiveTask(null);
   }
 
+  /* ===================== G3 ASSIGNMENT ===================== */
+
+  function onAssignTask(taskId, assigneeId) {
+    setTasks((current) => {
+      const idx = current.findIndex((t) => t.id === taskId);
+      if (idx === -1) return current;
+
+      const task = current[idx];
+      if (task.assigneeId) return current;
+
+      const assignee = localAssignees.find((a) => a.id === assigneeId);
+
+      const updatedTask = {
+        ...task,
+        assigneeId,
+        assigneeLabel: assignee ? assignee.displayName : assigneeId,
+        assignedAt: new Date().toISOString(),
+      };
+
+      const next = [...current];
+      next[idx] = updatedTask;
+      return next;
+    });
+  }
+
+  /* ===================== NOTES ===================== */
+
+  function onAddNote(taskId, note) {
+    setTasks((current) =>
+      current.map((t) =>
+        t.id === taskId
+          ? { ...t, notes: [...(t.notes || []), note] }
+          : t
+      )
+    );
+  }
+
+  /* ===================== G6 EXECUTION START ===================== */
+
+  function onStartExecution(taskId) {
+    setTasks((current) => {
+      const idx = current.findIndex((t) => t.id === taskId);
+      if (idx === -1) return current;
+
+      const task = current[idx];
+      if (task.executionState !== "NOT_STARTED") return current;
+
+      const updatedTask = {
+        ...task,
+        executionState: "IN_PROGRESS",
+        startedAt: new Date().toISOString(),
+        startedBy: "current-user",
+      };
+
+      const next = [...current];
+      next[idx] = updatedTask;
+      return next;
+    });
+  }
+
   /* ===================== RENDER ===================== */
 
   return (
     <>
       <ModuleHeader />
 
-      {/* 
-        APP FRAME (no viewport math here)
-        Sidebar is a frame peer, not a layout peer.
-      */}
       <div
         style={{
           display: "flex",
-          minHeight: "100vh",
+          height: "calc(100vh - 56px)",
+          overflow: "hidden",
         }}
       >
-        {/* ===================== SIDEBAR ===================== */}
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        {/* ===================== WORKSPACE FRAME ===================== */}
         <div
           style={{
             flex: 1,
             display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
+            overflow: "hidden",
           }}
         >
-          {/* 
-            WORKSPACE SCROLL OWNER
-            Owns vertical scrolling below ModuleHeader
-          */}
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              display: "flex",
-              minHeight: 0,
-            }}
-          >
-            <DualPane
-              mode={workspaceMode}
-              focusedPane={focusedPane}
-              onFocusPane={onFocusPane}
-              onReturnToDual={onReturnToDual}
-              managementBody={
-                workspaceMode === "single" && focusedPane === "management" ? (
-                  <PreProject
-                    focus="management"
-                    onReturnToDual={onReturnToDual}
-                  />
-                ) : (
-                  <>
-                    <p>No tasks in workspace.</p>
-                    <p>Management inspection view.</p>
-                  </>
-                )
-              }
-              developmentBody={
-                workspaceMode === "single" && focusedPane === "development" ? (
-                  <PreProject
-                    focus="development"
-                    onReturnToDual={onReturnToDual}
-                  />
-                ) : (
-                  <>
-                    <p>No tasks in workspace.</p>
-                    <p>Development inspection view.</p>
-                  </>
-                )
-              }
-            />
-          </div>
+          <DualPane
+            mode={workspaceMode}
+            focusedPane={focusedPane}
+            onFocusPane={onFocusPane}
+            onReturnToDual={onReturnToDual}
+            managementBody={
+              workspaceMode === "single" && focusedPane === "management" ? (
+                <PreProject
+                  focus="management"
+                  canCreateTask={true}
+                  onCreateTask={onCreateTask}
+                  onReturnToDual={onReturnToDual}
+                />
+              ) : (
+                <>
+                  <p>No tasks in workspace.</p>
+                  <p>Management inspection view.</p>
+                </>
+              )
+            }
+            developmentBody={
+              workspaceMode === "single" && focusedPane === "development" ? (
+                <PreProject
+                  focus="development"
+                  canCreateTask={true}
+                  onCreateTask={onCreateTask}
+                  onReturnToDual={onReturnToDual}
+                />
+              ) : (
+                <>
+                  <p>No tasks in workspace.</p>
+                  <p>Development inspection view.</p>
+                </>
+              )
+            }
+          />
         </div>
       </div>
 
       {activeTask && (
         <TaskPopup
-          task={activeTask}
+          task={tasks.find((t) => t.id === activeTask.id)}
+          summaries={summaries}
           onClose={onCloseTask}
+          onAddNote={onAddNote}
+          onAssignTask={onAssignTask}
+          onStartExecution={onStartExecution}
         />
       )}
     </>

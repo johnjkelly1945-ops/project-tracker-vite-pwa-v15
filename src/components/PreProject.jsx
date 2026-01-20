@@ -1,23 +1,24 @@
 // @ts-nocheck
 import React from "react";
+import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 158 — Section C
-Single-Pane Operational Workspace
+Stage 166 — Restore G1 Footer Mount (Single-Pane Only)
 ---------------------------------------------------------------------
-• Rendered only in single-pane mode
-• One pane only (focused)
+• Rendered only in true single-pane mode
 • ↙ return arrow restores dual-pane
-• Footer exists only here
-• No execution semantics added yet
+• Mounts G1 task-creation footer (gated)
+• No layout or authority changes
 =====================================================================
 */
 
 export default function PreProject({
   focus,
   onReturnToDual,
+  canCreateTask = false,
+  onCreateTask,
 }) {
   const paneTitle =
     focus === "management"
@@ -74,27 +75,11 @@ export default function PreProject({
         <p>{paneTitle} operational view.</p>
       </div>
 
-      {/* ================= FOOTER (OPERATIONAL ONLY) ================= */}
-      <div
-        style={{
-          borderTop: "1px solid #ddd",
-          padding: "10px 14px",
-          display: "flex",
-          justifyContent: "flex-end",
-          background: "#f5f5f5",
-        }}
-      >
-        <button
-          type="button"
-          disabled
-          style={{
-            opacity: 0.6,
-            cursor: "not-allowed",
-          }}
-        >
-          Execute
-        </button>
-      </div>
+      {/* ================= FOOTER (G1 — SINGLE-PANE ONLY) ================= */}
+      <PreProjectFooter
+        canCreateTask={canCreateTask}
+        onCreateTask={onCreateTask}
+      />
     </div>
   );
 }
