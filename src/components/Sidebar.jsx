@@ -7,6 +7,7 @@ METRA — Sidebar.jsx
 STAGE
 ---------------------------------------------------------------------
 Stage 86.3 — Sidebar Read-Only Structure (Inert)
+(Stage 160 — UI-only width refinement applied)
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -14,15 +15,11 @@ Provide a visible, populated sidebar structure representing METRA
 modules and sub-modules. Sidebar remains strictly non-authoritative
 and inert.
 
-CONSTRAINTS (LOCKED)
+CHANGE (STAGE 160)
 ---------------------------------------------------------------------
-• No task logic
-• No summary logic
-• No navigation
-• No routing
-• No data mutation
-• No event emission
-• UI-only, visual structure
+• Expanded width reduced from 240px → 180px
+• Collapsed width unchanged (48px)
+• No behavioural, authority, or semantic changes
 =====================================================================
 */
 
@@ -30,7 +27,7 @@ export default function Sidebar({ expanded, onToggle }) {
   return (
     <aside
       style={{
-        width: expanded ? "240px" : "48px",
+        width: expanded ? "180px" : "48px",
         transition: "width 0.2s ease",
         borderRight: "1px solid #ccc",
         background: "#f7f7f7",
