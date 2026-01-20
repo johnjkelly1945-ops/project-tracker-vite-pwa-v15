@@ -2,15 +2,14 @@
 /*
 =====================================================================
 METRA — App.jsx
-STAGE 159 — Section D
-Workspace Mode & Pane Focus Authority
+STAGE 164 — Workspace Shell Correction & Sidebar Decoupling
 ---------------------------------------------------------------------
-• App owns workspace mode (dual | single)
-• App owns focused pane (management | development)
-• DualPane remains layout-only
-• Arrows request focus via onFocusPane
-• Sidebar retained in both modes
-• No task or execution semantics changed
+• App frames the workspace; it does NOT own viewport math
+• Exactly one scroll owner exists inside the workspace
+• Sidebar is structurally decoupled from workspace width
+• DualPane remains always mounted and owns pane layout only
+• Single-pane is a structural collapse, not a replacement
+• No task, execution, or authority semantics changed
 =====================================================================
 */
 
@@ -25,8 +24,8 @@ import TaskPopup from "./components/TaskPopup";
 export default function App() {
   /* ===================== WORKSPACE AUTHORITY ===================== */
 
-  const [workspaceMode, setWorkspaceMode] = useState("dual"); // dual | single
-  const [focusedPane, setFocusedPane] = useState(null); // management | development
+  const [workspaceMode, setWorkspaceMode] = useState("dual"); // "dual" | "single"
+  const [focusedPane, setFocusedPane] = useState(null);       // "management" | "development" | null
 
   /* ===================== DATA (UNCHANGED) ===================== */
 
@@ -38,8 +37,7 @@ export default function App() {
 
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
-  /* ===================== PANE FOCUS HANDLER ===================== */
-  /* Called by DualPane arrows */
+  /* ===================== PANE FOCUS HANDLERS ===================== */
 
   function onFocusPane(pane) {
     setWorkspaceMode("single");
@@ -61,25 +59,20 @@ export default function App() {
     setActiveTask(null);
   }
 
-  function onCreateTask() {
-    const id = `task-${Date.now()}`;
-    setTasks((current) => [
-      ...current,
-      { id, title: "New Task", notes: [] },
-    ]);
-  }
-
   /* ===================== RENDER ===================== */
 
   return (
     <>
       <ModuleHeader />
 
+      {/* 
+        APP FRAME (no viewport math here)
+        Sidebar is a frame peer, not a layout peer.
+      */}
       <div
         style={{
           display: "flex",
-          height: "calc(100vh - 56px)",
-          overflow: "hidden",
+          minHeight: "100vh",
         }}
       >
         {/* ===================== SIDEBAR ===================== */}
@@ -88,93 +81,60 @@ export default function App() {
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        {/* ===================== WORKSPACE ===================== */}
+        {/* ===================== WORKSPACE FRAME ===================== */}
         <div
           style={{
             flex: 1,
             display: "flex",
-            overflow: "hidden",
+            flexDirection: "column",
+            minWidth: 0,
           }}
         >
-          {workspaceMode === "dual" && (
+          {/* 
+            WORKSPACE SCROLL OWNER
+            Owns vertical scrolling below ModuleHeader
+          */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              display: "flex",
+              minHeight: 0,
+            }}
+          >
             <DualPane
+              mode={workspaceMode}
+              focusedPane={focusedPane}
               onFocusPane={onFocusPane}
-              leftHeader="Management"
-              rightHeader="Development"
-              leftBody={
-                <div>
-                  <p>No tasks in workspace.</p>
-                  <p>Management inspection view.</p>
-                </div>
+              onReturnToDual={onReturnToDual}
+              managementBody={
+                workspaceMode === "single" && focusedPane === "management" ? (
+                  <PreProject
+                    focus="management"
+                    onReturnToDual={onReturnToDual}
+                  />
+                ) : (
+                  <>
+                    <p>No tasks in workspace.</p>
+                    <p>Management inspection view.</p>
+                  </>
+                )
               }
-              rightBody={
-                <div>
-                  <p>No tasks in workspace.</p>
-                  <p>Development inspection view.</p>
-                </div>
+              developmentBody={
+                workspaceMode === "single" && focusedPane === "development" ? (
+                  <PreProject
+                    focus="development"
+                    onReturnToDual={onReturnToDual}
+                  />
+                ) : (
+                  <>
+                    <p>No tasks in workspace.</p>
+                    <p>Development inspection view.</p>
+                  </>
+                )
               }
             />
-          )}
-
-          {workspaceMode === "single" && focusedPane && (
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  borderBottom: "1px solid #ddd",
-                  padding: "12px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <strong>
-                  {focusedPane === "management"
-                    ? "Management"
-                    : "Development"}
-                </strong>
-
-                <button
-                  type="button"
-                  onClick={onReturnToDual}
-                  title="Return to dual pane"
-                >
-                  ↙
-                </button>
-              </div>
-
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  padding: "12px",
-                }}
-              >
-                <p>No tasks in workspace.</p>
-                <p>
-                  {focusedPane === "management"
-                    ? "Management operational view."
-                    : "Development operational view."}
-                </p>
-              </div>
-
-              <div
-                style={{
-                  borderTop: "1px solid #ddd",
-                  padding: "12px",
-                  textAlign: "right",
-                }}
-              >
-                <button disabled>Execute</button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
