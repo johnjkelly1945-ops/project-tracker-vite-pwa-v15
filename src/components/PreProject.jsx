@@ -6,14 +6,14 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 167 — Content-Only Workspace Body (DualPane-Owned Shell)
+Stage 168 — Wire Task Row Click to Inspection Popup
 ---------------------------------------------------------------------
-• Content-only component
+• Content-only workspace body
+• Wires CanonicalTaskRow row click → onOpenTask(task)
 • NO pane headers
 • NO arrows
 • NO layout ownership
-• Renders task list
-• Mounts G1 footer (single-pane only, via props)
+• Preserves G1 footer semantics
 =====================================================================
 */
 
@@ -51,7 +51,7 @@ export default function PreProject({
             <CanonicalTaskRow
               key={task.id}
               task={task}
-              onOpenTask={onOpenTask}
+              onTitleClick={() => onOpenTask(task)}
             />
           ))
         )}
