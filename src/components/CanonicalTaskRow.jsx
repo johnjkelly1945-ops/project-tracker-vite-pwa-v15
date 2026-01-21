@@ -1,9 +1,7 @@
 /*
 =====================================================================
 METRA — CanonicalTaskRow.jsx
-Stage 81    — Task Row Rendering
-Stage 147   — Gate G2: Task Identity Editing (Unassigned Only)
-Stage 150   — Execution State Removed from Row Surface (Corrected)
+Stage 175.0A — Restore Task Inspection Click (Regression Fix)
 ---------------------------------------------------------------------
 - Row click opens inspection popup
 - Title click edits identity when permitted
@@ -16,7 +14,7 @@ import { useState } from "react";
 export default function CanonicalTaskRow({
   task,
   isReadOnly,
-  onTitleClick,
+  onOpenTask,
   canEditIdentity,
   onUpdateTitle,
 }) {
@@ -55,7 +53,7 @@ export default function CanonicalTaskRow({
   function commitTitle() {
     setIsEditing(false);
     if (draftTitle !== task.title) {
-      onUpdateTitle(task.id, draftTitle);
+      onUpdateTitle?.(task.id, draftTitle);
     }
   }
 
@@ -63,7 +61,7 @@ export default function CanonicalTaskRow({
     <div
       style={rowStyle}
       onClick={() => {
-        if (!isEditing && onTitleClick) onTitleClick();
+        if (!isEditing && onOpenTask) onOpenTask(task);
       }}
     >
       {isEditing ? (

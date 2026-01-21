@@ -1,28 +1,31 @@
 // @ts-nocheck
 import React from "react";
+import CanonicalTaskRow from "./CanonicalTaskRow";
 import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 171 — Footer Authority Hardening (Minimal, Structural)
+Stage 175.0 — Workspace Task Rendering (Render-Only)
 ---------------------------------------------------------------------
-INVARIANTS (LOCKED):
-• Footer MUST render exactly once
-• Footer MUST exist only in true single-pane mode
-• Footer MUST be outside ALL scroll containers
-• Scroll ownership MUST be explicit and localised
-• No footer logic may move upward into App or DualPane
+INVARIANTS (PRESERVED):
+• Footer renders exactly once
+• Footer exists only in true single-pane mode
+• Footer is outside all scroll containers
+• Scroll ownership is explicit and localised
+• No footer logic moves upward
+• No new authority introduced
 
-This structure enforces:
-A1 — Footer-only mutation authority
-L1 — Footer visibility (non-scrolling)
-L2 — Scroll isolation
+STAGE INTENT:
+• Restore visual rendering of tasks in the workspace
+• Render-only (no mutation, no interaction change)
 =====================================================================
 */
 
 export default function PreProject({
   focus,
+  tasks = [],
+  onOpenTask,
   onReturnToDual,
   canCreateTask = false,
   onCreateTask,
@@ -90,8 +93,20 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
-          <p>No tasks in workspace.</p>
-          <p>{paneTitle} operational view.</p>
+          {tasks.length === 0 ? (
+            <>
+              <p>No tasks in workspace.</p>
+              <p>{paneTitle} operational view.</p>
+            </>
+          ) : (
+            tasks.map((task) => (
+              <CanonicalTaskRow
+                key={task.id}
+                task={task}
+                onOpenTask={onOpenTask}
+              />
+            ))
+          )}
         </div>
       </div>
 
