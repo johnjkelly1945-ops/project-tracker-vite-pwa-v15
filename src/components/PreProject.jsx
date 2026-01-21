@@ -6,7 +6,7 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 175.0 — Workspace Task Rendering (Render-Only)
+Stage 181 — Workspace Content Header Suppression
 ---------------------------------------------------------------------
 INVARIANTS (PRESERVED):
 • Footer renders exactly once
@@ -16,27 +16,18 @@ INVARIANTS (PRESERVED):
 • No footer logic moves upward
 • No new authority introduced
 
-STAGE INTENT:
-• Restore visual rendering of tasks in the workspace
-• Render-only (no mutation, no interaction change)
+CHANGE:
+• Removal of content-level workspace identity
+• Content no longer re-declares “Management / Development”
 =====================================================================
 */
 
 export default function PreProject({
-  focus,
   tasks = [],
   onOpenTask,
-  onReturnToDual,
   canCreateTask = false,
   onCreateTask,
 }) {
-  const paneTitle =
-    focus === "management"
-      ? "Management"
-      : focus === "development"
-      ? "Development"
-      : "Workspace";
-
   return (
     <div
       className="single-pane-root"
@@ -47,33 +38,6 @@ export default function PreProject({
         borderTop: "1px solid #ccc",
       }}
     >
-      {/* ================= PANE HEADER (NON-SCROLLING) ================= */}
-      <div
-        className="single-pane-header"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 14px",
-          borderBottom: "1px solid #ddd",
-          background: "#fafafa",
-        }}
-      >
-        <strong>{paneTitle}</strong>
-
-        <button
-          type="button"
-          title="Return to dual pane"
-          onClick={onReturnToDual}
-          style={{
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          ↙
-        </button>
-      </div>
-
       {/* ================= BODY REGION (NON-SCROLL) ================= */}
       <div
         className="single-pane-body-region"
@@ -96,7 +60,7 @@ export default function PreProject({
           {tasks.length === 0 ? (
             <>
               <p>No tasks in workspace.</p>
-              <p>{paneTitle} operational view.</p>
+              <p>Operational view.</p>
             </>
           ) : (
             tasks.map((task) => (
