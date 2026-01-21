@@ -2,12 +2,11 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 175.1A — Workspace Composition Wiring (Inert)
+Stage 178 — Workspace Summary Presence (Read-Only)
 ---------------------------------------------------------------------
-• Passes summaries to PreProject (unused at this stage)
-• No rendering changes
-• No behavioural changes
-• No layout or pane logic changes
+• Derives a read-only summary presence label from existing state
+• Passes label to shell (DualPane) for presentation only
+• No new authority, no new state, no behavioural changes
 =====================================================================
 */
 
@@ -48,6 +47,11 @@ export default function App() {
     setFocusedPane(null);
   }
 
+  /* ===================== READ-ONLY SUMMARY PRESENCE ===================== */
+
+  const summaryPresenceLabel =
+    summaries.length === 0 ? "No summaries" : `${summaries.length} summaries`;
+
   /* ===================== G1 TASK CREATION ===================== */
 
   function onCreateTask() {
@@ -68,7 +72,7 @@ export default function App() {
 
   function onCreateSummary() {
     // Existing summary creation flow to be reattached here.
-    // Stage 173A intentionally introduces no new semantics.
+    // Stage 178 intentionally introduces no new semantics.
     console.log("Create Summary");
   }
 
@@ -172,6 +176,7 @@ export default function App() {
             focusedPane={focusedPane}
             onFocusPane={onFocusPane}
             onReturnToDual={onReturnToDual}
+            summaryPresenceLabel={summaryPresenceLabel}
             managementBody={
               workspaceMode === "single" && focusedPane === "management" ? (
                 <PreProject
@@ -218,11 +223,10 @@ export default function App() {
 
       {activeTask && (
         <TaskPopup
-          task={tasks.find((t) => t.id === activeTask.id)}
-          summaries={summaries}
+          task={activeTask}
           onClose={onCloseTask}
-          onAddNote={onAddNote}
           onAssignTask={onAssignTask}
+          onAddNote={onAddNote}
           onStartExecution={onStartExecution}
         />
       )}

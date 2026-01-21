@@ -2,13 +2,11 @@
 /*
 =====================================================================
 METRA — DualPane.jsx
-Stage 159 — Section B
+Stage 178 — Header Summary Presence (Read-Only)
 ---------------------------------------------------------------------
-• DualPane remains mounted at all times
-• Layout is explicitly mode-aware (dual | single)
-• Divider renders ONLY in dual mode
-• Single-pane is a true structural collapse
-• No authority over tasks, summaries, sidebar, or footer
+• Sole owner of workspace header rendering
+• Displays pane title and read-only summary presence
+• No authority, no state, no interaction added
 =====================================================================
 */
 
@@ -19,6 +17,7 @@ export default function DualPane({
   focusedPane = null,            // "management" | "development" | null
   onFocusPane,                   // function(pane)
   onReturnToDual,                // function()
+  summaryPresenceLabel = "",     // read-only display
   managementBody,
   developmentBody,
 }) {
@@ -55,7 +54,14 @@ export default function DualPane({
               fontWeight: "bold",
             }}
           >
-            <span>Management</span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span>Management</span>
+              {!isDual && summaryPresenceLabel && (
+                <span style={{ fontWeight: "normal", color: "#666" }}>
+                  · {summaryPresenceLabel}
+                </span>
+              )}
+            </div>
 
             {isDual ? (
               <button type="button" onClick={() => onFocusPane("management")}>
@@ -101,7 +107,14 @@ export default function DualPane({
               fontWeight: "bold",
             }}
           >
-            <span>Development</span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span>Development</span>
+              {!isDual && summaryPresenceLabel && (
+                <span style={{ fontWeight: "normal", color: "#666" }}>
+                  · {summaryPresenceLabel}
+                </span>
+              )}
+            </div>
 
             {isDual ? (
               <button type="button" onClick={() => onFocusPane("development")}>
