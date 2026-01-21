@@ -6,7 +6,7 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 182 — Summary Creation (Footer Canonisation)
+Stage 183 — Summary Visibility (Inspection Only)
 ---------------------------------------------------------------------
 INVARIANTS (PRESERVED):
 • Footer renders exactly once
@@ -15,15 +15,18 @@ INVARIANTS (PRESERVED):
 • Scroll ownership is explicit and localised
 • No footer logic moves upward
 • No new authority introduced
+• No interaction introduced
 
-CHANGE:
-• Forward summary creation props to footer
-• No behavioural changes beyond creation affordance visibility
+CHANGE (STAGE 183):
+• Render existing summaries as read-only text
+• Visibility only — no selection, no activation
+• Summaries are informational artifacts only
 =====================================================================
 */
 
 export default function PreProject({
   tasks = [],
+  summaries = [],
   onOpenTask,
   canCreateTask = false,
   onCreateTask,
@@ -59,6 +62,37 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
+          {/* ================= SUMMARY VISIBILITY (INSPECTION ONLY) ================= */}
+          {summaries.length > 0 && (
+            <div
+              className="summary-visibility-region"
+              style={{
+                marginBottom: "12px",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: "6px",
+                }}
+              >
+                Summaries
+              </div>
+
+              {summaries.map((summary) => (
+                <div
+                  key={summary.id}
+                  style={{
+                    padding: "4px 0",
+                  }}
+                >
+                  {summary.title || "Untitled summary"}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ================= TASK REGION ================= */}
           {tasks.length === 0 ? (
             <>
               <p>No tasks in workspace.</p>
