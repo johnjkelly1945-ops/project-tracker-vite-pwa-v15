@@ -2,12 +2,12 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 167 — Task List Visualisation Wiring (Read-Only)
+Stage 175.1A — Workspace Composition Wiring (Inert)
 ---------------------------------------------------------------------
-• Passes existing task state to PreProject
-• Passes onOpenTask handler (inspection-only)
-• NO new authority or state
-• NO layout or pane logic changes
+• Passes summaries to PreProject (unused at this stage)
+• No rendering changes
+• No behavioural changes
+• No layout or pane logic changes
 =====================================================================
 */
 
@@ -62,6 +62,14 @@ export default function App() {
 
     setTasks((current) => [...current, newTask]);
     setActiveTask(newTask);
+  }
+
+  /* ===================== SUMMARY CREATION (RE-EXPOSURE) ===================== */
+
+  function onCreateSummary() {
+    // Existing summary creation flow to be reattached here.
+    // Stage 173A intentionally introduces no new semantics.
+    console.log("Create Summary");
   }
 
   /* ===================== POPUP CONTROL ===================== */
@@ -168,10 +176,13 @@ export default function App() {
               workspaceMode === "single" && focusedPane === "management" ? (
                 <PreProject
                   focus="management"
+                  summaries={summaries}
                   tasks={tasks}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
+                  canCreateSummary={true}
+                  onCreateSummary={onCreateSummary}
                   onReturnToDual={onReturnToDual}
                 />
               ) : (
@@ -185,10 +196,13 @@ export default function App() {
               workspaceMode === "single" && focusedPane === "development" ? (
                 <PreProject
                   focus="development"
+                  summaries={summaries}
                   tasks={tasks}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
+                  canCreateSummary={true}
+                  onCreateSummary={onCreateSummary}
                   onReturnToDual={onReturnToDual}
                 />
               ) : (
