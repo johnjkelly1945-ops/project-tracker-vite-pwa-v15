@@ -6,7 +6,7 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 181 — Workspace Content Header Suppression
+Stage 182 — Summary Creation (Footer Canonisation)
 ---------------------------------------------------------------------
 INVARIANTS (PRESERVED):
 • Footer renders exactly once
@@ -17,8 +17,8 @@ INVARIANTS (PRESERVED):
 • No new authority introduced
 
 CHANGE:
-• Removal of content-level workspace identity
-• Content no longer re-declares “Management / Development”
+• Forward summary creation props to footer
+• No behavioural changes beyond creation affordance visibility
 =====================================================================
 */
 
@@ -27,6 +27,8 @@ export default function PreProject({
   onOpenTask,
   canCreateTask = false,
   onCreateTask,
+  canCreateSummary = false,
+  onCreateSummary,
 }) {
   return (
     <div
@@ -85,6 +87,8 @@ export default function PreProject({
         <PreProjectFooter
           canCreateTask={canCreateTask}
           onCreateTask={onCreateTask}
+          canCreateSummary={canCreateSummary}
+          onCreateSummary={onCreateSummary}
         />
       </div>
     </div>

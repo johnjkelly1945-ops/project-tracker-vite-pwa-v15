@@ -2,11 +2,10 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 178 — Workspace Summary Presence (Read-Only)
+Stage 182 — Summary Creation (Footer Canonisation)
 ---------------------------------------------------------------------
-• Derives a read-only summary presence label from existing state
-• Passes label to shell (DualPane) for presentation only
-• No new authority, no new state, no behavioural changes
+- Re-attaches historical summary creation to footer authority
+- No selection, no navigation, no side effects
 =====================================================================
 */
 
@@ -47,12 +46,7 @@ export default function App() {
     setFocusedPane(null);
   }
 
-  /* ===================== READ-ONLY SUMMARY PRESENCE ===================== */
-
-  const summaryPresenceLabel =
-    summaries.length === 0 ? "No summaries" : `${summaries.length} summaries`;
-
-  /* ===================== G1 TASK CREATION ===================== */
+  /* ===================== TASK CREATION ===================== */
 
   function onCreateTask() {
     const id = `task-${Date.now()}`;
@@ -68,12 +62,16 @@ export default function App() {
     setActiveTask(newTask);
   }
 
-  /* ===================== SUMMARY CREATION (RE-EXPOSURE) ===================== */
+  /* ===================== SUMMARY CREATION (AUTHORITATIVE) ===================== */
 
   function onCreateSummary() {
-    // Existing summary creation flow to be reattached here.
-    // Stage 178 intentionally introduces no new semantics.
-    console.log("Create Summary");
+    const id = `summary-${Date.now()}`;
+    const newSummary = {
+      id,
+      name: "New Summary",
+    };
+
+    setSummaries((current) => [...current, newSummary]);
   }
 
   /* ===================== POPUP CONTROL ===================== */
@@ -176,19 +174,15 @@ export default function App() {
             focusedPane={focusedPane}
             onFocusPane={onFocusPane}
             onReturnToDual={onReturnToDual}
-            summaryPresenceLabel={summaryPresenceLabel}
             managementBody={
               workspaceMode === "single" && focusedPane === "management" ? (
                 <PreProject
-                  focus="management"
-                  summaries={summaries}
                   tasks={tasks}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
                   canCreateSummary={true}
                   onCreateSummary={onCreateSummary}
-                  onReturnToDual={onReturnToDual}
                 />
               ) : (
                 <>
@@ -200,15 +194,12 @@ export default function App() {
             developmentBody={
               workspaceMode === "single" && focusedPane === "development" ? (
                 <PreProject
-                  focus="development"
-                  summaries={summaries}
                   tasks={tasks}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
                   canCreateSummary={true}
                   onCreateSummary={onCreateSummary}
-                  onReturnToDual={onReturnToDual}
                 />
               ) : (
                 <>

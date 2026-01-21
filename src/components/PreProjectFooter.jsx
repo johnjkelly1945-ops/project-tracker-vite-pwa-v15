@@ -2,21 +2,22 @@
 /*
 =====================================================================
 METRA — PreProjectFooter.jsx
-Stage 146 — Gate G1: Task Creation Authority (Footer Only)
-=====================================================================
-- Footer-only creation affordance
-- Visible only when Gate G1 is open
-- One click → one task
-- No summaries
-- No disabled state
+Stage 182 — Summary Creation (Footer Canonisation)
+---------------------------------------------------------------------
+- Footer-only creation affordances
+- Mirrors task creation pattern
+- One click → one object (task or summary)
+- No selection, no navigation, no side effects
 =====================================================================
 */
 
 export default function PreProjectFooter({
   canCreateTask,
   onCreateTask,
+  canCreateSummary,
+  onCreateSummary,
 }) {
-  if (!canCreateTask) return null;
+  if (!canCreateTask && !canCreateSummary) return null;
 
   return (
     <div
@@ -26,21 +27,39 @@ export default function PreProjectFooter({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        gap: "12px",
         background: "#fafafa",
       }}
     >
-      <button
-        type="button"
-        onClick={onCreateTask}
-        style={{
-          padding: "6px 14px",
-          fontSize: "14px",
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-      >
-        Create Task
-      </button>
+      {canCreateTask && (
+        <button
+          type="button"
+          onClick={onCreateTask}
+          style={{
+            padding: "6px 14px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Create Task
+        </button>
+      )}
+
+      {canCreateSummary && (
+        <button
+          type="button"
+          onClick={onCreateSummary}
+          style={{
+            padding: "6px 14px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Create Summary
+        </button>
+      )}
     </div>
   );
 }
