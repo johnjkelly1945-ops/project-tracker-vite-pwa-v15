@@ -2,26 +2,18 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-=====================================================================
-
-ROLE
+Stage 188 — Task ↔ Summary Association (Execution Only)
 ---------------------------------------------------------------------
-Inspection-first task popup with controlled, explicit task mutations.
+CHANGE (STAGE 188):
+• Explicit Task → Summary association via popup
+• Association is task-owned and user-confirmed
+• Stored as task.summaryId via onChangeTaskSummary
+• No movement, grouping, filtering, or hierarchy introduced
 
-STAGES
----------------------------------------------------------------------
-Stage 148 — Gate G3: Task Assignment Authority (Single-Pane)
-Stage 151A — Gate G6: Assignee Start Acknowledgement (Popup-Only)
-
-CONSTRAINTS
----------------------------------------------------------------------
-• Inspection-only by default
-• Authorised mutations here:
-    - Gate G3 assignment (one-shot, explicit)
-    - Gate G6 execution start (assignee-only)
-• No reassignment
-• No completion
-• No workspace signalling
+INVARIANTS (PRESERVED):
+• Inspection-first popup
+• Existing assignment (G3) and execution start (G6) unchanged
+• No lifecycle or authority expansion
 =====================================================================
 */
 
@@ -43,6 +35,12 @@ export default function TaskPopup({
 
   const [assigning, setAssigning] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
+
+  // Stage 188 — summary association UI state
+  const [associatingSummary, setAssociatingSummary] = useState(false);
+  const [selectedSummaryId, setSelectedSummaryId] = useState(
+    task.summaryId || ""
+  );
 
   if (!task) return null;
 
@@ -89,6 +87,18 @@ export default function TaskPopup({
     onStartExecution(task.id);
   }
 
+  // Stage 188 — confirm association
+  function handleConfirmSummaryAssociation() {
+    if (!selectedSummaryId) return;
+    onChangeTaskSummary(task.id, selectedSummaryId);
+    setAssociatingSummary(false);
+  }
+
+  function handleCancelSummaryAssociation() {
+    setSelectedSummaryId(task.summaryId || "");
+    setAssociatingSummary(false);
+  }
+
   return (
     <>
       <div
@@ -114,6 +124,7 @@ export default function TaskPopup({
         >
           <CanonicalTaskPopupHeader task={task} />
 
+          {/* ================= G3 ASSIGNMENT ================= */}
           {!isAssigned && !assigning && (
             <button onClick={() => setAssigning(true)}>
               Assign task
@@ -159,6 +170,56 @@ export default function TaskPopup({
             </div>
           )}
 
+          {/* ================= STAGE 188 — SUMMARY ASSOCIATION ================= */}
+          <div style={{ marginTop: "12px" }}>
+            <strong>Summary</strong>
+            {!associatingSummary && (
+              <div style={{ marginTop: "6px" }}>
+                <div style={{ fontSize: "14px" }}>
+                  {task.summaryId
+                    ? summaries.find((s) => s.id === task.summaryId)?.title ||
+                      "Associated summary"
+                    : "Not associated"}
+                </div>
+                <button
+                  style={{ marginTop: "6px" }}
+                  onClick={() => setAssociatingSummary(true)}
+                >
+                  Associate with summary
+                </button>
+              </div>
+            )}
+
+            {associatingSummary && (
+              <div style={{ marginTop: "6px" }}>
+                <select
+                  value={selectedSummaryId}
+                  onChange={(e) => setSelectedSummaryId(e.target.value)}
+                >
+                  <option value="">— Select summary —</option>
+                  {summaries.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title}
+                    </option>
+                  ))}
+                </select>
+
+                <div style={{ marginTop: "6px" }}>
+                  <button
+                    disabled={!selectedSummaryId}
+                    onClick={handleConfirmSummaryAssociation}
+                  >
+                    Confirm association
+                  </button>
+                  <button onClick={handleCancelSummaryAssociation}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ================= G6 EXECUTION START ================= */}
           {canStartExecution && (
             <div style={{ marginTop: "12px" }}>
               <button onClick={handleStartWork}>
@@ -167,6 +228,7 @@ export default function TaskPopup({
             </div>
           )}
 
+          {/* ================= NOTES ================= */}
           <div style={{ marginTop: "12px" }}>
             <strong>Notes</strong>
             {Array.isArray(task.notes) &&

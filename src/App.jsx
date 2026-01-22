@@ -2,18 +2,20 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 187 — Summary Naming at Creation (Workspace-Only, Immutable)
+Stage 188 — Task ↔ Summary Association (Execution Only)
 ---------------------------------------------------------------------
-CHANGE (STAGE 187):
-• Require a name at workspace Summary creation time
-• Name is supplied pre-creation and is immutable
-• No rename or edit semantics introduced
+CHANGE (STAGE 188):
+• Execute explicit Task → Summary association
+• Association is task-owned and popup-driven
+• Stored as task.summaryId
+• No grouping, filtering, movement, or hierarchy introduced
 
 INVARIANTS (PRESERVED):
 • Footer remains sole creation authority
-• Summaries remain mute after creation
-• No movement, activation, lifecycle, or persistence semantics
-• Repository / template Summaries are unaffected
+• Summaries remain mute
+• Summary selection (Stage 185) unchanged
+• Summary naming (Stage 187) unchanged
+• No lifecycle, activation, or persistence semantics added
 =====================================================================
 */
 
@@ -74,14 +76,11 @@ export default function App() {
     setActiveTask(newTask);
   }
 
-  /* ===================== SUMMARY CREATION (AUTHORITATIVE) ===================== */
+  /* ===================== SUMMARY CREATION (STAGE 187) ===================== */
 
   function onCreateSummary() {
-    // Stage 187 — require name at creation time (workspace-only)
     const title = window.prompt("Enter summary name:");
-    if (!title || !title.trim()) {
-      return; // creation aborted if no name supplied
-    }
+    if (!title || !title.trim()) return;
 
     const id = `summary-${Date.now()}`;
     const newSummary = {
@@ -90,6 +89,26 @@ export default function App() {
     };
 
     setSummaries((current) => [...current, newSummary]);
+  }
+
+  /* ===================== TASK ↔ SUMMARY ASSOCIATION (STAGE 188) ===================== */
+
+  function onChangeTaskSummary(taskId, summaryId) {
+    setTasks((current) => {
+      const idx = current.findIndex((t) => t.id === taskId);
+      if (idx === -1) return current;
+
+      const task = current[idx];
+
+      const updatedTask = {
+        ...task,
+        summaryId,
+      };
+
+      const next = [...current];
+      next[idx] = updatedTask;
+      return next;
+    });
   }
 
   /* ===================== POPUP CONTROL ===================== */
@@ -205,12 +224,7 @@ export default function App() {
                   canCreateSummary={true}
                   onCreateSummary={onCreateSummary}
                 />
-              ) : (
-                <>
-                  <p>No tasks in workspace.</p>
-                  <p>Management inspection view.</p>
-                </>
-              )
+              ) : null
             }
             developmentBody={
               workspaceMode === "single" && focusedPane === "development" ? (
@@ -225,12 +239,7 @@ export default function App() {
                   canCreateSummary={true}
                   onCreateSummary={onCreateSummary}
                 />
-              ) : (
-                <>
-                  <p>No tasks in workspace.</p>
-                  <p>Development inspection view.</p>
-                </>
-              )
+              ) : null
             }
           />
         </div>
@@ -239,10 +248,12 @@ export default function App() {
       {activeTask && (
         <TaskPopup
           task={activeTask}
+          summaries={summaries}
           onClose={onCloseTask}
-          onAssignTask={onAssignTask}
           onAddNote={onAddNote}
+          onAssignTask={onAssignTask}
           onStartExecution={onStartExecution}
+          onChangeTaskSummary={onChangeTaskSummary}
         />
       )}
     </>
