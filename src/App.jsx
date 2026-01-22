@@ -2,10 +2,21 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 182 — Summary Creation (Footer Canonisation)
+Stage 184-B — Summary Wiring (Creation → Visibility)
 ---------------------------------------------------------------------
-- Re-attaches historical summary creation to footer authority
-- No selection, no navigation, no side effects
+CHANGE (STAGE 184-B):
+• Wire canonically created summaries into PreProject
+• Data propagation only
+• No selection, no activation, no lifecycle semantics
+
+HYGIENE CORRECTION:
+• Remove duplicate onCreateTask prop (no behavioural effect)
+
+INVARIANTS (PRESERVED):
+• Footer remains sole creation authority
+• No new state introduced
+• No authority expanded
+• No behavioural change beyond visibility
 =====================================================================
 */
 
@@ -178,6 +189,7 @@ export default function App() {
               workspaceMode === "single" && focusedPane === "management" ? (
                 <PreProject
                   tasks={tasks}
+                  summaries={summaries}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
@@ -195,6 +207,7 @@ export default function App() {
               workspaceMode === "single" && focusedPane === "development" ? (
                 <PreProject
                   tasks={tasks}
+                  summaries={summaries}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}

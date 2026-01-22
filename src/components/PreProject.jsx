@@ -6,7 +6,7 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 183 — Summary Visibility (Inspection Only)
+Stage 184-B — Summary Wiring (Presentation Correction)
 ---------------------------------------------------------------------
 INVARIANTS (PRESERVED):
 • Footer renders exactly once
@@ -17,10 +17,9 @@ INVARIANTS (PRESERVED):
 • No new authority introduced
 • No interaction introduced
 
-CHANGE (STAGE 183):
-• Render existing summaries as read-only text
-• Visibility only — no selection, no activation
-• Summaries are informational artifacts only
+CHANGE (STAGE 184-B):
+• Remove unauthorised structural header
+• Preserve summary placeholders as inert text only
 =====================================================================
 */
 
@@ -62,35 +61,19 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
-          {/* ================= SUMMARY VISIBILITY (INSPECTION ONLY) ================= */}
-          {summaries.length > 0 && (
-            <div
-              className="summary-visibility-region"
-              style={{
-                marginBottom: "12px",
-              }}
-            >
+          {/* ================= SUMMARY PLACEHOLDERS (INSPECTION ONLY) ================= */}
+          {summaries.length > 0 &&
+            summaries.map((summary) => (
               <div
+                key={summary.id}
                 style={{
-                  fontWeight: "bold",
-                  marginBottom: "6px",
+                  padding: "4px 0",
+                  marginBottom: "4px",
                 }}
               >
-                Summaries
+                {summary.title || "Untitled summary"}
               </div>
-
-              {summaries.map((summary) => (
-                <div
-                  key={summary.id}
-                  style={{
-                    padding: "4px 0",
-                  }}
-                >
-                  {summary.title || "Untitled summary"}
-                </div>
-              ))}
-            </div>
-          )}
+            ))}
 
           {/* ================= TASK REGION ================= */}
           {tasks.length === 0 ? (
