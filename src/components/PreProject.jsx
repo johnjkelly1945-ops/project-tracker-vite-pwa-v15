@@ -6,26 +6,26 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 184-B — Summary Wiring (Presentation Correction)
+Stage 185 — Summary Selection (Inspection → Focus Only)
 ---------------------------------------------------------------------
+CHANGE (STAGE 185):
+• Visual focus for a single summary placeholder
+• Local, reversible selection
+• No activation, navigation, lifecycle, or authority
+
 INVARIANTS (PRESERVED):
 • Footer renders exactly once
 • Footer exists only in true single-pane mode
-• Footer is outside all scroll containers
-• Scroll ownership is explicit and localised
 • No footer logic moves upward
-• No new authority introduced
-• No interaction introduced
-
-CHANGE (STAGE 184-B):
-• Remove unauthorised structural header
-• Preserve summary placeholders as inert text only
+• No task semantics changed
 =====================================================================
 */
 
 export default function PreProject({
   tasks = [],
   summaries = [],
+  selectedSummaryId = null,
+  onSelectSummary,
   onOpenTask,
   canCreateTask = false,
   onCreateTask,
@@ -61,19 +61,28 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
-          {/* ================= SUMMARY PLACEHOLDERS (INSPECTION ONLY) ================= */}
+          {/* ================= SUMMARY PLACEHOLDERS (FOCUS ONLY) ================= */}
           {summaries.length > 0 &&
-            summaries.map((summary) => (
-              <div
-                key={summary.id}
-                style={{
-                  padding: "4px 0",
-                  marginBottom: "4px",
-                }}
-              >
-                {summary.title || "Untitled summary"}
-              </div>
-            ))}
+            summaries.map((summary) => {
+              const isSelected = summary.id === selectedSummaryId;
+
+              return (
+                <div
+                  key={summary.id}
+                  onClick={() => onSelectSummary && onSelectSummary(summary.id)}
+                  style={{
+                    padding: "6px 8px",
+                    marginBottom: "6px",
+                    borderRadius: "4px",
+                    background: isSelected ? "#eef3ff" : "transparent",
+                    border: isSelected ? "1px solid #c9d6ff" : "1px solid transparent",
+                    cursor: "default",
+                  }}
+                >
+                  {summary.title || "Untitled summary"}
+                </div>
+              );
+            })}
 
           {/* ================= TASK REGION ================= */}
           {tasks.length === 0 ? (

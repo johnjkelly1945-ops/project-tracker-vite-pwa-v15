@@ -2,21 +2,17 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 184-B — Summary Wiring (Creation → Visibility)
+Stage 185 — Summary Selection (Inspection → Focus Only)
 ---------------------------------------------------------------------
-CHANGE (STAGE 184-B):
-• Wire canonically created summaries into PreProject
-• Data propagation only
-• No selection, no activation, no lifecycle semantics
-
-HYGIENE CORRECTION:
-• Remove duplicate onCreateTask prop (no behavioural effect)
+CHANGE (STAGE 185):
+• Introduce local summary selection state
+• Visual focus only
+• No activation, navigation, lifecycle, or authority
 
 INVARIANTS (PRESERVED):
 • Footer remains sole creation authority
-• No new state introduced
-• No authority expanded
-• No behavioural change beyond visibility
+• No task semantics changed
+• No persistence introduced
 =====================================================================
 */
 
@@ -40,6 +36,10 @@ export default function App() {
   const [summaries, setSummaries] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
+
+  /* ===================== STAGE 185 — SUMMARY SELECTION ===================== */
+
+  const [selectedSummaryId, setSelectedSummaryId] = useState(null);
 
   /* ===================== SIDEBAR UI ===================== */
 
@@ -190,6 +190,8 @@ export default function App() {
                 <PreProject
                   tasks={tasks}
                   summaries={summaries}
+                  selectedSummaryId={selectedSummaryId}
+                  onSelectSummary={setSelectedSummaryId}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
@@ -208,6 +210,8 @@ export default function App() {
                 <PreProject
                   tasks={tasks}
                   summaries={summaries}
+                  selectedSummaryId={selectedSummaryId}
+                  onSelectSummary={setSelectedSummaryId}
                   onOpenTask={onOpenTask}
                   canCreateTask={true}
                   onCreateTask={onCreateTask}
