@@ -2,20 +2,16 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 188 — Task ↔ Summary Association (Execution Only)
+Stage 189 — Footer Canonicality Restoration
 ---------------------------------------------------------------------
-CHANGE (STAGE 188):
-• Execute explicit Task → Summary association
-• Association is task-owned and popup-driven
-• Stored as task.summaryId
-• No grouping, filtering, movement, or hierarchy introduced
+CHANGE:
+• Footer rendered ONLY in single-pane mode
+• Pane symmetry preserved for summaries and tasks
+• Creation authority remains contextual
 
-INVARIANTS (PRESERVED):
-• Footer remains sole creation authority
-• Summaries remain mute
-• Summary selection (Stage 185) unchanged
-• Summary naming (Stage 187) unchanged
-• No lifecycle, activation, or persistence semantics added
+INVARIANTS (RESTORED):
+• Footer never appears in dual pane
+• Footer appears exactly once in single pane
 =====================================================================
 */
 
@@ -26,13 +22,14 @@ import ModuleHeader from "./components/ModuleHeader";
 import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
+import SummaryMoveModal from "./components/SummaryMoveModal";
 import { localAssignees } from "./data/localAssignees";
 
 export default function App() {
-  /* ===================== WORKSPACE AUTHORITY ===================== */
+  /* ===================== WORKSPACE ===================== */
 
-  const [workspaceMode, setWorkspaceMode] = useState("dual"); // "dual" | "single"
-  const [focusedPane, setFocusedPane] = useState(null);       // "management" | "development" | null
+  const [workspaceMode, setWorkspaceMode] = useState("dual");
+  const [focusedPane, setFocusedPane] = useState(null);
 
   /* ===================== DATA ===================== */
 
@@ -40,11 +37,38 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
 
-  /* ===================== STAGE 185 — SUMMARY SELECTION ===================== */
-
   const [selectedSummaryId, setSelectedSummaryId] = useState(null);
 
-  /* ===================== SIDEBAR UI ===================== */
+  /* ===================== SUMMARY MOVE ===================== */
+
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [summaryToMoveId, setSummaryToMoveId] = useState(null);
+
+  function openSummaryMoveModal(id) {
+    setSummaryToMoveId(id);
+    setMoveModalOpen(true);
+  }
+
+  function closeSummaryMoveModal() {
+    setMoveModalOpen(false);
+    setSummaryToMoveId(null);
+  }
+
+  function moveSummaryByOffset(offset) {
+    setSummaries((current) => {
+      const idx = current.findIndex((s) => s.id === summaryToMoveId);
+      if (idx === -1) return current;
+
+      const target = idx + offset;
+      if (target < 0 || target >= current.length) return current;
+
+      const next = [...current];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  }
+
+  /* ===================== SIDEBAR ===================== */
 
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
@@ -60,58 +84,40 @@ export default function App() {
     setFocusedPane(null);
   }
 
-  /* ===================== TASK CREATION ===================== */
+  /* ===================== CREATION ===================== */
 
   function onCreateTask() {
     const id = `task-${Date.now()}`;
-    const newTask = {
+    const task = {
       id,
       title: "New Task",
       notes: [],
       summaryId: null,
       executionState: "NOT_STARTED",
     };
-
-    setTasks((current) => [...current, newTask]);
-    setActiveTask(newTask);
+    setTasks((c) => [...c, task]);
+    setActiveTask(task);
   }
-
-  /* ===================== SUMMARY CREATION (STAGE 187) ===================== */
 
   function onCreateSummary() {
     const title = window.prompt("Enter summary name:");
     if (!title || !title.trim()) return;
 
-    const id = `summary-${Date.now()}`;
-    const newSummary = {
-      id,
-      title: title.trim(), // immutable after creation
-    };
-
-    setSummaries((current) => [...current, newSummary]);
+    setSummaries((c) => [
+      ...c,
+      { id: `summary-${Date.now()}`, title: title.trim() },
+    ]);
   }
 
-  /* ===================== TASK ↔ SUMMARY ASSOCIATION (STAGE 188) ===================== */
+  /* ===================== TASK ↔ SUMMARY ===================== */
 
   function onChangeTaskSummary(taskId, summaryId) {
-    setTasks((current) => {
-      const idx = current.findIndex((t) => t.id === taskId);
-      if (idx === -1) return current;
-
-      const task = current[idx];
-
-      const updatedTask = {
-        ...task,
-        summaryId,
-      };
-
-      const next = [...current];
-      next[idx] = updatedTask;
-      return next;
-    });
+    setTasks((c) =>
+      c.map((t) => (t.id === taskId ? { ...t, summaryId } : t))
+    );
   }
 
-  /* ===================== POPUP CONTROL ===================== */
+  /* ===================== TASK POPUP ===================== */
 
   function onOpenTask(task) {
     setActiveTask(task);
@@ -121,65 +127,65 @@ export default function App() {
     setActiveTask(null);
   }
 
-  /* ===================== G3 ASSIGNMENT ===================== */
-
   function onAssignTask(taskId, assigneeId) {
-    setTasks((current) => {
-      const idx = current.findIndex((t) => t.id === taskId);
-      if (idx === -1) return current;
-
-      const task = current[idx];
-      if (task.assigneeId) return current;
-
-      const assignee = localAssignees.find((a) => a.id === assigneeId);
-
-      const updatedTask = {
-        ...task,
-        assigneeId,
-        assigneeLabel: assignee ? assignee.displayName : assigneeId,
-        assignedAt: new Date().toISOString(),
-      };
-
-      const next = [...current];
-      next[idx] = updatedTask;
-      return next;
-    });
+    setTasks((c) =>
+      c.map((t) => {
+        if (t.id !== taskId || t.assigneeId) return t;
+        const a = localAssignees.find((x) => x.id === assigneeId);
+        return {
+          ...t,
+          assigneeId,
+          assigneeLabel: a ? a.displayName : assigneeId,
+          assignedAt: new Date().toISOString(),
+        };
+      })
+    );
   }
 
-  /* ===================== NOTES ===================== */
-
   function onAddNote(taskId, note) {
-    setTasks((current) =>
-      current.map((t) =>
-        t.id === taskId
-          ? { ...t, notes: [...(t.notes || []), note] }
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, notes: [...(t.notes || []), note] } : t
+      )
+    );
+  }
+
+  function onStartExecution(taskId) {
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId && t.executionState === "NOT_STARTED"
+          ? {
+              ...t,
+              executionState: "IN_PROGRESS",
+              startedAt: new Date().toISOString(),
+              startedBy: "current-user",
+            }
           : t
       )
     );
   }
 
-  /* ===================== G6 EXECUTION START ===================== */
+  /* ===================== SHARED SURFACE ===================== */
 
-  function onStartExecution(taskId) {
-    setTasks((current) => {
-      const idx = current.findIndex((t) => t.id === taskId);
-      if (idx === -1) return current;
+  const allowCreation = workspaceMode === "single";
 
-      const task = current[idx];
-      if (task.executionState !== "NOT_STARTED") return current;
+  const workSurface = (
+    <PreProject
+      summaries={summaries}
+      tasks={tasks}
+      selectedSummaryId={selectedSummaryId}
+      onSelectSummary={setSelectedSummaryId}
+      onOpenTask={onOpenTask}
+      onOpenSummaryActions={openSummaryMoveModal}
+      canCreateTask={allowCreation}
+      onCreateTask={onCreateTask}
+      canCreateSummary={allowCreation}
+      onCreateSummary={onCreateSummary}
+    />
+  );
 
-      const updatedTask = {
-        ...task,
-        executionState: "IN_PROGRESS",
-        startedAt: new Date().toISOString(),
-        startedBy: "current-user",
-      };
-
-      const next = [...current];
-      next[idx] = updatedTask;
-      return next;
-    });
-  }
+  const activeIndex = summaries.findIndex((s) => s.id === summaryToMoveId);
+  const activeSummary = activeIndex !== -1 ? summaries[activeIndex] : null;
 
   /* ===================== RENDER ===================== */
 
@@ -187,73 +193,41 @@ export default function App() {
     <>
       <ModuleHeader />
 
-      <div
-        style={{
-          display: "flex",
-          height: "calc(100vh - 56px)",
-          overflow: "hidden",
-        }}
-      >
+      <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            overflow: "hidden",
-          }}
-        >
-          <DualPane
-            mode={workspaceMode}
-            focusedPane={focusedPane}
-            onFocusPane={onFocusPane}
-            onReturnToDual={onReturnToDual}
-            managementBody={
-              workspaceMode === "single" && focusedPane === "management" ? (
-                <PreProject
-                  tasks={tasks}
-                  summaries={summaries}
-                  selectedSummaryId={selectedSummaryId}
-                  onSelectSummary={setSelectedSummaryId}
-                  onOpenTask={onOpenTask}
-                  canCreateTask={true}
-                  onCreateTask={onCreateTask}
-                  canCreateSummary={true}
-                  onCreateSummary={onCreateSummary}
-                />
-              ) : null
-            }
-            developmentBody={
-              workspaceMode === "single" && focusedPane === "development" ? (
-                <PreProject
-                  tasks={tasks}
-                  summaries={summaries}
-                  selectedSummaryId={selectedSummaryId}
-                  onSelectSummary={setSelectedSummaryId}
-                  onOpenTask={onOpenTask}
-                  canCreateTask={true}
-                  onCreateTask={onCreateTask}
-                  canCreateSummary={true}
-                  onCreateSummary={onCreateSummary}
-                />
-              ) : null
-            }
-          />
-        </div>
+        <DualPane
+          mode={workspaceMode}
+          focusedPane={focusedPane}
+          onFocusPane={onFocusPane}
+          onReturnToDual={onReturnToDual}
+          managementBody={workSurface}
+          developmentBody={workSurface}
+        />
       </div>
+
+      <SummaryMoveModal
+        open={moveModalOpen}
+        summaryTitle={activeSummary ? activeSummary.title : ""}
+        isFirst={activeIndex <= 0}
+        isLast={activeIndex >= summaries.length - 1}
+        onMoveUp={() => moveSummaryByOffset(-1)}
+        onMoveDown={() => moveSummaryByOffset(1)}
+        onClose={closeSummaryMoveModal}
+      />
 
       {activeTask && (
         <TaskPopup
           task={activeTask}
           summaries={summaries}
           onClose={onCloseTask}
-          onAddNote={onAddNote}
-          onAssignTask={onAssignTask}
-          onStartExecution={onStartExecution}
           onChangeTaskSummary={onChangeTaskSummary}
+          onAssignTask={onAssignTask}
+          onAddNote={onAddNote}
+          onStartExecution={onStartExecution}
         />
       )}
     </>

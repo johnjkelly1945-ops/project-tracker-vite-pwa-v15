@@ -6,18 +6,20 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 185 — Summary Selection (Inspection → Focus Only)
+Stage 189 — Summary Movement (Phase 3: Rendering & Actions)
 ---------------------------------------------------------------------
-CHANGE (STAGE 185):
-• Visual focus for a single summary placeholder
-• Local, reversible selection
-• No activation, navigation, lifecycle, or authority
+CHANGE (STAGE 189 — PHASE 3):
+• Render tasks directly under their owning Summary
+• Add explicit Summary actions affordance (⋮)
+• Preserve focus-only Summary selection
+• No footer or pane logic changes
 
 INVARIANTS (PRESERVED):
 • Footer renders exactly once
 • Footer exists only in true single-pane mode
-• No footer logic moves upward
-• No task semantics changed
+• Summary selection remains focus-only
+• Task ↔ Summary association unchanged (task.summaryId)
+• No lifecycle, activation, or navigation semantics introduced
 =====================================================================
 */
 
@@ -27,6 +29,7 @@ export default function PreProject({
   selectedSummaryId = null,
   onSelectSummary,
   onOpenTask,
+  onOpenSummaryActions,
   canCreateTask = false,
   onCreateTask,
   canCreateSummary = false,
@@ -61,44 +64,82 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
-          {/* ================= SUMMARY PLACEHOLDERS (FOCUS ONLY) ================= */}
-          {summaries.length > 0 &&
-            summaries.map((summary) => {
-              const isSelected = summary.id === selectedSummaryId;
-
-              return (
-                <div
-                  key={summary.id}
-                  onClick={() => onSelectSummary && onSelectSummary(summary.id)}
-                  style={{
-                    padding: "6px 8px",
-                    marginBottom: "6px",
-                    borderRadius: "4px",
-                    background: isSelected ? "#eef3ff" : "transparent",
-                    border: isSelected ? "1px solid #c9d6ff" : "1px solid transparent",
-                    cursor: "default",
-                  }}
-                >
-                  {summary.title || "Untitled summary"}
-                </div>
-              );
-            })}
-
-          {/* ================= TASK REGION ================= */}
-          {tasks.length === 0 ? (
+          {summaries.length === 0 && (
             <>
-              <p>No tasks in workspace.</p>
+              <p>No summaries in workspace.</p>
               <p>Operational view.</p>
             </>
-          ) : (
-            tasks.map((task) => (
-              <CanonicalTaskRow
-                key={task.id}
-                task={task}
-                onOpenTask={onOpenTask}
-              />
-            ))
           )}
+
+          {summaries.map((summary) => {
+            const isSelected = summary.id === selectedSummaryId;
+
+            const summaryTasks = tasks.filter(
+              (t) => t.summaryId === summary.id
+            );
+
+            return (
+              <div key={summary.id} style={{ marginBottom: "12px" }}>
+                {/* ================= SUMMARY ROW ================= */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "6px 8px",
+                    borderRadius: "4px",
+                    background: isSelected ? "#eef3ff" : "transparent",
+                    border: isSelected
+                      ? "1px solid #c9d6ff"
+                      : "1px solid transparent",
+                  }}
+                >
+                  <div
+                    onClick={() =>
+                      onSelectSummary && onSelectSummary(summary.id)
+                    }
+                    style={{
+                      cursor: "default",
+                      flex: 1,
+                    }}
+                  >
+                    {summary.title || "Untitled summary"}
+                  </div>
+
+                  {onOpenSummaryActions && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenSummaryActions(summary.id)}
+                      style={{
+                        marginLeft: "8px",
+                        cursor: "pointer",
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "18px",
+                        lineHeight: "1",
+                      }}
+                      aria-label="Summary actions"
+                    >
+                      ⋮
+                    </button>
+                  )}
+                </div>
+
+                {/* ================= TASKS UNDER SUMMARY ================= */}
+                {summaryTasks.length > 0 && (
+                  <div style={{ marginLeft: "16px", marginTop: "6px" }}>
+                    {summaryTasks.map((task) => (
+                      <CanonicalTaskRow
+                        key={task.id}
+                        task={task}
+                        onOpenTask={onOpenTask}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
