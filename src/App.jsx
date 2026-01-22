@@ -2,17 +2,18 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 185 — Summary Selection (Inspection → Focus Only)
+Stage 187 — Summary Naming at Creation (Workspace-Only, Immutable)
 ---------------------------------------------------------------------
-CHANGE (STAGE 185):
-• Introduce local summary selection state
-• Visual focus only
-• No activation, navigation, lifecycle, or authority
+CHANGE (STAGE 187):
+• Require a name at workspace Summary creation time
+• Name is supplied pre-creation and is immutable
+• No rename or edit semantics introduced
 
 INVARIANTS (PRESERVED):
 • Footer remains sole creation authority
-• No task semantics changed
-• No persistence introduced
+• Summaries remain mute after creation
+• No movement, activation, lifecycle, or persistence semantics
+• Repository / template Summaries are unaffected
 =====================================================================
 */
 
@@ -76,10 +77,16 @@ export default function App() {
   /* ===================== SUMMARY CREATION (AUTHORITATIVE) ===================== */
 
   function onCreateSummary() {
+    // Stage 187 — require name at creation time (workspace-only)
+    const title = window.prompt("Enter summary name:");
+    if (!title || !title.trim()) {
+      return; // creation aborted if no name supplied
+    }
+
     const id = `summary-${Date.now()}`;
     const newSummary = {
       id,
-      name: "New Summary",
+      title: title.trim(), // immutable after creation
     };
 
     setSummaries((current) => [...current, newSummary]);
