@@ -2,16 +2,18 @@
 /*
 =====================================================================
 METRA — App.jsx
-Stage 189 — Footer Canonicality Restoration
+Stage 190 — Summary Removal (Archived, Canon-Deferred)
 ---------------------------------------------------------------------
 CHANGE:
-• Footer rendered ONLY in single-pane mode
-• Pane symmetry preserved for summaries and tasks
-• Creation authority remains contextual
+• Introduce Summary removal via explicit confirmation
+• Removed Summaries are archived (named, not defined)
+• Tasks are untouched and may become orphaned
 
-INVARIANTS (RESTORED):
-• Footer never appears in dual pane
-• Footer appears exactly once in single pane
+INVARIANTS (PRESERVED):
+• No task mutation on Summary removal
+• No lifecycle semantics introduced
+• No archive visibility or restore
+• Summary movement semantics unchanged
 =====================================================================
 */
 
@@ -23,6 +25,7 @@ import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
+import SummaryRemoveModal from "./components/SummaryRemoveModal";
 import { localAssignees } from "./data/localAssignees";
 
 export default function App() {
@@ -34,6 +37,7 @@ export default function App() {
   /* ===================== DATA ===================== */
 
   const [summaries, setSummaries] = useState([]);
+  const [archivedSummaries, setArchivedSummaries] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
 
@@ -66,6 +70,37 @@ export default function App() {
       [next[idx], next[target]] = [next[target], next[idx]];
       return next;
     });
+  }
+
+  /* ===================== SUMMARY REMOVE ===================== */
+
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [summaryToRemoveId, setSummaryToRemoveId] = useState(null);
+
+  function openSummaryRemoveModal(id) {
+    setSummaryToRemoveId(id);
+    setRemoveModalOpen(true);
+  }
+
+  function closeSummaryRemoveModal() {
+    setRemoveModalOpen(false);
+    setSummaryToRemoveId(null);
+  }
+
+  function confirmRemoveSummary() {
+    setSummaries((current) => {
+      const target = current.find((s) => s.id === summaryToRemoveId);
+      if (!target) return current;
+
+      setArchivedSummaries((a) => [...a, target]);
+      return current.filter((s) => s.id !== summaryToRemoveId);
+    });
+
+    if (selectedSummaryId === summaryToRemoveId) {
+      setSelectedSummaryId(null);
+    }
+
+    closeSummaryRemoveModal();
   }
 
   /* ===================== SIDEBAR ===================== */
@@ -217,6 +252,19 @@ export default function App() {
         onMoveUp={() => moveSummaryByOffset(-1)}
         onMoveDown={() => moveSummaryByOffset(1)}
         onClose={closeSummaryMoveModal}
+        onRequestRemove={() => {
+          closeSummaryMoveModal();
+          openSummaryRemoveModal(summaryToMoveId);
+        }}
+      />
+
+      <SummaryRemoveModal
+        open={removeModalOpen}
+        summaryTitle={
+          summaries.find((s) => s.id === summaryToRemoveId)?.title || ""
+        }
+        onConfirm={confirmRemoveSummary}
+        onCancel={closeSummaryRemoveModal}
       />
 
       {activeTask && (

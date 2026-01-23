@@ -1,33 +1,33 @@
 // @ts-nocheck
+import React from "react";
+
 /*
 =====================================================================
 METRA — SummaryMoveModal.jsx
-Stage 189 — Summary Movement (UI Surface Only)
+Stage 189 — Summary Movement
+Stage 190 — Summary Removal (Action Exposure Only)
 ---------------------------------------------------------------------
-PHASE 1 SCOPE:
-• Modal UI only
-• No wiring
-• No state mutation
-• No footer or pane ownership
-• No task logic
+CHANGE (STAGE 190):
+• Expose "Remove summary" action
+• Delegate removal request to caller
+• No lifecycle, archive, or task semantics added
 
-SEMANTIC GUARANTEES:
-• One click = one intended action (to be wired later)
-• Boundary intent expressed via disabled states (props)
-• No removal semantics in this stage
+INVARIANTS:
+• Movement semantics unchanged
+• No task mutation
+• No archive definition
 =====================================================================
 */
 
-import React from "react";
-
 export default function SummaryMoveModal({
-  open = false,
-  summaryTitle = "",
-  isFirst = false,
-  isLast = false,
+  open,
+  summaryTitle,
+  isFirst,
+  isLast,
   onMoveUp,
   onMoveDown,
   onClose,
+  onRequestRemove,
 }) {
   if (!open) return null;
 
@@ -36,7 +36,7 @@ export default function SummaryMoveModal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.35)",
+        background: "rgba(0,0,0,0.4)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -45,63 +45,37 @@ export default function SummaryMoveModal({
     >
       <div
         style={{
-          width: "360px",
           background: "#fff",
+          padding: "20px",
           borderRadius: "6px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-          padding: "16px",
+          width: "320px",
         }}
       >
-        {/* ================= HEADER ================= */}
-        <div style={{ marginBottom: "12px" }}>
-          <strong>Move Summary</strong>
-          <div style={{ fontSize: "13px", color: "#555", marginTop: "4px" }}>
-            {summaryTitle}
-          </div>
-        </div>
+        <h3>Summary actions</h3>
 
-        {/* ================= CONTROLS ================= */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "16px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={onMoveUp}
-            disabled={isFirst}
-            style={{
-              padding: "6px 10px",
-              cursor: isFirst ? "not-allowed" : "pointer",
-            }}
-          >
-            ↑ Move Up
+        {summaryTitle && <p>{summaryTitle}</p>}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <button onClick={onMoveUp} disabled={isFirst}>
+            Move up
           </button>
 
+          <button onClick={onMoveDown} disabled={isLast}>
+            Move down
+          </button>
+
+          <hr />
+
           <button
-            type="button"
-            onClick={onMoveDown}
-            disabled={isLast}
-            style={{
-              padding: "6px 10px",
-              cursor: isLast ? "not-allowed" : "pointer",
-            }}
+            onClick={onRequestRemove}
+            style={{ color: "#b00020" }}
           >
-            ↓ Move Down
+            Remove summary
           </button>
         </div>
 
-        {/* ================= FOOTER ================= */}
-        <div style={{ textAlign: "right" }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ padding: "6px 12px" }}
-          >
-            Close
-          </button>
+        <div style={{ marginTop: "16px", textAlign: "right" }}>
+          <button onClick={onClose}>Close</button>
         </div>
       </div>
     </div>
