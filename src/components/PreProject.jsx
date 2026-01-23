@@ -6,20 +6,18 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 189 — Summary Movement (Phase 3: Rendering & Actions)
+Stage — Orphan Task Surface (Visual-Only, Foundational)
 ---------------------------------------------------------------------
-CHANGE (STAGE 189 — PHASE 3):
-• Render tasks directly under their owning Summary
-• Add explicit Summary actions affordance (⋮)
-• Preserve focus-only Summary selection
-• No footer or pane logic changes
+CHANGE:
+• Introduce explicit render surface for orphan tasks (summaryId === null)
+• Orphan tasks render in chronological order (newest last)
+• Tasks created with a summary render directly under that summary
+• Association moves tasks between sections
 
 INVARIANTS (PRESERVED):
-• Footer renders exactly once
-• Footer exists only in true single-pane mode
-• Summary selection remains focus-only
-• Task ↔ Summary association unchanged (task.summaryId)
-• No lifecycle, activation, or navigation semantics introduced
+• Task existence implies task visibility
+• No lifecycle, persistence, or authority changes
+• Existing summary rendering preserved
 =====================================================================
 */
 
@@ -35,6 +33,12 @@ export default function PreProject({
   canCreateSummary = false,
   onCreateSummary,
 }) {
+  // Orphan tasks: no summaryId
+  const orphanTasks = tasks
+    .filter((t) => t.summaryId === null)
+    // Chronological: newest last (oldest first)
+    .sort((a, b) => (a.id > b.id ? 1 : -1));
+
   return (
     <div
       className="single-pane-root"
@@ -45,7 +49,7 @@ export default function PreProject({
         borderTop: "1px solid #ccc",
       }}
     >
-      {/* ================= BODY REGION (NON-SCROLL) ================= */}
+      {/* ================= BODY REGION ================= */}
       <div
         className="single-pane-body-region"
         style={{
@@ -55,7 +59,7 @@ export default function PreProject({
           overflow: "hidden",
         }}
       >
-        {/* ================= SCROLL REGION (SOLE SCROLLER) ================= */}
+        {/* ================= SCROLL REGION ================= */}
         <div
           className="single-pane-scroll-region"
           style={{
@@ -64,7 +68,34 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
-          {summaries.length === 0 && (
+          {/* ================= ORPHAN TASKS ================= */}
+          {orphanTasks.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#666",
+                  marginBottom: "6px",
+                }}
+              >
+                Unassigned Tasks
+              </div>
+
+              <div>
+                {orphanTasks.map((task) => (
+                  <CanonicalTaskRow
+                    key={task.id}
+                    task={task}
+                    onOpenTask={onOpenTask}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ================= SUMMARIES ================= */}
+          {summaries.length === 0 && orphanTasks.length === 0 && (
             <>
               <p>No summaries in workspace.</p>
               <p>Operational view.</p>
@@ -143,7 +174,7 @@ export default function PreProject({
         </div>
       </div>
 
-      {/* ================= FOOTER REGION (LOCKED) ================= */}
+      {/* ================= FOOTER ================= */}
       <div
         className="single-pane-footer-region"
         style={{
