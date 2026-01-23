@@ -1,194 +1,138 @@
 // @ts-nocheck
-import React from "react";
-import CanonicalTaskRow from "./CanonicalTaskRow";
-import PreProjectFooter from "./PreProjectFooter";
-
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage — Orphan Task Surface (Visual-Only, Foundational)
+Stage 195 — Single Stream Workspace Rendering (CANONICAL)
 ---------------------------------------------------------------------
-CHANGE:
-• Introduce explicit render surface for orphan tasks (summaryId === null)
-• Orphan tasks render in chronological order (newest last)
-• Tasks created with a summary render directly under that summary
-• Association moves tasks between sections
-
-INVARIANTS (PRESERVED):
-• Task existence implies task visibility
-• No lifecycle, persistence, or authority changes
-• Existing summary rendering preserved
+• One continuous workspace stream
+• Tasks render chronologically at top level by default
+• Summaries are the ONLY grouping structure
+• Tasks move position when associated with a summary
+• No orphan lists, regions, or headers
 =====================================================================
 */
 
+import React from "react";
+
 export default function PreProject({
-  tasks = [],
-  summaries = [],
-  selectedSummaryId = null,
+  summaries,
+  tasks,
+  selectedSummaryId,
   onSelectSummary,
   onOpenTask,
   onOpenSummaryActions,
-  canCreateTask = false,
+  canCreateTask,
   onCreateTask,
-  canCreateSummary = false,
+  canCreateSummary,
   onCreateSummary,
+  showFooter = true,
 }) {
-  // Orphan tasks: no summaryId
-  const orphanTasks = tasks
-    .filter((t) => t.summaryId === null)
-    // Chronological: newest last (oldest first)
-    .sort((a, b) => (a.id > b.id ? 1 : -1));
+  /* ================================================================
+     DERIVED
+     ================================================================ */
+
+  // Top-level tasks = tasks not associated with any summary
+  const topLevelTasks = tasks.filter((t) => t.summaryId === null);
+
+  /* ================================================================
+     RENDER
+     ================================================================ */
 
   return (
     <div
-      className="single-pane-root"
       style={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        borderTop: "1px solid #ccc",
       }}
     >
-      {/* ================= BODY REGION ================= */}
-      <div
-        className="single-pane-body-region"
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        {/* ================= SCROLL REGION ================= */}
-        <div
-          className="single-pane-scroll-region"
-          style={{
-            flex: 1,
-            padding: "14px",
-            overflowY: "auto",
-          }}
-        >
-          {/* ================= ORPHAN TASKS ================= */}
-          {orphanTasks.length > 0 && (
-            <div style={{ marginBottom: "16px" }}>
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#666",
-                  marginBottom: "6px",
-                }}
-              >
-                Unassigned Tasks
-              </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+        {/* SINGLE CONTINUOUS STREAM */}
 
-              <div>
-                {orphanTasks.map((task) => (
-                  <CanonicalTaskRow
-                    key={task.id}
-                    task={task}
-                    onOpenTask={onOpenTask}
-                  />
-                ))}
-              </div>
+        {/* Top-level tasks (chronological) */}
+        {topLevelTasks.map((task) => (
+          <div
+            key={task.id}
+            onClick={() => onOpenTask && onOpenTask(task)}
+            style={{
+              padding: "8px 10px",
+              marginBottom: 6,
+              border: "1px solid #ddd",
+              borderRadius: 4,
+              cursor: onOpenTask ? "pointer" : "default",
+              background: "#fff",
+            }}
+          >
+            {task.title}
+          </div>
+        ))}
+
+        {/* Summaries as structural anchors */}
+        {summaries.map((summary) => (
+          <div key={summary.id} style={{ marginTop: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                fontWeight: 600,
+                marginBottom: 8,
+                cursor: onSelectSummary ? "pointer" : "default",
+              }}
+              onClick={() =>
+                onSelectSummary && onSelectSummary(summary.id)
+              }
+            >
+              <span>{summary.title}</span>
+
+              {onOpenSummaryActions && (
+                <button onClick={() => onOpenSummaryActions(summary.id)}>
+                  ⋮
+                </button>
+              )}
             </div>
-          )}
 
-          {/* ================= SUMMARIES ================= */}
-          {summaries.length === 0 && orphanTasks.length === 0 && (
-            <>
-              <p>No summaries in workspace.</p>
-              <p>Operational view.</p>
-            </>
-          )}
-
-          {summaries.map((summary) => {
-            const isSelected = summary.id === selectedSummaryId;
-
-            const summaryTasks = tasks.filter(
-              (t) => t.summaryId === summary.id
-            );
-
-            return (
-              <div key={summary.id} style={{ marginBottom: "12px" }}>
-                {/* ================= SUMMARY ROW ================= */}
+            {/* Tasks that belong to this summary */}
+            {tasks
+              .filter((t) => t.summaryId === summary.id)
+              .map((task) => (
                 <div
+                  key={task.id}
+                  onClick={() => onOpenTask && onOpenTask(task)}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "6px 8px",
-                    borderRadius: "4px",
-                    background: isSelected ? "#eef3ff" : "transparent",
-                    border: isSelected
-                      ? "1px solid #c9d6ff"
-                      : "1px solid transparent",
+                    padding: "8px 10px",
+                    marginBottom: 6,
+                    border: "1px solid #ddd",
+                    borderRadius: 4,
+                    cursor: onOpenTask ? "pointer" : "default",
+                    background: "#f9f9f9",
                   }}
                 >
-                  <div
-                    onClick={() =>
-                      onSelectSummary && onSelectSummary(summary.id)
-                    }
-                    style={{
-                      cursor: "default",
-                      flex: 1,
-                    }}
-                  >
-                    {summary.title || "Untitled summary"}
-                  </div>
-
-                  {onOpenSummaryActions && (
-                    <button
-                      type="button"
-                      onClick={() => onOpenSummaryActions(summary.id)}
-                      style={{
-                        marginLeft: "8px",
-                        cursor: "pointer",
-                        background: "transparent",
-                        border: "none",
-                        fontSize: "18px",
-                        lineHeight: "1",
-                      }}
-                      aria-label="Summary actions"
-                    >
-                      ⋮
-                    </button>
-                  )}
+                  {task.title}
                 </div>
+              ))}
+          </div>
+        ))}
+      </div>
 
-                {/* ================= TASKS UNDER SUMMARY ================= */}
-                {summaryTasks.length > 0 && (
-                  <div style={{ marginLeft: "16px", marginTop: "6px" }}>
-                    {summaryTasks.map((task) => (
-                      <CanonicalTaskRow
-                        key={task.id}
-                        task={task}
-                        onOpenTask={onOpenTask}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* FOOTER (SINGLE PANE ONLY) */}
+      {showFooter && (
+        <div
+          style={{
+            borderTop: "1px solid #e0e0e0",
+            padding: 12,
+            display: "flex",
+            gap: 8,
+          }}
+        >
+          {canCreateTask && (
+            <button onClick={onCreateTask}>Create Task</button>
+          )}
+          {canCreateSummary && (
+            <button onClick={onCreateSummary}>Create Summary</button>
+          )}
         </div>
-      </div>
-
-      {/* ================= FOOTER ================= */}
-      <div
-        className="single-pane-footer-region"
-        style={{
-          borderTop: "1px solid #ddd",
-          background: "#f5f5f5",
-        }}
-      >
-        <PreProjectFooter
-          canCreateTask={canCreateTask}
-          onCreateTask={onCreateTask}
-          canCreateSummary={canCreateSummary}
-          onCreateSummary={onCreateSummary}
-        />
-      </div>
+      )}
     </div>
   );
 }
