@@ -1,25 +1,23 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React from "react";
 import CanonicalTaskRow from "./CanonicalTaskRow";
 import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 191 — Task Collapse / Reveal (Visual-Only)
+Stage — Orphan Task Surface (Visual-Only, Foundational)
 ---------------------------------------------------------------------
-CHANGE (STAGE 191):
-• Add per-Summary collapse / reveal toggle (visual-only)
-• Toggle located on right side of Summary row
-• Default state: expanded
-• No persistence, no task mutation
+CHANGE:
+• Introduce explicit render surface for orphan tasks (summaryId === null)
+• Orphan tasks render in chronological order (newest last)
+• Tasks created with a summary render directly under that summary
+• Association moves tasks between sections
 
 INVARIANTS (PRESERVED):
-• Summary selection remains focus-only
-• Task ↔ Summary association unchanged (task.summaryId)
-• Orphaned tasks unaffected
-• Footer renders exactly once
-• No lifecycle, archive, or authority semantics introduced
+• Task existence implies task visibility
+• No lifecycle, persistence, or authority changes
+• Existing summary rendering preserved
 =====================================================================
 */
 
@@ -35,15 +33,11 @@ export default function PreProject({
   canCreateSummary = false,
   onCreateSummary,
 }) {
-  /* ===================== UI-ONLY COLLAPSE STATE ===================== */
-  const [collapsedBySummaryId, setCollapsedBySummaryId] = useState({});
-
-  function toggleCollapsed(summaryId) {
-    setCollapsedBySummaryId((c) => ({
-      ...c,
-      [summaryId]: !c[summaryId],
-    }));
-  }
+  // Orphan tasks: no summaryId
+  const orphanTasks = tasks
+    .filter((t) => t.summaryId === null)
+    // Chronological: newest last (oldest first)
+    .sort((a, b) => (a.id > b.id ? 1 : -1));
 
   return (
     <div
@@ -55,7 +49,7 @@ export default function PreProject({
         borderTop: "1px solid #ccc",
       }}
     >
-      {/* ================= BODY REGION (NON-SCROLL) ================= */}
+      {/* ================= BODY REGION ================= */}
       <div
         className="single-pane-body-region"
         style={{
@@ -65,7 +59,7 @@ export default function PreProject({
           overflow: "hidden",
         }}
       >
-        {/* ================= SCROLL REGION (SOLE SCROLLER) ================= */}
+        {/* ================= SCROLL REGION ================= */}
         <div
           className="single-pane-scroll-region"
           style={{
@@ -74,7 +68,34 @@ export default function PreProject({
             overflowY: "auto",
           }}
         >
-          {summaries.length === 0 && (
+          {/* ================= ORPHAN TASKS ================= */}
+          {orphanTasks.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#666",
+                  marginBottom: "6px",
+                }}
+              >
+                Unassigned Tasks
+              </div>
+
+              <div>
+                {orphanTasks.map((task) => (
+                  <CanonicalTaskRow
+                    key={task.id}
+                    task={task}
+                    onOpenTask={onOpenTask}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ================= SUMMARIES ================= */}
+          {summaries.length === 0 && orphanTasks.length === 0 && (
             <>
               <p>No summaries in workspace.</p>
               <p>Operational view.</p>
@@ -83,7 +104,6 @@ export default function PreProject({
 
           {summaries.map((summary) => {
             const isSelected = summary.id === selectedSummaryId;
-            const isCollapsed = !!collapsedBySummaryId[summary.id];
 
             const summaryTasks = tasks.filter(
               (t) => t.summaryId === summary.id
@@ -105,7 +125,6 @@ export default function PreProject({
                       : "1px solid transparent",
                   }}
                 >
-                  {/* Title (focus-only selection) */}
                   <div
                     onClick={() =>
                       onSelectSummary && onSelectSummary(summary.id)
@@ -118,25 +137,6 @@ export default function PreProject({
                     {summary.title || "Untitled summary"}
                   </div>
 
-                  {/* Collapse / Reveal toggle (Stage 191) */}
-                  <button
-                    type="button"
-                    onClick={() => toggleCollapsed(summary.id)}
-                    aria-expanded={!isCollapsed}
-                    title={isCollapsed ? "Expand tasks" : "Collapse tasks"}
-                    style={{
-                      marginLeft: "8px",
-                      cursor: "pointer",
-                      background: "transparent",
-                      border: "none",
-                      fontSize: "14px",
-                      lineHeight: "1",
-                    }}
-                  >
-                    {isCollapsed ? "▸" : "▾"}
-                  </button>
-
-                  {/* Summary actions (⋮) */}
                   {onOpenSummaryActions && (
                     <button
                       type="button"
@@ -157,7 +157,7 @@ export default function PreProject({
                 </div>
 
                 {/* ================= TASKS UNDER SUMMARY ================= */}
-                {!isCollapsed && summaryTasks.length > 0 && (
+                {summaryTasks.length > 0 && (
                   <div style={{ marginLeft: "16px", marginTop: "6px" }}>
                     {summaryTasks.map((task) => (
                       <CanonicalTaskRow
@@ -174,7 +174,7 @@ export default function PreProject({
         </div>
       </div>
 
-      {/* ================= FOOTER REGION (LOCKED) ================= */}
+      {/* ================= FOOTER ================= */}
       <div
         className="single-pane-footer-region"
         style={{
