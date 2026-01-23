@@ -1,25 +1,25 @@
 // @ts-nocheck
-import React from "react";
+import React, { useState } from "react";
 import CanonicalTaskRow from "./CanonicalTaskRow";
 import PreProjectFooter from "./PreProjectFooter";
 
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 189 — Summary Movement (Phase 3: Rendering & Actions)
+Stage 191 — Task Collapse / Reveal (Visual-Only)
 ---------------------------------------------------------------------
-CHANGE (STAGE 189 — PHASE 3):
-• Render tasks directly under their owning Summary
-• Add explicit Summary actions affordance (⋮)
-• Preserve focus-only Summary selection
-• No footer or pane logic changes
+CHANGE (STAGE 191):
+• Add per-Summary collapse / reveal toggle (visual-only)
+• Toggle located on right side of Summary row
+• Default state: expanded
+• No persistence, no task mutation
 
 INVARIANTS (PRESERVED):
-• Footer renders exactly once
-• Footer exists only in true single-pane mode
 • Summary selection remains focus-only
 • Task ↔ Summary association unchanged (task.summaryId)
-• No lifecycle, activation, or navigation semantics introduced
+• Orphaned tasks unaffected
+• Footer renders exactly once
+• No lifecycle, archive, or authority semantics introduced
 =====================================================================
 */
 
@@ -35,6 +35,16 @@ export default function PreProject({
   canCreateSummary = false,
   onCreateSummary,
 }) {
+  /* ===================== UI-ONLY COLLAPSE STATE ===================== */
+  const [collapsedBySummaryId, setCollapsedBySummaryId] = useState({});
+
+  function toggleCollapsed(summaryId) {
+    setCollapsedBySummaryId((c) => ({
+      ...c,
+      [summaryId]: !c[summaryId],
+    }));
+  }
+
   return (
     <div
       className="single-pane-root"
@@ -73,6 +83,7 @@ export default function PreProject({
 
           {summaries.map((summary) => {
             const isSelected = summary.id === selectedSummaryId;
+            const isCollapsed = !!collapsedBySummaryId[summary.id];
 
             const summaryTasks = tasks.filter(
               (t) => t.summaryId === summary.id
@@ -94,6 +105,7 @@ export default function PreProject({
                       : "1px solid transparent",
                   }}
                 >
+                  {/* Title (focus-only selection) */}
                   <div
                     onClick={() =>
                       onSelectSummary && onSelectSummary(summary.id)
@@ -106,6 +118,25 @@ export default function PreProject({
                     {summary.title || "Untitled summary"}
                   </div>
 
+                  {/* Collapse / Reveal toggle (Stage 191) */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCollapsed(summary.id)}
+                    aria-expanded={!isCollapsed}
+                    title={isCollapsed ? "Expand tasks" : "Collapse tasks"}
+                    style={{
+                      marginLeft: "8px",
+                      cursor: "pointer",
+                      background: "transparent",
+                      border: "none",
+                      fontSize: "14px",
+                      lineHeight: "1",
+                    }}
+                  >
+                    {isCollapsed ? "▸" : "▾"}
+                  </button>
+
+                  {/* Summary actions (⋮) */}
                   {onOpenSummaryActions && (
                     <button
                       type="button"
@@ -126,7 +157,7 @@ export default function PreProject({
                 </div>
 
                 {/* ================= TASKS UNDER SUMMARY ================= */}
-                {summaryTasks.length > 0 && (
+                {!isCollapsed && summaryTasks.length > 0 && (
                   <div style={{ marginLeft: "16px", marginTop: "6px" }}>
                     {summaryTasks.map((task) => (
                       <CanonicalTaskRow
