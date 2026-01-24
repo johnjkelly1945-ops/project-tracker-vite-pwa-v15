@@ -2,21 +2,27 @@
 /*
 =====================================================================
 METRA — CanonicalTaskPopupHeader.jsx
-Stage 150 — Inspection Header (Execution State Included)
-=====================================================================
-- Displays task identity
-- Displays assignment
-- Displays execution state (read-only)
+Stage 196 — Header immediacy & composition
+---------------------------------------------------------------------
+• Header reflects assignment immediately
+• Task identity rendered as: Title — Assignee
+• Minimal "Notes" indicator added (no new section)
+• No semantic or behavioural change
 =====================================================================
 */
 
-export default function CanonicalTaskPopupHeader({ task }) {
+export default function CanonicalTaskPopupHeader({ task, onClose }) {
   if (!task) return null;
 
-  const executionState = task.executionState || "NOT_STARTED";
+  const assignee =
+    task.assigneeLabel || task.assigneeId || "";
+
+  const titleLine = assignee
+    ? `${task.title} — ${assignee}`
+    : task.title;
 
   return (
-    <div style={{ marginBottom: "12px" }}>
+    <div>
       <div
         style={{
           display: "flex",
@@ -24,22 +30,28 @@ export default function CanonicalTaskPopupHeader({ task }) {
           alignItems: "center",
         }}
       >
-        <h3 style={{ margin: 0 }}>{task.title}</h3>
+        <h3 style={{ margin: 0 }}>
+          {titleLine}
+        </h3>
+
+        <button
+          onClick={onClose}
+          aria-label="Close task popup"
+        >
+          ×
+        </button>
       </div>
 
-      <div style={{ marginTop: "6px" }}>
-        <strong>Execution state:</strong>{" "}
-        {executionState.replace("_", " ")}
+      <div
+        style={{
+          marginTop: "6px",
+          textAlign: "center",
+          fontSize: "14px",
+          color: "#555",
+        }}
+      >
+        Notes
       </div>
-
-      {task.assigneeId && (
-        <div style={{ marginTop: "6px" }}>
-          <strong>Assigned:</strong>{" "}
-          {task.assigneeLabel || task.assigneeId}
-        </div>
-      )}
-
-      <hr style={{ marginTop: "10px" }} />
     </div>
   );
 }
