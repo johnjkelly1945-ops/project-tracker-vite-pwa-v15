@@ -3,19 +3,19 @@
 =====================================================================
 METRA — TaskPopup.jsx
 Stage 203 — TaskPopup Surface Separation (Corrective)
+Stage 205 — Step 1–2: Notes Depth, Framing & Typography (Visual Only)
+Stage 206 — Canonical Note Timestamp Normalisation (Behavioural)
 ---------------------------------------------------------------------
 SEM BASIS:
 • SEM-AUTH-PM-01 — PM Authority Dominance
 • SEM-EX         — Execution Semantics
 • SEM-NR-01      — Behavioural Continuity
 
-CANON (STAGE 203):
-• Record surface is read-only
-• Note creation is intentional and footer-invoked
-• Modal closes before authoritative mutation
-• Note commit semantics unchanged
-• Execution lifecycle unchanged
-• Assignment / Reassignment unchanged
+CANON:
+• Record surface remains read-only
+• Notes remain a single continuous chronological stream
+• Human-authored notes include a timestamp at commit time
+• No visual, authority, or lifecycle changes
 =====================================================================
 */
 
@@ -92,7 +92,7 @@ export default function TaskPopup({
   }, [task.executionState]);
 
   /* --------------------------------------------------------------
-     Note composition modal (STAGE 203)
+     Note composition modal
   -------------------------------------------------------------- */
 
   const [noteModalOpen, setNoteModalOpen] = useState(false);
@@ -102,13 +102,13 @@ export default function TaskPopup({
     const text = draftText.trim();
     if (!text) return;
 
-    // CLOSE LOCAL UI FIRST (prevents re-open on parent re-render)
+    const stampedText = `${text} — ${nowStamp()}`;
+
     setDraftText("");
     setNoteModalOpen(false);
 
-    // AUTHORITATIVE MUTATION SECOND
-    onAddNote(task.id, text);
-    setDisplayNotes((prev) => [...prev, text]);
+    onAddNote(task.id, stampedText);
+    setDisplayNotes((prev) => [...prev, stampedText]);
   }
 
   function cancelNote() {
@@ -123,7 +123,7 @@ export default function TaskPopup({
   }
 
   /* --------------------------------------------------------------
-     Assignment / Reassignment (STAGE 201 — UNCHANGED)
+     Assignment / Reassignment (UNCHANGED)
   -------------------------------------------------------------- */
 
   const [assigning, setAssigning] = useState(false);
@@ -271,22 +271,30 @@ export default function TaskPopup({
       >
         <CanonicalTaskPopupHeader task={headerTask} onClose={handleClose} />
 
-        <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
+        <div
+          style={{
+            padding: "20px",
+            overflowY: "auto",
+            flex: 1,
+            background: "#fafafa",
+          }}
+        >
           {displayNotes.length > 0 && (
             <pre
               style={{
                 whiteSpace: "pre-wrap",
-                background: "#f5f5f5",
-                padding: "8px",
-                marginBottom: "12px",
+                background: "transparent",
+                padding: "12px",
+                margin: 0,
+                lineHeight: "1.65",
+                color: "#333",
+                fontWeight: 400,
               }}
             >
               {displayNotes.join("\n")}
             </pre>
           )}
         </div>
-
-        {/* ---------------- Footer ---------------- */}
 
         <div
           style={{
@@ -370,7 +378,13 @@ export default function TaskPopup({
               placeholder="Add a note…"
               style={{ width: "100%", minHeight: "120px" }}
             />
-            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                justifyContent: "flex-end",
+              }}
+            >
               <button onClick={cancelNote}>Cancel</button>
               <button onClick={commitNote}>Commit note</button>
             </div>
