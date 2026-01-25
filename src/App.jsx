@@ -1,18 +1,5 @@
 // @ts-nocheck
-/*
-=====================================================================
-METRA — App.jsx
-Stage 195 — Task Title Semantics & Association Wiring (CANONICAL FIX)
----------------------------------------------------------------------
-• Restore TaskPopup prop contract
-• No authority change
-• No lifecycle change
-• No rendering change
-• No stream logic change
-=====================================================================
-*/
-
-import React, { useState } from "react";
+import { useState } from "react";
 
 import Sidebar from "./components/Sidebar";
 import ModuleHeader from "./components/ModuleHeader";
@@ -23,38 +10,17 @@ import SummaryMoveModal from "./components/SummaryMoveModal";
 import SummaryRemoveModal from "./components/SummaryRemoveModal";
 import { localAssignees } from "./data/localAssignees";
 
-/* ================================================================
-   SINGLE-PANE HEADER
-   ================================================================ */
-
-function SinglePaneHeader({ title, onReturn }) {
-  return (
-    <div
-      style={{
-        height: "44px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 12px",
-        borderBottom: "1px solid #e0e0e0",
-        background: "#fafafa",
-        fontWeight: 600,
-      }}
-    >
-      <span>{title}</span>
-      <button
-        onClick={onReturn}
-        style={{ background: "none", border: "none", cursor: "pointer" }}
-      >
-        ↙
-      </button>
-    </div>
-  );
-}
-
-/* ================================================================
-   APP
-   ================================================================ */
+/*
+=====================================================================
+METRA — App.jsx
+Stage 207 — Corrective Restoration
+---------------------------------------------------------------------
+• Restore canonical single-pane surface rendering
+• Single pane mounts PreProject (with footer)
+• Dual pane remains footer-less
+• Behaviour matches baseline-2026-01-25-stage206
+=====================================================================
+*/
 
 export default function App() {
   const [workspaceMode, setWorkspaceMode] = useState("dual");
@@ -87,14 +53,14 @@ export default function App() {
 
   /* ===================== NAV ===================== */
 
-  function onFocusPane(pane) {
+  function handleFocusPane(pane) {
     setWorkspaceMode("single");
     setFocusedPane(pane);
     setSelectedSummaryId(null);
     setActiveTask(null);
   }
 
-  function onReturnToDual() {
+  function returnToDual() {
     setWorkspaceMode("dual");
     setFocusedPane(null);
     setSelectedSummaryId(null);
@@ -122,6 +88,12 @@ export default function App() {
     };
 
     setTasks((c) => [...c, task]);
+    setCreateTaskOpen(false);
+  }
+
+  function cancelCreateTask() {
+    const confirmAbort = window.confirm("Discard task creation?");
+    if (!confirmAbort) return;
     setCreateTaskOpen(false);
   }
 
@@ -246,51 +218,47 @@ export default function App() {
           {workspaceMode === "dual" ? (
             <DualPane
               mode="dual"
-              onFocusPane={onFocusPane}
-              onReturnToDual={onReturnToDual}
+              focusedPane={focusedPane}
+              onFocusPane={handleFocusPane}
+              onReturnToDual={returnToDual}
               managementBody={mgmtReadOnly}
               developmentBody={devReadOnly}
             />
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-              <SinglePaneHeader
-                title={focusedPane === "management" ? "Management" : "Development"}
-                onReturn={onReturnToDual}
-              />
-              {singleSurface}
-            </div>
+            singleSurface
           )}
         </div>
       </div>
 
-      {/* CREATE TASK MODAL */}
       {createTaskOpen && !isReadOnly && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)" }}>
-          <div style={{ background: "#fff", padding: 16, width: 360, margin: "20vh auto" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000 }}>
+          <div style={{ background: "#fff", padding: 16, width: 360, margin: "20vh auto", borderRadius: 6 }}>
             <h3>Create Task</h3>
+
             <input
               autoFocus
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
               style={{ width: "100%", marginBottom: 12 }}
             />
-            <button onClick={confirmCreateTask} disabled={!newTaskTitle.trim()}>
-              Create
-            </button>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button type="button" onClick={cancelCreateTask}>Cancel</button>
+              <button onClick={confirmCreateTask} disabled={!newTaskTitle.trim()}>
+                Create
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* TASK POPUP — CONTRACT RESTORED */}
       {activeTask && !isReadOnly && (
         <TaskPopup
           task={activeTask}
-          summaries={summaries}
           onClose={() => setActiveTask(null)}
           onAssignTask={onAssignTask}
           onAddNote={onAddNote}
           onStartExecution={onStartExecution}
-          onChangeTaskSummary={onChangeTaskSummary}
         />
       )}
 

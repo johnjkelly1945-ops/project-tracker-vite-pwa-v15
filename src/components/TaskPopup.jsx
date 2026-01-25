@@ -3,19 +3,14 @@
 =====================================================================
 METRA — TaskPopup.jsx
 Stage 203 — TaskPopup Surface Separation (Corrective)
-Stage 205 — Step 1–2: Notes Depth, Framing & Typography (Visual Only)
+Stage 205 — Steps 1–3: Notes, Typography & Footer (Visual Only)
+Stage 205 — Step 4A: Popup Spatial Containment & Hierarchy (Visual)
 Stage 206 — Canonical Note Timestamp Normalisation (Behavioural)
 ---------------------------------------------------------------------
 SEM BASIS:
 • SEM-AUTH-PM-01 — PM Authority Dominance
 • SEM-EX         — Execution Semantics
 • SEM-NR-01      — Behavioural Continuity
-
-CANON:
-• Record surface remains read-only
-• Notes remain a single continuous chronological stream
-• Human-authored notes include a timestamp at commit time
-• No visual, authority, or lifecycle changes
 =====================================================================
 */
 
@@ -261,8 +256,9 @@ export default function TaskPopup({
       <div
         style={{
           background: "#fff",
-          width: "700px",
-          maxHeight: "85vh",
+          width: "90%",          // ~10% narrower than workspace
+          maxWidth: "90%",
+          height: "80vh",        // fixed, empirically validated height
           display: "flex",
           flexDirection: "column",
           borderRadius: "6px",
@@ -271,6 +267,7 @@ export default function TaskPopup({
       >
         <CanonicalTaskPopupHeader task={headerTask} onClose={handleClose} />
 
+        {/* Notes viewport — ONLY scrolling region */}
         <div
           style={{
             padding: "20px",
@@ -296,23 +293,29 @@ export default function TaskPopup({
           )}
         </div>
 
+        {/* Footer — fixed, non-scrolling */}
         <div
           style={{
-            borderTop: "1px solid #ddd",
-            padding: "12px",
+            borderTop: "1px solid #eee",
+            padding: "14px 12px",
             display: "flex",
             gap: "12px",
             flexWrap: "wrap",
             justifyContent: "space-between",
+            background: "#fbfbfb",
           }}
         >
           <div style={{ display: "flex", gap: "8px" }}>
             {!isAssigned && isPM && !assigning && (
-              <button onClick={() => setAssigning(true)}>Assign</button>
+              <button style={{ opacity: 0.9 }} onClick={() => setAssigning(true)}>
+                Assign
+              </button>
             )}
 
             {isAssigned && isPM && !reassigning && (
-              <button onClick={() => setReassigning(true)}>Reassign</button>
+              <button style={{ opacity: 0.9 }} onClick={() => setReassigning(true)}>
+                Reassign
+              </button>
             )}
 
             {(assigning || reassigning) && (
@@ -328,21 +331,35 @@ export default function TaskPopup({
                     </option>
                   ))}
                 </select>
-                <button onClick={confirmAssignment}>Confirm</button>
-                <button onClick={cancelAssignmentChange}>Cancel</button>
+                <button style={{ opacity: 0.9 }} onClick={confirmAssignment}>
+                  Confirm
+                </button>
+                <button style={{ opacity: 0.9 }} onClick={cancelAssignmentChange}>
+                  Cancel
+                </button>
               </>
             )}
           </div>
 
           <div style={{ display: "flex", gap: "8px" }}>
-            {showStart && <button onClick={handleStartWork}>Start</button>}
+            {showStart && (
+              <button style={{ opacity: 0.9 }} onClick={handleStartWork}>
+                Start
+              </button>
+            )}
             {showSubmitted && (
-              <button onClick={handleSubmitted}>Submit</button>
+              <button style={{ opacity: 0.9 }} onClick={handleSubmitted}>
+                Submit
+              </button>
             )}
             {showCompleted && (
-              <button onClick={handleCompleted}>Complete</button>
+              <button style={{ opacity: 0.9 }} onClick={handleCompleted}>
+                Complete
+              </button>
             )}
-            <button onClick={() => setNoteModalOpen(true)}>Add note</button>
+            <button style={{ opacity: 0.9 }} onClick={() => setNoteModalOpen(true)}>
+              Add note
+            </button>
           </div>
         </div>
       </div>
