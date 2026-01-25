@@ -2,17 +2,20 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 201 — Governed Action Footer Completion (Audit Finalisation)
+Stage 203 — TaskPopup Surface Separation (Corrective)
 ---------------------------------------------------------------------
 SEM BASIS:
 • SEM-AUTH-PM-01 — PM Authority Dominance
 • SEM-EX         — Execution Semantics
 • SEM-NR-01      — Behavioural Continuity
 
-CANON (STAGE 201):
-• Notes behaviour unchanged (Stage 200)
+CANON (STAGE 203):
+• Record surface is read-only
+• Note creation is intentional and footer-invoked
+• Modal closes before authoritative mutation
+• Note commit semantics unchanged
 • Execution lifecycle unchanged
-• Assignment / Reassignment audited via system markers
+• Assignment / Reassignment unchanged
 =====================================================================
 */
 
@@ -89,26 +92,38 @@ export default function TaskPopup({
   }, [task.executionState]);
 
   /* --------------------------------------------------------------
-     Notes (STAGE 200 — UNCHANGED)
+     Note composition modal (STAGE 203)
   -------------------------------------------------------------- */
 
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [draftText, setDraftText] = useState("");
 
-  function commitDraft() {
+  function commitNote() {
     const text = draftText.trim();
     if (!text) return;
+
+    // CLOSE LOCAL UI FIRST (prevents re-open on parent re-render)
+    setDraftText("");
+    setNoteModalOpen(false);
+
+    // AUTHORITATIVE MUTATION SECOND
     onAddNote(task.id, text);
     setDisplayNotes((prev) => [...prev, text]);
+  }
+
+  function cancelNote() {
     setDraftText("");
+    setNoteModalOpen(false);
   }
 
   function handleClose() {
     setDraftText("");
+    setNoteModalOpen(false);
     onClose();
   }
 
   /* --------------------------------------------------------------
-     Assignment / Reassignment (STAGE 201)
+     Assignment / Reassignment (STAGE 201 — UNCHANGED)
   -------------------------------------------------------------- */
 
   const [assigning, setAssigning] = useState(false);
@@ -269,20 +284,9 @@ export default function TaskPopup({
               {displayNotes.join("\n")}
             </pre>
           )}
-
-          <textarea
-            value={draftText}
-            onChange={(e) => setDraftText(e.target.value)}
-            placeholder="Add a note…"
-            style={{ width: "100%", minHeight: "80px" }}
-          />
-
-          <div style={{ marginTop: "8px" }}>
-            <button onClick={commitDraft}>Commit notes</button>
-          </div>
         </div>
 
-        {/* ---------------- Footer (STAGE 201 GOVERNED ACTIONS) ---------------- */}
+        {/* ---------------- Footer ---------------- */}
 
         <div
           style={{
@@ -294,7 +298,6 @@ export default function TaskPopup({
             justifyContent: "space-between",
           }}
         >
-          {/* Assignment lifecycle (PM only) */}
           <div style={{ display: "flex", gap: "8px" }}>
             {!isAssigned && isPM && !assigning && (
               <button onClick={() => setAssigning(true)}>Assign</button>
@@ -323,7 +326,6 @@ export default function TaskPopup({
             )}
           </div>
 
-          {/* Execution lifecycle (UNCHANGED) */}
           <div style={{ display: "flex", gap: "8px" }}>
             {showStart && <button onClick={handleStartWork}>Start</button>}
             {showSubmitted && (
@@ -332,9 +334,49 @@ export default function TaskPopup({
             {showCompleted && (
               <button onClick={handleCompleted}>Complete</button>
             )}
+            <button onClick={() => setNoteModalOpen(true)}>Add note</button>
           </div>
         </div>
       </div>
+
+      {noteModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            zIndex: 1100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              width: "500px",
+              borderRadius: "6px",
+              padding: "16px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
+            <textarea
+              value={draftText}
+              onChange={(e) => setDraftText(e.target.value)}
+              placeholder="Add a note…"
+              style={{ width: "100%", minHeight: "120px" }}
+            />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+              <button onClick={cancelNote}>Cancel</button>
+              <button onClick={commitNote}>Commit note</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
