@@ -2,22 +2,21 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 200 — Canonical Notes Commit Implementation (FINAL)
+Stage 201 — Governed Action Footer Completion (Audit Finalisation)
 ---------------------------------------------------------------------
 SEM BASIS:
-• SEM-NOTES-01 — Ledger vs Draft Boundary
-• SEM-NR-01    — Behavioural Continuity
+• SEM-AUTH-PM-01 — PM Authority Dominance
+• SEM-EX         — Execution Semantics
+• SEM-NR-01      — Behavioural Continuity
 
-CANON (STAGE 200):
-• Ledger authority remains with parent
-• Draft is a single editable surface
-• Commit is explicit (button only)
-• Close is inert (no commit)
-• UI is synchronised immediately for visibility only
+CANON (STAGE 201):
+• Notes behaviour unchanged (Stage 200)
+• Execution lifecycle unchanged
+• Assignment / Reassignment audited via system markers
 =====================================================================
 */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import { localAssignees } from "../data/localAssignees";
 
@@ -90,7 +89,7 @@ export default function TaskPopup({
   }, [task.executionState]);
 
   /* --------------------------------------------------------------
-     Notes
+     Notes (STAGE 200 — UNCHANGED)
   -------------------------------------------------------------- */
 
   const [draftText, setDraftText] = useState("");
@@ -109,10 +108,11 @@ export default function TaskPopup({
   }
 
   /* --------------------------------------------------------------
-     Assignment
+     Assignment / Reassignment (STAGE 201)
   -------------------------------------------------------------- */
 
   const [assigning, setAssigning] = useState(false);
+  const [reassigning, setReassigning] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
   const [localAssigneeOverride, setLocalAssigneeOverride] = useState(null);
 
@@ -134,14 +134,25 @@ export default function TaskPopup({
     task.assigneeId ??
     "";
 
-  function handleConfirmAssignment() {
+  function confirmAssignment() {
     if (!selectedAssigneeId) return;
 
     const assignee = localAssignees.find(
       (a) => a.id === selectedAssigneeId
     );
 
+    const isReassignment = Boolean(effectiveAssigneeId);
+
     onAssignTask(task.id, selectedAssigneeId);
+
+    const line = systemLine(
+      isReassignment
+        ? `Task reassigned to ${assignee?.displayName || selectedAssigneeId} by PM`
+        : `Task assigned to ${assignee?.displayName || selectedAssigneeId} by PM`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((prev) => [...prev, line]);
 
     setLocalAssigneeOverride({
       id: selectedAssigneeId,
@@ -149,11 +160,18 @@ export default function TaskPopup({
     });
 
     setAssigning(false);
+    setReassigning(false);
+    setSelectedAssigneeId("");
+  }
+
+  function cancelAssignmentChange() {
+    setAssigning(false);
+    setReassigning(false);
     setSelectedAssigneeId("");
   }
 
   /* --------------------------------------------------------------
-     Execution State
+     Execution State (UNCHANGED)
   -------------------------------------------------------------- */
 
   const isAssigned = Boolean(effectiveAssigneeId);
@@ -264,43 +282,57 @@ export default function TaskPopup({
           </div>
         </div>
 
+        {/* ---------------- Footer (STAGE 201 GOVERNED ACTIONS) ---------------- */}
+
         <div
           style={{
             borderTop: "1px solid #ddd",
             padding: "12px",
             display: "flex",
-            gap: "8px",
+            gap: "12px",
             flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
         >
-          {!isAssigned && isPM && !assigning && (
-            <button onClick={() => setAssigning(true)}>Assign task</button>
-          )}
+          {/* Assignment lifecycle (PM only) */}
+          <div style={{ display: "flex", gap: "8px" }}>
+            {!isAssigned && isPM && !assigning && (
+              <button onClick={() => setAssigning(true)}>Assign</button>
+            )}
 
-          {assigning && (
-            <>
-              <select
-                value={selectedAssigneeId}
-                onChange={(e) => setSelectedAssigneeId(e.target.value)}
-              >
-                <option value="">Select assignee…</option>
-                {localAssignees.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.displayName || a.id}
-                  </option>
-                ))}
-              </select>
-              <button onClick={handleConfirmAssignment}>Confirm</button>
-            </>
-          )}
+            {isAssigned && isPM && !reassigning && (
+              <button onClick={() => setReassigning(true)}>Reassign</button>
+            )}
 
-          {showStart && <button onClick={handleStartWork}>Start</button>}
-          {showSubmitted && (
-            <button onClick={handleSubmitted}>Submit</button>
-          )}
-          {showCompleted && (
-            <button onClick={handleCompleted}>Complete</button>
-          )}
+            {(assigning || reassigning) && (
+              <>
+                <select
+                  value={selectedAssigneeId}
+                  onChange={(e) => setSelectedAssigneeId(e.target.value)}
+                >
+                  <option value="">Select assignee…</option>
+                  {localAssignees.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.displayName || a.id}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={confirmAssignment}>Confirm</button>
+                <button onClick={cancelAssignmentChange}>Cancel</button>
+              </>
+            )}
+          </div>
+
+          {/* Execution lifecycle (UNCHANGED) */}
+          <div style={{ display: "flex", gap: "8px" }}>
+            {showStart && <button onClick={handleStartWork}>Start</button>}
+            {showSubmitted && (
+              <button onClick={handleSubmitted}>Submit</button>
+            )}
+            {showCompleted && (
+              <button onClick={handleCompleted}>Complete</button>
+            )}
+          </div>
         </div>
       </div>
     </div>
