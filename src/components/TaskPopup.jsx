@@ -2,22 +2,23 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 211 — Behavioural Reinstatement (Concern-Complete)
+Stage 212 — Notes Semantics & Visual Meaning
 ---------------------------------------------------------------------
 Applied onto:
-baseline-2026-01-26-stage210-taskpopup-reauthorised
+baseline-2026-01-26-stage211-taskpopup-behavioural-reinstatement
 
-AUTHORITISED CONCERNS:
-• Concern 1 — System-authored execution note on "Start work"
-• Concern 4 — Immediate in-popup visual reflection of assignment
-               and execution state (local, ephemeral mirror)
+AUTHORISED CONCERNS (STAGE 212):
+• Concern 1 — Visual & semantic distinction for system-authored
+               execution notes (presentation only)
+• Concern 2 — Visual acknowledgement of committed user notes
+               (presentation only)
 
-SCOPE (STRICT):
-• TaskPopup only
-• No parent changes
-• No authority delegation
-• No new lifecycle states
-• No background refresh
+NON-CHANGES (EXPLICIT):
+• NO behavioural change
+• NO new automation
+• NO authority expansion
+• NO data model change
+• Stage 211 behaviour remains frozen and authoritative
 =====================================================================
 */
 
@@ -36,7 +37,7 @@ export default function TaskPopup({
 }) {
   if (!task) return null;
 
-  /* ---------------- Local UI mirrors (Concern 4) ---------------- */
+  /* ---------------- Local UI mirrors (Stage 211) ---------------- */
 
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId);
   const [localExecutionState, setLocalExecutionState] = useState(
@@ -82,7 +83,7 @@ export default function TaskPopup({
   function handleStartWork() {
     if (!canStartExecution) return;
 
-    // Concern 1: explicit system-authored execution note
+    // Stage 211 — authorised system-authored execution note
     onAddNote(task.id, "[System] Execution started");
 
     // Existing execution trigger
@@ -92,7 +93,7 @@ export default function TaskPopup({
     setLocalExecutionState("IN_PROGRESS");
   }
 
-  /* ---------------- Notes (Stage 200 canon) ---------------- */
+  /* ---------------- Notes ---------------- */
 
   const [draftText, setDraftText] = useState("");
 
@@ -106,6 +107,10 @@ export default function TaskPopup({
   function handleClose() {
     setDraftText("");
     onClose();
+  }
+
+  function isSystemNote(note) {
+    return typeof note === "string" && note.startsWith("[System]");
   }
 
   /* ---------------- Render ---------------- */
@@ -216,7 +221,7 @@ export default function TaskPopup({
             </div>
           )}
 
-          {/* Notes */}
+          {/* ---------------- Notes ---------------- */}
           <div style={{ marginTop: "20px" }}>
             <strong style={{ display: "block", marginBottom: "6px" }}>
               Notes
@@ -224,15 +229,58 @@ export default function TaskPopup({
 
             <div style={{ lineHeight: "1.5" }}>
               {Array.isArray(task.notes) &&
-                task.notes.map((n, i) => (
-                  <div key={i} style={{ marginBottom: "6px" }}>
-                    {n}
-                  </div>
-                ))}
+                task.notes.map((n, i) => {
+                  const system = isSystemNote(n);
+                  const user = !system;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        marginBottom: "6px",
+                        padding: system ? "6px 8px" : "4px 0",
+                        background: system ? "#f5f5f5" : "transparent",
+                        borderLeft: system ? "3px solid #bbb" : "none",
+                        fontSize: system ? "13px" : "14px",
+                        fontStyle: system ? "italic" : "normal",
+                        color: system ? "#444" : "#000",
+                      }}
+                    >
+                      {system && (
+                        <span
+                          style={{
+                            display: "inline-block",
+                            marginRight: "6px",
+                            fontWeight: "bold",
+                            textTransform: "uppercase",
+                            fontSize: "11px",
+                            color: "#666",
+                          }}
+                        >
+                          SYSTEM
+                        </span>
+                      )}
+
+                      {user && (
+                        <span
+                          style={{
+                            display: "inline-block",
+                            marginRight: "6px",
+                            fontSize: "11px",
+                            color: "#777",
+                          }}
+                        >
+                          ✓
+                        </span>
+                      )}
+
+                      {system ? n.replace(/^\[System\]\s*/, "") : n}
+                    </div>
+                  );
+                })}
             </div>
           </div>
 
-          {/* Draft */}
+          {/* ---------------- Draft ---------------- */}
           <div style={{ marginTop: "16px" }}>
             <textarea
               value={draftText}
