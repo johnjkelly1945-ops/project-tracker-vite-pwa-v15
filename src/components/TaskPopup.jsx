@@ -2,17 +2,22 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 210 — Notes Dominance Refinement (Concern 3)
+Stage 211 — Behavioural Reinstatement (Concern-Complete)
 ---------------------------------------------------------------------
 Applied onto:
-baseline-2026-01-22-stage184-summary-wiring-visibility
+baseline-2026-01-26-stage210-taskpopup-reauthorised
+
+AUTHORITISED CONCERNS:
+• Concern 1 — System-authored execution note on "Start work"
+• Concern 4 — Immediate in-popup visual reflection of assignment
+               and execution state (local, ephemeral mirror)
 
 SCOPE (STRICT):
-• Notes visual dominance and readability only
-• Spacing and rhythm refinements
-• NO behavioural changes
-• NO logic changes
-• NO header or footer changes
+• TaskPopup only
+• No parent changes
+• No authority delegation
+• No new lifecycle states
+• No background refresh
 =====================================================================
 */
 
@@ -31,16 +36,28 @@ export default function TaskPopup({
 }) {
   if (!task) return null;
 
-  /* ---------------- Assignment (unchanged) ---------------- */
+  /* ---------------- Local UI mirrors (Concern 4) ---------------- */
+
+  const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId);
+  const [localExecutionState, setLocalExecutionState] = useState(
+    task.executionState || "NOT_STARTED"
+  );
+
+  /* ---------------- Assignment ---------------- */
 
   const [assigning, setAssigning] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
 
-  const isAssigned = Boolean(task.assigneeId);
+  const isAssigned = Boolean(localAssigneeId);
 
   function handleConfirmAssignment() {
     if (!selectedAssigneeId) return;
+
     onAssignTask(task.id, selectedAssigneeId);
+
+    // Immediate visual reflection (local mirror)
+    setLocalAssigneeId(selectedAssigneeId);
+
     setSelectedAssigneeId("");
     setAssigning(false);
   }
@@ -50,12 +67,12 @@ export default function TaskPopup({
     setAssigning(false);
   }
 
-  /* ---------------- Execution start (unchanged) ---------------- */
+  /* ---------------- Execution start ---------------- */
 
   const executionState =
-    (task.executionState || "NOT_STARTED").replace(" ", "_");
+    (localExecutionState || "NOT_STARTED").replace(" ", "_");
 
-  const isAssignee = task.assigneeId === "current-user";
+  const isAssignee = localAssigneeId === "current-user";
 
   const canStartExecution =
     isAssigned &&
@@ -64,7 +81,15 @@ export default function TaskPopup({
 
   function handleStartWork() {
     if (!canStartExecution) return;
+
+    // Concern 1: explicit system-authored execution note
+    onAddNote(task.id, "[System] Execution started");
+
+    // Existing execution trigger
     onStartExecution(task.id);
+
+    // Immediate visual reflection (local mirror)
+    setLocalExecutionState("IN_PROGRESS");
   }
 
   /* ---------------- Notes (Stage 200 canon) ---------------- */
@@ -115,10 +140,16 @@ export default function TaskPopup({
             borderBottom: "1px solid #e5e5e5",
           }}
         >
-          <CanonicalTaskPopupHeader task={task} />
+          <CanonicalTaskPopupHeader
+            task={{
+              ...task,
+              assigneeId: localAssigneeId,
+              executionState: localExecutionState,
+            }}
+          />
         </div>
 
-        {/* ---------------- Body (Notes-dominant) ---------------- */}
+        {/* ---------------- Body ---------------- */}
         <div
           style={{
             padding: "20px 16px",
@@ -173,7 +204,7 @@ export default function TaskPopup({
           {isAssigned && (
             <div style={{ marginTop: "12px" }}>
               <strong>Assigned:</strong>{" "}
-              {task.assigneeLabel || task.assigneeId}
+              {task.assigneeLabel || localAssigneeId}
             </div>
           )}
 
@@ -185,7 +216,7 @@ export default function TaskPopup({
             </div>
           )}
 
-          {/* Notes content */}
+          {/* Notes */}
           <div style={{ marginTop: "20px" }}>
             <strong style={{ display: "block", marginBottom: "6px" }}>
               Notes
@@ -201,7 +232,7 @@ export default function TaskPopup({
             </div>
           </div>
 
-          {/* Draft + commit */}
+          {/* Draft */}
           <div style={{ marginTop: "16px" }}>
             <textarea
               value={draftText}
@@ -217,7 +248,7 @@ export default function TaskPopup({
           </div>
         </div>
 
-        {/* ---------------- Footer (Actions only) ---------------- */}
+        {/* ---------------- Footer ---------------- */}
         <div
           style={{
             padding: "16px",
