@@ -1,26 +1,5 @@
 // @ts-nocheck
-/*
-=====================================================================
-METRA — App.jsx
-Stage 184-B — Summary Wiring (Creation → Visibility)
----------------------------------------------------------------------
-CHANGE (STAGE 184-B):
-• Wire canonically created summaries into PreProject
-• Data propagation only
-• No selection, no activation, no lifecycle semantics
-
-HYGIENE CORRECTION:
-• Remove duplicate onCreateTask prop (no behavioural effect)
-
-INVARIANTS (PRESERVED):
-• Footer remains sole creation authority
-• No new state introduced
-• No authority expanded
-• No behavioural change beyond visibility
-=====================================================================
-*/
-
-import React, { useState } from "react";
+import { useState } from "react";
 
 import Sidebar from "./components/Sidebar";
 import ModuleHeader from "./components/ModuleHeader";
@@ -29,131 +8,173 @@ import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
 import { localAssignees } from "./data/localAssignees";
 
-export default function App() {
-  /* ===================== WORKSPACE AUTHORITY ===================== */
+/*
+=====================================================================
+METRA — App.jsx
+Stage 207-A (Recovered, Final) — Workspace + Creation Surface
+---------------------------------------------------------------------
+• DualPane owns navigation and return arrows
+• Sidebar explicitly wired
+• PreProjectFooter owns creation affordances
+• App owns creation modal rendering
+=====================================================================
+*/
 
-  const [workspaceMode, setWorkspaceMode] = useState("dual"); // "dual" | "single"
-  const [focusedPane, setFocusedPane] = useState(null);       // "management" | "development" | null
+export default function App() {
+  const [workspaceMode, setWorkspaceMode] = useState("dual");
+  const [focusedPane, setFocusedPane] = useState(null);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  const isReadOnly = workspaceMode === "dual" || !focusedPane;
 
   /* ===================== DATA ===================== */
 
-  const [summaries, setSummaries] = useState([]);
-  const [tasks, setTasks] = useState([]);
+  const [devSummaries, setDevSummaries] = useState([]);
+  const [devTasks, setDevTasks] = useState([]);
+
+  const [mgmtSummaries, setMgmtSummaries] = useState([]);
+  const [mgmtTasks, setMgmtTasks] = useState([]);
+
   const [activeTask, setActiveTask] = useState(null);
-
-  /* ===================== SIDEBAR UI ===================== */
-
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
-
-  /* ===================== PANE FOCUS ===================== */
-
-  function onFocusPane(pane) {
-    setWorkspaceMode("single");
-    setFocusedPane(pane);
-  }
-
-  function onReturnToDual() {
-    setWorkspaceMode("dual");
-    setFocusedPane(null);
-  }
+  const [selectedSummaryId, setSelectedSummaryId] = useState(null);
 
   /* ===================== TASK CREATION ===================== */
 
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+
+  const isDev = focusedPane === "development";
+
+  const summaries = isDev ? devSummaries : mgmtSummaries;
+  const setSummaries = isDev ? setDevSummaries : setMgmtSummaries;
+
+  const tasks = isDev ? devTasks : mgmtTasks;
+  const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+  /* ===================== NAV ===================== */
+
+  function handleFocusPane(pane) {
+    setWorkspaceMode("single");
+    setFocusedPane(pane);
+    setSelectedSummaryId(null);
+    setActiveTask(null);
+  }
+
+  function returnToDual() {
+    setWorkspaceMode("dual");
+    setFocusedPane(null);
+    setSelectedSummaryId(null);
+    setActiveTask(null);
+  }
+
+  /* ===================== CREATION ===================== */
+
   function onCreateTask() {
-    const id = `task-${Date.now()}`;
-    const newTask = {
-      id,
-      title: "New Task",
+    if (isReadOnly) return;
+    setNewTaskTitle("");
+    setCreateTaskOpen(true);
+  }
+
+  function confirmCreateTask() {
+    const title = newTaskTitle.trim();
+    if (!title) return;
+
+    const task = {
+      id: `task-${Date.now()}`,
+      title,
       notes: [],
       summaryId: null,
       executionState: "NOT_STARTED",
     };
 
-    setTasks((current) => [...current, newTask]);
-    setActiveTask(newTask);
+    setTasks((c) => [...c, task]);
+    setCreateTaskOpen(false);
   }
 
-  /* ===================== SUMMARY CREATION (AUTHORITATIVE) ===================== */
+  function cancelCreateTask() {
+    const confirmAbort = window.confirm("Discard task creation?");
+    if (!confirmAbort) return;
+    setCreateTaskOpen(false);
+  }
 
   function onCreateSummary() {
-    const id = `summary-${Date.now()}`;
-    const newSummary = {
-      id,
-      name: "New Summary",
-    };
+    if (isReadOnly) return;
+    const title = window.prompt("Enter summary name:");
+    if (!title || !title.trim()) return;
 
-    setSummaries((current) => [...current, newSummary]);
+    setSummaries((c) => [
+      ...c,
+      { id: `summary-${Date.now()}`, title: title.trim() },
+    ]);
   }
 
-  /* ===================== POPUP CONTROL ===================== */
+  /* ===================== TASK POPUP ===================== */
 
   function onOpenTask(task) {
+    if (isReadOnly) return;
     setActiveTask(task);
   }
 
-  function onCloseTask() {
-    setActiveTask(null);
-  }
-
-  /* ===================== G3 ASSIGNMENT ===================== */
-
   function onAssignTask(taskId, assigneeId) {
-    setTasks((current) => {
-      const idx = current.findIndex((t) => t.id === taskId);
-      if (idx === -1) return current;
-
-      const task = current[idx];
-      if (task.assigneeId) return current;
-
-      const assignee = localAssignees.find((a) => a.id === assigneeId);
-
-      const updatedTask = {
-        ...task,
-        assigneeId,
-        assigneeLabel: assignee ? assignee.displayName : assigneeId,
-        assignedAt: new Date().toISOString(),
-      };
-
-      const next = [...current];
-      next[idx] = updatedTask;
-      return next;
-    });
+    if (isReadOnly) return;
+    setTasks((c) =>
+      c.map((t) => {
+        if (t.id !== taskId || t.assigneeId) return t;
+        const a = localAssignees.find((x) => x.id === assigneeId);
+        return {
+          ...t,
+          assigneeId,
+          assigneeLabel: a ? a.displayName : assigneeId,
+        };
+      })
+    );
   }
-
-  /* ===================== NOTES ===================== */
 
   function onAddNote(taskId, note) {
-    setTasks((current) =>
-      current.map((t) =>
-        t.id === taskId
-          ? { ...t, notes: [...(t.notes || []), note] }
+    if (isReadOnly) return;
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, notes: [...(t.notes || []), note] } : t
+      )
+    );
+  }
+
+  function onStartExecution(taskId) {
+    if (isReadOnly) return;
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId && t.executionState === "NOT_STARTED"
+          ? { ...t, executionState: "IN_PROGRESS" }
           : t
       )
     );
   }
 
-  /* ===================== G6 EXECUTION START ===================== */
+  /* ===================== SURFACES ===================== */
 
-  function onStartExecution(taskId) {
-    setTasks((current) => {
-      const idx = current.findIndex((t) => t.id === taskId);
-      if (idx === -1) return current;
+  const mgmtBody = (
+    <PreProject
+      summaries={mgmtSummaries}
+      tasks={mgmtTasks}
+      onOpenTask={onOpenTask}
+      canCreateTask={!isReadOnly}
+      onCreateTask={onCreateTask}
+      canCreateSummary={!isReadOnly}
+      onCreateSummary={onCreateSummary}
+    />
+  );
 
-      const task = current[idx];
-      if (task.executionState !== "NOT_STARTED") return current;
-
-      const updatedTask = {
-        ...task,
-        executionState: "IN_PROGRESS",
-        startedAt: new Date().toISOString(),
-        startedBy: "current-user",
-      };
-
-      const next = [...current];
-      next[idx] = updatedTask;
-      return next;
-    });
-  }
+  const devBody = (
+    <PreProject
+      summaries={devSummaries}
+      tasks={devTasks}
+      onOpenTask={onOpenTask}
+      canCreateTask={!isReadOnly}
+      onCreateTask={onCreateTask}
+      canCreateSummary={!isReadOnly}
+      onCreateSummary={onCreateSummary}
+    />
+  );
 
   /* ===================== RENDER ===================== */
 
@@ -161,74 +182,50 @@ export default function App() {
     <>
       <ModuleHeader />
 
-      <div
-        style={{
-          display: "flex",
-          height: "calc(100vh - 56px)",
-          overflow: "hidden",
-        }}
-      >
+      <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            overflow: "hidden",
-          }}
-        >
+        <div style={{ flex: 1 }}>
           <DualPane
             mode={workspaceMode}
             focusedPane={focusedPane}
-            onFocusPane={onFocusPane}
-            onReturnToDual={onReturnToDual}
-            managementBody={
-              workspaceMode === "single" && focusedPane === "management" ? (
-                <PreProject
-                  tasks={tasks}
-                  summaries={summaries}
-                  onOpenTask={onOpenTask}
-                  canCreateTask={true}
-                  onCreateTask={onCreateTask}
-                  canCreateSummary={true}
-                  onCreateSummary={onCreateSummary}
-                />
-              ) : (
-                <>
-                  <p>No tasks in workspace.</p>
-                  <p>Management inspection view.</p>
-                </>
-              )
-            }
-            developmentBody={
-              workspaceMode === "single" && focusedPane === "development" ? (
-                <PreProject
-                  tasks={tasks}
-                  summaries={summaries}
-                  onOpenTask={onOpenTask}
-                  canCreateTask={true}
-                  onCreateTask={onCreateTask}
-                  canCreateSummary={true}
-                  onCreateSummary={onCreateSummary}
-                />
-              ) : (
-                <>
-                  <p>No tasks in workspace.</p>
-                  <p>Development inspection view.</p>
-                </>
-              )
-            }
+            onFocusPane={handleFocusPane}
+            onReturnToDual={returnToDual}
+            managementBody={mgmtBody}
+            developmentBody={devBody}
           />
         </div>
       </div>
 
-      {activeTask && (
+      {createTaskOpen && !isReadOnly && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000 }}>
+          <div style={{ background: "#fff", padding: 16, width: 360, margin: "20vh auto", borderRadius: 6 }}>
+            <h3>Create Task</h3>
+
+            <input
+              autoFocus
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              style={{ width: "100%", marginBottom: 12 }}
+            />
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button type="button" onClick={cancelCreateTask}>Cancel</button>
+              <button onClick={confirmCreateTask} disabled={!newTaskTitle.trim()}>
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTask && !isReadOnly && (
         <TaskPopup
           task={activeTask}
-          onClose={onCloseTask}
+          onClose={() => setActiveTask(null)}
           onAssignTask={onAssignTask}
           onAddNote={onAddNote}
           onStartExecution={onStartExecution}
