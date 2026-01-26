@@ -2,18 +2,17 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 200 (Recovered) — Canonical Notes Commit Semantics
+Stage 210 — Notes Dominance Refinement (Concern 3)
 ---------------------------------------------------------------------
 Applied onto:
 baseline-2026-01-22-stage184-summary-wiring-visibility
 
-CANON:
-• Single draft surface
-• Explicit commit only
-• Close is inert (no commit)
-• Ledger authority remains with parent
-• No duplication
-• No execution lifecycle expansion
+SCOPE (STRICT):
+• Notes visual dominance and readability only
+• Spacing and rhythm refinements
+• NO behavioural changes
+• NO logic changes
+• NO header or footer changes
 =====================================================================
 */
 
@@ -103,85 +102,130 @@ export default function TaskPopup({
           background: "#fff",
           width: "520px",
           maxHeight: "80vh",
-          overflowY: "auto",
           borderRadius: "6px",
-          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <CanonicalTaskPopupHeader task={task} />
+        {/* ---------------- Header ---------------- */}
+        <div
+          style={{
+            padding: "14px 16px",
+            background: "#fafafa",
+            borderBottom: "1px solid #e5e5e5",
+          }}
+        >
+          <CanonicalTaskPopupHeader task={task} />
+        </div>
 
-        {!isAssigned && !assigning && (
-          <button onClick={() => setAssigning(true)}>
-            Assign task
-          </button>
-        )}
-
-        {!isAssigned && assigning && (
-          <div style={{ marginTop: "8px" }}>
-            <select
-              value={selectedAssigneeId}
-              onChange={(e) => setSelectedAssigneeId(e.target.value)}
-            >
-              <option value="">— Select —</option>
-              {localAssignees.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.displayName}
-                </option>
-              ))}
-            </select>
-
-            <div style={{ marginTop: "6px" }}>
-              <button
-                disabled={!selectedAssigneeId}
-                onClick={handleConfirmAssignment}
-              >
-                Confirm assignment
-              </button>
-              <button onClick={handleCancelAssignment}>
-                Cancel
-              </button>
-            </div>
-
-            <div style={{ marginTop: "6px", fontSize: "12px", color: "#555" }}>
-              Assignment locks task identity and cannot be undone.
-            </div>
-          </div>
-        )}
-
-        {isAssigned && (
-          <div style={{ marginTop: "8px" }}>
-            <strong>Assigned:</strong>{" "}
-            {task.assigneeLabel || task.assigneeId}
-          </div>
-        )}
-
-        {canStartExecution && (
-          <div style={{ marginTop: "12px" }}>
-            <button onClick={handleStartWork}>
-              Start work
+        {/* ---------------- Body (Notes-dominant) ---------------- */}
+        <div
+          style={{
+            padding: "20px 16px",
+            overflowY: "auto",
+            flex: 1,
+          }}
+        >
+          {!isAssigned && !assigning && (
+            <button onClick={() => setAssigning(true)}>
+              Assign task
             </button>
+          )}
+
+          {!isAssigned && assigning && (
+            <div style={{ marginTop: "12px" }}>
+              <select
+                value={selectedAssigneeId}
+                onChange={(e) => setSelectedAssigneeId(e.target.value)}
+              >
+                <option value="">— Select —</option>
+                {localAssignees.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.displayName}
+                  </option>
+                ))}
+              </select>
+
+              <div style={{ marginTop: "8px" }}>
+                <button
+                  disabled={!selectedAssigneeId}
+                  onClick={handleConfirmAssignment}
+                >
+                  Confirm assignment
+                </button>
+                <button onClick={handleCancelAssignment}>
+                  Cancel
+                </button>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "8px",
+                  fontSize: "12px",
+                  color: "#555",
+                }}
+              >
+                Assignment locks task identity and cannot be undone.
+              </div>
+            </div>
+          )}
+
+          {isAssigned && (
+            <div style={{ marginTop: "12px" }}>
+              <strong>Assigned:</strong>{" "}
+              {task.assigneeLabel || task.assigneeId}
+            </div>
+          )}
+
+          {canStartExecution && (
+            <div style={{ marginTop: "16px" }}>
+              <button onClick={handleStartWork}>
+                Start work
+              </button>
+            </div>
+          )}
+
+          {/* Notes content */}
+          <div style={{ marginTop: "20px" }}>
+            <strong style={{ display: "block", marginBottom: "6px" }}>
+              Notes
+            </strong>
+
+            <div style={{ lineHeight: "1.5" }}>
+              {Array.isArray(task.notes) &&
+                task.notes.map((n, i) => (
+                  <div key={i} style={{ marginBottom: "6px" }}>
+                    {n}
+                  </div>
+                ))}
+            </div>
           </div>
-        )}
 
-        <div style={{ marginTop: "12px" }}>
-          <strong>Notes</strong>
-          {Array.isArray(task.notes) &&
-            task.notes.map((n, i) => <div key={i}>{n}</div>)}
+          {/* Draft + commit */}
+          <div style={{ marginTop: "16px" }}>
+            <textarea
+              value={draftText}
+              onChange={(e) => setDraftText(e.target.value)}
+              placeholder="Draft note (not committed)"
+              style={{ width: "100%" }}
+            />
+            <div style={{ marginTop: "6px" }}>
+              <button onClick={commitDraft}>
+                Commit note
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div style={{ marginTop: "12px" }}>
-          <textarea
-            value={draftText}
-            onChange={(e) => setDraftText(e.target.value)}
-            placeholder="Draft note (not committed)"
-            style={{ width: "100%" }}
-          />
-          <button onClick={commitDraft}>
-            Commit note
-          </button>
+        {/* ---------------- Footer (Actions only) ---------------- */}
+        <div
+          style={{
+            padding: "16px",
+            borderTop: "1px solid #eee",
+          }}
+        >
+          <button onClick={handleClose}>Close</button>
         </div>
-
-        <button onClick={handleClose}>Close</button>
       </div>
     </div>
   );
