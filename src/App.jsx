@@ -11,12 +11,12 @@ import { localAssignees } from "./data/localAssignees";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 207-A (Recovered, Final) — Workspace + Creation Surface
+Stage 213 — TaskPopup ActiveTask Authority Synchronisation
 ---------------------------------------------------------------------
-• DualPane owns navigation and return arrows
-• Sidebar explicitly wired
-• PreProjectFooter owns creation affordances
-• App owns creation modal rendering
+• Restores single-source authority for TaskPopup
+• Popup task is derived from canonical tasks[] by ID
+• No UI or semantic changes
+• Behavioural repair only
 =====================================================================
 */
 
@@ -35,7 +35,10 @@ export default function App() {
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
   const [mgmtTasks, setMgmtTasks] = useState([]);
 
-  const [activeTask, setActiveTask] = useState(null);
+  // AUTHORITATIVE CHANGE (Stage 213):
+  // Store only the active task ID; derive the task from canonical tasks[]
+  const [activeTaskId, setActiveTaskId] = useState(null);
+
   const [selectedSummaryId, setSelectedSummaryId] = useState(null);
 
   /* ===================== TASK CREATION ===================== */
@@ -57,14 +60,14 @@ export default function App() {
     setWorkspaceMode("single");
     setFocusedPane(pane);
     setSelectedSummaryId(null);
-    setActiveTask(null);
+    setActiveTaskId(null);
   }
 
   function returnToDual() {
     setWorkspaceMode("dual");
     setFocusedPane(null);
     setSelectedSummaryId(null);
-    setActiveTask(null);
+    setActiveTaskId(null);
   }
 
   /* ===================== CREATION ===================== */
@@ -112,7 +115,8 @@ export default function App() {
 
   function onOpenTask(task) {
     if (isReadOnly) return;
-    setActiveTask(task);
+    // Store ID only; popup derives from canonical tasks[]
+    setActiveTaskId(task.id);
   }
 
   function onAssignTask(taskId, assigneeId) {
@@ -176,6 +180,11 @@ export default function App() {
     />
   );
 
+  /* ===================== DERIVED AUTHORITY ===================== */
+
+  const activeTask =
+    activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
+
   /* ===================== RENDER ===================== */
 
   return (
@@ -201,8 +210,23 @@ export default function App() {
       </div>
 
       {createTaskOpen && !isReadOnly && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000 }}>
-          <div style={{ background: "#fff", padding: 16, width: 360, margin: "20vh auto", borderRadius: 6 }}>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: 16,
+              width: 360,
+              margin: "20vh auto",
+              borderRadius: 6,
+            }}
+          >
             <h3>Create Task</h3>
 
             <input
@@ -213,8 +237,13 @@ export default function App() {
             />
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button type="button" onClick={cancelCreateTask}>Cancel</button>
-              <button onClick={confirmCreateTask} disabled={!newTaskTitle.trim()}>
+              <button type="button" onClick={cancelCreateTask}>
+                Cancel
+              </button>
+              <button
+                onClick={confirmCreateTask}
+                disabled={!newTaskTitle.trim()}
+              >
                 Create
               </button>
             </div>
@@ -225,7 +254,7 @@ export default function App() {
       {activeTask && !isReadOnly && (
         <TaskPopup
           task={activeTask}
-          onClose={() => setActiveTask(null)}
+          onClose={() => setActiveTaskId(null)}
           onAssignTask={onAssignTask}
           onAddNote={onAddNote}
           onStartExecution={onStartExecution}
