@@ -6,20 +6,21 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 184-B — Summary Wiring (Presentation Correction)
+Stage 216 — Remedial Completion
 ---------------------------------------------------------------------
-INVARIANTS (PRESERVED):
-• Footer renders exactly once
-• Footer exists only in true single-pane mode
-• Footer is outside all scroll containers
-• Scroll ownership is explicit and localised
-• No footer logic moves upward
-• No new authority introduced
-• No interaction introduced
+PURPOSE:
+• Restore visibility of summaries after authorised creation
+• Visibility only — no interaction, no selection, no filtering
 
-CHANGE (STAGE 184-B):
-• Remove unauthorised structural header
-• Preserve summary placeholders as inert text only
+EXPLICIT NON-CHANGES:
+• No summary selection state
+• No task filtering
+• No click handlers
+• No authority introduction
+• No semantic change
+
+RATIONALE:
+Creation without observable manifestation is prohibited at baseline.
 =====================================================================
 */
 
@@ -42,9 +43,8 @@ export default function PreProject({
         borderTop: "1px solid #ccc",
       }}
     >
-      {/* ================= BODY REGION (NON-SCROLL) ================= */}
+      {/* ================= BODY REGION ================= */}
       <div
-        className="single-pane-body-region"
         style={{
           flex: 1,
           display: "flex",
@@ -52,28 +52,33 @@ export default function PreProject({
           overflow: "hidden",
         }}
       >
-        {/* ================= SCROLL REGION (SOLE SCROLLER) ================= */}
+        {/* ================= SCROLL REGION ================= */}
         <div
-          className="single-pane-scroll-region"
           style={{
             flex: 1,
             padding: "14px",
             overflowY: "auto",
           }}
         >
-          {/* ================= SUMMARY PLACEHOLDERS (INSPECTION ONLY) ================= */}
-          {summaries.length > 0 &&
-            summaries.map((summary) => (
-              <div
-                key={summary.id}
-                style={{
-                  padding: "4px 0",
-                  marginBottom: "4px",
-                }}
-              >
-                {summary.title || "Untitled summary"}
-              </div>
-            ))}
+          {/* ================= SUMMARIES (VISIBILITY ONLY) ================= */}
+          {summaries.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              {summaries.map((summary) => (
+                <div
+                  key={summary.id}
+                  style={{
+                    padding: "6px 8px",
+                    marginBottom: "6px",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    background: "#fafafa",
+                  }}
+                >
+                  {summary.title || "Untitled summary"}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* ================= TASK REGION ================= */}
           {tasks.length === 0 ? (
@@ -93,9 +98,8 @@ export default function PreProject({
         </div>
       </div>
 
-      {/* ================= FOOTER REGION (LOCKED) ================= */}
+      {/* ================= FOOTER (LOCKED) ================= */}
       <div
-        className="single-pane-footer-region"
         style={{
           borderTop: "1px solid #ddd",
           background: "#f5f5f5",
