@@ -6,12 +6,12 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 217 — Canonical Creation Surface Restored
+Stage 219 — Summary-Grouped Task Rendering (Visibility Only)
 ---------------------------------------------------------------------
-• No inline task creation
-• Footer owns Create Task entry
-• Visibility-only summaries
-• No authority introduced
+• Summaries render chronologically
+• Tasks associated with summaries render beneath them
+• Orphan tasks remain rendered chronologically as before
+• Visibility only — no interaction, no authority
 =====================================================================
 */
 
@@ -43,11 +43,10 @@ export default function PreProject({
         }}
       >
         {/* ================= SUMMARIES (VISIBILITY ONLY) ================= */}
-        {summaries.length > 0 && (
-          <div style={{ marginBottom: "16px" }}>
-            {summaries.map((summary) => (
+        {summaries.length > 0 &&
+          summaries.map((summary) => (
+            <div key={summary.id} style={{ marginBottom: "16px" }}>
               <div
-                key={summary.id}
                 style={{
                   padding: "6px 8px",
                   marginBottom: "6px",
@@ -58,25 +57,29 @@ export default function PreProject({
               >
                 {summary.title || "Untitled summary"}
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* ================= TASKS ================= */}
-        {tasks.length === 0 ? (
-          <>
-            <p>No tasks in workspace.</p>
-            <p>Operational view.</p>
-          </>
-        ) : (
-          tasks.map((task) => (
+              {tasks
+                .filter((t) => t.summaryId === summary.id)
+                .map((task) => (
+                  <CanonicalTaskRow
+                    key={task.id}
+                    task={task}
+                    onOpenTask={onOpenTask}
+                  />
+                ))}
+            </div>
+          ))}
+
+        {/* ================= ORPHAN TASKS (UNCHANGED) ================= */}
+        {tasks
+          .filter((t) => !t.summaryId)
+          .map((task) => (
             <CanonicalTaskRow
               key={task.id}
               task={task}
               onOpenTask={onOpenTask}
             />
-          ))
-        )}
+          ))}
       </div>
 
       {/* ================= FOOTER (CANONICAL) ================= */}
