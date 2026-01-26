@@ -6,21 +6,12 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 216 — Remedial Completion
+Stage 217 — Canonical Creation Surface Restored
 ---------------------------------------------------------------------
-PURPOSE:
-• Restore visibility of summaries after authorised creation
-• Visibility only — no interaction, no selection, no filtering
-
-EXPLICIT NON-CHANGES:
-• No summary selection state
-• No task filtering
-• No click handlers
-• No authority introduction
-• No semantic change
-
-RATIONALE:
-Creation without observable manifestation is prohibited at baseline.
+• No inline task creation
+• Footer owns Create Task entry
+• Visibility-only summaries
+• No authority introduced
 =====================================================================
 */
 
@@ -43,62 +34,52 @@ export default function PreProject({
         borderTop: "1px solid #ccc",
       }}
     >
-      {/* ================= BODY REGION ================= */}
+      {/* ================= BODY ================= */}
       <div
         style={{
           flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
+          padding: "14px",
+          overflowY: "auto",
         }}
       >
-        {/* ================= SCROLL REGION ================= */}
-        <div
-          style={{
-            flex: 1,
-            padding: "14px",
-            overflowY: "auto",
-          }}
-        >
-          {/* ================= SUMMARIES (VISIBILITY ONLY) ================= */}
-          {summaries.length > 0 && (
-            <div style={{ marginBottom: "16px" }}>
-              {summaries.map((summary) => (
-                <div
-                  key={summary.id}
-                  style={{
-                    padding: "6px 8px",
-                    marginBottom: "6px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    background: "#fafafa",
-                  }}
-                >
-                  {summary.title || "Untitled summary"}
-                </div>
-              ))}
-            </div>
-          )}
+        {/* ================= SUMMARIES (VISIBILITY ONLY) ================= */}
+        {summaries.length > 0 && (
+          <div style={{ marginBottom: "16px" }}>
+            {summaries.map((summary) => (
+              <div
+                key={summary.id}
+                style={{
+                  padding: "6px 8px",
+                  marginBottom: "6px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  background: "#fafafa",
+                }}
+              >
+                {summary.title || "Untitled summary"}
+              </div>
+            ))}
+          </div>
+        )}
 
-          {/* ================= TASK REGION ================= */}
-          {tasks.length === 0 ? (
-            <>
-              <p>No tasks in workspace.</p>
-              <p>Operational view.</p>
-            </>
-          ) : (
-            tasks.map((task) => (
-              <CanonicalTaskRow
-                key={task.id}
-                task={task}
-                onOpenTask={onOpenTask}
-              />
-            ))
-          )}
-        </div>
+        {/* ================= TASKS ================= */}
+        {tasks.length === 0 ? (
+          <>
+            <p>No tasks in workspace.</p>
+            <p>Operational view.</p>
+          </>
+        ) : (
+          tasks.map((task) => (
+            <CanonicalTaskRow
+              key={task.id}
+              task={task}
+              onOpenTask={onOpenTask}
+            />
+          ))
+        )}
       </div>
 
-      {/* ================= FOOTER (LOCKED) ================= */}
+      {/* ================= FOOTER (CANONICAL) ================= */}
       <div
         style={{
           borderTop: "1px solid #ddd",

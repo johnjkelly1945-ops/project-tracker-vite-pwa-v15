@@ -11,13 +11,12 @@ import { localAssignees } from "./data/localAssignees";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 216 — Summary Interaction & Task–Summary Association Restoration
-(REMEDIAL — Creation Authority Reinstatement)
+Stage 217 — Canonical Task Creation Restoration
 ---------------------------------------------------------------------
-• Restores task and summary creation wiring
-• No new semantics
-• No authority expansion
-• Pure regression repair prior to baseline
+• Mandatory naming before instantiation
+• Tasks created as orphans
+• Summary association deferred to TaskPopup
+• No creation-time association
 =====================================================================
 */
 
@@ -36,7 +35,6 @@ export default function App() {
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
   const [mgmtTasks, setMgmtTasks] = useState([]);
 
-  // Stage 213 — authoritative popup linkage
   const [activeTaskId, setActiveTaskId] = useState(null);
 
   const isDev = focusedPane === "development";
@@ -73,7 +71,7 @@ export default function App() {
       id: `task-${Date.now()}`,
       title: title.trim(),
       notes: [],
-      summaryId: null,
+      summaryId: null, // orphan by default (CANON)
       executionState: "NOT_STARTED",
     };
 
@@ -136,7 +134,7 @@ export default function App() {
     );
   }
 
-  // Stage 216 — authorised post-creation association
+  // Post-creation association (unchanged, canonical)
   function onChangeTaskSummary(taskId, summaryId) {
     if (isReadOnly) return;
     setTasks((c) =>
