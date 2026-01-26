@@ -2,23 +2,12 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 212 — Notes Semantics & Visual Meaning
+Stage 218 — Summary Association UI Restoration (Repeat Corrective)
 ---------------------------------------------------------------------
-Applied onto:
-baseline-2026-01-26-stage211-taskpopup-behavioural-reinstatement
-
-AUTHORISED CONCERNS (STAGE 212):
-• Concern 1 — Visual & semantic distinction for system-authored
-               execution notes (presentation only)
-• Concern 2 — Visual acknowledgement of committed user notes
-               (presentation only)
-
-NON-CHANGES (EXPLICIT):
-• NO behavioural change
-• NO new automation
-• NO authority expansion
-• NO data model change
-• Stage 211 behaviour remains frozen and authoritative
+• Dropdown expresses intent only
+• Explicit Confirm / Cancel required for mutation
+• No auto-apply
+• No authority held locally
 =====================================================================
 */
 
@@ -37,7 +26,7 @@ export default function TaskPopup({
 }) {
   if (!task) return null;
 
-  /* ---------------- Local UI mirrors (Stage 211) ---------------- */
+  /* ---------------- Local mirrors ---------------- */
 
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId);
   const [localExecutionState, setLocalExecutionState] = useState(
@@ -53,12 +42,8 @@ export default function TaskPopup({
 
   function handleConfirmAssignment() {
     if (!selectedAssigneeId) return;
-
     onAssignTask(task.id, selectedAssigneeId);
-
-    // Immediate visual reflection (local mirror)
     setLocalAssigneeId(selectedAssigneeId);
-
     setSelectedAssigneeId("");
     setAssigning(false);
   }
@@ -68,7 +53,7 @@ export default function TaskPopup({
     setAssigning(false);
   }
 
-  /* ---------------- Execution start ---------------- */
+  /* ---------------- Execution ---------------- */
 
   const executionState =
     (localExecutionState || "NOT_STARTED").replace(" ", "_");
@@ -82,15 +67,29 @@ export default function TaskPopup({
 
   function handleStartWork() {
     if (!canStartExecution) return;
-
-    // Stage 211 — authorised system-authored execution note
     onAddNote(task.id, "[System] Execution started");
-
-    // Existing execution trigger
     onStartExecution(task.id);
-
-    // Immediate visual reflection (local mirror)
     setLocalExecutionState("IN_PROGRESS");
+  }
+
+  /* ---------------- Summary Association ---------------- */
+
+  const currentSummaryId = task.summaryId || "";
+  const [summaryEditing, setSummaryEditing] = useState(false);
+  const [selectedSummaryId, setSelectedSummaryId] = useState(
+    currentSummaryId
+  );
+
+  function confirmSummaryAssociation() {
+    if (selectedSummaryId !== currentSummaryId) {
+      onChangeTaskSummary(task.id, selectedSummaryId || null);
+    }
+    setSummaryEditing(false);
+  }
+
+  function cancelSummaryAssociation() {
+    setSelectedSummaryId(currentSummaryId);
+    setSummaryEditing(false);
   }
 
   /* ---------------- Notes ---------------- */
@@ -162,6 +161,49 @@ export default function TaskPopup({
             flex: 1,
           }}
         >
+          {/* -------- Summary Association -------- */}
+          <div style={{ marginBottom: "16px" }}>
+            <strong>Summary</strong>
+
+            {!summaryEditing && (
+              <div style={{ marginTop: "6px" }}>
+                <div style={{ marginBottom: "6px" }}>
+                  {summaries.find((s) => s.id === currentSummaryId)?.title ||
+                    "Unassigned"}
+                </div>
+                <button onClick={() => setSummaryEditing(true)}>
+                  Associate with summary
+                </button>
+              </div>
+            )}
+
+            {summaryEditing && (
+              <div style={{ marginTop: "6px" }}>
+                <select
+                  value={selectedSummaryId}
+                  onChange={(e) => setSelectedSummaryId(e.target.value)}
+                >
+                  <option value="">Unassigned</option>
+                  {summaries.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title}
+                    </option>
+                  ))}
+                </select>
+
+                <div style={{ marginTop: "8px" }}>
+                  <button onClick={confirmSummaryAssociation}>
+                    Confirm association
+                  </button>
+                  <button onClick={cancelSummaryAssociation}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* -------- Assignment -------- */}
           {!isAssigned && !assigning && (
             <button onClick={() => setAssigning(true)}>
               Assign task
@@ -193,16 +235,6 @@ export default function TaskPopup({
                   Cancel
                 </button>
               </div>
-
-              <div
-                style={{
-                  marginTop: "8px",
-                  fontSize: "12px",
-                  color: "#555",
-                }}
-              >
-                Assignment locks task identity and cannot be undone.
-              </div>
             </div>
           )}
 
@@ -231,7 +263,6 @@ export default function TaskPopup({
               {Array.isArray(task.notes) &&
                 task.notes.map((n, i) => {
                   const system = isSystemNote(n);
-                  const user = !system;
                   return (
                     <div
                       key={i}
@@ -240,39 +271,9 @@ export default function TaskPopup({
                         padding: system ? "6px 8px" : "4px 0",
                         background: system ? "#f5f5f5" : "transparent",
                         borderLeft: system ? "3px solid #bbb" : "none",
-                        fontSize: system ? "13px" : "14px",
                         fontStyle: system ? "italic" : "normal",
-                        color: system ? "#444" : "#000",
                       }}
                     >
-                      {system && (
-                        <span
-                          style={{
-                            display: "inline-block",
-                            marginRight: "6px",
-                            fontWeight: "bold",
-                            textTransform: "uppercase",
-                            fontSize: "11px",
-                            color: "#666",
-                          }}
-                        >
-                          SYSTEM
-                        </span>
-                      )}
-
-                      {user && (
-                        <span
-                          style={{
-                            display: "inline-block",
-                            marginRight: "6px",
-                            fontSize: "11px",
-                            color: "#777",
-                          }}
-                        >
-                          ✓
-                        </span>
-                      )}
-
                       {system ? n.replace(/^\[System\]\s*/, "") : n}
                     </div>
                   );
