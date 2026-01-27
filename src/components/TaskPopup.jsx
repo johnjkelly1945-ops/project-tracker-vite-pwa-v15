@@ -2,11 +2,11 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 226 — Notes Readability & Vertical Spacing (REPAIR)
+Stage 227 — Footer Authority Finalisation & Control Relocation
 ---------------------------------------------------------------------
-• Restores Stage 225 Notes viewport structure verbatim
-• Adds vertical spacing between canonical note entries only
-• No semantic, authority, interaction, or scroll changes
+• Relocates all mutation-capable controls to canonical footer
+• Content regions are read-only / draft-only surfaces
+• NO semantic, behavioural, persistence, or scroll changes
 =====================================================================
 */
 
@@ -239,58 +239,19 @@ export default function TaskPopup({
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <strong>Summary</strong>
           <div style={{ marginBottom: "12px" }}>
-            {!summaryEditing && (
-              <>
-                <div>
-                  {summaries.find((s) => s.id === currentSummaryId)?.title ||
-                    "Unassigned"}
-                </div>
-                <button onClick={() => setSummaryEditing(true)}>
-                  Associate with summary
-                </button>
-              </>
-            )}
-
-            {summaryEditing && (
-              <>
-                <select
-                  value={selectedSummaryId}
-                  onChange={(e) => setSelectedSummaryId(e.target.value)}
-                >
-                  <option value="">Unassigned</option>
-                  {summaries.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.title}
-                    </option>
-                  ))}
-                </select>
-                <button onClick={confirmSummaryAssociation}>Confirm</button>
-                <button onClick={cancelSummaryAssociation}>Cancel</button>
-              </>
-            )}
+            <div>
+              {summaries.find((s) => s.id === currentSummaryId)?.title ||
+                "Unassigned"}
+            </div>
           </div>
 
-          {!isAssigned && !assigning && (
-            <button onClick={() => setAssigning(true)}>Assign task</button>
-          )}
-
-          {assigning && (
-            <>
-              <select
-                value={selectedAssigneeId}
-                onChange={(e) => setSelectedAssigneeId(e.target.value)}
-              >
-                <option value="">Select assignee…</option>
-                {localAssignees.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.displayName || a.id}
-                  </option>
-                ))}
-              </select>
-              <button onClick={confirmAssignment}>Confirm assignment</button>
-              <button onClick={cancelAssignment}>Cancel</button>
-            </>
-          )}
+          <strong>Assignment</strong>
+          <div style={{ marginBottom: "12px" }}>
+            <div>
+              {localAssignees.find((a) => a.id === localAssigneeId)
+                ?.displayName || (localAssigneeId || "Unassigned")}
+            </div>
+          </div>
 
           <strong>Notes</strong>
           <div style={{ whiteSpace: "pre-wrap" }}>
@@ -323,7 +284,7 @@ export default function TaskPopup({
           </div>
         </div>
 
-        {/* ---------------- CANONICAL FOOTER ---------------- */}
+        {/* ---------------- CANONICAL FOOTER (SOLE MUTATION AUTHORITY) ---------------- */}
         <div
           style={{
             borderTop: "1px solid #eee",
@@ -338,7 +299,53 @@ export default function TaskPopup({
             {showComplete && <button onClick={handleCompleteWork}>Complete</button>}
           </div>
 
-          <div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            {!summaryEditing && (
+              <button onClick={() => setSummaryEditing(true)}>
+                Associate with summary
+              </button>
+            )}
+
+            {summaryEditing && (
+              <>
+                <select
+                  value={selectedSummaryId}
+                  onChange={(e) => setSelectedSummaryId(e.target.value)}
+                >
+                  <option value="">Unassigned</option>
+                  {summaries.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={confirmSummaryAssociation}>Confirm</button>
+                <button onClick={cancelSummaryAssociation}>Cancel</button>
+              </>
+            )}
+
+            {!isAssigned && !assigning && (
+              <button onClick={() => setAssigning(true)}>Assign task</button>
+            )}
+
+            {assigning && (
+              <>
+                <select
+                  value={selectedAssigneeId}
+                  onChange={(e) => setSelectedAssigneeId(e.target.value)}
+                >
+                  <option value="">Select assignee…</option>
+                  {localAssignees.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.displayName || a.id}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={confirmAssignment}>Confirm</button>
+                <button onClick={cancelAssignment}>Cancel</button>
+              </>
+            )}
+
             <button onClick={openNoteModal}>Add note</button>
             <button onClick={onClose}>Close</button>
           </div>
