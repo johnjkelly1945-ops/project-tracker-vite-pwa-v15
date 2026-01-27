@@ -6,17 +6,13 @@ import ModuleHeader from "./components/ModuleHeader";
 import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
+import SummaryMoveModal from "./components/SummaryMoveModal";
 import { localAssignees } from "./data/localAssignees";
 
 /*
 =====================================================================
 METRA — App.jsx
-Stage 217 — Canonical Task Creation Restoration
----------------------------------------------------------------------
-• Mandatory naming before instantiation
-• Tasks created as orphans
-• Summary association deferred to TaskPopup
-• No creation-time association
+Stage 220 — Summary Reordering (Authority-Gated)
 =====================================================================
 */
 
@@ -26,24 +22,20 @@ export default function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   const isReadOnly = workspaceMode === "dual" || !focusedPane;
+  const isDev = focusedPane === "development";
 
   /* ===================== DATA ===================== */
 
   const [devSummaries, setDevSummaries] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
+  const [devSummaryOrder, setDevSummaryOrder] = useState([]);
 
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
   const [mgmtTasks, setMgmtTasks] = useState([]);
+  const [mgmtSummaryOrder, setMgmtSummaryOrder] = useState([]);
 
   const [activeTaskId, setActiveTaskId] = useState(null);
-
-  const isDev = focusedPane === "development";
-
-  const summaries = isDev ? devSummaries : mgmtSummaries;
-  const setSummaries = isDev ? setDevSummaries : setMgmtSummaries;
-
-  const tasks = isDev ? devTasks : mgmtTasks;
-  const setTasks = isDev ? setDevTasks : setMgmtTasks;
+  const [activeSummaryId, setActiveSummaryId] = useState(null);
 
   /* ===================== NAV ===================== */
 
@@ -51,13 +43,33 @@ export default function App() {
     setWorkspaceMode("single");
     setFocusedPane(pane);
     setActiveTaskId(null);
+    setActiveSummaryId(null);
   }
 
   function returnToDual() {
     setWorkspaceMode("dual");
     setFocusedPane(null);
     setActiveTaskId(null);
+    setActiveSummaryId(null);
   }
+
+  /* ===================== HELPERS ===================== */
+
+  function deriveOrderedSummaries(summaries, order) {
+    return order.length > 0
+      ? order.map((id) => summaries.find((s) => s.id === id)).filter(Boolean)
+      : summaries;
+  }
+
+  const orderedDevSummaries = deriveOrderedSummaries(
+    devSummaries,
+    devSummaryOrder
+  );
+
+  const orderedMgmtSummaries = deriveOrderedSummaries(
+    mgmtSummaries,
+    mgmtSummaryOrder
+  );
 
   /* ===================== CREATION ===================== */
 
@@ -71,11 +83,11 @@ export default function App() {
       id: `task-${Date.now()}`,
       title: title.trim(),
       notes: [],
-      summaryId: null, // orphan by default (CANON)
+      summaryId: null,
       executionState: "NOT_STARTED",
     };
 
-    setTasks((c) => [...c, task]);
+    (isDev ? setDevTasks : setMgmtTasks)((c) => [...c, task]);
   }
 
   function onCreateSummary() {
@@ -84,13 +96,65 @@ export default function App() {
     const title = window.prompt("Enter summary name:");
     if (!title || !title.trim()) return;
 
-    setSummaries((c) => [
-      ...c,
-      { id: `summary-${Date.now()}`, title: title.trim() },
-    ]);
+    const id = `summary-${Date.now()}`;
+
+    if (isDev) {
+      setDevSummaries((c) => [...c, { id, title: title.trim() }]);
+      setDevSummaryOrder((c) => [...c, id]);
+    } else {
+      setMgmtSummaries((c) => [...c, { id, title: title.trim() }]);
+      setMgmtSummaryOrder((c) => [...c, id]);
+    }
+  }
+
+  /* ===================== SUMMARY ORDERING ===================== */
+
+  function moveSummary(summaryId, direction) {
+    if (isReadOnly) return;
+
+    const setOrder = isDev ? setDevSummaryOrder : setMgmtSummaryOrder;
+
+    setOrder((prev) => {
+      const index = prev.indexOf(summaryId);
+      if (index === -1) return prev;
+
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= prev.length) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(target, 0, moved);
+      return next;
+    });
+  }
+
+  function removeSummary(summaryId) {
+    if (isReadOnly) return;
+
+    if (isDev) {
+      setDevSummaries((c) => c.filter((s) => s.id !== summaryId));
+      setDevSummaryOrder((c) => c.filter((id) => id !== summaryId));
+      setDevTasks((c) =>
+        c.map((t) =>
+          t.summaryId === summaryId ? { ...t, summaryId: null } : t
+        )
+      );
+    } else {
+      setMgmtSummaries((c) => c.filter((s) => s.id !== summaryId));
+      setMgmtSummaryOrder((c) => c.filter((id) => id !== summaryId));
+      setMgmtTasks((c) =>
+        c.map((t) =>
+          t.summaryId === summaryId ? { ...t, summaryId: null } : t
+        )
+      );
+    }
+
+    setActiveSummaryId(null);
   }
 
   /* ===================== TASK POPUP ===================== */
+
+  const tasks = isDev ? devTasks : mgmtTasks;
 
   function onOpenTask(task) {
     if (isReadOnly) return;
@@ -99,6 +163,9 @@ export default function App() {
 
   function onAssignTask(taskId, assigneeId) {
     if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
     setTasks((c) =>
       c.map((t) =>
         t.id === taskId && !t.assigneeId
@@ -116,6 +183,9 @@ export default function App() {
 
   function onAddNote(taskId, note) {
     if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
     setTasks((c) =>
       c.map((t) =>
         t.id === taskId ? { ...t, notes: [...(t.notes || []), note] } : t
@@ -125,6 +195,9 @@ export default function App() {
 
   function onStartExecution(taskId) {
     if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
     setTasks((c) =>
       c.map((t) =>
         t.id === taskId && t.executionState === "NOT_STARTED"
@@ -134,44 +207,51 @@ export default function App() {
     );
   }
 
-  // Post-creation association (unchanged, canonical)
   function onChangeTaskSummary(taskId, summaryId) {
     if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
     setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId ? { ...t, summaryId } : t
-      )
+      c.map((t) => (t.id === taskId ? { ...t, summaryId } : t))
     );
   }
 
-  /* ===================== DERIVED ===================== */
-
   const activeTask =
     activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
+
+  /* ===================== AUTHORITY-GATED OPEN ===================== */
+
+  function openSummaryIfAuthorised(summaryId) {
+    if (isReadOnly) return;
+    setActiveSummaryId(summaryId);
+  }
 
   /* ===================== SURFACES ===================== */
 
   const mgmtBody = (
     <PreProject
-      summaries={mgmtSummaries}
+      summaries={orderedMgmtSummaries}
       tasks={mgmtTasks}
       onOpenTask={onOpenTask}
       canCreateTask={!isReadOnly}
       onCreateTask={onCreateTask}
       canCreateSummary={!isReadOnly}
       onCreateSummary={onCreateSummary}
+      onOpenSummary={openSummaryIfAuthorised}
     />
   );
 
   const devBody = (
     <PreProject
-      summaries={devSummaries}
+      summaries={orderedDevSummaries}
       tasks={devTasks}
       onOpenTask={onOpenTask}
       canCreateTask={!isReadOnly}
       onCreateTask={onCreateTask}
       canCreateSummary={!isReadOnly}
       onCreateSummary={onCreateSummary}
+      onOpenSummary={openSummaryIfAuthorised}
     />
   );
 
@@ -199,13 +279,23 @@ export default function App() {
         </div>
       </div>
 
-      {activeTask && !isReadOnly && (
+      {!isReadOnly && activeSummaryId && (
+        <SummaryMoveModal
+          summaryId={activeSummaryId}
+          summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+          onMove={moveSummary}
+          onRemove={removeSummary}
+          onClose={() => setActiveSummaryId(null)}
+        />
+      )}
+
+      {activeTask && (
         <TaskPopup
           task={activeTask}
-          summaries={summaries}
+          summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
           onClose={() => setActiveTaskId(null)}
-          onAssignTask={onAssignTask}
           onAddNote={onAddNote}
+          onAssignTask={onAssignTask}
           onStartExecution={onStartExecution}
           onChangeTaskSummary={onChangeTaskSummary}
         />

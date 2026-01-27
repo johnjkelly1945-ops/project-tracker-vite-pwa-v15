@@ -6,12 +6,12 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
-Stage 219 — Summary-Grouped Task Rendering (Visibility Only)
+Stage 220 — Summary Modal Trigger (Visibility-Preserving)
 ---------------------------------------------------------------------
-• Summaries render chronologically
-• Tasks associated with summaries render beneath them
-• Orphan tasks remain rendered chronologically as before
-• Visibility only — no interaction, no authority
+• Summaries remain passive placeholders
+• No inline authority introduced
+• Explicit user action opens summary modal
+• No ordering or mutation logic present here
 =====================================================================
 */
 
@@ -19,6 +19,7 @@ export default function PreProject({
   tasks = [],
   summaries = [],
   onOpenTask,
+  onOpenSummary,
   canCreateTask = false,
   onCreateTask,
   canCreateSummary = false,
@@ -47,12 +48,16 @@ export default function PreProject({
           summaries.map((summary) => (
             <div key={summary.id} style={{ marginBottom: "16px" }}>
               <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onOpenSummary?.(summary.id)}
                 style={{
                   padding: "6px 8px",
                   marginBottom: "6px",
                   border: "1px solid #ddd",
                   borderRadius: "4px",
                   background: "#fafafa",
+                  cursor: "pointer",
                 }}
               >
                 {summary.title || "Untitled summary"}
@@ -70,7 +75,7 @@ export default function PreProject({
             </div>
           ))}
 
-        {/* ================= ORPHAN TASKS (UNCHANGED) ================= */}
+        {/* ================= ORPHAN TASKS (CHRONOLOGICAL) ================= */}
         {tasks
           .filter((t) => !t.summaryId)
           .map((task) => (
