@@ -2,44 +2,81 @@
 /*
 =====================================================================
 METRA — CanonicalTaskPopupHeader.jsx
-Stage 150 — Inspection Header (Execution State Included)
+Stage 223 — Authoritative Header (Separated Identity)
 =====================================================================
-- Displays task identity
-- Displays assignment
-- Displays execution state (read-only)
+• UI-only refinement
+• Title precedes assignee
+• Centred identity group
+• Subtle separator indicates association without fusion
+• No behavioural or authority changes
 =====================================================================
 */
 
 export default function CanonicalTaskPopupHeader({ task }) {
   if (!task) return null;
 
-  const executionState = task.executionState || "NOT_STARTED";
-
   return (
-    <div style={{ marginBottom: "12px" }}>
+    <div
+      style={{
+        background: "#0b3a66",
+        color: "#fff",
+        padding: "14px 18px",
+        borderTopLeftRadius: "6px",
+        borderTopRightRadius: "6px",
+      }}
+    >
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <h3 style={{ margin: 0 }}>{task.title}</h3>
-      </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "18px",
+            flexWrap: "wrap",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "1.2em",
+              fontWeight: 600,
+              lineHeight: 1.2,
+            }}
+          >
+            {task.title}
+          </div>
 
-      <div style={{ marginTop: "6px" }}>
-        <strong>Execution state:</strong>{" "}
-        {executionState.replace("_", " ")}
-      </div>
+          {task.assigneeId && (
+            <>
+              <span
+                style={{
+                  opacity: 0.6,
+                  fontSize: "1.1em",
+                  lineHeight: 1,
+                }}
+              >
+                –
+              </span>
 
-      {task.assigneeId && (
-        <div style={{ marginTop: "6px" }}>
-          <strong>Assigned:</strong>{" "}
-          {task.assigneeLabel || task.assigneeId}
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.15)",
+                  padding: "4px 10px",
+                  borderRadius: "12px",
+                  fontSize: "0.85em",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {task.assigneeLabel || task.assigneeId}
+              </div>
+            </>
+          )}
         </div>
-      )}
-
-      <hr style={{ marginTop: "10px" }} />
+      </div>
     </div>
   );
 }

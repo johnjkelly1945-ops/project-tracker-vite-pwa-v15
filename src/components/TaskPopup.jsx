@@ -2,13 +2,12 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 222B — Notes Lifecycle + Canonical Footer Restoration
+Stage 223 — UI Refinement (Timestamp De-emphasis)
 ---------------------------------------------------------------------
-• Restores Stage 207 execution footer (structural)
-• Footer is fixed and non-scrolling
-• Notes viewport remains the ONLY known scroll region
-• Timestamped system and user notes preserved
-• No authority or behavioural expansion
+• UI-only rendering refinement
+• Timestamp visually de-emphasised at render time
+• No behavioural, authority, or semantic changes
+• Notes storage format unchanged
 =====================================================================
 */
 
@@ -286,9 +285,30 @@ export default function TaskPopup({
 
           {/* Notes */}
           <strong>Notes</strong>
-          <pre style={{ whiteSpace: "pre-wrap" }}>
-            {displayNotes.join("\n")}
-          </pre>
+          <div style={{ whiteSpace: "pre-wrap" }}>
+            {displayNotes.map((line, idx) => {
+              const splitIndex = line.lastIndexOf(" — ");
+              if (splitIndex === -1) {
+                return <div key={idx}>{line}</div>;
+              }
+              const main = line.slice(0, splitIndex);
+              const ts = line.slice(splitIndex + 3);
+              return (
+                <div key={idx}>
+                  <span>{main}</span>
+                  <span
+                    style={{
+                      marginLeft: "6px",
+                      fontSize: "0.85em",
+                      color: "#888",
+                    }}
+                  >
+                    — {ts}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
 
           <textarea
             value={draftText}
