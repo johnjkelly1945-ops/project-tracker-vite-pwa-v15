@@ -2,11 +2,11 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 227 — Footer Authority Finalisation & Control Relocation
+Stage 228 — Notes Content Purification
 ---------------------------------------------------------------------
-• Relocates all mutation-capable controls to canonical footer
-• Content regions are read-only / draft-only surfaces
-• NO semantic, behavioural, persistence, or scroll changes
+• Removes non-note informational text from Notes content region
+• Notes region renders notes only
+• NO authority, behavioural, persistence, or scroll changes
 =====================================================================
 */
 
@@ -237,22 +237,6 @@ export default function TaskPopup({
 
         {/* ---------------- Notes viewport (ONLY scroll region) ---------------- */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
-          <strong>Summary</strong>
-          <div style={{ marginBottom: "12px" }}>
-            <div>
-              {summaries.find((s) => s.id === currentSummaryId)?.title ||
-                "Unassigned"}
-            </div>
-          </div>
-
-          <strong>Assignment</strong>
-          <div style={{ marginBottom: "12px" }}>
-            <div>
-              {localAssignees.find((a) => a.id === localAssigneeId)
-                ?.displayName || (localAssigneeId || "Unassigned")}
-            </div>
-          </div>
-
           <strong>Notes</strong>
           <div style={{ whiteSpace: "pre-wrap" }}>
             {displayNotes.map((line, idx) => {
