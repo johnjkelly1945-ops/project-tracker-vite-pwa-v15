@@ -2,16 +2,47 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 222A — TaskPopup Shell & Layout Restoration
+Stage 222B — Notes Lifecycle + Canonical Footer Restoration
 ---------------------------------------------------------------------
-Structural restoration ONLY.
-No behavioural, semantic, or authority changes.
+• Restores Stage 207 execution footer (structural)
+• Footer is fixed and non-scrolling
+• Notes viewport remains the ONLY known scroll region
+• Timestamped system and user notes preserved
+• No authority or behavioural expansion
 =====================================================================
 */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import { localAssignees } from "../data/localAssignees";
+
+/* ------------------------------------------------------------------
+   Time helpers (canonical)
+------------------------------------------------------------------ */
+
+function nowStamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return (
+    d.getFullYear() +
+    "-" +
+    pad(d.getMonth() + 1) +
+    "-" +
+    pad(d.getDate()) +
+    " " +
+    pad(d.getHours()) +
+    ":" +
+    pad(d.getMinutes())
+  );
+}
+
+function systemLine(text) {
+  return `[System] ${text} — ${nowStamp()}`;
+}
+
+/* ------------------------------------------------------------------
+   Component
+------------------------------------------------------------------ */
 
 export default function TaskPopup({
   task,
@@ -20,57 +51,124 @@ export default function TaskPopup({
   onAddNote,
   onAssignTask,
   onStartExecution,
+  onSubmitExecution,
+  onCompleteExecution,
   onChangeTaskSummary,
+  currentUserRole = "PM",
 }) {
   if (!task) return null;
 
   /* ---------------- Local mirrors ---------------- */
 
-  const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId);
+  const [displayNotes, setDisplayNotes] = useState(task.notes || []);
   const [localExecutionState, setLocalExecutionState] = useState(
-    task.executionState || "NOT_STARTED"
+    (task.executionState || "NOT_STARTED").replace(" ", "_")
   );
+  const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
+
+  useEffect(() => {
+    setDisplayNotes(task.notes || []);
+  }, [task.notes]);
 
   /* ---------------- Assignment ---------------- */
 
   const [assigning, setAssigning] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
 
-  const isAssigned = Boolean(localAssigneeId);
-
-  function handleConfirmAssignment() {
+  function confirmAssignment() {
     if (!selectedAssigneeId) return;
+
+    const assignee = localAssignees.find(
+      (a) => a.id === selectedAssigneeId
+    );
+
+    const isReassign = Boolean(localAssigneeId);
+
     onAssignTask(task.id, selectedAssigneeId);
     setLocalAssigneeId(selectedAssigneeId);
-    setSelectedAssigneeId("");
+
+    const label = assignee?.displayName || selectedAssigneeId;
+    const line = systemLine(
+      isReassign
+        ? `Task reassigned to ${label}`
+        : `Task assigned to ${label}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((prev) => [...prev, line]);
+
     setAssigning(false);
+    setSelectedAssigneeId("");
   }
 
-  function handleCancelAssignment() {
-    setSelectedAssigneeId("");
+  function cancelAssignment() {
     setAssigning(false);
+    setSelectedAssigneeId("");
   }
 
-  /* ---------------- Execution ---------------- */
+  /* ---------------- Execution authority ---------------- */
 
-  const executionState =
-    (localExecutionState || "NOT_STARTED").replace(" ", "_");
-
+  const isAssigned = Boolean(localAssigneeId);
   const isAssignee = localAssigneeId === "current-user";
+  const isPM = currentUserRole === "PM";
+  const isPMProxy = isPM && isAssigned && !isAssignee;
 
-  const canStartExecution =
-    isAssigned &&
-    isAssignee &&
-    executionState === "NOT_STARTED";
+  const showStart =
+    localExecutionState === "NOT_STARTED" &&
+    (isAssignee || isPMProxy);
+
+  const showSubmit =
+    localExecutionState === "STARTED" &&
+    (isAssignee || isPMProxy);
+
+  const showComplete =
+    localExecutionState === "SUBMITTED" && isPM;
 
   function handleStartWork() {
-    if (!canStartExecution) return;
-    onAddNote(task.id, "[System] Execution started");
+    if (!showStart) return;
+    const line = systemLine(
+      isPMProxy ? "Work started by PM (proxy)" : "Work started"
+    );
+    onAddNote(task.id, line);
+    setDisplayNotes((prev) => [...prev, line]);
+    setLocalExecutionState("STARTED");
     onStartExecution(task.id);
-    setLocalExecutionState("IN_PROGRESS");
   }
 
-  /* ---------------- Summary Association ---------------- */
+  function handleSubmitWork() {
+    if (!showSubmit) return;
+    const line = systemLine(
+      isPMProxy ? "Work submitted by PM (proxy)" : "Work submitted"
+    );
+    onAddNote(task.id, line);
+    setDisplayNotes((prev) => [...prev, line]);
+    setLocalExecutionState("SUBMITTED");
+    onSubmitExecution(task.id);
+  }
+
+  function handleCompleteWork() {
+    if (!showComplete) return;
+    const line = systemLine("Task completed by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((prev) => [...prev, line]);
+    setLocalExecutionState("COMPLETED");
+    onCompleteExecution(task.id);
+  }
+
+  /* ---------------- Notes ---------------- */
+
+  const [draftText, setDraftText] = useState("");
+
+  function commitDraft() {
+    const text = draftText.trim();
+    if (!text) return;
+    const stamped = `${text} — ${nowStamp()}`;
+    onAddNote(task.id, stamped);
+    setDisplayNotes((prev) => [...prev, stamped]);
+    setDraftText("");
+  }
+
+  /* ---------------- Summary ---------------- */
 
   const currentSummaryId = task.summaryId || "";
   const [summaryEditing, setSummaryEditing] = useState(false);
@@ -81,6 +179,9 @@ export default function TaskPopup({
   function confirmSummaryAssociation() {
     if (selectedSummaryId !== currentSummaryId) {
       onChangeTaskSummary(task.id, selectedSummaryId || null);
+      const line = systemLine("Summary association updated");
+      onAddNote(task.id, line);
+      setDisplayNotes((prev) => [...prev, line]);
     }
     setSummaryEditing(false);
   }
@@ -90,26 +191,6 @@ export default function TaskPopup({
     setSummaryEditing(false);
   }
 
-  /* ---------------- Notes ---------------- */
-
-  const [draftText, setDraftText] = useState("");
-
-  function commitDraft() {
-    const text = draftText.trim();
-    if (!text) return;
-    onAddNote(task.id, text);
-    setDraftText("");
-  }
-
-  function handleClose() {
-    setDraftText("");
-    onClose();
-  }
-
-  function isSystemNote(note) {
-    return typeof note === "string" && note.startsWith("[System]");
-  }
-
   /* ---------------- Render ---------------- */
 
   return (
@@ -117,11 +198,11 @@ export default function TaskPopup({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        background: "rgba(0,0,0,0.3)",
         zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <div
@@ -130,54 +211,39 @@ export default function TaskPopup({
           width: "90%",
           maxWidth: "90%",
           height: "80vh",
-          borderRadius: "6px",
           display: "flex",
           flexDirection: "column",
+          borderRadius: "6px",
         }}
       >
-        {/* ---------------- Header (fixed) ---------------- */}
-        <div
-          style={{
-            padding: "14px 16px",
-            background: "#fafafa",
-            borderBottom: "1px solid #e5e5e5",
+        <CanonicalTaskPopupHeader
+          task={{
+            ...task,
+            assigneeId: localAssigneeId,
+            executionState: localExecutionState,
           }}
-        >
-          <CanonicalTaskPopupHeader
-            task={{
-              ...task,
-              assigneeId: localAssigneeId,
-              executionState: localExecutionState,
-            }}
-          />
-        </div>
+          onClose={onClose}
+        />
 
-        {/* ---------------- Notes Viewport (ONLY scroll region) ---------------- */}
-        <div
-          style={{
-            padding: "20px 16px",
-            overflowY: "auto",
-            flex: 1,
-          }}
-        >
-          {/* -------- Summary Association -------- */}
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Summary</strong>
-
+        {/* ---------------- Notes viewport (ONLY scroll region) ---------------- */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+          {/* Summary */}
+          <strong>Summary</strong>
+          <div style={{ marginBottom: "12px" }}>
             {!summaryEditing && (
-              <div style={{ marginTop: "6px" }}>
-                <div style={{ marginBottom: "6px" }}>
+              <>
+                <div>
                   {summaries.find((s) => s.id === currentSummaryId)?.title ||
                     "Unassigned"}
                 </div>
                 <button onClick={() => setSummaryEditing(true)}>
                   Associate with summary
                 </button>
-              </div>
+              </>
             )}
 
             {summaryEditing && (
-              <div style={{ marginTop: "6px" }}>
+              <>
                 <select
                   value={selectedSummaryId}
                   onChange={(e) => setSelectedSummaryId(e.target.value)}
@@ -189,121 +255,67 @@ export default function TaskPopup({
                     </option>
                   ))}
                 </select>
-
-                <div style={{ marginTop: "8px" }}>
-                  <button onClick={confirmSummaryAssociation}>
-                    Confirm association
-                  </button>
-                  <button onClick={cancelSummaryAssociation}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
+                <button onClick={confirmSummaryAssociation}>Confirm</button>
+                <button onClick={cancelSummaryAssociation}>Cancel</button>
+              </>
             )}
           </div>
 
-          {/* -------- Assignment -------- */}
+          {/* Assignment */}
           {!isAssigned && !assigning && (
-            <button onClick={() => setAssigning(true)}>
-              Assign task
-            </button>
+            <button onClick={() => setAssigning(true)}>Assign task</button>
           )}
 
-          {!isAssigned && assigning && (
-            <div style={{ marginTop: "12px" }}>
+          {assigning && (
+            <>
               <select
                 value={selectedAssigneeId}
                 onChange={(e) => setSelectedAssigneeId(e.target.value)}
               >
-                <option value="">— Select —</option>
+                <option value="">Select assignee…</option>
                 {localAssignees.map((a) => (
                   <option key={a.id} value={a.id}>
-                    {a.displayName}
+                    {a.displayName || a.id}
                   </option>
                 ))}
               </select>
-
-              <div style={{ marginTop: "8px" }}>
-                <button
-                  disabled={!selectedAssigneeId}
-                  onClick={handleConfirmAssignment}
-                >
-                  Confirm assignment
-                </button>
-                <button onClick={handleCancelAssignment}>
-                  Cancel
-                </button>
-              </div>
-            </div>
+              <button onClick={confirmAssignment}>Confirm assignment</button>
+              <button onClick={cancelAssignment}>Cancel</button>
+            </>
           )}
 
-          {isAssigned && (
-            <div style={{ marginTop: "12px" }}>
-              <strong>Assigned:</strong>{" "}
-              {task.assigneeLabel || localAssigneeId}
-            </div>
-          )}
+          {/* Notes */}
+          <strong>Notes</strong>
+          <pre style={{ whiteSpace: "pre-wrap" }}>
+            {displayNotes.join("\n")}
+          </pre>
 
-          {canStartExecution && (
-            <div style={{ marginTop: "16px" }}>
-              <button onClick={handleStartWork}>
-                Start work
-              </button>
-            </div>
-          )}
-
-          {/* ---------------- Notes ---------------- */}
-          <div style={{ marginTop: "20px" }}>
-            <strong style={{ display: "block", marginBottom: "6px" }}>
-              Notes
-            </strong>
-
-            <div style={{ lineHeight: "1.5" }}>
-              {Array.isArray(task.notes) &&
-                task.notes.map((n, i) => {
-                  const system = isSystemNote(n);
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        marginBottom: "6px",
-                        padding: system ? "6px 8px" : "4px 0",
-                        background: system ? "#f5f5f5" : "transparent",
-                        borderLeft: system ? "3px solid #bbb" : "none",
-                        fontStyle: system ? "italic" : "normal",
-                      }}
-                    >
-                      {system ? n.replace(/^\[System\]\s*/, "") : n}
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* ---------------- Draft ---------------- */}
-          <div style={{ marginTop: "16px" }}>
-            <textarea
-              value={draftText}
-              onChange={(e) => setDraftText(e.target.value)}
-              placeholder="Draft note (not committed)"
-              style={{ width: "100%" }}
-            />
-            <div style={{ marginTop: "6px" }}>
-              <button onClick={commitDraft}>
-                Commit note
-              </button>
-            </div>
-          </div>
+          <textarea
+            value={draftText}
+            onChange={(e) => setDraftText(e.target.value)}
+            placeholder="Draft note (not committed)"
+          />
         </div>
 
-        {/* ---------------- Footer (fixed, non-scrolling) ---------------- */}
+        {/* ---------------- CANONICAL FOOTER (Stage 207) ---------------- */}
         <div
           style={{
-            padding: "16px",
             borderTop: "1px solid #eee",
+            padding: "14px",
+            display: "flex",
+            justifyContent: "space-between",
           }}
         >
-          <button onClick={handleClose}>Close</button>
+          <div>
+            {showStart && <button onClick={handleStartWork}>Start</button>}
+            {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+            {showComplete && <button onClick={handleCompleteWork}>Complete</button>}
+          </div>
+
+          <div>
+            <button onClick={commitDraft}>Commit note</button>
+            <button onClick={onClose}>Close</button>
+          </div>
         </div>
       </div>
     </div>
