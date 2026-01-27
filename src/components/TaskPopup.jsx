@@ -2,13 +2,11 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 224 — Notes Interaction Model Revision
+Stage 225 — Footer Authority Consolidation
 ---------------------------------------------------------------------
-• Draft notes isolated to modal surface
-• Explicit add / commit / cancel semantics
-• Commit available via footer OR modal (proxy delivery)
-• Canonical notes remain append-only
-• No scroll, footer, or persistence changes
+• Single visible commit authority in steady state
+• Proxy commit available only when footer is unreachable (modal open)
+• No behavioural or persistence changes
 =====================================================================
 */
 
@@ -155,7 +153,7 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ---------------- Notes (Stage 224) ---------------- */
+  /* ---------------- Notes (Stage 224/225) ---------------- */
 
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
@@ -338,18 +336,12 @@ export default function TaskPopup({
 
           <div>
             <button onClick={openNoteModal}>Add note</button>
-            <button
-              onClick={commitNoteDraft}
-              disabled={!noteModalOpen || !modalDraftText.trim()}
-            >
-              Commit note
-            </button>
             <button onClick={onClose}>Close</button>
           </div>
         </div>
       </div>
 
-      {/* ---------------- NOTE DRAFT MODAL (Stage 224) ---------------- */}
+      {/* ---------------- NOTE DRAFT MODAL (Proxy Authority) ---------------- */}
       {noteModalOpen && (
         <div
           style={{
