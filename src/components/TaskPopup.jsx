@@ -2,11 +2,11 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 225 — Footer Authority Consolidation
+Stage 226 — Notes Readability & Vertical Spacing (REPAIR)
 ---------------------------------------------------------------------
-• Single visible commit authority in steady state
-• Proxy commit available only when footer is unreachable (modal open)
-• No behavioural or persistence changes
+• Restores Stage 225 Notes viewport structure verbatim
+• Adds vertical spacing between canonical note entries only
+• No semantic, authority, interaction, or scroll changes
 =====================================================================
 */
 
@@ -153,7 +153,7 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ---------------- Notes (Stage 224/225) ---------------- */
+  /* ---------------- Notes ---------------- */
 
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
@@ -297,12 +297,16 @@ export default function TaskPopup({
             {displayNotes.map((line, idx) => {
               const splitIndex = line.lastIndexOf(" — ");
               if (splitIndex === -1) {
-                return <div key={idx}>{line}</div>;
+                return (
+                  <div key={idx} style={{ marginBottom: "10px" }}>
+                    {line}
+                  </div>
+                );
               }
               const main = line.slice(0, splitIndex);
               const ts = line.slice(splitIndex + 3);
               return (
-                <div key={idx}>
+                <div key={idx} style={{ marginBottom: "10px" }}>
                   <span>{main}</span>
                   <span
                     style={{
