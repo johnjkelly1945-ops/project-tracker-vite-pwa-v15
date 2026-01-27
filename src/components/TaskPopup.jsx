@@ -2,12 +2,10 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 218 — Summary Association UI Restoration (Repeat Corrective)
+Stage 222A — TaskPopup Shell & Layout Restoration
 ---------------------------------------------------------------------
-• Dropdown expresses intent only
-• Explicit Confirm / Cancel required for mutation
-• No auto-apply
-• No authority held locally
+Structural restoration ONLY.
+No behavioural, semantic, or authority changes.
 =====================================================================
 */
 
@@ -129,14 +127,15 @@ export default function TaskPopup({
       <div
         style={{
           background: "#fff",
-          width: "520px",
-          maxHeight: "80vh",
+          width: "90%",
+          maxWidth: "90%",
+          height: "80vh",
           borderRadius: "6px",
           display: "flex",
           flexDirection: "column",
         }}
       >
-        {/* ---------------- Header ---------------- */}
+        {/* ---------------- Header (fixed) ---------------- */}
         <div
           style={{
             padding: "14px 16px",
@@ -153,7 +152,7 @@ export default function TaskPopup({
           />
         </div>
 
-        {/* ---------------- Body ---------------- */}
+        {/* ---------------- Notes Viewport (ONLY scroll region) ---------------- */}
         <div
           style={{
             padding: "20px 16px",
@@ -297,7 +296,7 @@ export default function TaskPopup({
           </div>
         </div>
 
-        {/* ---------------- Footer ---------------- */}
+        {/* ---------------- Footer (fixed, non-scrolling) ---------------- */}
         <div
           style={{
             padding: "16px",
