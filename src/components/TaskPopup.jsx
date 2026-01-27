@@ -2,12 +2,13 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 223 — UI Refinement (Timestamp De-emphasis)
+Stage 224 — Notes Interaction Model Revision
 ---------------------------------------------------------------------
-• UI-only rendering refinement
-• Timestamp visually de-emphasised at render time
-• No behavioural, authority, or semantic changes
-• Notes storage format unchanged
+• Draft notes isolated to modal surface
+• Explicit add / commit / cancel semantics
+• Commit available via footer OR modal (proxy delivery)
+• Canonical notes remain append-only
+• No scroll, footer, or persistence changes
 =====================================================================
 */
 
@@ -154,17 +155,29 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ---------------- Notes ---------------- */
+  /* ---------------- Notes (Stage 224) ---------------- */
 
-  const [draftText, setDraftText] = useState("");
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [modalDraftText, setModalDraftText] = useState("");
 
-  function commitDraft() {
-    const text = draftText.trim();
+  function openNoteModal() {
+    setModalDraftText("");
+    setNoteModalOpen(true);
+  }
+
+  function cancelNoteDraft() {
+    setModalDraftText("");
+    setNoteModalOpen(false);
+  }
+
+  function commitNoteDraft() {
+    const text = modalDraftText.trim();
     if (!text) return;
     const stamped = `${text} — ${nowStamp()}`;
     onAddNote(task.id, stamped);
     setDisplayNotes((prev) => [...prev, stamped]);
-    setDraftText("");
+    setModalDraftText("");
+    setNoteModalOpen(false);
   }
 
   /* ---------------- Summary ---------------- */
@@ -226,7 +239,6 @@ export default function TaskPopup({
 
         {/* ---------------- Notes viewport (ONLY scroll region) ---------------- */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
-          {/* Summary */}
           <strong>Summary</strong>
           <div style={{ marginBottom: "12px" }}>
             {!summaryEditing && (
@@ -260,7 +272,6 @@ export default function TaskPopup({
             )}
           </div>
 
-          {/* Assignment */}
           {!isAssigned && !assigning && (
             <button onClick={() => setAssigning(true)}>Assign task</button>
           )}
@@ -283,7 +294,6 @@ export default function TaskPopup({
             </>
           )}
 
-          {/* Notes */}
           <strong>Notes</strong>
           <div style={{ whiteSpace: "pre-wrap" }}>
             {displayNotes.map((line, idx) => {
@@ -309,15 +319,9 @@ export default function TaskPopup({
               );
             })}
           </div>
-
-          <textarea
-            value={draftText}
-            onChange={(e) => setDraftText(e.target.value)}
-            placeholder="Draft note (not committed)"
-          />
         </div>
 
-        {/* ---------------- CANONICAL FOOTER (Stage 207) ---------------- */}
+        {/* ---------------- CANONICAL FOOTER ---------------- */}
         <div
           style={{
             borderTop: "1px solid #eee",
@@ -333,11 +337,63 @@ export default function TaskPopup({
           </div>
 
           <div>
-            <button onClick={commitDraft}>Commit note</button>
+            <button onClick={openNoteModal}>Add note</button>
+            <button
+              onClick={commitNoteDraft}
+              disabled={!noteModalOpen || !modalDraftText.trim()}
+            >
+              Commit note
+            </button>
             <button onClick={onClose}>Close</button>
           </div>
         </div>
       </div>
+
+      {/* ---------------- NOTE DRAFT MODAL (Stage 224) ---------------- */}
+      {noteModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            zIndex: 1100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              width: "60%",
+              maxWidth: "700px",
+              padding: "20px",
+              borderRadius: "6px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <strong>Add note (draft)</strong>
+            <textarea
+              value={modalDraftText}
+              onChange={(e) => setModalDraftText(e.target.value)}
+              placeholder="Draft note (not yet committed)"
+              style={{ marginTop: "10px", minHeight: "120px" }}
+            />
+            <div style={{ marginTop: "12px", textAlign: "right" }}>
+              <button
+                onClick={commitNoteDraft}
+                disabled={!modalDraftText.trim()}
+              >
+                Commit note
+              </button>
+              <button onClick={cancelNoteDraft} style={{ marginLeft: "8px" }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
