@@ -12,15 +12,17 @@ import { localAssignees } from "./data/localAssignees";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 220 — Summary Reordering (Authority-Gated)
+Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
+[FIX — Sidebar onToggle wiring restored]
 =====================================================================
 */
 
 export default function App() {
-  const [workspaceMode, setWorkspaceMode] = useState("dual");
-  const [focusedPane, setFocusedPane] = useState(null);
+  const [workspaceMode, setWorkspaceMode] = useState("dual"); // "dual" | "single"
+  const [focusedPane, setFocusedPane] = useState(null);       // "management" | "development" | null
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
+  // Canonical authority gate
   const isReadOnly = workspaceMode === "dual" || !focusedPane;
   const isDev = focusedPane === "development";
 
@@ -85,6 +87,7 @@ export default function App() {
       notes: [],
       summaryId: null,
       executionState: "NOT_STARTED",
+      taskState: "active",
     };
 
     (isDev ? setDevTasks : setMgmtTasks)((c) => [...c, task]);
@@ -107,7 +110,12 @@ export default function App() {
     }
   }
 
-  /* ===================== SUMMARY ORDERING ===================== */
+  /* ===================== SUMMARY AUTHORITY ===================== */
+
+  function openSummaryIfAuthorised(summaryId) {
+    if (isReadOnly) return;
+    setActiveSummaryId(summaryId);
+  }
 
   function moveSummary(summaryId, direction) {
     if (isReadOnly) return;
@@ -152,7 +160,7 @@ export default function App() {
     setActiveSummaryId(null);
   }
 
-  /* ===================== TASK POPUP ===================== */
+  /* ===================== TASK AUTHORITY ===================== */
 
   const tasks = isDev ? devTasks : mgmtTasks;
 
@@ -178,6 +186,16 @@ export default function App() {
             }
           : t
       )
+    );
+  }
+
+  function onChangeTaskSummary(taskId, summaryId) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) => (t.id === taskId ? { ...t, summaryId } : t))
     );
   }
 
@@ -207,51 +225,74 @@ export default function App() {
     );
   }
 
-  function onChangeTaskSummary(taskId, summaryId) {
+  function onSubmitExecution(taskId) {
     if (isReadOnly) return;
 
     const setTasks = isDev ? setDevTasks : setMgmtTasks;
 
     setTasks((c) =>
-      c.map((t) => (t.id === taskId ? { ...t, summaryId } : t))
+      c.map((t) =>
+        t.id === taskId && t.executionState === "IN_PROGRESS"
+          ? { ...t, executionState: "SUBMITTED" }
+          : t
+      )
     );
+  }
+
+  function onCompleteExecution(taskId) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId && t.executionState === "SUBMITTED"
+          ? { ...t, executionState: "COMPLETED" }
+          : t
+      )
+    );
+  }
+
+  function onArchiveTask(taskId) {
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, taskState: "archived" } : t
+      )
+    );
+
+    setActiveTaskId(null);
   }
 
   const activeTask =
     activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
-
-  /* ===================== AUTHORITY-GATED OPEN ===================== */
-
-  function openSummaryIfAuthorised(summaryId) {
-    if (isReadOnly) return;
-    setActiveSummaryId(summaryId);
-  }
 
   /* ===================== SURFACES ===================== */
 
   const mgmtBody = (
     <PreProject
       summaries={orderedMgmtSummaries}
-      tasks={mgmtTasks}
+      tasks={mgmtTasks.filter((t) => (t.taskState || "active") !== "archived")}
       onOpenTask={onOpenTask}
+      onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={!isReadOnly}
       onCreateTask={onCreateTask}
       canCreateSummary={!isReadOnly}
       onCreateSummary={onCreateSummary}
-      onOpenSummary={openSummaryIfAuthorised}
     />
   );
 
   const devBody = (
     <PreProject
       summaries={orderedDevSummaries}
-      tasks={devTasks}
+      tasks={devTasks.filter((t) => (t.taskState || "active") !== "archived")}
       onOpenTask={onOpenTask}
+      onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={!isReadOnly}
       onCreateTask={onCreateTask}
       canCreateSummary={!isReadOnly}
       onCreateSummary={onCreateSummary}
-      onOpenSummary={openSummaryIfAuthorised}
     />
   );
 
@@ -267,39 +308,40 @@ export default function App() {
           onToggle={() => setSidebarExpanded((v) => !v)}
         />
 
-        <div style={{ flex: 1 }}>
-          <DualPane
-            mode={workspaceMode}
-            focusedPane={focusedPane}
-            onFocusPane={handleFocusPane}
-            onReturnToDual={returnToDual}
-            managementBody={mgmtBody}
-            developmentBody={devBody}
+        <DualPane
+          mode={workspaceMode}
+          focusedPane={focusedPane}
+          onFocusPane={handleFocusPane}
+          onReturnToDual={returnToDual}
+          managementBody={mgmtBody}
+          developmentBody={devBody}
+        />
+
+        {activeSummaryId && (
+          <SummaryMoveModal
+            summaryId={activeSummaryId}
+            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            onMove={moveSummary}
+            onRemove={removeSummary}
+            onClose={() => setActiveSummaryId(null)}
           />
-        </div>
+        )}
+
+        {activeTask && (
+          <TaskPopup
+            task={activeTask}
+            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            onClose={() => setActiveTaskId(null)}
+            onAddNote={onAddNote}
+            onAssignTask={onAssignTask}
+            onChangeTaskSummary={onChangeTaskSummary}
+            onStartExecution={onStartExecution}
+            onSubmitExecution={onSubmitExecution}
+            onCompleteExecution={onCompleteExecution}
+            onArchiveTask={onArchiveTask}
+          />
+        )}
       </div>
-
-      {!isReadOnly && activeSummaryId && (
-        <SummaryMoveModal
-          summaryId={activeSummaryId}
-          summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
-          onMove={moveSummary}
-          onRemove={removeSummary}
-          onClose={() => setActiveSummaryId(null)}
-        />
-      )}
-
-      {activeTask && (
-        <TaskPopup
-          task={activeTask}
-          summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
-          onClose={() => setActiveTaskId(null)}
-          onAddNote={onAddNote}
-          onAssignTask={onAssignTask}
-          onStartExecution={onStartExecution}
-          onChangeTaskSummary={onChangeTaskSummary}
-        />
-      )}
     </>
   );
 }

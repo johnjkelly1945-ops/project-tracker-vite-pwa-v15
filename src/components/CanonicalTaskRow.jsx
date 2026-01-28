@@ -2,10 +2,13 @@
 =====================================================================
 METRA — CanonicalTaskRow.jsx
 Stage 175.0A — Restore Task Inspection Click (Regression Fix)
+Stage 230   — Inline Task Status Indicator (Canonical Dot Projection)
 ---------------------------------------------------------------------
 - Row click opens inspection popup
 - Title click edits identity when permitted
-- No execution or lifecycle semantics rendered here
+- Inline status dot reflects canonical executionState ONLY
+- Status dot is inert and non-interactive
+- No execution, lifecycle, or authority semantics introduced
 =====================================================================
 */
 
@@ -26,6 +29,23 @@ export default function CanonicalTaskRow({
   const [isEditing, setIsEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(task.title || "");
 
+  /* ===============================================================
+     Canonical executionState → dot colour mapping (UX projection only)
+     =============================================================== */
+  function getStatusDotColor(executionState) {
+    switch (executionState) {
+      case "IN_PROGRESS":
+        return "#7c3aed"; // purple
+      case "SUBMITTED":
+        return "#f59e0b"; // amber
+      case "COMPLETED":
+        return "#22c55e"; // green
+      case "NOT_STARTED":
+      default:
+        return "#9ca3af"; // grey
+    }
+  }
+
   const rowStyle = {
     display: "flex",
     alignItems: "center",
@@ -36,6 +56,15 @@ export default function CanonicalTaskRow({
     opacity: task.isArchived ? 0.6 : 1,
     userSelect: "none",
     cursor: "pointer",
+  };
+
+  const statusDotStyle = {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    backgroundColor: getStatusDotColor(task.executionState),
+    flexShrink: 0,
+    pointerEvents: "none", // CRITICAL: prevent focus / click interception
   };
 
   const titleStyle = {
@@ -64,6 +93,8 @@ export default function CanonicalTaskRow({
         if (!isEditing && onOpenTask) onOpenTask(task);
       }}
     >
+      <span style={statusDotStyle} />
+
       {isEditing ? (
         <input
           value={draftTitle}
