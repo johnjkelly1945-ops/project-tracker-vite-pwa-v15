@@ -1,94 +1,82 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "../Styles/App.css";
+import { PersonnelBridge } from "./PersonnelBridge";
 
-console.log("✅ Personnel component loaded (popup enabled)");
+/*
+=====================================================================
+METRA — Personnel.jsx
+Stage 233 — Minimal Operational Personnel Surface
+---------------------------------------------------------------------
+• Session-scoped personnel list (no persistence)
+• Minimal record shape: { id, displayName }
+• Explicit, deliberate assignment confirmation
+• No profile editing, deletion, or governance semantics
+=====================================================================
+*/
 
-export default function Personnel() {
-  const [people, setPeople] = useState(() => {
-    const saved = localStorage.getItem("personnel-list");
-    return saved ? JSON.parse(saved) : [
-      // Optional starter rows so you can test the popup quickly:
-      // { name: "Jane Doe", role: "Project Manager", organisation: "", department: "", email: "" },
-      // { name: "Alex Lee", role: "Developer", organisation: "", department: "", email: "" },
-    ];
-  });
+export default function Personnel({
+  task,
+  onAssignComplete,
+  onCancel,
+}) {
+  if (!task) {
+    return (
+      <div className="personnel">
+        <h2>Personnel</h2>
+        <p>No active task selected.</p>
+      </div>
+    );
+  }
 
+  /* ---------------- Minimal session-scoped personnel ---------------- */
+
+  const [people, setPeople] = useState([]);
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
 
-  // Popup state
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [popupData, setPopupData] = useState({
-    name: "",
-    role: "",
-    organisation: "",
-    department: "",
-    email: "",
-  });
+  function addPerson() {
+    const name = newName.trim();
+    if (!name) return;
 
-  useEffect(() => {
-    localStorage.setItem("personnel-list", JSON.stringify(people));
-  }, [people]);
-
-  const addPerson = () => {
-    if (!newName.trim() || !newRole.trim()) return;
-    const newPerson = {
-      name: newName.trim(),
-      role: newRole.trim(),
-      organisation: "",
-      department: "",
-      email: "",
+    const person = {
+      id: `person-${Date.now()}`,
+      displayName: name,
     };
-    setPeople(prev => [...prev, newPerson]);
+
+    setPeople((prev) => [...prev, person]);
     setNewName("");
-    setNewRole("");
-  };
+  }
 
-  const deletePerson = (index) => {
-    setPeople(prev => prev.filter((_, i) => i !== index));
-  };
+  function confirmAssignment() {
+    const person = people.find((p) => p.id === selectedId);
+    if (!person) return;
 
-  const openPopup = (person, index) => {
-    setSelectedIndex(index);
-    // Ensure all fields exist so inputs are controlled
-    setPopupData({
-      name: person.name || "",
-      role: person.role || "",
-      organisation: person.organisation || "",
-      department: person.department || "",
-      email: person.email || "",
-    });
-  };
+    const updatedTask = PersonnelBridge.assignPerson(
+      task,
+      person.displayName
+    );
 
-  const closePopup = () => setSelectedIndex(null);
+    onAssignComplete(updatedTask);
+  }
 
-  const savePopup = () => {
-    setPeople(prev => {
-      const updated = [...prev];
-      updated[selectedIndex] = { ...popupData };
-      return updated;
-    });
-    setSelectedIndex(null);
-  };
+  /* ---------------- Render ---------------- */
 
   return (
     <div className="personnel">
-      <h2>Project Personnel</h2>
+      <h2>Assign Task</h2>
 
       <ul>
-        {people.map((person, i) => (
-          <li key={i}>
-            <span>
-              {person.name} – {person.role}
-            </span>
-            <div>
-              <button className="view-btn" onClick={() => openPopup(person, i)}>
-                View
-              </button>
-              <button className="delete-btn" onClick={() => deletePerson(i)}>
-                Delete
-              </button>
-            </div>
+        {people.map((person) => (
+          <li key={person.id}>
+            <label>
+              <input
+                type="radio"
+                name="person"
+                checked={selectedId === person.id}
+                onChange={() => setSelectedId(person.id)}
+              />
+              {person.displayName}
+            </label>
           </li>
         ))}
       </ul>
@@ -97,57 +85,20 @@ export default function Personnel() {
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="Name"
+          placeholder="New person name"
         />
-        <input
-          value={newRole}
-          onChange={(e) => setNewRole(e.target.value)}
-          placeholder="Role"
-        />
-        <button onClick={addPerson}>Add Person</button>
+        <button onClick={addPerson}>Add</button>
       </div>
 
-      {selectedIndex !== null && (
-        <div className="popup-overlay" onClick={closePopup}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>Personnel Details</h3>
-
-            <input
-              value={popupData.name}
-              onChange={(e) => setPopupData({ ...popupData, name: e.target.value })}
-              placeholder="Name"
-            />
-            <input
-              value={popupData.role}
-              onChange={(e) => setPopupData({ ...popupData, role: e.target.value })}
-              placeholder="Role"
-            />
-            <input
-              value={popupData.organisation}
-              onChange={(e) => setPopupData({ ...popupData, organisation: e.target.value })}
-              placeholder="Organisation"
-              autoComplete="organization"
-            />
-            <input
-              value={popupData.department}
-              onChange={(e) => setPopupData({ ...popupData, department: e.target.value })}
-              placeholder="Department"
-            />
-            <input
-              value={popupData.email}
-              onChange={(e) => setPopupData({ ...popupData, email: e.target.value })}
-              placeholder="Email"
-              type="email"
-              autoComplete="email"
-            />
-
-            <div className="popup-buttons">
-              <button onClick={savePopup}>Save</button>
-              <button onClick={closePopup}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="personnel-actions">
+        <button onClick={onCancel}>Cancel</button>
+        <button
+          onClick={confirmAssignment}
+          disabled={!selectedId}
+        >
+          Assign to task
+        </button>
+      </div>
     </div>
   );
 }

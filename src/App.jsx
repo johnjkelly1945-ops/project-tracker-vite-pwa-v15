@@ -7,13 +7,17 @@ import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
-import { localAssignees } from "./data/localAssignees";
+import Personnel from "./components/Personnel";
 
 /*
 =====================================================================
 METRA — App.jsx
-Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
-[FIX — Sidebar onToggle wiring restored]
+Stage 233 — Canonical Personnel Assignment Routing
+---------------------------------------------------------------------
+• Assignment routed exclusively via Personnel module
+• Legacy assignment path removed
+• Single-step authority transition (no intermediate state)
+• SEM-NR-01 preserved
 =====================================================================
 */
 
@@ -39,6 +43,9 @@ export default function App() {
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
+  // Stage 233 — assignment routing state
+  const [assigningTaskId, setAssigningTaskId] = useState(null);
+
   /* ===================== NAV ===================== */
 
   function handleFocusPane(pane) {
@@ -46,6 +53,7 @@ export default function App() {
     setFocusedPane(pane);
     setActiveTaskId(null);
     setActiveSummaryId(null);
+    setAssigningTaskId(null);
   }
 
   function returnToDual() {
@@ -53,6 +61,7 @@ export default function App() {
     setFocusedPane(null);
     setActiveTaskId(null);
     setActiveSummaryId(null);
+    setAssigningTaskId(null);
   }
 
   /* ===================== HELPERS ===================== */
@@ -139,23 +148,17 @@ export default function App() {
   function removeSummary(summaryId) {
     if (isReadOnly) return;
 
-    if (isDev) {
-      setDevSummaries((c) => c.filter((s) => s.id !== summaryId));
-      setDevSummaryOrder((c) => c.filter((id) => id !== summaryId));
-      setDevTasks((c) =>
-        c.map((t) =>
-          t.summaryId === summaryId ? { ...t, summaryId: null } : t
-        )
-      );
-    } else {
-      setMgmtSummaries((c) => c.filter((s) => s.id !== summaryId));
-      setMgmtSummaryOrder((c) => c.filter((id) => id !== summaryId));
-      setMgmtTasks((c) =>
-        c.map((t) =>
-          t.summaryId === summaryId ? { ...t, summaryId: null } : t
-        )
-      );
-    }
+    const setSummaries = isDev ? setDevSummaries : setMgmtSummaries;
+    const setOrder = isDev ? setDevSummaryOrder : setMgmtSummaryOrder;
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setSummaries((c) => c.filter((s) => s.id !== summaryId));
+    setOrder((c) => c.filter((id) => id !== summaryId));
+    setTasks((c) =>
+      c.map((t) =>
+        t.summaryId === summaryId ? { ...t, summaryId: null } : t
+      )
+    );
 
     setActiveSummaryId(null);
   }
@@ -163,185 +166,98 @@ export default function App() {
   /* ===================== TASK AUTHORITY ===================== */
 
   const tasks = isDev ? devTasks : mgmtTasks;
+  const setTasks = isDev ? setDevTasks : setMgmtTasks;
 
   function onOpenTask(task) {
     if (isReadOnly) return;
     setActiveTaskId(task.id);
   }
 
-  function onAssignTask(taskId, assigneeId) {
+  // Stage 233 — enter Personnel assignment flow
+  function onRequestAssign(taskId) {
     if (isReadOnly) return;
+    setAssigningTaskId(taskId);
+    setActiveTaskId(null);
+  }
 
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
-
+  // Stage 233 — accept canonical assignment result
+  function onAssignmentComplete(updatedTask) {
     setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId && !t.assigneeId
-          ? {
-              ...t,
-              assigneeId,
-              assigneeLabel:
-                localAssignees.find((a) => a.id === assigneeId)?.displayName ??
-                assigneeId,
-            }
-          : t
-      )
+      c.map((t) => (t.id === updatedTask.id ? updatedTask : t))
     );
+    setAssigningTaskId(null);
+  }
+
+  function onCancelAssignment() {
+    setAssigningTaskId(null);
   }
 
   function onChangeTaskSummary(taskId, summaryId) {
     if (isReadOnly) return;
-
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
 
     setTasks((c) =>
       c.map((t) => (t.id === taskId ? { ...t, summaryId } : t))
     );
   }
 
-  function onAddNote(taskId, note) {
-    if (isReadOnly) return;
-
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
-
-    setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId ? { ...t, notes: [...(t.notes || []), note] } : t
-      )
-    );
-  }
-
-  function onStartExecution(taskId) {
-    if (isReadOnly) return;
-
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
-
-    setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId && t.executionState === "NOT_STARTED"
-          ? { ...t, executionState: "IN_PROGRESS" }
-          : t
-      )
-    );
-  }
-
-  function onSubmitExecution(taskId) {
-    if (isReadOnly) return;
-
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
-
-    setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId && t.executionState === "IN_PROGRESS"
-          ? { ...t, executionState: "SUBMITTED" }
-          : t
-      )
-    );
-  }
-
-  function onCompleteExecution(taskId) {
-    if (isReadOnly) return;
-
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
-
-    setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId && t.executionState === "SUBMITTED"
-          ? { ...t, executionState: "COMPLETED" }
-          : t
-      )
-    );
-  }
-
-  function onArchiveTask(taskId) {
-    const setTasks = isDev ? setDevTasks : setMgmtTasks;
-
-    setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId ? { ...t, taskState: "archived" } : t
-      )
-    );
-
-    setActiveTaskId(null);
-  }
-
-  const activeTask =
-    activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
-
-  /* ===================== SURFACES ===================== */
-
-  const mgmtBody = (
-    <PreProject
-      summaries={orderedMgmtSummaries}
-      tasks={mgmtTasks.filter((t) => (t.taskState || "active") !== "archived")}
-      onOpenTask={onOpenTask}
-      onOpenSummary={openSummaryIfAuthorised}
-      canCreateTask={!isReadOnly}
-      onCreateTask={onCreateTask}
-      canCreateSummary={!isReadOnly}
-      onCreateSummary={onCreateSummary}
-    />
-  );
-
-  const devBody = (
-    <PreProject
-      summaries={orderedDevSummaries}
-      tasks={devTasks.filter((t) => (t.taskState || "active") !== "archived")}
-      onOpenTask={onOpenTask}
-      onOpenSummary={openSummaryIfAuthorised}
-      canCreateTask={!isReadOnly}
-      onCreateTask={onCreateTask}
-      canCreateSummary={!isReadOnly}
-      onCreateSummary={onCreateSummary}
-    />
-  );
-
   /* ===================== RENDER ===================== */
 
   return (
     <>
-      <ModuleHeader />
+      <ModuleHeader
+        workspaceMode={workspaceMode}
+        onReturnToDual={returnToDual}
+      />
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
           expanded={sidebarExpanded}
-          onToggle={() => setSidebarExpanded((v) => !v)}
-        />
-
-        <DualPane
-          mode={workspaceMode}
-          focusedPane={focusedPane}
+          onToggle={() => setSidebarExpanded((c) => !c)}
           onFocusPane={handleFocusPane}
-          onReturnToDual={returnToDual}
-          managementBody={mgmtBody}
-          developmentBody={devBody}
         />
 
-        {activeSummaryId && (
-          <SummaryMoveModal
-            summaryId={activeSummaryId}
+        {assigningTaskId ? (
+          <Personnel
+            task={tasks.find((t) => t.id === assigningTaskId)}
+            onAssignComplete={onAssignmentComplete}
+            onCancel={onCancelAssignment}
+          />
+        ) : workspaceMode === "dual" ? (
+          <DualPane
+            devSummaries={orderedDevSummaries}
+            devTasks={devTasks}
+            mgmtSummaries={orderedMgmtSummaries}
+            mgmtTasks={mgmtTasks}
+            onOpenTask={onOpenTask}
+            onCreateTask={onCreateTask}
+            onCreateSummary={onCreateSummary}
+            onMoveSummary={moveSummary}
+          />
+        ) : (
+          <PreProject
             summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
-            onMove={moveSummary}
-            onRemove={removeSummary}
-            onClose={() => setActiveSummaryId(null)}
+            tasks={tasks}
+            activeSummaryId={activeSummaryId}
+            activeTaskId={activeTaskId}
+            onOpenTask={onOpenTask}
+            onCreateTask={onCreateTask}
+            onCreateSummary={onCreateSummary}
+            onMoveSummary={moveSummary}
+            onOpenSummary={openSummaryIfAuthorised}
           />
         )}
 
-        {activeTask && (
+        {activeTaskId && (
           <TaskPopup
-            task={activeTask}
-            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            task={tasks.find((t) => t.id === activeTaskId)}
             onClose={() => setActiveTaskId(null)}
-            onAddNote={onAddNote}
-            onAssignTask={onAssignTask}
+            onRequestAssign={onRequestAssign}
             onChangeTaskSummary={onChangeTaskSummary}
-            onStartExecution={onStartExecution}
-            onSubmitExecution={onSubmitExecution}
-            onCompleteExecution={onCompleteExecution}
-            onArchiveTask={onArchiveTask}
           />
         )}
       </div>
+
+      <SummaryMoveModal />
     </>
   );
 }
