@@ -12,12 +12,12 @@ import { localAssignees } from "./data/localAssignees";
 /*
 =====================================================================
 METRA — App.jsx
-Stage 233A — Personnel Assignment Routing Preparation (Non-UI)
-Baseline anchor: Stage 240R — Canonical PreProject Construction Restored
+Stage 241 — TaskPopup Authority Guard (SEM-TP-01)
+Baseline anchor: Stage 233A — Personnel Routing Prep
 ---------------------------------------------------------------------
-• Introduces dormant personnel routing preparation ONLY
-• No UI, no props, no behaviour changes
-• Guards default to false
+• Enforces SEM-TP-01
+• TaskPopup mounts ONLY in authorised single-pane context
+• No UI or behavioural changes in valid states
 =====================================================================
 */
 
@@ -205,11 +205,6 @@ export default function App() {
 
   /* ============================================================
      STAGE 233A — DORMANT PERSONNEL ROUTING PREPARATION (NO-OP)
-     ------------------------------------------------------------
-     • Not invoked
-     • Not wired to UI
-     • Guards default to false
-     • Preparation only
      ============================================================ */
 
   const personnelRoutingPrepared = false;
@@ -222,10 +217,9 @@ export default function App() {
 
   function preparePersonnelRouting(_taskId, _personId) {
     if (!personnelRoutingPrepared) return;
-    // no-op placeholder for future authorised stages
   }
 
-  /* ===================== PREPROJECT BODIES (CANONICAL) ===================== */
+  /* ===================== PREPROJECT BODIES ===================== */
 
   const mgmtBody = (
     <PreProject
@@ -287,15 +281,17 @@ export default function App() {
           />
         )}
 
-        {activeTask && (
-          <TaskPopup
-            task={activeTask}
-            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
-            onClose={() => setActiveTaskId(null)}
-            onAssignTask={onAssignTask}
-            onChangeTaskSummary={onChangeTaskSummary}
-          />
-        )}
+        {workspaceMode === "single" &&
+          focusedPane &&
+          activeTask && (
+            <TaskPopup
+              task={activeTask}
+              summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+              onClose={() => setActiveTaskId(null)}
+              onAssignTask={onAssignTask}
+              onChangeTaskSummary={onChangeTaskSummary}
+            />
+          )}
       </div>
     </>
   );
