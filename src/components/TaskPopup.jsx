@@ -2,19 +2,20 @@
 /*
 =====================================================================
 METRA — TaskPopup.jsx
-Stage 233 — Assignment Authority Relocation (Final Routing Fix)
+Stage 239 — Task → Summary Association (Canonical Closure Fix)
+Stage 246 — Phase 1: Assignment Selection Modal (UI Only)
 ---------------------------------------------------------------------
-• Legacy assignment UI and logic removed
-• TaskPopup does not perform assignment
-• A single route-only "Assign…" action is exposed
-• Assignment routing delegated to App.jsx
-• No new semantics introduced
-• Execution, notes, and summary authority preserved
+• Assignment dropdown REMOVED
+• Assignment selection via subordinate modal ONLY
+• Footer remains sole mutating authority
+• No semantic or authority changes
 =====================================================================
 */
 
 import { useState, useEffect } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
+import SubordinateSelectionModal from "./SubordinateSelectionModal";
+import { localAssignees } from "../data/localAssignees";
 
 /* ------------------------------------------------------------------
    Time helpers (canonical)
@@ -49,29 +50,52 @@ export default function TaskPopup({
   summaries = [],
   onClose,
   onAddNote,
+  onAssignTask,
   onStartExecution,
   onSubmitExecution,
   onCompleteExecution,
   onChangeTaskSummary,
   onArchiveTask,
-  onRequestAssign,
   currentUserRole = "PM",
 }) {
   if (!task) return null;
 
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
+  const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
 
   useEffect(() => {
     setDisplayNotes(task.notes || []);
   }, [task.notes]);
 
-  /* ---------------- Execution authority ---------------- */
+  /* ================= Assignment — Stage 246 Phase 1 ================= */
+
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+
+  function handleSelectAssignee(person) {
+    const isReassign = Boolean(localAssigneeId);
+
+    onAssignTask(task.id, person.id);
+    setLocalAssigneeId(person.id);
+
+    const line = systemLine(
+      isReassign
+        ? `Task reassigned to ${person.displayName}`
+        : `Task assigned to ${person.displayName}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((prev) => [...prev, line]);
+
+    setAssignmentModalOpen(false);
+  }
+
+  /* ================= Execution authority ================= */
 
   const executionState = task.executionState || "NOT_STARTED";
   const isCompleted = executionState === "COMPLETED";
 
-  const isAssigned = Boolean(task.assigned);
-  const isAssignee = task.assigned === "current-user";
+  const isAssigned = Boolean(localAssigneeId);
+  const isAssignee = localAssigneeId === "current-user";
   const isPM = currentUserRole === "PM";
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
@@ -111,7 +135,7 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ---------------- Notes ---------------- */
+  /* ================= Notes ================= */
 
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
@@ -135,7 +159,7 @@ export default function TaskPopup({
     setNoteModalOpen(false);
   }
 
-  /* ---------------- Summary association ---------------- */
+  /* ================= Summary association (UNCHANGED) ================= */
 
   const currentSummaryId = task.summaryId || "";
   const [summaryEditing, setSummaryEditing] = useState(false);
@@ -161,44 +185,160 @@ export default function TaskPopup({
     onClose();
   }
 
-  /* ---------------- Render ---------------- */
+  /* ================= Archive ================= */
+
+  const [confirmArchive, setConfirmArchive] = useState(false);
+
+  /* ================= Render ================= */
 
   return (
-    <div className="task-popup">
-      <CanonicalTaskPopupHeader task={task} onClose={onClose} />
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.3)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          width: "90%",
+          height: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: "6px",
+        }}
+      >
+        <CanonicalTaskPopupHeader task={task} onClose={onClose} />
 
-      <div className="task-popup-body">
-        {/* Notes, execution controls, and summary controls are unchanged */}
-      </div>
-
-      <div className="task-popup-footer">
-        <button onClick={openNoteModal}>Add note</button>
-
-        {/* Stage 233: route-only assignment action */}
-        <button onClick={() => onRequestAssign(task.id)}>Assign…</button>
-
-        {showStart && <button onClick={handleStartWork}>Start work</button>}
-        {showSubmit && <button onClick={handleSubmitWork}>Submit work</button>}
-        {showComplete && (
-          <button onClick={handleCompleteWork}>Complete</button>
-        )}
-      </div>
-
-      {noteModalOpen && (
-        <div className="popup-overlay" onClick={cancelNoteDraft}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <textarea
-              value={modalDraftText}
-              onChange={(e) => setModalDraftText(e.target.value)}
-              placeholder="Add note…"
-            />
-            <div className="popup-buttons">
-              <button onClick={commitNoteDraft}>Save</button>
-              <button onClick={cancelNoteDraft}>Cancel</button>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+          <strong>Notes</strong>
+          {displayNotes.map((line, idx) => (
+            <div key={idx} style={{ marginBottom: "10px" }}>
+              {line}
             </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            borderTop: "1px solid #ddd",
+            padding: "10px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <div>
+            {!isCompleted && (
+              <button onClick={() => setAssignmentModalOpen(true)}>
+                {localAssigneeId ? "Reassign" : "Assign"}
+              </button>
+            )}
+
+            {!isCompleted && !summaryEditing && (
+              <button onClick={openSummaryEdit}>
+                Associate with summary
+              </button>
+            )}
+
+            {!isCompleted && summaryEditing && (
+              <>
+                <select
+                  value={selectedSummaryId}
+                  onChange={(e) => setSelectedSummaryId(e.target.value)}
+                >
+                  <option value="">No summary</option>
+                  {summaries.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={confirmSummaryEdit}>Confirm</button>
+                <button onClick={cancelSummaryEdit}>Cancel</button>
+              </>
+            )}
+
+            <button onClick={openNoteModal}>Add note</button>
+          </div>
+
+          <div>
+            {showStart && <button onClick={handleStartWork}>Start</button>}
+            {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+            {showComplete && <button onClick={handleCompleteWork}>Complete</button>}
+
+            {!confirmArchive && (
+              <button onClick={() => setConfirmArchive(true)}>
+                Delete
+              </button>
+            )}
+
+            {confirmArchive && (
+              <>
+                <span>Archive task?</span>
+                <button onClick={() => onArchiveTask(task.id)}>
+                  Confirm
+                </button>
+                <button onClick={() => setConfirmArchive(false)}>
+                  Cancel
+                </button>
+              </>
+            )}
+
+            <button onClick={onClose}>Close</button>
           </div>
         </div>
-      )}
+
+        {noteModalOpen && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1100,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: "16px",
+                borderRadius: "6px",
+                width: "400px",
+              }}
+            >
+              <h3>Add note</h3>
+              <textarea
+                rows={4}
+                style={{ width: "100%" }}
+                value={modalDraftText}
+                onChange={(e) => setModalDraftText(e.target.value)}
+              />
+              <div style={{ marginTop: "10px" }}>
+                <button onClick={commitNoteDraft}>Add</button>
+                <button onClick={cancelNoteDraft}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {assignmentModalOpen && (
+          <SubordinateSelectionModal
+            title="Assign task to"
+            items={localAssignees}
+            onSelect={handleSelectAssignee}
+            onClose={() => setAssignmentModalOpen(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }
