@@ -4,11 +4,14 @@
 METRA — TaskPopup.jsx
 Stage 239 — Task → Summary Association (Canonical Closure Fix)
 Stage 246 — Phase 1: Assignment Selection Modal (UI Only)
+Stage 249 — Governance Controls Restoration (UI ONLY)
 ---------------------------------------------------------------------
-• Assignment dropdown REMOVED
-• Assignment selection via subordinate modal ONLY
+• Governance controls restored to popup footer (UI only, disabled)
+• Two-line footer:
+    Line 1 — Governance (Risk / Issue / Escalate / QC)
+    Line 2 — Operational (existing controls unchanged)
 • Footer remains sole mutating authority
-• No semantic or authority changes
+• NO semantic, lifecycle, or authority changes
 =====================================================================
 */
 
@@ -224,74 +227,94 @@ export default function TaskPopup({
           ))}
         </div>
 
+        {/* ================= Footer ================= */}
         <div
           style={{
             borderTop: "1px solid #ddd",
             padding: "10px",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "10px",
+            flexDirection: "column",
+            gap: "8px",
           }}
         >
-          <div>
-            {!isCompleted && (
-              <button onClick={() => setAssignmentModalOpen(true)}>
-                {localAssigneeId ? "Reassign" : "Assign"}
-              </button>
-            )}
-
-            {!isCompleted && !summaryEditing && (
-              <button onClick={openSummaryEdit}>
-                Associate with summary
-              </button>
-            )}
-
-            {!isCompleted && summaryEditing && (
-              <>
-                <select
-                  value={selectedSummaryId}
-                  onChange={(e) => setSelectedSummaryId(e.target.value)}
-                >
-                  <option value="">No summary</option>
-                  {summaries.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.title}
-                    </option>
-                  ))}
-                </select>
-                <button onClick={confirmSummaryEdit}>Confirm</button>
-                <button onClick={cancelSummaryEdit}>Cancel</button>
-              </>
-            )}
-
-            <button onClick={openNoteModal}>Add note</button>
+          {/* Governance row — UI ONLY */}
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button disabled>Risk</button>
+            <button disabled>Issue</button>
+            <button disabled>Escalate</button>
+            <button disabled>QC</button>
           </div>
 
-          <div>
-            {showStart && <button onClick={handleStartWork}>Start</button>}
-            {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
-            {showComplete && <button onClick={handleCompleteWork}>Complete</button>}
-
-            {!confirmArchive && (
-              <button onClick={() => setConfirmArchive(true)}>
-                Delete
-              </button>
-            )}
-
-            {confirmArchive && (
-              <>
-                <span>Archive task?</span>
-                <button onClick={() => onArchiveTask(task.id)}>
-                  Confirm
+          {/* Operational row — unchanged behaviour */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <div>
+              {!isCompleted && (
+                <button onClick={() => setAssignmentModalOpen(true)}>
+                  {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
-                <button onClick={() => setConfirmArchive(false)}>
-                  Cancel
-                </button>
-              </>
-            )}
+              )}
 
-            <button onClick={onClose}>Close</button>
+              {!isCompleted && !summaryEditing && (
+                <button onClick={openSummaryEdit}>
+                  Associate with summary
+                </button>
+              )}
+
+              {!isCompleted && summaryEditing && (
+                <>
+                  <select
+                    value={selectedSummaryId}
+                    onChange={(e) => setSelectedSummaryId(e.target.value)}
+                  >
+                    <option value="">No summary</option>
+                    {summaries.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title}
+                      </option>
+                    ))}
+                  </select>
+                  <button onClick={confirmSummaryEdit}>Confirm</button>
+                  <button onClick={cancelSummaryEdit}>Cancel</button>
+                </>
+              )}
+
+              <button onClick={openNoteModal}>Add note</button>
+            </div>
+
+            <div>
+              {showStart && <button onClick={handleStartWork}>Start</button>}
+              {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+              {showComplete && (
+                <button onClick={handleCompleteWork}>Complete</button>
+              )}
+
+              {!confirmArchive && (
+                <button onClick={() => setConfirmArchive(true)}>
+                  Delete
+                </button>
+              )}
+
+              {confirmArchive && (
+                <>
+                  <span>Archive task?</span>
+                  <button onClick={() => onArchiveTask(task.id)}>
+                    Confirm
+                  </button>
+                  <button onClick={() => setConfirmArchive(false)}>
+                    Cancel
+                  </button>
+                </>
+              )}
+
+              <button onClick={onClose}>Close</button>
+            </div>
           </div>
         </div>
 
