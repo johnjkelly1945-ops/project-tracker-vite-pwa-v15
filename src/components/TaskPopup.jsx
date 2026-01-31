@@ -3,16 +3,18 @@
 =====================================================================
 METRA — TaskPopup.jsx
 Stage 239 — Task → Summary Association (Canonical Closure Fix)
+Stage 246 — Phase 1: Assignment Selection Modal (UI Only)
 ---------------------------------------------------------------------
-• Summary association closes popup to prevent stale task reference
-• No new semantics introduced
-• Footer authority matrix preserved
-• Notes remain readable post-completion
+• Assignment dropdown REMOVED
+• Assignment selection via subordinate modal ONLY
+• Footer remains sole mutating authority
+• No semantic or authority changes
 =====================================================================
 */
 
 import { useState, useEffect } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
+import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { localAssignees } from "../data/localAssignees";
 
 /* ------------------------------------------------------------------
@@ -65,45 +67,29 @@ export default function TaskPopup({
     setDisplayNotes(task.notes || []);
   }, [task.notes]);
 
-  /* ---------------- Assignment ---------------- */
+  /* ================= Assignment — Stage 246 Phase 1 ================= */
 
-  const [assigning, setAssigning] = useState(false);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
 
-  function openAssign() {
-    setSelectedAssigneeId("");
-    setAssigning(true);
-  }
-
-  function cancelAssignment() {
-    setAssigning(false);
-    setSelectedAssigneeId("");
-  }
-
-  function confirmAssignment() {
-    if (!selectedAssigneeId) return;
-
-    const assignee = localAssignees.find((a) => a.id === selectedAssigneeId);
+  function handleSelectAssignee(person) {
     const isReassign = Boolean(localAssigneeId);
 
-    onAssignTask(task.id, selectedAssigneeId);
-    setLocalAssigneeId(selectedAssigneeId);
+    onAssignTask(task.id, person.id);
+    setLocalAssigneeId(person.id);
 
-    const label = assignee?.displayName || selectedAssigneeId;
     const line = systemLine(
       isReassign
-        ? `Task reassigned to ${label}`
-        : `Task assigned to ${label}`
+        ? `Task reassigned to ${person.displayName}`
+        : `Task assigned to ${person.displayName}`
     );
 
     onAddNote(task.id, line);
     setDisplayNotes((prev) => [...prev, line]);
 
-    setAssigning(false);
-    setSelectedAssigneeId("");
+    setAssignmentModalOpen(false);
   }
 
-  /* ---------------- Execution authority ---------------- */
+  /* ================= Execution authority ================= */
 
   const executionState = task.executionState || "NOT_STARTED";
   const isCompleted = executionState === "COMPLETED";
@@ -149,7 +135,7 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ---------------- Notes ---------------- */
+  /* ================= Notes ================= */
 
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
@@ -173,7 +159,7 @@ export default function TaskPopup({
     setNoteModalOpen(false);
   }
 
-  /* ---------------- Summary association ---------------- */
+  /* ================= Summary association (UNCHANGED) ================= */
 
   const currentSummaryId = task.summaryId || "";
   const [summaryEditing, setSummaryEditing] = useState(false);
@@ -199,11 +185,11 @@ export default function TaskPopup({
     onClose();
   }
 
-  /* ---------------- Archive ---------------- */
+  /* ================= Archive ================= */
 
   const [confirmArchive, setConfirmArchive] = useState(false);
 
-  /* ---------------- Render ---------------- */
+  /* ================= Render ================= */
 
   return (
     <div
@@ -249,26 +235,10 @@ export default function TaskPopup({
           }}
         >
           <div>
-            {!isCompleted && !assigning && (
-              <button onClick={openAssign}>Assign</button>
-            )}
-
-            {!isCompleted && assigning && (
-              <>
-                <select
-                  value={selectedAssigneeId}
-                  onChange={(e) => setSelectedAssigneeId(e.target.value)}
-                >
-                  <option value="">Select assignee</option>
-                  {localAssignees.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.displayName}
-                    </option>
-                  ))}
-                </select>
-                <button onClick={confirmAssignment}>Confirm</button>
-                <button onClick={cancelAssignment}>Cancel</button>
-              </>
+            {!isCompleted && (
+              <button onClick={() => setAssignmentModalOpen(true)}>
+                {localAssigneeId ? "Reassign" : "Assign"}
+              </button>
             )}
 
             {!isCompleted && !summaryEditing && (
@@ -300,12 +270,8 @@ export default function TaskPopup({
 
           <div>
             {showStart && <button onClick={handleStartWork}>Start</button>}
-            {showSubmit && (
-              <button onClick={handleSubmitWork}>Submit</button>
-            )}
-            {showComplete && (
-              <button onClick={handleCompleteWork}>Complete</button>
-            )}
+            {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+            {showComplete && <button onClick={handleCompleteWork}>Complete</button>}
 
             {!confirmArchive && (
               <button onClick={() => setConfirmArchive(true)}>
@@ -362,6 +328,15 @@ export default function TaskPopup({
               </div>
             </div>
           </div>
+        )}
+
+        {assignmentModalOpen && (
+          <SubordinateSelectionModal
+            title="Assign task to"
+            items={localAssignees}
+            onSelect={handleSelectAssignee}
+            onClose={() => setAssignmentModalOpen(false)}
+          />
         )}
       </div>
     </div>
