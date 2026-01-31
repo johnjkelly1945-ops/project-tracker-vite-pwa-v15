@@ -4,9 +4,12 @@
 METRA — TaskPopup.jsx
 Stage 239 — Task → Summary Association (Canonical Closure Fix)
 Stage 246 — Phase 1: Assignment Selection Modal (UI Only)
+Stage 246 — Phase 2: Summary Association via Subordinate Selection Modal
 ---------------------------------------------------------------------
 • Assignment dropdown REMOVED
-• Assignment selection via subordinate modal ONLY
+• Summary dropdown REMOVED
+• Selection via subordinate modal ONLY
+• EXPLICIT CONFIRM RESTORED for summary association
 • Footer remains sole mutating authority
 • No semantic or authority changes
 =====================================================================
@@ -159,28 +162,36 @@ export default function TaskPopup({
     setNoteModalOpen(false);
   }
 
-  /* ================= Summary association (UNCHANGED) ================= */
+  /* ================= Summary association — Stage 246 Phase 2 ================= */
 
   const currentSummaryId = task.summaryId || "";
-  const [summaryEditing, setSummaryEditing] = useState(false);
-  const [selectedSummaryId, setSelectedSummaryId] =
-    useState(currentSummaryId);
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [summaryStaged, setSummaryStaged] = useState(false);
+  const [stagedSummaryId, setStagedSummaryId] = useState(currentSummaryId);
 
-  function openSummaryEdit() {
-    setSelectedSummaryId(currentSummaryId);
-    setSummaryEditing(true);
+  function openSummaryModal() {
+    setStagedSummaryId(currentSummaryId);
+    setSummaryStaged(false);
+    setSummaryModalOpen(true);
   }
 
-  function cancelSummaryEdit() {
-    setSelectedSummaryId(currentSummaryId);
-    setSummaryEditing(false);
+  function handleSelectSummary(summary) {
+    setStagedSummaryId(summary.id || "");
+    setSummaryStaged(true); // staged selection visible; no mutation yet
+    setSummaryModalOpen(false);
   }
 
-  function confirmSummaryEdit() {
-    if (selectedSummaryId !== currentSummaryId) {
-      onChangeTaskSummary(task.id, selectedSummaryId || null);
+  function cancelSummaryAssociation() {
+    setStagedSummaryId(currentSummaryId);
+    setSummaryStaged(false);
+  }
+
+  function confirmSummaryAssociation() {
+    if (stagedSummaryId !== currentSummaryId) {
+      onChangeTaskSummary(task.id, stagedSummaryId || null);
       const line = systemLine("Summary association updated");
       onAddNote(task.id, line);
+      setDisplayNotes((prev) => [...prev, line]);
     }
     onClose();
   }
@@ -241,27 +252,16 @@ export default function TaskPopup({
               </button>
             )}
 
-            {!isCompleted && !summaryEditing && (
-              <button onClick={openSummaryEdit}>
+            {!isCompleted && (
+              <button onClick={openSummaryModal}>
                 Associate with summary
               </button>
             )}
 
-            {!isCompleted && summaryEditing && (
+            {summaryStaged && !isCompleted && (
               <>
-                <select
-                  value={selectedSummaryId}
-                  onChange={(e) => setSelectedSummaryId(e.target.value)}
-                >
-                  <option value="">No summary</option>
-                  {summaries.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.title}
-                    </option>
-                  ))}
-                </select>
-                <button onClick={confirmSummaryEdit}>Confirm</button>
-                <button onClick={cancelSummaryEdit}>Cancel</button>
+                <button onClick={confirmSummaryAssociation}>Confirm</button>
+                <button onClick={cancelSummaryAssociation}>Cancel</button>
               </>
             )}
 
@@ -336,6 +336,15 @@ export default function TaskPopup({
             items={localAssignees}
             onSelect={handleSelectAssignee}
             onClose={() => setAssignmentModalOpen(false)}
+          />
+        )}
+
+        {summaryModalOpen && (
+          <SubordinateSelectionModal
+            title="Associate task with summary"
+            items={summaries.map((s) => ({ id: s.id, title: s.title }))}
+            onSelect={handleSelectSummary}
+            onClose={() => setSummaryModalOpen(false)}
           />
         )}
       </div>
