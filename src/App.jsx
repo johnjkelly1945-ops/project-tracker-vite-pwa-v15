@@ -7,6 +7,7 @@ import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
+import PersonnelPanel from "./components/PersonnelPanel";
 import { localAssignees } from "./data/localAssignees";
 
 /*
@@ -14,6 +15,8 @@ import { localAssignees } from "./data/localAssignees";
 METRA — App.jsx
 Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
 [FIX — Sidebar onToggle wiring restored]
+
+Stage 255-A — Personnel Module Container Mounted (Inert)
 =====================================================================
 */
 
@@ -316,6 +319,9 @@ export default function App() {
           managementBody={mgmtBody}
           developmentBody={devBody}
         />
+
+        {/* Stage 255-A — Inert Personnel Surface */}
+        {false && <PersonnelPanel />}
 
         {activeSummaryId && (
           <SummaryMoveModal
