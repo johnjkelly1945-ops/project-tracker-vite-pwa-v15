@@ -3,26 +3,24 @@
 =====================================================================
 METRA — TaskPopup.jsx
 Stage 239 — Task → Summary Association (Canonical Closure Fix)
-Stage 246 — Phase 1: Assignment Selection Modal (UI Only)
-Stage 249 — Governance Controls Restoration (UI ONLY)
+Stage 246 — Assignment Selection Modal (UI Only)
+Stage 249 — Governance Controls Restoration (UI Only)
+Stage 257 — Personnel Assignment Wiring
+Stage 257-B — Footer & Notes Visual Clarification (UI ONLY)
+Stage 257-C — Assign/Reassign Label + Timestamp Presentation (UI ONLY)
 ---------------------------------------------------------------------
-• Governance controls present in popup footer (UI only, UNWIRED)
-• Two-line footer:
-    Line 1 — Governance (CC / Risk / Issue / QC | Escalate)
-    Line 2 — Operational (existing controls unchanged)
-• Footer remains sole mutating authority
-• NO semantic, lifecycle, or authority changes
+• Assign button reflects state (Assign / Reassign)
+• Notes timestamps visually subordinate to message text
+• No authority, lifecycle, or semantic changes
 =====================================================================
 */
 
 import { useState, useEffect } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
-import { localAssignees } from "../data/localAssignees";
+import { personnel } from "../data/personnel";
 
-/* ------------------------------------------------------------------
-   Time helpers (canonical)
------------------------------------------------------------------- */
+/* ===================== Time helpers ===================== */
 
 function nowStamp() {
   const d = new Date();
@@ -44,9 +42,7 @@ function systemLine(text) {
   return `[System] ${text} — ${nowStamp()}`;
 }
 
-/* ------------------------------------------------------------------
-   Component
------------------------------------------------------------------- */
+/* ===================== Component ===================== */
 
 export default function TaskPopup({
   task,
@@ -68,9 +64,10 @@ export default function TaskPopup({
 
   useEffect(() => {
     setDisplayNotes(task.notes || []);
-  }, [task.notes]);
+    setLocalAssigneeId(task.assigneeId || "");
+  }, [task]);
 
-  /* ================= Assignment — Stage 246 Phase 1 ================= */
+  /* ================= Assignment ================= */
 
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
 
@@ -87,12 +84,12 @@ export default function TaskPopup({
     );
 
     onAddNote(task.id, line);
-    setDisplayNotes((prev) => [...prev, line]);
+    setDisplayNotes((p) => [...p, line]);
 
     setAssignmentModalOpen(false);
   }
 
-  /* ================= Execution authority ================= */
+  /* ================= Execution ================= */
 
   const executionState = task.executionState || "NOT_STARTED";
   const isCompleted = executionState === "COMPLETED";
@@ -104,11 +101,10 @@ export default function TaskPopup({
 
   const showStart =
     executionState === "NOT_STARTED" && (isAssignee || isPMProxy);
-
   const showSubmit =
     executionState === "IN_PROGRESS" && (isAssignee || isPMProxy);
-
-  const showComplete = executionState === "SUBMITTED" && isPM;
+  const showComplete =
+    executionState === "SUBMITTED" && isPM;
 
   function handleStartWork() {
     if (!showStart) return;
@@ -143,16 +139,6 @@ export default function TaskPopup({
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
 
-  function openNoteModal() {
-    setModalDraftText("");
-    setNoteModalOpen(true);
-  }
-
-  function cancelNoteDraft() {
-    setModalDraftText("");
-    setNoteModalOpen(false);
-  }
-
   function commitNoteDraft() {
     const text = modalDraftText.trim();
     if (!text) return;
@@ -162,22 +148,12 @@ export default function TaskPopup({
     setNoteModalOpen(false);
   }
 
-  /* ================= Summary association (UNCHANGED) ================= */
+  /* ================= Summary ================= */
 
   const currentSummaryId = task.summaryId || "";
   const [summaryEditing, setSummaryEditing] = useState(false);
   const [selectedSummaryId, setSelectedSummaryId] =
     useState(currentSummaryId);
-
-  function openSummaryEdit() {
-    setSelectedSummaryId(currentSummaryId);
-    setSummaryEditing(true);
-  }
-
-  function cancelSummaryEdit() {
-    setSelectedSummaryId(currentSummaryId);
-    setSummaryEditing(false);
-  }
 
   function confirmSummaryEdit() {
     if (selectedSummaryId !== currentSummaryId) {
@@ -187,10 +163,6 @@ export default function TaskPopup({
     }
     onClose();
   }
-
-  /* ================= Archive ================= */
-
-  const [confirmArchive, setConfirmArchive] = useState(false);
 
   /* ================= Render ================= */
 
@@ -220,34 +192,50 @@ export default function TaskPopup({
 
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <strong>Notes</strong>
-          {displayNotes.map((line, idx) => (
-            <div key={idx} style={{ marginBottom: "10px" }}>
-              {line}
-            </div>
-          ))}
+          {displayNotes.map((line, idx) => {
+            const [text, ts] = line.split(" — ");
+            return (
+              <div key={idx} style={{ marginBottom: "10px" }}>
+                <span>{text}</span>
+                {ts && (
+                  <span
+                    style={{
+                      marginLeft: "6px",
+                      fontSize: "12px",
+                      color: "#777",
+                    }}
+                  >
+                    — {ts}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* ================= Footer ================= */}
         <div
           style={{
-            borderTop: "1px solid #ddd",
-            padding: "10px",
+            borderTop: "1px solid rgba(11,58,102,0.25)",
+            background: "rgba(11,58,102,0.10)",
+            padding: "12px",
             display: "flex",
             flexDirection: "column",
-            gap: "8px",
+            gap: "10px",
           }}
         >
-          {/* Governance row — UI ONLY (UNWIRED) */}
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <button>CC</button>
-            <button>Risk</button>
-            <button>Issue</button>
-            <button>QC</button>
-            <span style={{ opacity: 0.6 }}>|</span>
-            <button>Escalate</button>
+          {/* Governance (read-only) */}
+          <div
+            style={{
+              textAlign: "center",
+              fontStyle: "italic",
+              color: "#333",
+            }}
+          >
+            CC · Risk · Issue · QC | Escalate
           </div>
 
-          {/* Operational row — unchanged behaviour */}
+          {/* Actions */}
           <div
             style={{
               display: "flex",
@@ -262,13 +250,11 @@ export default function TaskPopup({
                   {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
               )}
-
               {!isCompleted && !summaryEditing && (
-                <button onClick={openSummaryEdit}>
-                  Associate with summary
+                <button onClick={() => setSummaryEditing(true)}>
+                  Link summary
                 </button>
               )}
-
               {!isCompleted && summaryEditing && (
                 <>
                   <select
@@ -283,78 +269,66 @@ export default function TaskPopup({
                     ))}
                   </select>
                   <button onClick={confirmSummaryEdit}>Confirm</button>
-                  <button onClick={cancelSummaryEdit}>Cancel</button>
                 </>
               )}
-
-              <button onClick={openNoteModal}>Add note</button>
+              <button onClick={() => setNoteModalOpen(true)}>Add note</button>
             </div>
 
-            <div>
+            <div style={{ minWidth: "90px", textAlign: "right" }}>
               {showStart && <button onClick={handleStartWork}>Start</button>}
               {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
               {showComplete && (
                 <button onClick={handleCompleteWork}>Complete</button>
               )}
-
-              {!confirmArchive && (
-                <button onClick={() => setConfirmArchive(true)}>
-                  Delete
-                </button>
-              )}
-
-              {confirmArchive && (
-                <>
-                  <span>Archive task?</span>
-                  <button onClick={() => onArchiveTask(task.id)}>
-                    Confirm
-                  </button>
-                  <button onClick={() => setConfirmArchive(false)}>
-                    Cancel
-                  </button>
-                </>
-              )}
-
-              <button onClick={onClose}>Close</button>
+              <button onClick={() => onArchiveTask(task.id)}>Delete</button>
             </div>
           </div>
         </div>
+      </div>
 
-        {noteModalOpen && (
+      {assignmentModalOpen && (
+        <SubordinateSelectionModal
+          title={localAssigneeId ? "Reassign Task" : "Assign Task"}
+          items={personnel}
+          onSelect={handleSelectAssignee}
+          onClose={() => setAssignmentModalOpen(false)}
+        />
+      )}
+
+      {noteModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1100,
+          }}
+        >
           <div
             style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.4)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1100,
+              background: "#fff",
+              padding: "16px",
+              borderRadius: "6px",
+              width: "400px",
             }}
           >
-            <div
-              style={{
-                background: "#fff",
-                padding: "16px",
-                borderRadius: "6px",
-                width: "400px",
-              }}
-            >
-              <h3>Add note</h3>
-              <textarea
-                rows={4}
-                style={{ width: "100%" }}
-                value={modalDraftText}
-                onChange={(e) => setModalDraftText(e.target.value)}
-              />
-              <div style={{ marginTop: "10px" }}>
-                <button onClick={commitNoteDraft}>Add</button>
-                <button onClick={cancelNoteDraft}>Cancel</button>
-              </div>
+            <h3>Add note</h3>
+            <textarea
+              rows={4}
+              style={{ width: "100%" }}
+              value={modalDraftText}
+              onChange={(e) => setModalDraftText(e.target.value)}
+            />
+            <div style={{ marginTop: "10px" }}>
+              <button onClick={commitNoteDraft}>Add</button>
+              <button onClick={() => setNoteModalOpen(false)}>Cancel</button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
