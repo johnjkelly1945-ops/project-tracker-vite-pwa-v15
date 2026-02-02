@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { setPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 /*
 =====================================================================
@@ -7,26 +8,21 @@ METRA — PersonnelPanel.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 255-B — Add Person Card (Descriptive Only)
+Stage 255-C — Personnel Reference Pool Publisher
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide a canonical Personnel workspace surface with a descriptive
-Add Person card.
+Provide a canonical Personnel workspace surface and publish the
+personnel list to a read-only reference pool.
 
 GUARDRAILS
 ---------------------------------------------------------------------
+• PersonnelPanel remains the sole mutation surface
+• External consumers are read-only
 • No authority assertions
 • No roles
 • No persistence
 • No assignment wiring
-• No sidebar or navigation changes
-• Local, in-memory state only
-
-PM-ONLY NOTE
----------------------------------------------------------------------
-PM-only access is satisfied by placement and workflow.
-No runtime authority checks are introduced here.
 
 =====================================================================
 */
@@ -34,6 +30,11 @@ No runtime authority checks are introduced here.
 export default function PersonnelPanel() {
   const [people, setPeople] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
+
+  // Publish to read-only registry on any change
+  useEffect(() => {
+    setPersonnel(people);
+  }, [people]);
 
   function handleSave(person) {
     setPeople((prev) => [...prev, person]);
