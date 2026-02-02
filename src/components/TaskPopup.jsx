@@ -6,9 +6,9 @@ Stage 239 — Task → Summary Association (Canonical Closure Fix)
 Stage 246 — Phase 1: Assignment Selection Modal (UI Only)
 Stage 249 — Governance Controls Restoration (UI ONLY)
 ---------------------------------------------------------------------
-• Governance controls restored to popup footer (UI only, disabled)
+• Governance controls present in popup footer (UI only, UNWIRED)
 • Two-line footer:
-    Line 1 — Governance (Risk / Issue / Escalate / QC)
+    Line 1 — Governance (CC / Risk / Issue / QC | Escalate)
     Line 2 — Operational (existing controls unchanged)
 • Footer remains sole mutating authority
 • NO semantic, lifecycle, or authority changes
@@ -237,12 +237,14 @@ export default function TaskPopup({
             gap: "8px",
           }}
         >
-          {/* Governance row — UI ONLY */}
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button disabled>Risk</button>
-            <button disabled>Issue</button>
-            <button disabled>Escalate</button>
-            <button disabled>QC</button>
+          {/* Governance row — UI ONLY (UNWIRED) */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button>CC</button>
+            <button>Risk</button>
+            <button>Issue</button>
+            <button>QC</button>
+            <span style={{ opacity: 0.6 }}>|</span>
+            <button>Escalate</button>
           </div>
 
           {/* Operational row — unchanged behaviour */}
@@ -351,15 +353,6 @@ export default function TaskPopup({
               </div>
             </div>
           </div>
-        )}
-
-        {assignmentModalOpen && (
-          <SubordinateSelectionModal
-            title="Assign task to"
-            items={localAssignees}
-            onSelect={handleSelectAssignee}
-            onClose={() => setAssignmentModalOpen(false)}
-          />
         )}
       </div>
     </div>
