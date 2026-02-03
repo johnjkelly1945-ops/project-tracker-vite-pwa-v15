@@ -8,10 +8,13 @@ Stage 249 — Governance Controls Restoration (UI Only)
 Stage 257 — Personnel Assignment Wiring
 Stage 257-B — Footer & Notes Visual Clarification (UI ONLY)
 Stage 257-C — Assign/Reassign Label + Timestamp Presentation (UI ONLY)
+Stage 260 — Archive Confirmation Gate (Mechanical Only)
 ---------------------------------------------------------------------
-• Assign button reflects state (Assign / Reassign)
-• Notes timestamps visually subordinate to message text
-• No authority, lifecycle, or semantic changes
+• Footer controls preserved verbatim
+• Summary association behaviour preserved
+• Delete remains label
+• Archive invoked only after explicit confirmation
+• No lifecycle or authority changes
 =====================================================================
 */
 
@@ -61,6 +64,17 @@ export default function TaskPopup({
 
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [modalDraftText, setModalDraftText] = useState("");
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
+
+  /* ===== RESTORED SUMMARY STATE (CANONICAL) ===== */
+
+  const currentSummaryId = task.summaryId || "";
+  const [summaryEditing, setSummaryEditing] = useState(false);
+  const [selectedSummaryId, setSelectedSummaryId] =
+    useState(currentSummaryId);
 
   useEffect(() => {
     setDisplayNotes(task.notes || []);
@@ -68,8 +82,6 @@ export default function TaskPopup({
   }, [task]);
 
   /* ================= Assignment ================= */
-
-  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
 
   function handleSelectAssignee(person) {
     const isReassign = Boolean(localAssigneeId);
@@ -85,7 +97,6 @@ export default function TaskPopup({
 
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
-
     setAssignmentModalOpen(false);
   }
 
@@ -134,11 +145,6 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ================= Notes ================= */
-
-  const [noteModalOpen, setNoteModalOpen] = useState(false);
-  const [modalDraftText, setModalDraftText] = useState("");
-
   function commitNoteDraft() {
     const text = modalDraftText.trim();
     if (!text) return;
@@ -148,13 +154,6 @@ export default function TaskPopup({
     setNoteModalOpen(false);
   }
 
-  /* ================= Summary ================= */
-
-  const currentSummaryId = task.summaryId || "";
-  const [summaryEditing, setSummaryEditing] = useState(false);
-  const [selectedSummaryId, setSelectedSummaryId] =
-    useState(currentSummaryId);
-
   function confirmSummaryEdit() {
     if (selectedSummaryId !== currentSummaryId) {
       onChangeTaskSummary(task.id, selectedSummaryId || null);
@@ -162,6 +161,11 @@ export default function TaskPopup({
       onAddNote(task.id, line);
     }
     onClose();
+  }
+
+  function confirmArchive() {
+    onArchiveTask(task.id);
+    setArchiveConfirmOpen(false);
   }
 
   /* ================= Render ================= */
@@ -198,13 +202,7 @@ export default function TaskPopup({
               <div key={idx} style={{ marginBottom: "10px" }}>
                 <span>{text}</span>
                 {ts && (
-                  <span
-                    style={{
-                      marginLeft: "6px",
-                      fontSize: "12px",
-                      color: "#777",
-                    }}
-                  >
+                  <span style={{ marginLeft: "6px", fontSize: "12px", color: "#777" }}>
                     — {ts}
                   </span>
                 )}
@@ -224,18 +222,10 @@ export default function TaskPopup({
             gap: "10px",
           }}
         >
-          {/* Governance (read-only) */}
-          <div
-            style={{
-              textAlign: "center",
-              fontStyle: "italic",
-              color: "#333",
-            }}
-          >
+          <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
             CC · Risk · Issue · QC | Escalate
           </div>
 
-          {/* Actions */}
           <div
             style={{
               display: "flex",
@@ -280,7 +270,7 @@ export default function TaskPopup({
               {showComplete && (
                 <button onClick={handleCompleteWork}>Complete</button>
               )}
-              <button onClick={() => onArchiveTask(task.id)}>Delete</button>
+              <button onClick={() => setArchiveConfirmOpen(true)}>Delete</button>
             </div>
           </div>
         </div>
@@ -318,6 +308,25 @@ export default function TaskPopup({
               <button onClick={commitNoteDraft}>Add</button>
               <button onClick={() => setNoteModalOpen(false)}>Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {archiveConfirmOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 3000,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px" }}>
+            <button onClick={confirmArchive}>Confirm</button>
+            <button onClick={() => setArchiveConfirmOpen(false)}>Cancel</button>
           </div>
         </div>
       )}
