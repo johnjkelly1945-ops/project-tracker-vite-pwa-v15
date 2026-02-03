@@ -7,17 +7,16 @@ import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
+import PersonnelPanel from "./components/PersonnelPanel";
 import { localAssignees } from "./data/localAssignees";
 
 /*
 =====================================================================
 METRA — App.jsx
-Stage 241 — TaskPopup Authority Guard (SEM-TP-01)
-Baseline anchor: Stage 233A — Personnel Routing Prep
----------------------------------------------------------------------
-• Enforces SEM-TP-01
-• TaskPopup mounts ONLY in authorised single-pane context
-• No UI or behavioural changes in valid states
+Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
+[FIX — Sidebar onToggle wiring restored]
+
+Stage 255-A — Personnel Module Container Mounted (Inert)
 =====================================================================
 */
 
@@ -203,23 +202,76 @@ export default function App() {
     );
   }
 
-  /* ============================================================
-     STAGE 233A — DORMANT PERSONNEL ROUTING PREPARATION (NO-OP)
-     ============================================================ */
+  function onAddNote(taskId, note) {
+    if (isReadOnly) return;
 
-  const personnelRoutingPrepared = false;
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
 
-  const personnelRoutingRegistry = {
-    enabled: false,
-    byTaskId: Object.create(null),
-    byPersonId: Object.create(null),
-  };
-
-  function preparePersonnelRouting(_taskId, _personId) {
-    if (!personnelRoutingPrepared) return;
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, notes: [...(t.notes || []), note] } : t
+      )
+    );
   }
 
-  /* ===================== PREPROJECT BODIES ===================== */
+  function onStartExecution(taskId) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId && t.executionState === "NOT_STARTED"
+          ? { ...t, executionState: "IN_PROGRESS" }
+          : t
+      )
+    );
+  }
+
+  function onSubmitExecution(taskId) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId && t.executionState === "IN_PROGRESS"
+          ? { ...t, executionState: "SUBMITTED" }
+          : t
+      )
+    );
+  }
+
+  function onCompleteExecution(taskId) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId && t.executionState === "SUBMITTED"
+          ? { ...t, executionState: "COMPLETED" }
+          : t
+      )
+    );
+  }
+
+  function onArchiveTask(taskId) {
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, taskState: "archived" } : t
+      )
+    );
+
+    setActiveTaskId(null);
+  }
+
+  const activeTask =
+    activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
+
+  /* ===================== SURFACES ===================== */
 
   const mgmtBody = (
     <PreProject
@@ -247,9 +299,6 @@ export default function App() {
     />
   );
 
-  const activeTask =
-    activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
-
   /* ===================== RENDER ===================== */
 
   return (
@@ -271,6 +320,9 @@ export default function App() {
           developmentBody={devBody}
         />
 
+        {/* Stage 255-A — Inert Personnel Surface */}
+        {false && <PersonnelPanel />}
+
         {activeSummaryId && (
           <SummaryMoveModal
             summaryId={activeSummaryId}
@@ -281,17 +333,20 @@ export default function App() {
           />
         )}
 
-        {workspaceMode === "single" &&
-          focusedPane &&
-          activeTask && (
-            <TaskPopup
-              task={activeTask}
-              summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
-              onClose={() => setActiveTaskId(null)}
-              onAssignTask={onAssignTask}
-              onChangeTaskSummary={onChangeTaskSummary}
-            />
-          )}
+        {activeTask && (
+          <TaskPopup
+            task={activeTask}
+            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            onClose={() => setActiveTaskId(null)}
+            onAddNote={onAddNote}
+            onAssignTask={onAssignTask}
+            onChangeTaskSummary={onChangeTaskSummary}
+            onStartExecution={onStartExecution}
+            onSubmitExecution={onSubmitExecution}
+            onCompleteExecution={onCompleteExecution}
+            onArchiveTask={onArchiveTask}
+          />
+        )}
       </div>
     </>
   );
