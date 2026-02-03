@@ -17,6 +17,7 @@ Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
 [FIX — Sidebar onToggle wiring restored]
 
 Stage 255-A — Personnel Module Container Mounted (Inert)
+Stage 264 — Reassignment Made Authoritative (Single-Axis)
 =====================================================================
 */
 
@@ -172,6 +173,7 @@ export default function App() {
     setActiveTaskId(task.id);
   }
 
+  // Stage 264 — reassignment made authoritative (single-axis change)
   function onAssignTask(taskId, assigneeId) {
     if (isReadOnly) return;
 
@@ -179,7 +181,7 @@ export default function App() {
 
     setTasks((c) =>
       c.map((t) =>
-        t.id === taskId && !t.assigneeId
+        t.id === taskId
           ? {
               ...t,
               assigneeId,

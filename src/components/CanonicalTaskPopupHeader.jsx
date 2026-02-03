@@ -41,7 +41,7 @@ export default function CanonicalTaskPopupHeader({ task, onClose }) {
         alignItems: "center",
       }}
     >
-      {/* Centered title + assignee */}
+      {/* Centered title + assignee (single-line canonical layout) */}
       <div
         style={{
           position: "absolute",
