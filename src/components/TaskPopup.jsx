@@ -9,11 +9,13 @@ Stage 257 — Personnel Assignment Wiring
 Stage 257-B — Footer & Notes Visual Clarification (UI ONLY)
 Stage 257-C — Assign/Reassign Label + Timestamp Presentation (UI ONLY)
 Stage 260 — Archive Confirmation Gate (Mechanical Only)
+Stage 268 — Document Link as Immutable Task Event (CANONICAL)
 ---------------------------------------------------------------------
 • Footer controls preserved verbatim
 • Summary association behaviour preserved
 • Delete remains label
 • Archive invoked only after explicit confirmation
+• Document linking recorded as immutable system event only
 • No lifecycle or authority changes
 =====================================================================
 */
@@ -68,6 +70,12 @@ export default function TaskPopup({
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
+
+  /* ===== Document link modal (Stage 268) ===== */
+
+  const [linkDocOpen, setLinkDocOpen] = useState(false);
+  const [docTitle, setDocTitle] = useState("");
+  const [docRef, setDocRef] = useState("");
 
   /* ===== RESTORED SUMMARY STATE (CANONICAL) ===== */
 
@@ -168,6 +176,22 @@ export default function TaskPopup({
     setArchiveConfirmOpen(false);
   }
 
+  /* ================= Document link (Stage 268) ================= */
+
+  function confirmLinkDocument() {
+    const title = docTitle.trim();
+    const ref = docRef.trim();
+    if (!title || !ref) return;
+
+    const line = systemLine(`Document linked: "${title}"\n${ref}`);
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setDocTitle("");
+    setDocRef("");
+    setLinkDocOpen(false);
+  }
+
   /* ================= Render ================= */
 
   return (
@@ -200,7 +224,7 @@ export default function TaskPopup({
             const [text, ts] = line.split(" — ");
             return (
               <div key={idx} style={{ marginBottom: "10px" }}>
-                <span>{text}</span>
+                <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>
                 {ts && (
                   <span style={{ marginLeft: "6px", fontSize: "12px", color: "#777" }}>
                     — {ts}
@@ -262,6 +286,7 @@ export default function TaskPopup({
                 </>
               )}
               <button onClick={() => setNoteModalOpen(true)}>Add note</button>
+              <button onClick={() => setLinkDocOpen(true)}>Link document</button>
             </div>
 
             <div style={{ minWidth: "90px", textAlign: "right" }}>
@@ -307,6 +332,42 @@ export default function TaskPopup({
             <div style={{ marginTop: "10px", textAlign: "right" }}>
               <button onClick={commitNoteDraft}>Add</button>
               <button onClick={() => setNoteModalOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {linkDocOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2500,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px", width: "420px" }}>
+            <strong>Link document</strong>
+            <div style={{ marginTop: "10px" }}>
+              <input
+                style={{ width: "100%", marginBottom: "8px" }}
+                placeholder="Document title"
+                value={docTitle}
+                onChange={(e) => setDocTitle(e.target.value)}
+              />
+              <input
+                style={{ width: "100%" }}
+                placeholder="Document reference (URL / identifier)"
+                value={docRef}
+                onChange={(e) => setDocRef(e.target.value)}
+              />
+            </div>
+            <div style={{ marginTop: "12px", textAlign: "right" }}>
+              <button onClick={confirmLinkDocument}>Confirm</button>
+              <button onClick={() => setLinkDocOpen(false)}>Cancel</button>
             </div>
           </div>
         </div>
