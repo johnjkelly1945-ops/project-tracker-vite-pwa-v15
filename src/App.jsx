@@ -13,11 +13,21 @@ import { localAssignees } from "./data/localAssignees";
 /*
 =====================================================================
 METRA — App.jsx
+=====================================================================
+
 Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
 [FIX — Sidebar onToggle wiring restored]
 
 Stage 255-A — Personnel Module Container Mounted (Inert)
 Stage 264 — Reassignment Made Authoritative (Single-Axis)
+Stage 271 — Sidebar Derived Register Wiring (READ-ONLY)
+
+CHANGE (STAGE 271)
+---------------------------------------------------------------------
+• Introduces pure, read-only derivation of artefact links from tasks
+• Includes artefacts from ALL tasks (active + archived) for audit
+• Passes derivedArtefacts to Sidebar as projection-only data
+• No mutation, no state, no registry, no authority changes
 =====================================================================
 */
 
@@ -76,6 +86,57 @@ export default function App() {
     mgmtSummaries,
     mgmtSummaryOrder
   );
+
+  /* ===================== STAGE 271 — DERIVATION (READ-ONLY) ===================== */
+
+  function deriveArtefactsFromTasks(allTasks) {
+    if (!Array.isArray(allTasks)) return [];
+
+    const artefacts = [];
+
+    allTasks.forEach((task) => {
+      const notes = Array.isArray(task.notes) ? task.notes : [];
+
+      notes.forEach((line) => {
+        if (typeof line !== "string") return;
+
+        const isDoc = line.startsWith("[System] Document linked:");
+        const isTpl = line.startsWith("[System] Template linked:");
+
+        if (!isDoc && !isTpl) return;
+
+        const parts = line.split(" — ");
+        if (parts.length < 2) return;
+
+        const timestamp = parts[parts.length - 1];
+
+        const body = parts[0]
+          .replace("[System] Document linked:", "")
+          .replace("[System] Template linked:", "")
+          .trim();
+
+        const [titleLine, refLine] = body.split("\n");
+
+        if (!titleLine || !refLine) return;
+
+        artefacts.push({
+          type: isDoc ? "Document" : "Template",
+          title: titleLine.replace(/^"|"$/g, ""),
+          ref: refLine.trim(),
+          timestamp,
+          taskId: task.id,
+          taskTitle: task.title,
+        });
+      });
+    });
+
+    return artefacts.sort((a, b) =>
+      a.timestamp.localeCompare(b.timestamp)
+    );
+  }
+
+  const allTasks = [...devTasks, ...mgmtTasks];
+  const derivedArtefacts = deriveArtefactsFromTasks(allTasks);
 
   /* ===================== CREATION ===================== */
 
@@ -173,7 +234,6 @@ export default function App() {
     setActiveTaskId(task.id);
   }
 
-  // Stage 264 — reassignment made authoritative (single-axis change)
   function onAssignTask(taskId, assigneeId) {
     if (isReadOnly) return;
 
@@ -311,6 +371,7 @@ export default function App() {
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
+          derivedArtefacts={derivedArtefacts}
         />
 
         <DualPane
@@ -322,7 +383,6 @@ export default function App() {
           developmentBody={devBody}
         />
 
-        {/* Stage 255-A — Inert Personnel Surface */}
         {false && <PersonnelPanel />}
 
         {activeSummaryId && (

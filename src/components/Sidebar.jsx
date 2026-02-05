@@ -8,22 +8,29 @@ STAGE
 ---------------------------------------------------------------------
 Stage 86.3 — Sidebar Read-Only Structure (Inert)
 (Stage 160 — UI-only width refinement applied)
+Stage 271 — Sidebar Derived Register of Task-Linked Artefacts (Projection Only)
 
 PURPOSE
 ---------------------------------------------------------------------
 Provide a visible, populated sidebar structure representing METRA
-modules and sub-modules. Sidebar remains strictly non-authoritative
-and inert.
+modules and sub-modules.
 
-CHANGE (STAGE 160)
+Sidebar remains strictly:
+• Non-authoritative
+• Inert
+• Projection-only
+
+CHANGE (STAGE 271)
 ---------------------------------------------------------------------
-• Expanded width reduced from 240px → 180px
-• Collapsed width unchanged (48px)
-• No behavioural, authority, or semantic changes
+• Introduces a read-only projection surface for derived artefact links
+• No derivation logic added
+• No mutation, navigation, or authority introduced
 =====================================================================
 */
 
-export default function Sidebar({ expanded, onToggle }) {
+import SidebarArtefactRegister from "./sidebar/SidebarArtefactRegister";
+
+export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
   return (
     <aside
       style={{
@@ -81,8 +88,13 @@ export default function Sidebar({ expanded, onToggle }) {
               Modules
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
               {/* Governance */}
               <div>
                 <div style={{ fontWeight: "600" }}>Governance</div>
@@ -103,7 +115,10 @@ export default function Sidebar({ expanded, onToggle }) {
                 </div>
               </div>
 
-              {/* Other modules */}
+              {/* ================= Derived Artefacts (Read-Only) ================= */}
+              <SidebarArtefactRegister artefacts={derivedArtefacts} />
+
+              {/* Other modules (static placeholders) */}
               <div>Template Repository</div>
               <div>Summary / Task Repository</div>
               <div>Personnel</div>
