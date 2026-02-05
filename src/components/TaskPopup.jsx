@@ -10,13 +10,15 @@ Stage 257-B — Footer & Notes Visual Clarification (UI ONLY)
 Stage 257-C — Assign/Reassign Label + Timestamp Presentation (UI ONLY)
 Stage 260 — Archive Confirmation Gate (Mechanical Only)
 Stage 268 — Document Link as Immutable Task Event (CANONICAL)
+Stage 270 — Template Link as Immutable Task Event (CANONICAL)
 ---------------------------------------------------------------------
 • Footer controls preserved verbatim
 • Summary association behaviour preserved
 • Delete remains label
 • Archive invoked only after explicit confirmation
 • Document linking recorded as immutable system event only
-• No lifecycle or authority changes
+• Template linking recorded as immutable system event only
+• No lifecycle, navigation, or authority changes
 =====================================================================
 */
 
@@ -76,6 +78,12 @@ export default function TaskPopup({
   const [linkDocOpen, setLinkDocOpen] = useState(false);
   const [docTitle, setDocTitle] = useState("");
   const [docRef, setDocRef] = useState("");
+
+  /* ===== Template link modal (Stage 270) ===== */
+
+  const [linkTemplateOpen, setLinkTemplateOpen] = useState(false);
+  const [templateTitle, setTemplateTitle] = useState("");
+  const [templateRef, setTemplateRef] = useState("");
 
   /* ===== RESTORED SUMMARY STATE (CANONICAL) ===== */
 
@@ -192,6 +200,22 @@ export default function TaskPopup({
     setLinkDocOpen(false);
   }
 
+  /* ================= Template link (Stage 270) ================= */
+
+  function confirmLinkTemplate() {
+    const title = templateTitle.trim();
+    const ref = templateRef.trim();
+    if (!title || !ref) return;
+
+    const line = systemLine(`Template linked: "${title}"\n${ref}`);
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setTemplateTitle("");
+    setTemplateRef("");
+    setLinkTemplateOpen(false);
+  }
+
   /* ================= Render ================= */
 
   return (
@@ -287,6 +311,7 @@ export default function TaskPopup({
               )}
               <button onClick={() => setNoteModalOpen(true)}>Add note</button>
               <button onClick={() => setLinkDocOpen(true)}>Link document</button>
+              <button onClick={() => setLinkTemplateOpen(true)}>Link template</button>
             </div>
 
             <div style={{ minWidth: "90px", textAlign: "right" }}>
@@ -368,6 +393,42 @@ export default function TaskPopup({
             <div style={{ marginTop: "12px", textAlign: "right" }}>
               <button onClick={confirmLinkDocument}>Confirm</button>
               <button onClick={() => setLinkDocOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {linkTemplateOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2600,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px", width: "420px" }}>
+            <strong>Link template</strong>
+            <div style={{ marginTop: "10px" }}>
+              <input
+                style={{ width: "100%", marginBottom: "8px" }}
+                placeholder="Template title"
+                value={templateTitle}
+                onChange={(e) => setTemplateTitle(e.target.value)}
+              />
+              <input
+                style={{ width: "100%" }}
+                placeholder="Template reference (URL / identifier)"
+                value={templateRef}
+                onChange={(e) => setTemplateRef(e.target.value)}
+              />
+            </div>
+            <div style={{ marginTop: "12px", textAlign: "right" }}>
+              <button onClick={confirmLinkTemplate}>Confirm</button>
+              <button onClick={() => setLinkTemplateOpen(false)}>Cancel</button>
             </div>
           </div>
         </div>
