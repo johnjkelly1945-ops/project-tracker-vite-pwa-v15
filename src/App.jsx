@@ -16,27 +16,29 @@ METRA — App.jsx
 =====================================================================
 
 Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
-[FIX — Sidebar onToggle wiring restored]
-
 Stage 255-A — Personnel Module Container Mounted (Inert)
 Stage 264 — Reassignment Made Authoritative (Single-Axis)
 Stage 271 — Sidebar Derived Register Wiring (READ-ONLY)
 
-CHANGE (STAGE 271)
+Stage 275 — Phase C
 ---------------------------------------------------------------------
-• Introduces pure, read-only derivation of artefact links from tasks
-• Includes artefacts from ALL tasks (active + archived) for audit
-• Passes derivedArtefacts to Sidebar as projection-only data
-• No mutation, no state, no registry, no authority changes
+• Adds isolated, read-only Artefact Register view
+• Adds inert top-level view state (default: workspace)
+• Workspace behaviour unchanged
 =====================================================================
 */
 
 export default function App() {
+  /* ===================== TOP-LEVEL VIEW ===================== */
+
+  const [activeView, setActiveView] = useState("workspace"); // inert by default
+
+  /* ===================== WORKSPACE STATE ===================== */
+
   const [workspaceMode, setWorkspaceMode] = useState("dual"); // "dual" | "single"
   const [focusedPane, setFocusedPane] = useState(null);       // "management" | "development" | null
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
-  // Canonical authority gate
   const isReadOnly = workspaceMode === "dual" || !focusedPane;
   const isDev = focusedPane === "development";
 
@@ -333,35 +335,28 @@ export default function App() {
   const activeTask =
     activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
 
-  /* ===================== SURFACES ===================== */
-
-  const mgmtBody = (
-    <PreProject
-      summaries={orderedMgmtSummaries}
-      tasks={mgmtTasks.filter((t) => (t.taskState || "active") !== "archived")}
-      onOpenTask={onOpenTask}
-      onOpenSummary={openSummaryIfAuthorised}
-      canCreateTask={!isReadOnly}
-      onCreateTask={onCreateTask}
-      canCreateSummary={!isReadOnly}
-      onCreateSummary={onCreateSummary}
-    />
-  );
-
-  const devBody = (
-    <PreProject
-      summaries={orderedDevSummaries}
-      tasks={devTasks.filter((t) => (t.taskState || "active") !== "archived")}
-      onOpenTask={onOpenTask}
-      onOpenSummary={openSummaryIfAuthorised}
-      canCreateTask={!isReadOnly}
-      onCreateTask={onCreateTask}
-      canCreateSummary={!isReadOnly}
-      onCreateSummary={onCreateSummary}
-    />
-  );
-
   /* ===================== RENDER ===================== */
+
+  if (activeView === "artefact-register") {
+    return (
+      <>
+        <ModuleHeader />
+        <div style={{ padding: "16px" }}>
+          <h2>Artefact Register (Read-Only)</h2>
+          {derivedArtefacts.length === 0 && (
+            <div>No artefacts recorded.</div>
+          )}
+          {derivedArtefacts.map((a, i) => (
+            <div key={i} style={{ marginBottom: "8px" }}>
+              <strong>{a.type}</strong> — {a.title}
+              <br />
+              Task: {a.taskId} · {a.timestamp}
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -379,8 +374,30 @@ export default function App() {
           focusedPane={focusedPane}
           onFocusPane={handleFocusPane}
           onReturnToDual={returnToDual}
-          managementBody={mgmtBody}
-          developmentBody={devBody}
+          managementBody={
+            <PreProject
+              summaries={orderedMgmtSummaries}
+              tasks={mgmtTasks.filter((t) => (t.taskState || "active") !== "archived")}
+              onOpenTask={onOpenTask}
+              onOpenSummary={openSummaryIfAuthorised}
+              canCreateTask={!isReadOnly}
+              onCreateTask={onCreateTask}
+              canCreateSummary={!isReadOnly}
+              onCreateSummary={onCreateSummary}
+            />
+          }
+          developmentBody={
+            <PreProject
+              summaries={orderedDevSummaries}
+              tasks={devTasks.filter((t) => (t.taskState || "active") !== "archived")}
+              onOpenTask={onOpenTask}
+              onOpenSummary={openSummaryIfAuthorised}
+              canCreateTask={!isReadOnly}
+              onCreateTask={onCreateTask}
+              canCreateSummary={!isReadOnly}
+              onCreateSummary={onCreateSummary}
+            />
+          }
         />
 
         {false && <PersonnelPanel />}
