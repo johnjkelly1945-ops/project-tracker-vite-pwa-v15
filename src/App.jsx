@@ -8,7 +8,7 @@ import PreProject from "./components/PreProject";
 import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
-import ProjectRegisters from "./components/registers/ProjectRegisters";
+import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
 import { localAssignees } from "./data/localAssignees";
 
 /*
@@ -16,25 +16,19 @@ import { localAssignees } from "./data/localAssignees";
 METRA — App.jsx
 =====================================================================
 
-Stage 230 — Inline Task Status Indicators (Canonical Dot Projection)
-Stage 255-A — Personnel Module Container Mounted (Inert)
-Stage 264 — Reassignment Made Authoritative (Single-Axis)
-Stage 271 — Sidebar Derived Register Wiring (READ-ONLY)
+Stage 277 — Project Registers Host (Baseline)
+Stage 278A — Project Registers Host Surface (Read-Only)
 
-Stage 278 — Project Registers Initial Wiring (READ-ONLY)
----------------------------------------------------------------------
-• Wires ProjectRegisters into DualPane (management pane only)
-• Implements first register: Artefacts (derived, read-only)
-• No navigation, no mutation, no lifecycle
+Change in 278A:
+• Management pane renders inert Project Registers host
+• No other behavioural change
+
+SEM-NR-01 preserved
 =====================================================================
 */
 
 export default function App() {
-  /* ===================== TOP-LEVEL VIEW ===================== */
-
-  const [activeView] = useState("workspace"); // remains inert
-
-  /* ===================== WORKSPACE STATE ===================== */
+  const [activeView] = useState("workspace");
 
   const [workspaceMode, setWorkspaceMode] = useState("dual");
   const [focusedPane, setFocusedPane] = useState(null);
@@ -42,8 +36,6 @@ export default function App() {
 
   const isReadOnly = workspaceMode === "dual" || !focusedPane;
   const isDev = focusedPane === "development";
-
-  /* ===================== DATA ===================== */
 
   const [devSummaries, setDevSummaries] = useState([]);
   const [devTasks, setDevTasks] = useState([]);
@@ -55,8 +47,6 @@ export default function App() {
 
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
-
-  /* ===================== NAV ===================== */
 
   function handleFocusPane(pane) {
     setWorkspaceMode("single");
@@ -71,8 +61,6 @@ export default function App() {
     setActiveTaskId(null);
     setActiveSummaryId(null);
   }
-
-  /* ===================== HELPERS ===================== */
 
   function deriveOrderedSummaries(summaries, order) {
     return order.length > 0
@@ -90,66 +78,35 @@ export default function App() {
     mgmtSummaryOrder
   );
 
-  /* ===================== ARTEFACT DERIVATION (READ-ONLY) ===================== */
+  const tasks = isDev ? devTasks : mgmtTasks;
 
-  function deriveArtefactsFromTasks(allTasks) {
-    if (!Array.isArray(allTasks)) return [];
+  function onOpenTask(task) {
+    if (isReadOnly) return;
+    setActiveTaskId(task.id);
+  }
 
-    const artefacts = [];
-
-    allTasks.forEach((task) => {
-      const notes = Array.isArray(task.notes) ? task.notes : [];
-
-      notes.forEach((line) => {
-        if (typeof line !== "string") return;
-
-        const isDoc = line.startsWith("[System] Document linked:");
-        const isTpl = line.startsWith("[System] Template linked:");
-
-        if (!isDoc && !isTpl) return;
-
-        const parts = line.split(" — ");
-        if (parts.length < 2) return;
-
-        const timestamp = parts[parts.length - 1];
-
-        const body = parts[0]
-          .replace("[System] Document linked:", "")
-          .replace("[System] Template linked:", "")
-          .trim();
-
-        const [titleLine, refLine] = body.split("\n");
-
-        if (!titleLine || !refLine) return;
-
-        artefacts.push({
-          type: isDoc ? "Document" : "Template",
-          title: titleLine.replace(/^"|"$/g, ""),
-          ref: refLine.trim(),
-          timestamp,
-          taskId: task.id,
-        });
-      });
-    });
-
-    return artefacts.sort((a, b) =>
-      a.timestamp.localeCompare(b.timestamp)
+  function onAddNote(taskId, note) {
+    if (isReadOnly) return;
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, notes: [...(t.notes || []), note] } : t
+      )
     );
   }
 
-  const allTasks = [...devTasks, ...mgmtTasks];
-  const derivedArtefacts = deriveArtefactsFromTasks(allTasks);
+  function onArchiveTask(taskId) {
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId ? { ...t, taskState: "archived" } : t
+      )
+    );
+    setActiveTaskId(null);
+  }
 
-  /* ===================== PROJECT REGISTERS ===================== */
-
-  const projectRegisters = [
-    {
-      title: "Artefacts",
-      items: derivedArtefacts,
-    },
-  ];
-
-  /* ===================== RENDER ===================== */
+  const activeTask =
+    activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
 
   return (
     <>
@@ -159,7 +116,6 @@ export default function App() {
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
-          derivedArtefacts={derivedArtefacts}
         />
 
         <DualPane
@@ -167,24 +123,39 @@ export default function App() {
           focusedPane={focusedPane}
           onFocusPane={handleFocusPane}
           onReturnToDual={returnToDual}
-          managementBody={
-            <ProjectRegisters registers={projectRegisters} />
-          }
+          managementBody={<ProjectRegistersHost />}
           developmentBody={
             <PreProject
               summaries={orderedDevSummaries}
               tasks={devTasks.filter(
                 (t) => (t.taskState || "active") !== "archived"
               )}
-              onOpenTask={(t) => !isReadOnly && setActiveTaskId(t.id)}
-              onOpenSummary={(id) => !isReadOnly && setActiveSummaryId(id)}
+              onOpenTask={onOpenTask}
               canCreateTask={!isReadOnly}
-              onCreateTask={() => {}}
               canCreateSummary={!isReadOnly}
-              onCreateSummary={() => {}}
             />
           }
         />
+
+        {false && <PersonnelPanel />}
+
+        {activeSummaryId && (
+          <SummaryMoveModal
+            summaryId={activeSummaryId}
+            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            onClose={() => setActiveSummaryId(null)}
+          />
+        )}
+
+        {activeTask && (
+          <TaskPopup
+            task={activeTask}
+            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            onClose={() => setActiveTaskId(null)}
+            onAddNote={onAddNote}
+            onArchiveTask={onArchiveTask}
+          />
+        )}
       </div>
     </>
   );
