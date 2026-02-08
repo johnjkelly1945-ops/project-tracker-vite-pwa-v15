@@ -9,26 +9,39 @@ STAGE
 Stage 86.3 — Sidebar Read-Only Structure (Inert)
 (Stage 160 — UI-only width refinement applied)
 Stage 271 — Sidebar Derived Register of Task-Linked Artefacts (Projection Only)
+Stage 280 — Sidebar Register Reveal Intent Emission (NON-AUTHORITATIVE)
 
 PURPOSE
 ---------------------------------------------------------------------
 Provide a visible, populated sidebar structure representing METRA
 modules and sub-modules.
 
-Sidebar remains strictly:
+In Stage 280, the Sidebar MAY emit inspection-only reveal intent
+events for governance registers. The Sidebar remains strictly:
 • Non-authoritative
-• Inert
 • Projection-only
+• Non-navigational
+• Free of reveal UI or logic
 
-CHANGE (STAGE 271)
+AUTHORITATIVE CONSTRAINTS
 ---------------------------------------------------------------------
-• Introduces a read-only projection surface for derived artefact links
-• No derivation logic added
-• No mutation, navigation, or authority introduced
+• No workspace mutation
+• No navigation or routing
+• No reveal rendering
+• Intent emission only
+• SEM-NR-01 preserved
 =====================================================================
 */
 
 import SidebarArtefactRegister from "./sidebar/SidebarArtefactRegister";
+
+function emitRegisterReveal(register) {
+  window.dispatchEvent(
+    new CustomEvent("metra:register:reveal", {
+      detail: { register },
+    })
+  );
+}
 
 export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
   return (
@@ -95,7 +108,7 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                 gap: "12px",
               }}
             >
-              {/* Governance */}
+              {/* Governance (intent-only) */}
               <div>
                 <div style={{ fontWeight: "600" }}>Governance</div>
                 <div
@@ -112,6 +125,12 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                   <div>Risks</div>
                   <div>Issues</div>
                   <div>Escalation</div>
+                  <div
+                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => emitRegisterReveal("artefacts")}
+                  >
+                    Artefacts
+                  </div>
                 </div>
               </div>
 
