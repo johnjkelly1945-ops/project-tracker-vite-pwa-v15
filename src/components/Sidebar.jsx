@@ -10,18 +10,19 @@ Stage 86.3 — Sidebar Read-Only Structure (Inert)
 (Stage 160 — UI-only width refinement applied)
 Stage 271 — Sidebar Derived Register of Task-Linked Artefacts (Projection Only)
 Stage 280 — Sidebar Register Reveal Intent Emission (NON-AUTHORITATIVE)
+Stage 286 — Governance Risks Register (Reveal Intent Added)
 
 PURPOSE
 ---------------------------------------------------------------------
 Provide a visible, populated sidebar structure representing METRA
 modules and sub-modules.
 
-In Stage 280, the Sidebar MAY emit inspection-only reveal intent
-events for governance registers. The Sidebar remains strictly:
+The Sidebar MAY emit inspection-only reveal intent events for
+governance registers. The Sidebar remains strictly:
 • Non-authoritative
 • Projection-only
 • Non-navigational
-• Free of reveal UI or logic
+• Free of reveal rendering logic
 
 AUTHORITATIVE CONSTRAINTS
 ---------------------------------------------------------------------
@@ -122,9 +123,17 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                   }}
                 >
                   <div>Change Control</div>
-                  <div>Risks</div>
+
+                  <div
+                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => emitRegisterReveal("risks")}
+                  >
+                    Risks
+                  </div>
+
                   <div>Issues</div>
                   <div>Escalation</div>
+
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
                     onClick={() => emitRegisterReveal("artefacts")}
