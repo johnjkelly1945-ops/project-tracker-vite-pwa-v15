@@ -14,13 +14,18 @@ Stage 281-2C — Modal Header METRA Styling (UI-ONLY)
 Stage 281-2D — Governance Ledger Filter (INSPECTION-ONLY)
 Stage 281-2E — Visible Governance Identity (ARTEFACTS ONLY)
 Stage 281-2G — Header Semantic Compression (UI-ONLY)
+Stage 284A — Artefacts Register Layout Refinement (DESIGN-LOCKED)
+Stage 284 — Governance Register Filtering (IMPLEMENTATION)
 
 PURPOSE
 ---------------------------------------------------------------------
 Provide a global, inspection-only governance register surface.
 
-Stage 281-2G compresses column headers to governance-standard
-abbreviations to reduce visual density without loss of meaning.
+Filtering conforms to Stage 283 design-lock:
+• Unified free-text entry
+• Tokenised AND / intersection semantics
+• Programme / Project filterable via text only
+• No clickable context
 =====================================================================
 */
 
@@ -33,8 +38,6 @@ let listenersAttached = false;
 ---------------------------------------------------------------------
 STATIC GOVERNANCE STUB (INSPECTION-ONLY)
 ---------------------------------------------------------------------
-This stub represents the canonical governance ledger shape.
-Data wiring will occur in a future authorised stage.
 */
 const GOVERNANCE_ARTEFACTS_STUB = [
   {
@@ -42,22 +45,24 @@ const GOVERNANCE_ARTEFACTS_STUB = [
     title: "Project Charter v1",
     createdBy: "J. Smith",
     createdOn: "2026-02-02",
-    originatingTask: "Define Project Scope",
+
+    originatingTaskName: "Define Project Scope",
+    taskId: "TASK-00042",
 
     programmeId: "PRG-001",
     projectId: "PROJ-ACME-01",
-    taskId: "TASK-00042",
   },
   {
     type: "Template",
     title: "Risk Register Template",
     createdBy: "PMO",
     createdOn: "2025-11-18",
-    originatingTask: "Initial Governance Setup",
+
+    originatingTaskName: "Initial Governance Setup",
+    taskId: "TASK-INIT-01",
 
     programmeId: "PRG-000",
     projectId: "PROJ-GOV-BASE",
-    taskId: "TASK-INIT-01",
   },
 ];
 
@@ -94,16 +99,35 @@ export default function RegisterRevealLayer() {
 
   if (!host || !visible) return null;
 
+  /*
+  -------------------------------------------------------------------
+  FILTERING — AND / INTERSECTION SEMANTICS (STAGE 283)
+  -------------------------------------------------------------------
+  */
+  const tokens = filterText
+    .toLowerCase()
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+
   const filteredArtefacts = GOVERNANCE_ARTEFACTS_STUB.filter((a) => {
-    if (!filterText.trim()) return true;
-    const q = filterText.toLowerCase();
-    return (
-      a.title.toLowerCase().includes(q) ||
-      a.createdBy.toLowerCase().includes(q) ||
-      a.originatingTask.toLowerCase().includes(q) ||
-      a.programmeId.toLowerCase().includes(q) ||
-      a.projectId.toLowerCase().includes(q) ||
-      a.taskId.toLowerCase().includes(q)
+    if (tokens.length === 0) return true;
+
+    const fields = [
+      a.title,
+      a.createdBy,
+      a.originatingTaskName,
+      a.programmeId,
+      a.projectId,
+      a.taskId,
+      a.type,
+    ]
+      .filter(Boolean)
+      .map((v) => v.toLowerCase());
+
+    // AND semantics: every token must match at least one field
+    return tokens.every((tok) =>
+      fields.some((field) => field.includes(tok))
     );
   });
 
@@ -111,6 +135,17 @@ export default function RegisterRevealLayer() {
     fontFamily: "monospace",
     fontSize: "12px",
     color: "#666",
+    marginLeft: "6px",
+    whiteSpace: "nowrap",
+  };
+
+  const truncateStyle = {
+    maxWidth: "240px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    display: "inline-block",
+    verticalAlign: "bottom",
   };
 
   return createPortal(
@@ -145,7 +180,7 @@ export default function RegisterRevealLayer() {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header — METRA Royal Blue */}
+        {/* Header */}
         <div
           style={{
             flex: "0 0 auto",
@@ -191,7 +226,7 @@ export default function RegisterRevealLayer() {
         >
           <input
             type="text"
-            placeholder="Filter by identifier, creator, task, programme, or project…"
+            placeholder="Filter by creator, task, programme, project, type…"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             style={{
@@ -223,24 +258,35 @@ export default function RegisterRevealLayer() {
               <thead>
                 <tr>
                   <th align="left">Type</th>
-                  <th align="left">ID</th>
-                  <th align="left">Title</th>
+                  <th align="left">Task</th>
+                  <th align="left">Document</th>
                   <th align="left">By</th>
                   <th align="left">Date</th>
-                  <th align="left">Prog / Proj / Task</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredArtefacts.map((a, idx) => (
                   <tr key={idx}>
                     <td>{a.type}</td>
-                    <td style={idStyle}>{a.taskId}</td>
-                    <td>{a.title}</td>
+
+                    <td>
+                      <span
+                        title={`${a.originatingTaskName} — ${a.taskId}`}
+                        style={truncateStyle}
+                      >
+                        {a.originatingTaskName}
+                      </span>
+                      <span style={idStyle}>{a.taskId}</span>
+                    </td>
+
+                    <td>
+                      <span title={a.title} style={truncateStyle}>
+                        {a.title}
+                      </span>
+                    </td>
+
                     <td>{a.createdBy}</td>
                     <td>{a.createdOn}</td>
-                    <td style={idStyle}>
-                      {a.programmeId} / {a.projectId} / {a.taskId}
-                    </td>
                   </tr>
                 ))}
               </tbody>
