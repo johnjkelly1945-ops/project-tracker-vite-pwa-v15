@@ -12,6 +12,7 @@ Stage 281-2A — Artefacts Governance Ledger (REFERENCE)
 Stage 284 — Governance Register Filtering (IMPLEMENTATION)
 Stage 286 — Governance Risks Register (INSPECTION-ONLY)
 Stage 286C — Corrective Layout & Artefacts Restoration (UI-ONLY)
+Stage 290 — Governance Issues Register (INSPECTION-ONLY)
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -82,6 +83,24 @@ const GOVERNANCE_RISKS_STUB = [
   },
 ];
 
+/* ------------------------------------------------------------------
+   STAGE 290 — ISSUES GOVERNANCE STUB (INSPECTION-ONLY)
+   (Additive only; no baseline logic altered)
+------------------------------------------------------------------ */
+
+const GOVERNANCE_ISSUES_STUB = [
+  {
+    issueId: "ISSUE-001",
+    title: "Dependency definition unclear",
+    createdBy: "M. Brown",
+    createdOn: "2026-02-10",
+    originatingTaskName: "Define integration boundaries",
+    taskId: "TASK-00115",
+    programmeId: "PRG-001",
+    projectId: "PROJ-ACME-01",
+  },
+];
+
 export default function RegisterRevealLayer() {
   const host = document.getElementById("metra-register-reveal");
   const [visible, setVisible] = useState(false);
@@ -113,6 +132,7 @@ export default function RegisterRevealLayer() {
 
   /* ------------------------------------------------------------------
      FILTERING — AND / INTERSECTION SEMANTICS (STAGE 283)
+     (Baseline logic preserved)
   ------------------------------------------------------------------ */
 
   const tokens = filterText
@@ -156,8 +176,22 @@ export default function RegisterRevealLayer() {
     )
   );
 
+  const filteredIssues = GOVERNANCE_ISSUES_STUB.filter((i) =>
+    filterByTokens(
+      [
+        i.title,
+        i.issueId,
+        i.createdBy,
+        i.originatingTaskName,
+        i.taskId,
+        i.programmeId,
+        i.projectId,
+      ].map((v) => v.toLowerCase())
+    )
+  );
+
   /* ------------------------------------------------------------------
-     CANONICAL CELL STYLES
+     CANONICAL CELL STYLES (BASELINE PRESERVED)
   ------------------------------------------------------------------ */
 
   const noWrapCell = {
@@ -183,6 +217,8 @@ export default function RegisterRevealLayer() {
   const headerTitle =
     activeRegister === "risks"
       ? "Risks Register — Governance Ledger (Read-Only)"
+      : activeRegister === "issues"
+      ? "Issues Register — Governance Ledger (Read-Only)"
       : "Artefacts Register — Governance Ledger (Read-Only)";
 
   return createPortal(
@@ -313,6 +349,40 @@ export default function RegisterRevealLayer() {
                     <td style={idStyle}>{r.riskId}</td>
                     <td style={noWrapCell}>{r.createdBy}</td>
                     <td style={noWrapCell}>{r.createdOn}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {activeRegister === "issues" && (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th align="center">Task</th>
+                  <th align="center">Issue</th>
+                  <th align="center" style={{ width: "120px" }}>Issue ID</th>
+                  <th align="center" style={{ width: "140px" }}>By</th>
+                  <th align="center" style={{ width: "120px" }}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredIssues.map((i, idx) => (
+                  <tr key={idx}>
+                    <td style={noWrapCell}>
+                      <span title={`${i.originatingTaskName} — ${i.taskId}`} style={truncateStyle}>
+                        {i.originatingTaskName}
+                      </span>{" "}
+                      <span style={idStyle}>{i.taskId}</span>
+                    </td>
+                    <td style={noWrapCell}>
+                      <span title={i.title} style={truncateStyle}>
+                        {i.title}
+                      </span>
+                    </td>
+                    <td style={idStyle}>{i.issueId}</td>
+                    <td style={noWrapCell}>{i.createdBy}</td>
+                    <td style={noWrapCell}>{i.createdOn}</td>
                   </tr>
                 ))}
               </tbody>

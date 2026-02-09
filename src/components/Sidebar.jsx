@@ -11,6 +11,7 @@ Stage 86.3 — Sidebar Read-Only Structure (Inert)
 Stage 271 — Sidebar Derived Register of Task-Linked Artefacts (Projection Only)
 Stage 280 — Sidebar Register Reveal Intent Emission (NON-AUTHORITATIVE)
 Stage 286 — Governance Risks Register (Reveal Intent Added)
+Stage 290 — Governance Issues Register (Reveal Intent Added)
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -131,7 +132,13 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                     Risks
                   </div>
 
-                  <div>Issues</div>
+                  <div
+                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => emitRegisterReveal("issues")}
+                  >
+                    Issues
+                  </div>
+
                   <div>Escalation</div>
 
                   <div
