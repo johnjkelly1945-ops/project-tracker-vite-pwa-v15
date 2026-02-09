@@ -13,6 +13,7 @@ Stage 284 — Governance Register Filtering (IMPLEMENTATION)
 Stage 286 — Governance Risks Register (INSPECTION-ONLY)
 Stage 286C — Corrective Layout & Artefacts Restoration (UI-ONLY)
 Stage 290 — Governance Issues Register (INSPECTION-ONLY)
+Stage 291 — Governance Change Register (INSPECTION-ONLY)
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -46,16 +47,6 @@ const GOVERNANCE_ARTEFACTS_STUB = [
     programmeId: "PRG-001",
     projectId: "PROJ-ACME-01",
   },
-  {
-    type: "Template",
-    title: "Risk Register Template",
-    createdBy: "PMO",
-    createdOn: "2025-11-18",
-    originatingTaskName: "Initial Governance Setup",
-    taskId: "TASK-INIT-01",
-    programmeId: "PRG-000",
-    projectId: "PROJ-GOV-BASE",
-  },
 ];
 
 const GOVERNANCE_RISKS_STUB = [
@@ -70,23 +61,7 @@ const GOVERNANCE_RISKS_STUB = [
     programmeId: "PRG-001",
     projectId: "PROJ-ACME-01",
   },
-  {
-    severity: "Medium",
-    title: "Regulatory approval delay",
-    riskId: "RISK-004",
-    createdBy: "L. Chen",
-    createdOn: "2026-02-08",
-    originatingTaskName: "Regulatory review preparation",
-    taskId: "TASK-00102",
-    programmeId: "PRG-001",
-    projectId: "PROJ-ACME-01",
-  },
 ];
-
-/* ------------------------------------------------------------------
-   STAGE 290 — ISSUES GOVERNANCE STUB (INSPECTION-ONLY)
-   (Additive only; no baseline logic altered)
------------------------------------------------------------------- */
 
 const GOVERNANCE_ISSUES_STUB = [
   {
@@ -96,6 +71,19 @@ const GOVERNANCE_ISSUES_STUB = [
     createdOn: "2026-02-10",
     originatingTaskName: "Define integration boundaries",
     taskId: "TASK-00115",
+    programmeId: "PRG-001",
+    projectId: "PROJ-ACME-01",
+  },
+];
+
+const GOVERNANCE_CHANGE_STUB = [
+  {
+    changeId: "CHANGE-001",
+    title: "Scope boundary adjustment required",
+    createdBy: "J. Smith",
+    createdOn: "2026-02-11",
+    originatingTaskName: "Confirm delivery scope",
+    taskId: "TASK-00121",
     programmeId: "PRG-001",
     projectId: "PROJ-ACME-01",
   },
@@ -131,8 +119,7 @@ export default function RegisterRevealLayer() {
   if (!host || !visible) return null;
 
   /* ------------------------------------------------------------------
-     FILTERING — AND / INTERSECTION SEMANTICS (STAGE 283)
-     (Baseline logic preserved)
+     FILTERING — AND / INTERSECTION SEMANTICS (STAGE 284)
   ------------------------------------------------------------------ */
 
   const tokens = filterText
@@ -143,9 +130,7 @@ export default function RegisterRevealLayer() {
 
   const filterByTokens = (fields) =>
     tokens.length === 0 ||
-    tokens.every((tok) =>
-      fields.some((field) => field.includes(tok))
-    );
+    tokens.every((tok) => fields.some((f) => f.includes(tok)));
 
   const filteredArtefacts = GOVERNANCE_ARTEFACTS_STUB.filter((a) =>
     filterByTokens(
@@ -190,8 +175,22 @@ export default function RegisterRevealLayer() {
     )
   );
 
+  const filteredChanges = GOVERNANCE_CHANGE_STUB.filter((c) =>
+    filterByTokens(
+      [
+        c.title,
+        c.changeId,
+        c.createdBy,
+        c.originatingTaskName,
+        c.taskId,
+        c.programmeId,
+        c.projectId,
+      ].map((v) => v.toLowerCase())
+    )
+  );
+
   /* ------------------------------------------------------------------
-     CANONICAL CELL STYLES (BASELINE PRESERVED)
+     CANONICAL CELL STYLES
   ------------------------------------------------------------------ */
 
   const noWrapCell = {
@@ -215,11 +214,13 @@ export default function RegisterRevealLayer() {
   };
 
   const headerTitle =
-    activeRegister === "risks"
+    activeRegister === "artefacts"
+      ? "Artefacts Register — Governance Ledger (Read-Only)"
+      : activeRegister === "risks"
       ? "Risks Register — Governance Ledger (Read-Only)"
       : activeRegister === "issues"
       ? "Issues Register — Governance Ledger (Read-Only)"
-      : "Artefacts Register — Governance Ledger (Read-Only)";
+      : "Change Register — Governance Ledger (Read-Only)";
 
   return createPortal(
     <div
@@ -289,30 +290,26 @@ export default function RegisterRevealLayer() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th align="center">Type</th>
-                  <th align="center">Task</th>
-                  <th align="center">Document</th>
-                  <th align="center">By</th>
-                  <th align="center">Date</th>
+                  <th>Type</th>
+                  <th>Task</th>
+                  <th>Document</th>
+                  <th>By</th>
+                  <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredArtefacts.map((a, i) => (
                   <tr key={i}>
-                    <td style={noWrapCell}>{a.type}</td>
-                    <td style={noWrapCell}>
+                    <td>{a.type}</td>
+                    <td>
                       <span title={`${a.originatingTaskName} — ${a.taskId}`} style={truncateStyle}>
                         {a.originatingTaskName}
                       </span>{" "}
                       <span style={idStyle}>{a.taskId}</span>
                     </td>
-                    <td style={noWrapCell}>
-                      <span title={a.title} style={truncateStyle}>
-                        {a.title}
-                      </span>
-                    </td>
-                    <td style={noWrapCell}>{a.createdBy}</td>
-                    <td style={noWrapCell}>{a.createdOn}</td>
+                    <td>{a.title}</td>
+                    <td>{a.createdBy}</td>
+                    <td>{a.createdOn}</td>
                   </tr>
                 ))}
               </tbody>
@@ -323,32 +320,28 @@ export default function RegisterRevealLayer() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th align="center">Severity</th>
-                  <th align="center">Task</th>
-                  <th align="center">Risk</th>
-                  <th align="center" style={{ width: "120px" }}>Risk ID</th>
-                  <th align="center" style={{ width: "140px" }}>By</th>
-                  <th align="center" style={{ width: "120px" }}>Date</th>
+                  <th>Severity</th>
+                  <th>Task</th>
+                  <th>Risk</th>
+                  <th>Risk ID</th>
+                  <th>By</th>
+                  <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRisks.map((r, i) => (
                   <tr key={i}>
-                    <td style={noWrapCell}>{r.severity}</td>
-                    <td style={noWrapCell}>
+                    <td>{r.severity}</td>
+                    <td>
                       <span title={`${r.originatingTaskName} — ${r.taskId}`} style={truncateStyle}>
                         {r.originatingTaskName}
                       </span>{" "}
                       <span style={idStyle}>{r.taskId}</span>
                     </td>
-                    <td style={noWrapCell}>
-                      <span title={r.title} style={truncateStyle}>
-                        {r.title}
-                      </span>
-                    </td>
-                    <td style={idStyle}>{r.riskId}</td>
-                    <td style={noWrapCell}>{r.createdBy}</td>
-                    <td style={noWrapCell}>{r.createdOn}</td>
+                    <td>{r.title}</td>
+                    <td>{r.riskId}</td>
+                    <td>{r.createdBy}</td>
+                    <td>{r.createdOn}</td>
                   </tr>
                 ))}
               </tbody>
@@ -359,30 +352,56 @@ export default function RegisterRevealLayer() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th align="center">Task</th>
-                  <th align="center">Issue</th>
-                  <th align="center" style={{ width: "120px" }}>Issue ID</th>
-                  <th align="center" style={{ width: "140px" }}>By</th>
-                  <th align="center" style={{ width: "120px" }}>Date</th>
+                  <th>Task</th>
+                  <th>Issue</th>
+                  <th>Issue ID</th>
+                  <th>By</th>
+                  <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredIssues.map((i, idx) => (
                   <tr key={idx}>
-                    <td style={noWrapCell}>
+                    <td>
                       <span title={`${i.originatingTaskName} — ${i.taskId}`} style={truncateStyle}>
                         {i.originatingTaskName}
                       </span>{" "}
                       <span style={idStyle}>{i.taskId}</span>
                     </td>
-                    <td style={noWrapCell}>
-                      <span title={i.title} style={truncateStyle}>
-                        {i.title}
-                      </span>
+                    <td>{i.title}</td>
+                    <td>{i.issueId}</td>
+                    <td>{i.createdBy}</td>
+                    <td>{i.createdOn}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {activeRegister === "change" && (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th>Change</th>
+                  <th>Task</th>
+                  <th>Change ID</th>
+                  <th>By</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredChanges.map((c, i) => (
+                  <tr key={i}>
+                    <td>{c.title}</td>
+                    <td>
+                      <span title={`${c.originatingTaskName} — ${c.taskId}`} style={truncateStyle}>
+                        {c.originatingTaskName}
+                      </span>{" "}
+                      <span style={idStyle}>{c.taskId}</span>
                     </td>
-                    <td style={idStyle}>{i.issueId}</td>
-                    <td style={noWrapCell}>{i.createdBy}</td>
-                    <td style={noWrapCell}>{i.createdOn}</td>
+                    <td>{c.changeId}</td>
+                    <td>{c.createdBy}</td>
+                    <td>{c.createdOn}</td>
                   </tr>
                 ))}
               </tbody>

@@ -12,6 +12,7 @@ Stage 271 — Sidebar Derived Register of Task-Linked Artefacts (Projection Only
 Stage 280 — Sidebar Register Reveal Intent Emission (NON-AUTHORITATIVE)
 Stage 286 — Governance Risks Register (Reveal Intent Added)
 Stage 290 — Governance Issues Register (Reveal Intent Added)
+Stage 291 — Governance Change Register (Reveal Intent Added)
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -123,7 +124,12 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                     color: "#555",
                   }}
                 >
-                  <div>Change Control</div>
+                  <div
+                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => emitRegisterReveal("change")}
+                  >
+                    Change Control
+                  </div>
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
