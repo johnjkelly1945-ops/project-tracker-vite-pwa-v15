@@ -6,12 +6,16 @@ import PreProjectFooter from "./PreProjectFooter";
 /*
 =====================================================================
 METRA — PreProject.jsx
+=====================================================================
+
 Stage 220 — Summary Modal Trigger (Visibility-Preserving)
+
+DIAGNOSTIC ADDITION — STAGE 301
 ---------------------------------------------------------------------
-• Summaries remain passive placeholders
-• No inline authority introduced
-• Explicit user action opens summary modal
-• No ordering or mutation logic present here
+• Adds console log of footer authority props
+• No behavioural or authority change
+• Inspection-only
+• To be removed after diagnosis
 =====================================================================
 */
 
@@ -25,6 +29,14 @@ export default function PreProject({
   canCreateSummary = false,
   onCreateSummary,
 }) {
+  // ---------------------------------------------------------------
+  // DIAGNOSTIC — FOOTER AUTHORITY VISIBILITY
+  // ---------------------------------------------------------------
+  console.log("PreProject props", {
+    canCreateTask,
+    canCreateSummary,
+  });
+
   return (
     <div
       className="single-pane-root"
