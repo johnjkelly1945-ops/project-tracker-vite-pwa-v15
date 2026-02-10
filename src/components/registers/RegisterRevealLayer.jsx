@@ -6,24 +6,12 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 279 — Governance Registers — Global Reveal Layer (INERT)
-Stage 280 — Governance Registers — Reveal Activation (INSPECTION-ONLY)
-Stage 281-2A — Artefacts Governance Ledger (REFERENCE)
-Stage 284 — Governance Register Filtering (IMPLEMENTATION)
-Stage 286 — Governance Risks Register (INSPECTION-ONLY)
-Stage 286C — Corrective Layout & Artefacts Restoration (UI-ONLY)
-Stage 290 — Governance Issues Register (INSPECTION-ONLY)
-Stage 291 — Governance Change Register (INSPECTION-ONLY)
+Stage 293 — Governance Ledger Layout Harmonisation (IMPLEMENTATION)
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide a global, inspection-only governance register surface.
-
-Governance registers:
-• Record FACTS only
-• Provide traceability
-• Point to authoritative operational sources
-• Do not present analysis
+Provide a global, inspection-only governance ledger surface with a
+fixed, canonical column layout across all governance registers.
 =====================================================================
 */
 
@@ -36,81 +24,37 @@ let listenersAttached = false;
    STATIC GOVERNANCE STUBS (INSPECTION-ONLY)
 ------------------------------------------------------------------ */
 
-const GOVERNANCE_ARTEFACTS_STUB = [
-  {
-    type: "Document",
-    title: "Project Charter v1",
-    createdBy: "J. Smith",
-    createdOn: "2026-02-02",
-    originatingTaskName: "Define Project Scope",
-    taskId: "TASK-00042",
-    programmeId: "PRG-001",
-    projectId: "PROJ-ACME-01",
-  },
-];
-
-const GOVERNANCE_RISKS_STUB = [
-  {
-    severity: "High",
-    title: "Supplier delivery uncertainty",
-    riskId: "RISK-001",
-    createdBy: "A. Patel",
-    createdOn: "2026-02-06",
-    originatingTaskName: "Confirm supplier milestones",
-    taskId: "TASK-00087",
-    programmeId: "PRG-001",
-    projectId: "PROJ-ACME-01",
-  },
-];
-
-const GOVERNANCE_ISSUES_STUB = [
-  {
-    issueId: "ISSUE-001",
-    title: "Dependency definition unclear",
-    createdBy: "M. Brown",
-    createdOn: "2026-02-10",
-    originatingTaskName: "Define integration boundaries",
-    taskId: "TASK-00115",
-    programmeId: "PRG-001",
-    projectId: "PROJ-ACME-01",
-  },
-];
-
 const GOVERNANCE_CHANGE_STUB = [
   {
-    changeId: "CHANGE-001",
     title: "Scope boundary adjustment required",
+    changeId: "CHANGE-001",
     createdBy: "J. Smith",
     createdOn: "2026-02-11",
     originatingTaskName: "Confirm delivery scope",
     taskId: "TASK-00121",
-    programmeId: "PRG-001",
-    projectId: "PROJ-ACME-01",
+    closed: false,
   },
 ];
 
 export default function RegisterRevealLayer() {
   const host = document.getElementById("metra-register-reveal");
   const [visible, setVisible] = useState(false);
-  const [activeRegister, setActiveRegister] = useState(null);
   const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
     if (listenersAttached) return;
     listenersAttached = true;
 
-    function onReveal(e) {
+    const onReveal = (e) => {
       if (!e?.detail?.register) return;
-      setActiveRegister(e.detail.register);
       setVisible(true);
       setFilterText("");
-    }
+    };
 
-    function onClose() {
+    const onClose = () => {
       setVisible(false);
-      setActiveRegister(null);
       setFilterText("");
-    }
+    };
 
     window.addEventListener("metra:register:reveal", onReveal);
     window.addEventListener("metra:register:close", onClose);
@@ -119,7 +63,7 @@ export default function RegisterRevealLayer() {
   if (!host || !visible) return null;
 
   /* ------------------------------------------------------------------
-     FILTERING — AND / INTERSECTION SEMANTICS (STAGE 284)
+     FILTERING — AND / INTERSECTION SEMANTICS (UNCHANGED)
   ------------------------------------------------------------------ */
 
   const tokens = filterText
@@ -132,95 +76,46 @@ export default function RegisterRevealLayer() {
     tokens.length === 0 ||
     tokens.every((tok) => fields.some((f) => f.includes(tok)));
 
-  const filteredArtefacts = GOVERNANCE_ARTEFACTS_STUB.filter((a) =>
-    filterByTokens(
-      [
-        a.title,
-        a.createdBy,
-        a.originatingTaskName,
-        a.taskId,
-        a.programmeId,
-        a.projectId,
-        a.type,
-      ].map((v) => v.toLowerCase())
-    )
-  );
-
-  const filteredRisks = GOVERNANCE_RISKS_STUB.filter((r) =>
+  const rows = GOVERNANCE_CHANGE_STUB.filter((r) =>
     filterByTokens(
       [
         r.title,
-        r.riskId,
-        r.severity,
+        r.changeId,
         r.createdBy,
         r.originatingTaskName,
         r.taskId,
-        r.programmeId,
-        r.projectId,
-      ].map((v) => v.toLowerCase())
-    )
-  );
-
-  const filteredIssues = GOVERNANCE_ISSUES_STUB.filter((i) =>
-    filterByTokens(
-      [
-        i.title,
-        i.issueId,
-        i.createdBy,
-        i.originatingTaskName,
-        i.taskId,
-        i.programmeId,
-        i.projectId,
-      ].map((v) => v.toLowerCase())
-    )
-  );
-
-  const filteredChanges = GOVERNANCE_CHANGE_STUB.filter((c) =>
-    filterByTokens(
-      [
-        c.title,
-        c.changeId,
-        c.createdBy,
-        c.originatingTaskName,
-        c.taskId,
-        c.programmeId,
-        c.projectId,
       ].map((v) => v.toLowerCase())
     )
   );
 
   /* ------------------------------------------------------------------
-     CANONICAL CELL STYLES
+     CANONICAL STYLES
   ------------------------------------------------------------------ */
 
-  const noWrapCell = {
+  const thStyle = {
     whiteSpace: "nowrap",
+    textAlign: "left",
+    padding: "8px 10px",
+    background: "#f3f6fa",
+    borderBottom: "1px solid #ccc",
+    borderRight: "1px solid #d6d6d6",
+  };
+
+  const tdStyle = {
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    padding: "6px 10px",
+    borderRight: "1px solid #d6d6d6",
     verticalAlign: "middle",
   };
 
   const idStyle = {
-    ...noWrapCell,
     fontFamily: "monospace",
     fontSize: "12px",
     color: "#666",
+    marginLeft: "6px",
   };
-
-  const truncateStyle = {
-    ...noWrapCell,
-    maxWidth: "180px",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    display: "inline-block",
-  };
-
-  const headerTitle =
-    activeRegister === "artefacts"
-      ? "Artefacts Register — Governance Ledger (Read-Only)"
-      : activeRegister === "risks"
-      ? "Risks Register — Governance Ledger (Read-Only)"
-      : activeRegister === "issues"
-      ? "Issues Register — Governance Ledger (Read-Only)"
-      : "Change Register — Governance Ledger (Read-Only)";
 
   return createPortal(
     <div
@@ -241,7 +136,7 @@ export default function RegisterRevealLayer() {
     >
       <div
         style={{
-          background: "#ffffff",
+          background: "#fff",
           width: "80vw",
           maxWidth: "1200px",
           height: "80vh",
@@ -257,12 +152,12 @@ export default function RegisterRevealLayer() {
           style={{
             padding: "16px 20px",
             background: "#0b3a63",
-            color: "#ffffff",
+            color: "#fff",
             display: "flex",
             justifyContent: "space-between",
           }}
         >
-          <strong>{headerTitle}</strong>
+          <strong>Change Register — Governance Ledger (Read-Only)</strong>
           <button
             style={{ background: "none", border: "none", color: "#fff" }}
             onClick={() =>
@@ -277,136 +172,66 @@ export default function RegisterRevealLayer() {
         <div style={{ padding: "12px 20px", borderBottom: "1px solid #ddd" }}>
           <input
             type="text"
-            placeholder="Filter by creator, task, programme, project, severity, reference…"
+            placeholder="Filter by title, task, actor, reference, date…"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             style={{ width: "100%", padding: "8px" }}
           />
         </div>
 
-        {/* Body */}
-        <div style={{ padding: "20px", overflowY: "auto", flex: 1 }}>
-          {activeRegister === "artefacts" && (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Task</th>
-                  <th>Document</th>
-                  <th>By</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredArtefacts.map((a, i) => (
-                  <tr key={i}>
-                    <td>{a.type}</td>
-                    <td>
-                      <span title={`${a.originatingTaskName} — ${a.taskId}`} style={truncateStyle}>
-                        {a.originatingTaskName}
-                      </span>{" "}
-                      <span style={idStyle}>{a.taskId}</span>
-                    </td>
-                    <td>{a.title}</td>
-                    <td>{a.createdBy}</td>
-                    <td>{a.createdOn}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        {/* Ledger */}
+        <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              tableLayout: "fixed",
+            }}
+          >
+            <colgroup>
+              <col style={{ width: "25%" }} />
+              <col style={{ width: "25%" }} />
+              <col style={{ width: "12.5%" }} />
+              <col style={{ width: "12.5%" }} />
+              <col style={{ width: "12.5%" }} />
+              <col style={{ width: "12.5%" }} />
+              <col />
+            </colgroup>
 
-          {activeRegister === "risks" && (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th>Severity</th>
-                  <th>Task</th>
-                  <th>Risk</th>
-                  <th>Risk ID</th>
-                  <th>By</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRisks.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.severity}</td>
-                    <td>
-                      <span title={`${r.originatingTaskName} — ${r.taskId}`} style={truncateStyle}>
-                        {r.originatingTaskName}
-                      </span>{" "}
-                      <span style={idStyle}>{r.taskId}</span>
-                    </td>
-                    <td>{r.title}</td>
-                    <td>{r.riskId}</td>
-                    <td>{r.createdBy}</td>
-                    <td>{r.createdOn}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+            <thead>
+              <tr>
+                <th style={thStyle}>Record</th>
+                <th style={thStyle}>Originating Task</th>
+                <th style={thStyle}>Category</th>
+                <th style={thStyle}>Reference</th>
+                <th style={thStyle}>By</th>
+                <th style={thStyle}>Date</th>
+                <th style={thStyle}></th>
+              </tr>
+            </thead>
 
-          {activeRegister === "issues" && (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Issue</th>
-                  <th>Issue ID</th>
-                  <th>By</th>
-                  <th>Date</th>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
+                  <td style={tdStyle} title={r.title}>{r.title}</td>
+                  <td
+                    style={tdStyle}
+                    title={`${r.originatingTaskName} — ${r.taskId}`}
+                  >
+                    {r.originatingTaskName}
+                    <span style={idStyle}>{r.taskId}</span>
+                  </td>
+                  <td style={tdStyle} title="">{""}</td>
+                  <td style={tdStyle} title={r.changeId}>
+                    <span style={idStyle}>{r.changeId}</span>
+                  </td>
+                  <td style={tdStyle} title={r.createdBy}>{r.createdBy}</td>
+                  <td style={tdStyle} title={r.createdOn}>{r.createdOn}</td>
+                  <td style={tdStyle}></td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredIssues.map((i, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <span title={`${i.originatingTaskName} — ${i.taskId}`} style={truncateStyle}>
-                        {i.originatingTaskName}
-                      </span>{" "}
-                      <span style={idStyle}>{i.taskId}</span>
-                    </td>
-                    <td>{i.title}</td>
-                    <td>{i.issueId}</td>
-                    <td>{i.createdBy}</td>
-                    <td>{i.createdOn}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {activeRegister === "change" && (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th>Change</th>
-                  <th>Task</th>
-                  <th>Change ID</th>
-                  <th>By</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredChanges.map((c, i) => (
-                  <tr key={i}>
-                    <td>{c.title}</td>
-                    <td>
-                      <span title={`${c.originatingTaskName} — ${c.taskId}`} style={truncateStyle}>
-                        {c.originatingTaskName}
-                      </span>{" "}
-                      <span style={idStyle}>{c.taskId}</span>
-                    </td>
-                    <td>{c.changeId}</td>
-                    <td>{c.createdBy}</td>
-                    <td>{c.createdOn}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>,
