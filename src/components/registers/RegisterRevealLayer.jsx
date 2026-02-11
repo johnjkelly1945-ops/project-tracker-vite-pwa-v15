@@ -6,12 +6,12 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 293 — Governance Ledger Layout Harmonisation (IMPLEMENTATION)
+Stage 305 — Ledger Type Resolution & Parameterisation (IMPLEMENTATION)
 
 PURPOSE
 ---------------------------------------------------------------------
 Provide a global, inspection-only governance ledger surface with a
-fixed, canonical column layout across all governance registers.
+fixed, canonical column layout across all governance ledgers.
 =====================================================================
 */
 
@@ -21,7 +21,7 @@ import { createPortal } from "react-dom";
 let listenersAttached = false;
 
 /* ------------------------------------------------------------------
-   STATIC GOVERNANCE STUBS (INSPECTION-ONLY)
+   STATIC GOVERNANCE STUB (INSPECTION-ONLY)
 ------------------------------------------------------------------ */
 
 const GOVERNANCE_CHANGE_STUB = [
@@ -40,6 +40,7 @@ export default function RegisterRevealLayer() {
   const host = document.getElementById("metra-register-reveal");
   const [visible, setVisible] = useState(false);
   const [filterText, setFilterText] = useState("");
+  const [activeRegister, setActiveRegister] = useState(null);
 
   useEffect(() => {
     if (listenersAttached) return;
@@ -47,6 +48,7 @@ export default function RegisterRevealLayer() {
 
     const onReveal = (e) => {
       if (!e?.detail?.register) return;
+      setActiveRegister(e.detail.register);
       setVisible(true);
       setFilterText("");
     };
@@ -54,13 +56,28 @@ export default function RegisterRevealLayer() {
     const onClose = () => {
       setVisible(false);
       setFilterText("");
+      setActiveRegister(null);
     };
 
     window.addEventListener("metra:register:reveal", onReveal);
     window.addEventListener("metra:register:close", onClose);
   }, []);
 
-  if (!host || !visible) return null;
+  if (!host || !visible || !activeRegister) return null;
+
+  /* ------------------------------------------------------------------
+     HEADER MAPPING (Stage 305)
+  ------------------------------------------------------------------ */
+
+  const headerMap = {
+    change: "Change Ledger",
+    risks: "Risk Ledger",
+    issues: "Issue Ledger",
+    artefacts: "Artefact Ledger",
+  };
+
+  const headerLabel =
+    headerMap[activeRegister] || "Governance Ledger";
 
   /* ------------------------------------------------------------------
      FILTERING — AND / INTERSECTION SEMANTICS (UNCHANGED)
@@ -157,7 +174,7 @@ export default function RegisterRevealLayer() {
             justifyContent: "space-between",
           }}
         >
-          <strong>Change Register — Governance Ledger (Read-Only)</strong>
+          <strong>{headerLabel} — Governance (Read-Only)</strong>
           <button
             style={{ background: "none", border: "none", color: "#fff" }}
             onClick={() =>
@@ -221,7 +238,7 @@ export default function RegisterRevealLayer() {
                     {r.originatingTaskName}
                     <span style={idStyle}>{r.taskId}</span>
                   </td>
-                  <td style={tdStyle} title="">{""}</td>
+                  <td style={tdStyle}></td>
                   <td style={tdStyle} title={r.changeId}>
                     <span style={idStyle}>{r.changeId}</span>
                   </td>
