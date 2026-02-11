@@ -6,14 +6,12 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 307 — Lifecycle & Exposure Projection Implementation
-(Governance-Only Restriction Applied)
+Stage 308 — Ledger Source Isolation & Type-Correct Projection
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide lifecycle (state) and exposure projection within the
-existing harmonised Ledger layout for governance artefacts only,
-without altering layout canon.
+Isolate ledger projection sources by register type while preserving
+layout canon and governance-only lifecycle projection.
 =====================================================================
 */
 
@@ -23,7 +21,7 @@ import { createPortal } from "react-dom";
 let listenersAttached = false;
 
 /* ------------------------------------------------------------------
-   STATIC GOVERNANCE STUB (INSPECTION-ONLY)
+   STUB DATA (Stage 308 — Projection Only)
 ------------------------------------------------------------------ */
 
 const GOVERNANCE_CHANGE_STUB = [
@@ -35,11 +33,51 @@ const GOVERNANCE_CHANGE_STUB = [
     originatingTaskName: "Confirm delivery scope",
     taskId: "TASK-00121",
     closed: false,
-
-    // Stage 307 extensions (governance artefacts only)
     state: "IDENTIFIED",
     severity: "High",
     category: "Operational",
+  },
+];
+
+const GOVERNANCE_RISK_STUB = [
+  {
+    title: "Supplier insolvency exposure",
+    changeId: "RISK-004",
+    createdBy: "A. Patel",
+    createdOn: "2026-02-09",
+    originatingTaskName: "Validate supplier stability",
+    taskId: "TASK-00087",
+    closed: false,
+    state: "ASSESSED",
+    severity: "Critical",
+    category: "Financial",
+  },
+];
+
+const GOVERNANCE_ISSUE_STUB = [
+  {
+    title: "Delivery milestone missed",
+    changeId: "ISSUE-011",
+    createdBy: "M. Green",
+    createdOn: "2026-02-08",
+    originatingTaskName: "Track milestone completion",
+    taskId: "TASK-00065",
+    closed: false,
+    state: "MITIGATED",
+    severity: "Medium",
+    category: "Schedule",
+  },
+];
+
+const ARTEFACT_EVENT_STUB = [
+  {
+    title: "Contract Amendment v2",
+    changeId: "DOC-017",
+    createdBy: "J. Smith",
+    createdOn: "2026-02-10",
+    originatingTaskName: "Upload amended contract",
+    taskId: "TASK-00105",
+    closed: false,
   },
 ];
 
@@ -82,7 +120,20 @@ export default function RegisterRevealLayer() {
     activeRegister === "issues";
 
   /* ------------------------------------------------------------------
-     HEADER MAPPING (Stage 305)
+     SOURCE MAP (Stage 308)
+  ------------------------------------------------------------------ */
+
+  const ledgerSourceMap = {
+    change: GOVERNANCE_CHANGE_STUB,
+    risks: GOVERNANCE_RISK_STUB,
+    issues: GOVERNANCE_ISSUE_STUB,
+    artefacts: ARTEFACT_EVENT_STUB,
+  };
+
+  const source = ledgerSourceMap[activeRegister] || [];
+
+  /* ------------------------------------------------------------------
+     HEADER MAPPING
   ------------------------------------------------------------------ */
 
   const headerMap = {
@@ -96,7 +147,7 @@ export default function RegisterRevealLayer() {
     headerMap[activeRegister] || "Governance Ledger";
 
   /* ------------------------------------------------------------------
-     LIFECYCLE DOT STYLES (Stage 306 Canon)
+     LIFECYCLE DOT STYLES
   ------------------------------------------------------------------ */
 
   const dotBase = {
@@ -117,7 +168,7 @@ export default function RegisterRevealLayer() {
   };
 
   /* ------------------------------------------------------------------
-     FILTERING (TEXT-BASED, SAFE FOR ALL LEDGERS)
+     FILTERING
   ------------------------------------------------------------------ */
 
   const tokens = filterText
@@ -130,7 +181,7 @@ export default function RegisterRevealLayer() {
     tokens.length === 0 ||
     tokens.every((tok) => fields.some((f) => f.includes(tok)));
 
-  const rows = GOVERNANCE_CHANGE_STUB.filter((r) =>
+  const rows = source.filter((r) =>
     filterByTokens(
       [
         r.title,
@@ -146,7 +197,7 @@ export default function RegisterRevealLayer() {
   );
 
   /* ------------------------------------------------------------------
-     CANONICAL STYLES (UNCHANGED)
+     STYLES
   ------------------------------------------------------------------ */
 
   const thStyle = {
@@ -173,10 +224,6 @@ export default function RegisterRevealLayer() {
     color: "#666",
     marginLeft: "6px",
   };
-
-  /* ------------------------------------------------------------------
-     CATEGORY + EXPOSURE RENDER (GOVERNANCE ONLY)
-  ------------------------------------------------------------------ */
 
   const renderCategoryExposure = (r) => {
     if (!isGovernanceLedger) return "";
@@ -220,7 +267,6 @@ export default function RegisterRevealLayer() {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div
           style={{
             padding: "16px 20px",
@@ -241,7 +287,6 @@ export default function RegisterRevealLayer() {
           </button>
         </div>
 
-        {/* Filter */}
         <div style={{ padding: "12px 20px", borderBottom: "1px solid #ddd" }}>
           <input
             type="text"
@@ -252,7 +297,6 @@ export default function RegisterRevealLayer() {
           />
         </div>
 
-        {/* Ledger */}
         <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
           <table
             style={{
@@ -310,10 +354,7 @@ export default function RegisterRevealLayer() {
                       <span style={idStyle}>{r.taskId}</span>
                     </td>
 
-                    <td
-                      style={tdStyle}
-                      title={categoryExposure}
-                    >
+                    <td style={tdStyle} title={categoryExposure}>
                       {categoryExposure}
                     </td>
 
