@@ -6,12 +6,14 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 305 — Ledger Type Resolution & Parameterisation (IMPLEMENTATION)
+Stage 307 — Lifecycle & Exposure Projection Implementation
+(Governance-Only Restriction Applied)
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide a global, inspection-only governance ledger surface with a
-fixed, canonical column layout across all governance ledgers.
+Provide lifecycle (state) and exposure projection within the
+existing harmonised Ledger layout for governance artefacts only,
+without altering layout canon.
 =====================================================================
 */
 
@@ -33,6 +35,11 @@ const GOVERNANCE_CHANGE_STUB = [
     originatingTaskName: "Confirm delivery scope",
     taskId: "TASK-00121",
     closed: false,
+
+    // Stage 307 extensions (governance artefacts only)
+    state: "IDENTIFIED",
+    severity: "High",
+    category: "Operational",
   },
 ];
 
@@ -66,6 +73,15 @@ export default function RegisterRevealLayer() {
   if (!host || !visible || !activeRegister) return null;
 
   /* ------------------------------------------------------------------
+     GOVERNANCE LEDGER CHECK
+  ------------------------------------------------------------------ */
+
+  const isGovernanceLedger =
+    activeRegister === "change" ||
+    activeRegister === "risks" ||
+    activeRegister === "issues";
+
+  /* ------------------------------------------------------------------
      HEADER MAPPING (Stage 305)
   ------------------------------------------------------------------ */
 
@@ -80,7 +96,28 @@ export default function RegisterRevealLayer() {
     headerMap[activeRegister] || "Governance Ledger";
 
   /* ------------------------------------------------------------------
-     FILTERING — AND / INTERSECTION SEMANTICS (UNCHANGED)
+     LIFECYCLE DOT STYLES (Stage 306 Canon)
+  ------------------------------------------------------------------ */
+
+  const dotBase = {
+    display: "inline-block",
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    marginRight: "8px",
+    verticalAlign: "middle",
+  };
+
+  const dotColourMap = {
+    IDENTIFIED: "#999999",
+    ASSESSED: "#2b6cb0",
+    MITIGATED: "#d69e2e",
+    ACCEPTED: "#6b46c1",
+    CLOSED: "#2f855a",
+  };
+
+  /* ------------------------------------------------------------------
+     FILTERING (TEXT-BASED, SAFE FOR ALL LEDGERS)
   ------------------------------------------------------------------ */
 
   const tokens = filterText
@@ -101,12 +138,15 @@ export default function RegisterRevealLayer() {
         r.createdBy,
         r.originatingTaskName,
         r.taskId,
-      ].map((v) => v.toLowerCase())
+        r.category || "",
+        r.severity || "",
+        r.state || "",
+      ].map((v) => String(v).toLowerCase())
     )
   );
 
   /* ------------------------------------------------------------------
-     CANONICAL STYLES
+     CANONICAL STYLES (UNCHANGED)
   ------------------------------------------------------------------ */
 
   const thStyle = {
@@ -132,6 +172,22 @@ export default function RegisterRevealLayer() {
     fontSize: "12px",
     color: "#666",
     marginLeft: "6px",
+  };
+
+  /* ------------------------------------------------------------------
+     CATEGORY + EXPOSURE RENDER (GOVERNANCE ONLY)
+  ------------------------------------------------------------------ */
+
+  const renderCategoryExposure = (r) => {
+    if (!isGovernanceLedger) return "";
+
+    const cat = r.category;
+    const exp = r.severity;
+
+    if (cat && exp) return `${cat} (${exp})`;
+    if (exp && !cat) return `(${exp})`;
+    if (cat && !exp) return cat;
+    return "";
   };
 
   return createPortal(
@@ -228,25 +284,55 @@ export default function RegisterRevealLayer() {
             </thead>
 
             <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
-                  <td style={tdStyle} title={r.title}>{r.title}</td>
-                  <td
-                    style={tdStyle}
-                    title={`${r.originatingTaskName} — ${r.taskId}`}
-                  >
-                    {r.originatingTaskName}
-                    <span style={idStyle}>{r.taskId}</span>
-                  </td>
-                  <td style={tdStyle}></td>
-                  <td style={tdStyle} title={r.changeId}>
-                    <span style={idStyle}>{r.changeId}</span>
-                  </td>
-                  <td style={tdStyle} title={r.createdBy}>{r.createdBy}</td>
-                  <td style={tdStyle} title={r.createdOn}>{r.createdOn}</td>
-                  <td style={tdStyle}></td>
-                </tr>
-              ))}
+              {rows.map((r, i) => {
+                const categoryExposure = renderCategoryExposure(r);
+
+                return (
+                  <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
+                    <td style={tdStyle} title={r.title}>
+                      {isGovernanceLedger && (
+                        <span
+                          style={{
+                            ...dotBase,
+                            backgroundColor:
+                              dotColourMap[r.state] || "#999999",
+                          }}
+                        ></span>
+                      )}
+                      {r.title}
+                    </td>
+
+                    <td
+                      style={tdStyle}
+                      title={`${r.originatingTaskName} — ${r.taskId}`}
+                    >
+                      {r.originatingTaskName}
+                      <span style={idStyle}>{r.taskId}</span>
+                    </td>
+
+                    <td
+                      style={tdStyle}
+                      title={categoryExposure}
+                    >
+                      {categoryExposure}
+                    </td>
+
+                    <td style={tdStyle} title={r.changeId}>
+                      <span style={idStyle}>{r.changeId}</span>
+                    </td>
+
+                    <td style={tdStyle} title={r.createdBy}>
+                      {r.createdBy}
+                    </td>
+
+                    <td style={tdStyle} title={r.createdOn}>
+                      {r.createdOn}
+                    </td>
+
+                    <td style={tdStyle}></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
