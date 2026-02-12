@@ -6,14 +6,12 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 312 — QC Governance Integration & Lifecycle Transparency
+Stage 313 — Governance Lifecycle Filtering
 
 PURPOSE
 ---------------------------------------------------------------------
-Extend governance projection layer to include Quality Control (QC)
-register and expose lifecycle semantic transparency via tooltip,
-while preserving layout, filtering, lifecycle canon, and structural
-invariants.
+Introduce lifecycleClass-based filtering while preserving layout,
+lifecycle canon, tooltip transparency, and projection invariants.
 =====================================================================
 */
 
@@ -102,6 +100,7 @@ export default function RegisterRevealLayer() {
   const host = document.getElementById("metra-register-reveal");
   const [visible, setVisible] = useState(false);
   const [filterText, setFilterText] = useState("");
+  const [lifecycleFilter, setLifecycleFilter] = useState("ALL");
   const [activeRegister, setActiveRegister] = useState(null);
 
   useEffect(() => {
@@ -113,11 +112,13 @@ export default function RegisterRevealLayer() {
       setActiveRegister(e.detail.register);
       setVisible(true);
       setFilterText("");
+      setLifecycleFilter("ALL");
     };
 
     const onClose = () => {
       setVisible(false);
       setFilterText("");
+      setLifecycleFilter("ALL");
       setActiveRegister(null);
     };
 
@@ -190,8 +191,16 @@ export default function RegisterRevealLayer() {
     tokens.length === 0 ||
     tokens.every((tok) => fields.some((f) => f.includes(tok)));
 
-  const rows = source.filter((r) =>
-    filterByTokens(
+  const rows = source.filter((r) => {
+    const lifecycleClass = r.state
+      ? deriveLifecycleClass(r.state)
+      : null;
+
+    const lifecycleMatch =
+      lifecycleFilter === "ALL" ||
+      lifecycleClass === lifecycleFilter;
+
+    const tokenMatch = filterByTokens(
       [
         r.title,
         r.changeId,
@@ -202,8 +211,19 @@ export default function RegisterRevealLayer() {
         r.severity || "",
         r.state || "",
       ].map((v) => String(v).toLowerCase())
-    )
-  );
+    );
+
+    return lifecycleMatch && tokenMatch;
+  });
+
+  const dotBase = {
+    display: "inline-block",
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    marginRight: "8px",
+    verticalAlign: "middle",
+  };
 
   const thStyle = {
     whiteSpace: "nowrap",
@@ -228,27 +248,6 @@ export default function RegisterRevealLayer() {
     fontSize: "12px",
     color: "#666",
     marginLeft: "6px",
-  };
-
-  const dotBase = {
-    display: "inline-block",
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    marginRight: "8px",
-    verticalAlign: "middle",
-  };
-
-  const renderCategoryExposure = (r) => {
-    if (!isGovernanceLedger) return "";
-
-    const cat = r.category;
-    const exp = r.severity;
-
-    if (cat && exp) return `${cat} (${exp})`;
-    if (exp && !cat) return `(${exp})`;
-    if (cat && !exp) return cat;
-    return "";
   };
 
   return createPortal(
@@ -301,13 +300,34 @@ export default function RegisterRevealLayer() {
           </button>
         </div>
 
-        <div style={{ padding: "12px 20px", borderBottom: "1px solid #ddd" }}>
+        <div
+          style={{
+            padding: "12px 20px",
+            borderBottom: "1px solid #ddd",
+            display: "flex",
+            gap: "12px",
+          }}
+        >
+          {isGovernanceLedger && (
+            <select
+              value={lifecycleFilter}
+              onChange={(e) => setLifecycleFilter(e.target.value)}
+              style={{ padding: "8px" }}
+            >
+              <option value="ALL">All</option>
+              <option value="OPEN">OPEN</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="RESOLVED">RESOLVED</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
+          )}
+
           <input
             type="text"
             placeholder="Filter by title, task, actor, reference, date…"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            style={{ width: "100%", padding: "8px" }}
+            style={{ flex: 1, padding: "8px" }}
           />
         </div>
 
@@ -343,20 +363,22 @@ export default function RegisterRevealLayer() {
 
             <tbody>
               {rows.map((r, i) => {
-                const lifecycleClass = deriveLifecycleClass(r.state);
-                const categoryExposure = renderCategoryExposure(r);
+                const lifecycleClass = r.state
+                  ? deriveLifecycleClass(r.state)
+                  : null;
 
                 return (
                   <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
                     <td style={tdStyle} title={r.title}>
-                      {isGovernanceLedger && (
+                      {isGovernanceLedger && lifecycleClass && (
                         <span
+                          title={`${lifecycleClass} — ${r.state}`}
                           style={{
                             ...dotBase,
                             backgroundColor:
-                              lifecycleColourMap[lifecycleClass] || "#999999",
+                              lifecycleColourMap[lifecycleClass] ||
+                              "#999999",
                           }}
-                          title={`${lifecycleClass} — ${r.state}`}
                         ></span>
                       )}
                       {r.title}
@@ -370,8 +392,8 @@ export default function RegisterRevealLayer() {
                       <span style={idStyle}>{r.taskId}</span>
                     </td>
 
-                    <td style={tdStyle} title={categoryExposure}>
-                      {categoryExposure}
+                    <td style={tdStyle} title={r.category || ""}>
+                      {r.category}
                     </td>
 
                     <td style={tdStyle} title={r.changeId}>
