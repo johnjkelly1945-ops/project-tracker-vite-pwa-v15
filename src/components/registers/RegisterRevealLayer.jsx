@@ -6,12 +6,14 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 311 — Lifecycle Mapping Implementation (Projection Layer)
+Stage 312 — QC Governance Integration & Lifecycle Transparency
 
 PURPOSE
 ---------------------------------------------------------------------
-Introduce canonical lifecycle derivation and lifecycle-based dot
-projection while preserving structural layout invariants.
+Extend governance projection layer to include Quality Control (QC)
+register and expose lifecycle semantic transparency via tooltip,
+while preserving layout, filtering, lifecycle canon, and structural
+invariants.
 =====================================================================
 */
 
@@ -21,7 +23,7 @@ import { createPortal } from "react-dom";
 let listenersAttached = false;
 
 /* ------------------------------------------------------------------
-   STUB DATA (Stage 308 — Projection Only)
+   STUB DATA (Projection Only)
 ------------------------------------------------------------------ */
 
 const GOVERNANCE_CHANGE_STUB = [
@@ -69,6 +71,21 @@ const GOVERNANCE_ISSUE_STUB = [
   },
 ];
 
+const GOVERNANCE_QC_STUB = [
+  {
+    title: "Inspection non-conformance detected",
+    changeId: "QC-003",
+    createdBy: "R. Lewis",
+    createdOn: "2026-02-12",
+    originatingTaskName: "Perform quality inspection",
+    taskId: "TASK-00132",
+    closed: false,
+    state: "FAILED",
+    severity: "High",
+    category: "Compliance",
+  },
+];
+
 const ARTEFACT_EVENT_STUB = [
   {
     title: "Contract Amendment v2",
@@ -110,45 +127,32 @@ export default function RegisterRevealLayer() {
 
   if (!host || !visible || !activeRegister) return null;
 
-  /* ------------------------------------------------------------------
-     GOVERNANCE LEDGER CHECK
-  ------------------------------------------------------------------ */
-
   const isGovernanceLedger =
     activeRegister === "change" ||
     activeRegister === "risks" ||
-    activeRegister === "issues";
-
-  /* ------------------------------------------------------------------
-     SOURCE MAP (Stage 308)
-  ------------------------------------------------------------------ */
+    activeRegister === "issues" ||
+    activeRegister === "qc";
 
   const ledgerSourceMap = {
     change: GOVERNANCE_CHANGE_STUB,
     risks: GOVERNANCE_RISK_STUB,
     issues: GOVERNANCE_ISSUE_STUB,
+    qc: GOVERNANCE_QC_STUB,
     artefacts: ARTEFACT_EVENT_STUB,
   };
 
   const source = ledgerSourceMap[activeRegister] || [];
 
-  /* ------------------------------------------------------------------
-     HEADER MAPPING
-  ------------------------------------------------------------------ */
-
   const headerMap = {
     change: "Change Ledger",
     risks: "Risk Ledger",
     issues: "Issue Ledger",
+    qc: "Quality Control Ledger",
     artefacts: "Artefact Ledger",
   };
 
   const headerLabel =
     headerMap[activeRegister] || "Governance Ledger";
-
-  /* ------------------------------------------------------------------
-     LIFECYCLE DERIVATION (Stage 311)
-  ------------------------------------------------------------------ */
 
   const deriveLifecycleClass = (state) => {
     switch (state) {
@@ -157,8 +161,10 @@ export default function RegisterRevealLayer() {
       case "ASSESSED":
       case "ACCEPTED":
       case "MITIGATED":
+      case "FAILED":
         return "ACTIVE";
       case "VERIFIED":
+      case "PASSED":
         return "RESOLVED";
       case "CLOSED":
         return "CLOSED";
@@ -173,10 +179,6 @@ export default function RegisterRevealLayer() {
     RESOLVED: "#d69e2e",
     CLOSED: "#2f855a",
   };
-
-  /* ------------------------------------------------------------------
-     FILTERING (UNCHANGED)
-  ------------------------------------------------------------------ */
 
   const tokens = filterText
     .toLowerCase()
@@ -202,10 +204,6 @@ export default function RegisterRevealLayer() {
       ].map((v) => String(v).toLowerCase())
     )
   );
-
-  /* ------------------------------------------------------------------
-     STYLES (UNCHANGED)
-  ------------------------------------------------------------------ */
 
   const thStyle = {
     whiteSpace: "nowrap",
@@ -345,8 +343,8 @@ export default function RegisterRevealLayer() {
 
             <tbody>
               {rows.map((r, i) => {
-                const categoryExposure = renderCategoryExposure(r);
                 const lifecycleClass = deriveLifecycleClass(r.state);
+                const categoryExposure = renderCategoryExposure(r);
 
                 return (
                   <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
@@ -358,6 +356,7 @@ export default function RegisterRevealLayer() {
                             backgroundColor:
                               lifecycleColourMap[lifecycleClass] || "#999999",
                           }}
+                          title={`${lifecycleClass} — ${r.state}`}
                         ></span>
                       )}
                       {r.title}

@@ -6,32 +6,17 @@ METRA — Sidebar.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 86.3 — Sidebar Read-Only Structure (Inert)
-(Stage 160 — UI-only width refinement applied)
-Stage 271 — Sidebar Derived Register of Task-Linked Artefacts (Projection Only)
-Stage 280 — Sidebar Register Reveal Intent Emission (NON-AUTHORITATIVE)
-Stage 286 — Governance Risks Register (Reveal Intent Added)
-Stage 290 — Governance Issues Register (Reveal Intent Added)
-Stage 291 — Governance Change Register (Reveal Intent Added)
+Stage 312 — QC Governance Integration & Lifecycle Transparency
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide a visible, populated sidebar structure representing METRA
-modules and sub-modules.
+Extend Governance surface to include Quality Control register as a peer
+inspection-only reveal intent. Sidebar remains:
 
-The Sidebar MAY emit inspection-only reveal intent events for
-governance registers. The Sidebar remains strictly:
 • Non-authoritative
 • Projection-only
-• Non-navigational
-• Free of reveal rendering logic
-
-AUTHORITATIVE CONSTRAINTS
----------------------------------------------------------------------
-• No workspace mutation
-• No navigation or routing
-• No reveal rendering
 • Intent emission only
+• Free of reveal rendering logic
 • SEM-NR-01 preserved
 =====================================================================
 */
@@ -59,7 +44,6 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
       <div
         style={{
           height: "48px",
@@ -89,7 +73,6 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
         </button>
       </div>
 
-      {/* Body — populated but inert */}
       <div
         style={{
           flex: 1,
@@ -111,7 +94,6 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                 gap: "12px",
               }}
             >
-              {/* Governance (intent-only) */}
               <div>
                 <div style={{ fontWeight: "600" }}>Governance</div>
                 <div
@@ -145,6 +127,13 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                     Issues
                   </div>
 
+                  <div
+                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => emitRegisterReveal("qc")}
+                  >
+                    Quality Control
+                  </div>
+
                   <div>Escalation</div>
 
                   <div
@@ -156,10 +145,8 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                 </div>
               </div>
 
-              {/* ================= Derived Artefacts (Read-Only) ================= */}
               <SidebarArtefactRegister artefacts={derivedArtefacts} />
 
-              {/* Other modules (static placeholders) */}
               <div>Template Repository</div>
               <div>Summary / Task Repository</div>
               <div>Personnel</div>
