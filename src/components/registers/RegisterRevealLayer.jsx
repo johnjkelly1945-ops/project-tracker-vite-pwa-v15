@@ -6,12 +6,12 @@ METRA — RegisterRevealLayer.jsx
 
 STAGE
 ---------------------------------------------------------------------
-Stage 308 — Ledger Source Isolation & Type-Correct Projection
+Stage 311 — Lifecycle Mapping Implementation (Projection Layer)
 
 PURPOSE
 ---------------------------------------------------------------------
-Isolate ledger projection sources by register type while preserving
-layout canon and governance-only lifecycle projection.
+Introduce canonical lifecycle derivation and lifecycle-based dot
+projection while preserving structural layout invariants.
 =====================================================================
 */
 
@@ -147,28 +147,35 @@ export default function RegisterRevealLayer() {
     headerMap[activeRegister] || "Governance Ledger";
 
   /* ------------------------------------------------------------------
-     LIFECYCLE DOT STYLES
+     LIFECYCLE DERIVATION (Stage 311)
   ------------------------------------------------------------------ */
 
-  const dotBase = {
-    display: "inline-block",
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    marginRight: "8px",
-    verticalAlign: "middle",
+  const deriveLifecycleClass = (state) => {
+    switch (state) {
+      case "IDENTIFIED":
+        return "OPEN";
+      case "ASSESSED":
+      case "ACCEPTED":
+      case "MITIGATED":
+        return "ACTIVE";
+      case "VERIFIED":
+        return "RESOLVED";
+      case "CLOSED":
+        return "CLOSED";
+      default:
+        return "OPEN";
+    }
   };
 
-  const dotColourMap = {
-    IDENTIFIED: "#999999",
-    ASSESSED: "#2b6cb0",
-    MITIGATED: "#d69e2e",
-    ACCEPTED: "#6b46c1",
+  const lifecycleColourMap = {
+    OPEN: "#999999",
+    ACTIVE: "#2b6cb0",
+    RESOLVED: "#d69e2e",
     CLOSED: "#2f855a",
   };
 
   /* ------------------------------------------------------------------
-     FILTERING
+     FILTERING (UNCHANGED)
   ------------------------------------------------------------------ */
 
   const tokens = filterText
@@ -197,7 +204,7 @@ export default function RegisterRevealLayer() {
   );
 
   /* ------------------------------------------------------------------
-     STYLES
+     STYLES (UNCHANGED)
   ------------------------------------------------------------------ */
 
   const thStyle = {
@@ -223,6 +230,15 @@ export default function RegisterRevealLayer() {
     fontSize: "12px",
     color: "#666",
     marginLeft: "6px",
+  };
+
+  const dotBase = {
+    display: "inline-block",
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    marginRight: "8px",
+    verticalAlign: "middle",
   };
 
   const renderCategoryExposure = (r) => {
@@ -330,6 +346,7 @@ export default function RegisterRevealLayer() {
             <tbody>
               {rows.map((r, i) => {
                 const categoryExposure = renderCategoryExposure(r);
+                const lifecycleClass = deriveLifecycleClass(r.state);
 
                 return (
                   <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
@@ -339,7 +356,7 @@ export default function RegisterRevealLayer() {
                           style={{
                             ...dotBase,
                             backgroundColor:
-                              dotColourMap[r.state] || "#999999",
+                              lifecycleColourMap[lifecycleClass] || "#999999",
                           }}
                         ></span>
                       )}
