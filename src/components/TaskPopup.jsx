@@ -11,14 +11,13 @@ Stage 257-C — Assign/Reassign Label + Timestamp Presentation (UI ONLY)
 Stage 260 — Archive Confirmation Gate (Mechanical Only)
 Stage 268 — Document Link as Immutable Task Event (CANONICAL)
 Stage 270 — Template Link as Immutable Task Event (CANONICAL)
+Stage 319 — Review Governance Activation (Controlled)
 ---------------------------------------------------------------------
-• Footer controls preserved verbatim
-• Summary association behaviour preserved
-• Delete remains label
-• Archive invoked only after explicit confirmation
-• Document linking recorded as immutable system event only
-• Template linking recorded as immutable system event only
-• No lifecycle, navigation, or authority changes
+• Footer controls preserved verbatim except Review addition
+• Review available only when status = SUBMITTED and user = PM
+• Review does NOT mutate lifecycle
+• Review logs immutable system event
+• No QC or Escalation auto-trigger
 =====================================================================
 */
 
@@ -26,6 +25,7 @@ import { useState, useEffect } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
+import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
 
 /* ===================== Time helpers ===================== */
 
@@ -73,19 +73,13 @@ export default function TaskPopup({
   const [modalDraftText, setModalDraftText] = useState("");
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
 
-  /* ===== Document link modal (Stage 268) ===== */
-
   const [linkDocOpen, setLinkDocOpen] = useState(false);
   const [docTitle, setDocTitle] = useState("");
   const [docRef, setDocRef] = useState("");
 
-  /* ===== Template link modal (Stage 270) ===== */
-
   const [linkTemplateOpen, setLinkTemplateOpen] = useState(false);
   const [templateTitle, setTemplateTitle] = useState("");
   const [templateRef, setTemplateRef] = useState("");
-
-  /* ===== RESTORED SUMMARY STATE (CANONICAL) ===== */
 
   const currentSummaryId = task.summaryId || "";
   const [summaryEditing, setSummaryEditing] = useState(false);
@@ -161,6 +155,22 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
+  /* ================= Review Activation (Stage 319) ================= */
+
+  function handleInitiateReview() {
+    if (!(executionState === "SUBMITTED" && isPM)) return;
+
+    bridgeTriggerGovernanceEvent({
+      eventType: "review",
+      taskId: task.id,
+      initiatedBy: "PM",
+    });
+
+    const line = systemLine("Review initiated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+  }
+
   function commitNoteDraft() {
     const text = modalDraftText.trim();
     if (!text) return;
@@ -184,8 +194,6 @@ export default function TaskPopup({
     setArchiveConfirmOpen(false);
   }
 
-  /* ================= Document link (Stage 268) ================= */
-
   function confirmLinkDocument() {
     const title = docTitle.trim();
     const ref = docRef.trim();
@@ -199,8 +207,6 @@ export default function TaskPopup({
     setDocRef("");
     setLinkDocOpen(false);
   }
-
-  /* ================= Template link (Stage 270) ================= */
 
   function confirmLinkTemplate() {
     const title = templateTitle.trim();
@@ -314,7 +320,10 @@ export default function TaskPopup({
               <button onClick={() => setLinkTemplateOpen(true)}>Link template</button>
             </div>
 
-            <div style={{ minWidth: "90px", textAlign: "right" }}>
+            <div style={{ minWidth: "140px", textAlign: "right" }}>
+              {executionState === "SUBMITTED" && isPM && (
+                <button onClick={handleInitiateReview}>Review</button>
+              )}
               {showStart && <button onClick={handleStartWork}>Start</button>}
               {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
               {showComplete && (
@@ -430,25 +439,6 @@ export default function TaskPopup({
               <button onClick={confirmLinkTemplate}>Confirm</button>
               <button onClick={() => setLinkTemplateOpen(false)}>Cancel</button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {archiveConfirmOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 3000,
-          }}
-        >
-          <div style={{ background: "#fff", padding: "20px" }}>
-            <button onClick={confirmArchive}>Confirm</button>
-            <button onClick={() => setArchiveConfirmOpen(false)}>Cancel</button>
           </div>
         </div>
       )}
