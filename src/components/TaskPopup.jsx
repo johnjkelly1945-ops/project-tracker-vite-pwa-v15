@@ -25,6 +25,7 @@ import { useState, useEffect } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
+import ReviewModal from "./ReviewModal";
 import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
 
 /* ===================== Time helpers ===================== */
@@ -72,6 +73,8 @@ export default function TaskPopup({
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [modalDraftText, setModalDraftText] = useState("");
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [activeReviewEventId, setActiveReviewEventId] = useState(null);
 
   const [linkDocOpen, setLinkDocOpen] = useState(false);
   const [docTitle, setDocTitle] = useState("");
@@ -160,15 +163,18 @@ export default function TaskPopup({
   function handleInitiateReview() {
     if (!(executionState === "SUBMITTED" && isPM)) return;
 
-    bridgeTriggerGovernanceEvent({
+    const event = bridgeTriggerGovernanceEvent({
       eventType: "review",
       taskId: task.id,
       initiatedBy: "PM",
     });
 
+    setActiveReviewEventId(event.eventId);
+
     const line = systemLine("Review initiated by PM");
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
+    setReviewModalOpen(true);
   }
 
   function commitNoteDraft() {
@@ -441,6 +447,14 @@ export default function TaskPopup({
             </div>
           </div>
         </div>
+      )}
+      {reviewModalOpen && (
+        <ReviewModal
+          onAddNote={onAddNote}
+          taskId={task.id}
+          eventId={activeReviewEventId}
+          onClose={() => setReviewModalOpen(false)}
+        />
       )}
     </div>
   );

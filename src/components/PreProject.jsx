@@ -10,12 +10,12 @@ METRA — PreProject.jsx
 
 Stage 220 — Summary Modal Trigger (Visibility-Preserving)
 
-DIAGNOSTIC ADDITION — STAGE 301
+Stage 320A — Diagnostic Removal (Stabilisation)
 ---------------------------------------------------------------------
-• Adds console log of footer authority props
-• No behavioural or authority change
-• Inspection-only
-• To be removed after diagnosis
+• Removes Stage 301 console logging
+• No behavioural change
+• No authority change
+• Pure render component
 =====================================================================
 */
 
@@ -29,14 +29,6 @@ export default function PreProject({
   canCreateSummary = false,
   onCreateSummary,
 }) {
-  // ---------------------------------------------------------------
-  // DIAGNOSTIC — FOOTER AUTHORITY VISIBILITY
-  // ---------------------------------------------------------------
-  console.log("PreProject props", {
-    canCreateTask,
-    canCreateSummary,
-  });
-
   return (
     <div
       className="single-pane-root"
@@ -55,7 +47,7 @@ export default function PreProject({
           overflowY: "auto",
         }}
       >
-        {/* ================= SUMMARIES (VISIBILITY ONLY) ================= */}
+        {/* ================= SUMMARIES ================= */}
         {summaries.length > 0 &&
           summaries.map((summary) => (
             <div key={summary.id} style={{ marginBottom: "16px" }}>
@@ -87,7 +79,7 @@ export default function PreProject({
             </div>
           ))}
 
-        {/* ================= ORPHAN TASKS (CHRONOLOGICAL) ================= */}
+        {/* ================= ORPHAN TASKS ================= */}
         {tasks
           .filter((t) => !t.summaryId)
           .map((task) => (
@@ -99,7 +91,7 @@ export default function PreProject({
           ))}
       </div>
 
-      {/* ================= FOOTER (CANONICAL) ================= */}
+      {/* ================= FOOTER ================= */}
       <div
         style={{
           borderTop: "1px solid #ddd",
