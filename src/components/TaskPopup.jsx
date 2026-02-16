@@ -14,9 +14,9 @@ Stage 270 — Template Link as Immutable Task Event (CANONICAL)
 Stage 319 — Review Governance Activation (Controlled)
 Stage 323 — Review Initiation Reuse Policy (Canonical Fix)
 Stage 324A — Governance Line Canonicalisation (UI ONLY)
+Stage 325 — SEM-TS Identity Row Realisation (UI ONLY)
 ---------------------------------------------------------------------
-• Footer controls preserved verbatim except Review relocation
-• Review moved to governance line
+• Header updated to conform to SEM-TS
 • No lifecycle mutation
 • No behaviour change
 • UI only
@@ -97,6 +97,15 @@ export default function TaskPopup({
     setLocalAssigneeId(task.assigneeId || "");
   }, [task]);
 
+  /* ================= Identity Resolution (SEM-TS) ================= */
+
+  const executionState = task.executionState || "NOT_STARTED";
+
+  const summary =
+    summaries.find((s) => s.id === task.summaryId);
+
+  const summaryTitle = summary ? summary.title : null;
+
   /* ================= Assignment ================= */
 
   function handleSelectAssignee(person) {
@@ -118,7 +127,6 @@ export default function TaskPopup({
 
   /* ================= Execution ================= */
 
-  const executionState = task.executionState || "NOT_STARTED";
   const isCompleted = executionState === "COMPLETED";
 
   const isAssigned = Boolean(localAssigneeId);
@@ -161,7 +169,7 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ================= Review Activation (Corrected) ================= */
+  /* ================= Review Activation ================= */
 
   function handleInitiateReview() {
     if (!(executionState === "SUBMITTED" && isPM)) return;
@@ -266,7 +274,12 @@ export default function TaskPopup({
           borderRadius: "6px",
         }}
       >
-        <CanonicalTaskPopupHeader task={task} onClose={onClose} />
+        <CanonicalTaskPopupHeader
+          task={task}
+          summaryTitle={summaryTitle}
+          executionState={executionState}
+          onClose={onClose}
+        />
 
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <strong>Notes</strong>

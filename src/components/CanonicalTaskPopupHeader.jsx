@@ -5,11 +5,12 @@ METRA — CanonicalTaskPopupHeader.jsx
 Stage 207 — Popup Header Canonicalisation
 Stage 257 Addendum — Personnel Name Resolution (UI Only)
 Stage 257-C — Header Layout Canonical Correction (UI Only)
+Stage 325 — SEM-TS Identity Row Realisation (UI ONLY)
 ---------------------------------------------------------------------
 Purpose:
-• Display task title and assignee
-• Resolve assigneeId via canonical Personnel data source
-• Visually centre header content
+• Display single-line Transaction Surface identity row
+• Include Title, Summary (if present), Assignee, State
+• Preserve centered layout
 • UI-only, read-only, non-authoritative
 =====================================================================
 */
@@ -17,7 +18,12 @@ Purpose:
 import React from "react";
 import { personnel } from "../data/personnel";
 
-export default function CanonicalTaskPopupHeader({ task, onClose }) {
+export default function CanonicalTaskPopupHeader({
+  task,
+  summaryTitle,
+  executionState,
+  onClose,
+}) {
   if (!task) return null;
 
   const assigneeId = task.assigneeId;
@@ -30,6 +36,8 @@ export default function CanonicalTaskPopupHeader({ task, onClose }) {
     ? assignee.displayName
     : assigneeId || "Unassigned";
 
+  const stateLabel = executionState || "NOT_STARTED";
+
   return (
     <div
       style={{
@@ -41,7 +49,6 @@ export default function CanonicalTaskPopupHeader({ task, onClose }) {
         alignItems: "center",
       }}
     >
-      {/* Centered title + assignee (single-line canonical layout) */}
       <div
         style={{
           position: "absolute",
@@ -54,10 +61,11 @@ export default function CanonicalTaskPopupHeader({ task, onClose }) {
         }}
       >
         {task.title}
-        {assigneeLabel && ` — ${assigneeLabel}`}
+        {summaryTitle && ` — ${summaryTitle}`}
+        {` · ${assigneeLabel}`}
+        {` · ${stateLabel}`}
       </div>
 
-      {/* Close control */}
       <button
         onClick={onClose}
         style={{
