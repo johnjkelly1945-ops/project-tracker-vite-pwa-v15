@@ -15,15 +15,18 @@ Stage 319 — Review Governance Activation (Controlled)
 Stage 323 — Review Initiation Reuse Policy (Canonical Fix)
 Stage 324A — Governance Line Canonicalisation (UI ONLY)
 Stage 325 — SEM-TS Identity Row Realisation (UI ONLY)
+Stage 325B — Inline Commit Surface Realisation (UI ONLY)
 ---------------------------------------------------------------------
-• Header updated to conform to SEM-TS
-• No lifecycle mutation
-• No behaviour change
-• UI only
+• Notes modal removed
+• Embedded commit surface (borderless, transaction-surface)
+• Footer preserved verbatim (no drift)
+• Append-only preserved
+• No lifecycle mutation changes
+• No governance logic changes
 =====================================================================
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
@@ -73,11 +76,12 @@ export default function TaskPopup({
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
-  const [noteModalOpen, setNoteModalOpen] = useState(false);
-  const [modalDraftText, setModalDraftText] = useState("");
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [activeReviewEventId, setActiveReviewEventId] = useState(null);
+
+  const [inlineDraftText, setInlineDraftText] = useState("");
+  const inlineRef = useRef(null);
 
   const [linkDocOpen, setLinkDocOpen] = useState(false);
   const [docTitle, setDocTitle] = useState("");
@@ -89,8 +93,7 @@ export default function TaskPopup({
 
   const currentSummaryId = task.summaryId || "";
   const [summaryEditing, setSummaryEditing] = useState(false);
-  const [selectedSummaryId, setSelectedSummaryId] =
-    useState(currentSummaryId);
+  const [selectedSummaryId, setSelectedSummaryId] = useState(currentSummaryId);
 
   useEffect(() => {
     setDisplayNotes(task.notes || []);
@@ -100,10 +103,7 @@ export default function TaskPopup({
   /* ================= Identity Resolution (SEM-TS) ================= */
 
   const executionState = task.executionState || "NOT_STARTED";
-
-  const summary =
-    summaries.find((s) => s.id === task.summaryId);
-
+  const summary = summaries.find((s) => s.id === task.summaryId);
   const summaryTitle = summary ? summary.title : null;
 
   /* ================= Assignment ================= */
@@ -134,18 +134,13 @@ export default function TaskPopup({
   const isPM = currentUserRole === "PM";
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
-  const showStart =
-    executionState === "NOT_STARTED" && (isAssignee || isPMProxy);
-  const showSubmit =
-    executionState === "IN_PROGRESS" && (isAssignee || isPMProxy);
-  const showComplete =
-    executionState === "SUBMITTED" && isPM;
+  const showStart = executionState === "NOT_STARTED" && (isAssignee || isPMProxy);
+  const showSubmit = executionState === "IN_PROGRESS" && (isAssignee || isPMProxy);
+  const showComplete = executionState === "SUBMITTED" && isPM;
 
   function handleStartWork() {
     if (!showStart) return;
-    const line = systemLine(
-      isPMProxy ? "Work started by PM (proxy)" : "Work started"
-    );
+    const line = systemLine(isPMProxy ? "Work started by PM (proxy)" : "Work started");
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
     onStartExecution(task.id);
@@ -153,9 +148,7 @@ export default function TaskPopup({
 
   function handleSubmitWork() {
     if (!showSubmit) return;
-    const line = systemLine(
-      isPMProxy ? "Work submitted by PM (proxy)" : "Work submitted"
-    );
+    const line = systemLine(isPMProxy ? "Work submitted by PM (proxy)" : "Work submitted");
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
     onSubmitExecution(task.id);
@@ -174,10 +167,9 @@ export default function TaskPopup({
   function handleInitiateReview() {
     if (!(executionState === "SUBMITTED" && isPM)) return;
 
-    const existing = getGovernanceEventsByTask(task.id)
-      .find(
-        (e) => e.eventType === "review" && e.status === "OPEN"
-      );
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "review" && e.status === "OPEN"
+    );
 
     let event;
 
@@ -199,13 +191,21 @@ export default function TaskPopup({
     setReviewModalOpen(true);
   }
 
-  function commitNoteDraft() {
-    const text = modalDraftText.trim();
+  /* ================= Inline Commit ================= */
+
+  function handleCommitInlineNote() {
+    const text = inlineDraftText.trim();
     if (!text) return;
-    const stamped = `${text} — ${nowStamp()}`;
+
+    const actor = `[${currentUserRole}]`;
+    const stamped = `${actor} ${text} — ${nowStamp()}`;
+
     onAddNote(task.id, stamped);
     setDisplayNotes((p) => [...p, stamped]);
-    setNoteModalOpen(false);
+    setInlineDraftText("");
+
+    // keep the surface ready for the next entry
+    if (inlineRef.current) inlineRef.current.focus();
   }
 
   function confirmSummaryEdit() {
@@ -283,21 +283,53 @@ export default function TaskPopup({
 
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <strong>Notes</strong>
-          {displayNotes.map((line, idx) => {
-            const [text, ts] = line.split(" — ");
-            return (
-              <div key={idx} style={{ marginBottom: "10px" }}>
-                <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>
-                {ts && (
-                  <span style={{ marginLeft: "6px", fontSize: "12px", color: "#777" }}>
-                    — {ts}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+
+          <div style={{ marginTop: "12px" }}>
+            {displayNotes.map((line, idx) => {
+              const [text, ts] = line.split(" — ");
+              return (
+                <div key={idx} style={{ marginBottom: "16px" }}>
+                  <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>
+                  {ts && (
+                    <span style={{ marginLeft: "6px", fontSize: "12px", color: "#777" }}>
+                      — {ts}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Embedded transaction input (borderless, not a boxed container) */}
+          <div
+            style={{
+              marginTop: "16px",
+              borderTop: "1px solid rgba(0,0,0,0.1)",
+              paddingTop: "12px",
+            }}
+          >
+            <textarea
+              ref={inlineRef}
+              rows={3}
+              style={{
+                width: "100%",
+                resize: "vertical",
+                border: "none",
+                outline: "none",
+                fontSize: "14px",
+              }}
+              placeholder="Enter note..."
+              value={inlineDraftText}
+              onChange={(e) => setInlineDraftText(e.target.value)}
+            />
+
+            <div style={{ textAlign: "right", marginTop: "6px" }}>
+              <button onClick={handleCommitInlineNote}>Commit note</button>
+            </div>
+          </div>
         </div>
 
+        {/* Footer preserved verbatim (baseline grammar) */}
         <div
           style={{
             borderTop: "1px solid rgba(11,58,102,0.25)",
@@ -352,7 +384,6 @@ export default function TaskPopup({
                   <button onClick={confirmSummaryEdit}>Confirm</button>
                 </>
               )}
-              <button onClick={() => setNoteModalOpen(true)}>Add note</button>
               <button onClick={() => setLinkDocOpen(true)}>Link document</button>
               <button onClick={() => setLinkTemplateOpen(true)}>Link template</button>
             </div>
@@ -376,33 +407,6 @@ export default function TaskPopup({
           onSelect={handleSelectAssignee}
           onClose={() => setAssignmentModalOpen(false)}
         />
-      )}
-
-      {noteModalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
-          }}
-        >
-          <div style={{ background: "#fff", padding: "20px", width: "400px" }}>
-            <textarea
-              rows={5}
-              style={{ width: "100%" }}
-              value={modalDraftText}
-              onChange={(e) => setModalDraftText(e.target.value)}
-            />
-            <div style={{ marginTop: "10px", textAlign: "right" }}>
-              <button onClick={commitNoteDraft}>Add</button>
-              <button onClick={() => setNoteModalOpen(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
       )}
 
       {linkDocOpen && (
