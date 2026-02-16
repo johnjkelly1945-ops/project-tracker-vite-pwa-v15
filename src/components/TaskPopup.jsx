@@ -12,11 +12,13 @@ Stage 260 — Archive Confirmation Gate (Mechanical Only)
 Stage 268 — Document Link as Immutable Task Event (CANONICAL)
 Stage 270 — Template Link as Immutable Task Event (CANONICAL)
 Stage 319 — Review Governance Activation (Controlled)
+Stage 323 — Review Initiation Reuse Policy (Canonical Fix)
 ---------------------------------------------------------------------
 • Footer controls preserved verbatim except Review addition
 • Review available only when status = SUBMITTED and user = PM
 • Review does NOT mutate lifecycle
 • Review logs immutable system event
+• Review reuses existing OPEN governance event
 • No QC or Escalation auto-trigger
 =====================================================================
 */
@@ -27,6 +29,7 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 /* ===================== Time helpers ===================== */
 
@@ -158,22 +161,33 @@ export default function TaskPopup({
     onCompleteExecution(task.id);
   }
 
-  /* ================= Review Activation (Stage 319) ================= */
+  /* ================= Review Activation (Corrected) ================= */
 
   function handleInitiateReview() {
     if (!(executionState === "SUBMITTED" && isPM)) return;
 
-    const event = bridgeTriggerGovernanceEvent({
-      eventType: "review",
-      taskId: task.id,
-      initiatedBy: "PM",
-    });
+    const existing = getGovernanceEventsByTask(task.id)
+      .find(
+        (e) => e.eventType === "review" && e.status === "OPEN"
+      );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "review",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("Review initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
 
     setActiveReviewEventId(event.eventId);
-
-    const line = systemLine("Review initiated by PM");
-    onAddNote(task.id, line);
-    setDisplayNotes((p) => [...p, line]);
     setReviewModalOpen(true);
   }
 
@@ -271,7 +285,6 @@ export default function TaskPopup({
           })}
         </div>
 
-        {/* ================= Footer ================= */}
         <div
           style={{
             borderTop: "1px solid rgba(11,58,102,0.25)",
@@ -448,6 +461,7 @@ export default function TaskPopup({
           </div>
         </div>
       )}
+
       {reviewModalOpen && (
         <ReviewModal
           onAddNote={onAddNote}

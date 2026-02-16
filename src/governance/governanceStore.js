@@ -6,27 +6,33 @@ METRA — governanceStore.js
 
 STAGE
 ---------------------------------------------------------------------
-Stage 318A — Governance Event Engine Foundation (Store Layer)
+Stage 323 — Governance Domain Persistence (Repository Adapter)
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide isolated in-memory storage for Governance Events
-as defined by SEM-GEV-01 v1.1.
+Delegate Governance Event storage to GovernanceRepository
+while preserving existing store API surface.
 
 This module:
 
+• Preserves engine contract
+• Preserves function signatures
 • Does NOT mutate task lifecycle
-• Does NOT write to popup
-• Does NOT write to ledger
-• Does NOT enforce UI behaviour
-• Does NOT implement governance logic
+• Does NOT bind to UI
+• Does NOT enforce governance logic
 
-It is a passive store only.
+It is now a thin adapter over GovernanceRepository.
 
 =====================================================================
 */
 
-let governanceEvents = {};
+import {
+  repoCreate,
+  repoGet,
+  repoGetByTask,
+  repoUpdate,
+  repoReset,
+} from "../domain/governance/GovernanceRepository";
 
 /*
 =====================================================================
@@ -59,9 +65,7 @@ export function createGovernanceEvent({ eventType, taskId, initiatedBy }) {
     decisionRecord: null,
   };
 
-  governanceEvents[eventId] = event;
-
-  return event;
+  return repoCreate(event);
 }
 
 /*
@@ -71,7 +75,7 @@ GET EVENT
 */
 
 export function getGovernanceEvent(eventId) {
-  return governanceEvents[eventId] || null;
+  return repoGet(eventId);
 }
 
 /*
@@ -81,31 +85,25 @@ GET EVENTS BY TASK
 */
 
 export function getGovernanceEventsByTask(taskId) {
-  return Object.values(governanceEvents).filter(
-    (event) => event.taskId === taskId
-  );
+  return repoGetByTask(taskId);
 }
 
 /*
 =====================================================================
-UPDATE EVENT (Controlled Internal Use Only)
+UPDATE EVENT
 =====================================================================
 */
 
 export function updateGovernanceEvent(eventId, updatedEvent) {
-  if (!governanceEvents[eventId]) return null;
-
-  governanceEvents[eventId] = updatedEvent;
-  return governanceEvents[eventId];
+  return repoUpdate(eventId, updatedEvent);
 }
 
 /*
 =====================================================================
-STORE RESET (TESTING ONLY — NOT FOR PRODUCTION USE)
+STORE RESET (TESTING ONLY)
 =====================================================================
 */
 
 export function __resetGovernanceStore() {
-  governanceEvents = {};
+  return repoReset();
 }
-
