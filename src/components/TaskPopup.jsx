@@ -13,13 +13,13 @@ Stage 268 — Document Link as Immutable Task Event (CANONICAL)
 Stage 270 — Template Link as Immutable Task Event (CANONICAL)
 Stage 319 — Review Governance Activation (Controlled)
 Stage 323 — Review Initiation Reuse Policy (Canonical Fix)
+Stage 324A — Governance Line Canonicalisation (UI ONLY)
 ---------------------------------------------------------------------
-• Footer controls preserved verbatim except Review addition
-• Review available only when status = SUBMITTED and user = PM
-• Review does NOT mutate lifecycle
-• Review logs immutable system event
-• Review reuses existing OPEN governance event
-• No QC or Escalation auto-trigger
+• Footer controls preserved verbatim except Review relocation
+• Review moved to governance line
+• No lifecycle mutation
+• No behaviour change
+• UI only
 =====================================================================
 */
 
@@ -296,7 +296,12 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            CC · Risk · Issue · QC | Escalate
+            <span>CC</span> · <span>Risk</span> · <span>Issue</span> · <span>QC</span>
+            {executionState === "SUBMITTED" && isPM && (
+              <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
+            )}
+            {" | "}
+            <span>Escalate</span>
           </div>
 
           <div
@@ -340,9 +345,6 @@ export default function TaskPopup({
             </div>
 
             <div style={{ minWidth: "140px", textAlign: "right" }}>
-              {executionState === "SUBMITTED" && isPM && (
-                <button onClick={handleInitiateReview}>Review</button>
-              )}
               {showStart && <button onClick={handleStartWork}>Start</button>}
               {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
               {showComplete && (
