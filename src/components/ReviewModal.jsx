@@ -14,6 +14,7 @@ Stage 320A — Review Governance Surface (Advisory Overlay)
 
 import { useState } from "react";
 import { bridgeRecordParticipation, bridgeSubmitAdvisory } from "../governance/governanceBridge";
+import { getGovernanceEvent } from "../governance/governanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 
@@ -44,13 +45,19 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
   const [docVersion, setDocVersion] = useState("");
   const [contextNote, setContextNote] = useState("");
 
+  const [event, setEvent] = useState(() =>
+    getGovernanceEvent(eventId)
+  );
+
   function confirmParticipant(person) {
-    bridgeRecordParticipation({
+    const updated = bridgeRecordParticipation({
       eventId,
       reviewerId: person.id,
       participationType: "internal",
       acceptedBy: "PM",
     });
+
+    setEvent(updated);
 
     if (onAddNote) {
       onAddNote(taskId, `[System] Review participant confirmed: ${person.displayName} — ${nowStamp()}`);
@@ -62,7 +69,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     const summary = advisoryText.trim();
     if (!summary) return;
 
-    bridgeSubmitAdvisory({
+    const updated = bridgeSubmitAdvisory({
       eventId,
       submittedBy: "PM",
       summary,
@@ -70,9 +77,12 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
       templateId: null,
     });
 
+    setEvent(updated);
+
     if (onAddNote) {
       onAddNote(taskId, `[System] Advisory recorded — ${nowStamp()}`);
     }
+
     setAdvisoryText("");
     setDocName("");
     setDocVersion("");
@@ -109,6 +119,29 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
           </button>
         </div>
 
+        {event && event.advisoryRecords.length > 0 && (
+          <div style={{ marginBottom: "15px" }}>
+            <strong>Recorded Advisories</strong>
+            {event.advisoryRecords.map((adv) => (
+              <div
+                key={adv.advisoryId}
+                style={{
+                  border: "1px solid #ddd",
+                  padding: "8px",
+                  marginTop: "6px",
+                  borderRadius: "4px",
+                  background: "#fafafa",
+                }}
+              >
+                <div style={{ fontSize: "12px", color: "#666" }}>
+                  {new Date(adv.submittedAt).toLocaleString()}
+                </div>
+                <div>{adv.summary}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div style={{ marginBottom: "15px" }}>
           <textarea
             rows={4}
@@ -116,27 +149,6 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
             placeholder="Advisory summary (optional)"
             value={advisoryText}
             onChange={(e) => setAdvisoryText(e.target.value)}
-          />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <input
-            style={{ width: "100%", marginBottom: "8px" }}
-            placeholder="Document name (optional)"
-            value={docName}
-            onChange={(e) => setDocName(e.target.value)}
-          />
-          <input
-            style={{ width: "100%", marginBottom: "8px" }}
-            placeholder="Document version (optional)"
-            value={docVersion}
-            onChange={(e) => setDocVersion(e.target.value)}
-          />
-          <input
-            style={{ width: "100%" }}
-            placeholder="Context note (optional)"
-            value={contextNote}
-            onChange={(e) => setContextNote(e.target.value)}
           />
         </div>
 
