@@ -9,6 +9,7 @@ Stage 329 — Phase 2B Step 2 (SEM-TS Zone Formalisation)
 Stage 329 — Phase 2B Step 3 (Mutation Boundary Alignment)
 Stage 329 — Phase 2B Step 3A (Flex Height Constraint Fix)
 Stage 329 — Phase 2B Step 3B (Flex Scroll Containment Fix)
+Stage 329 — Phase 2B Step 4 (Identity Canonicalisation — Display Names)
 ---------------------------------------------------------------------
 • Advisory only
 • No lifecycle mutation
@@ -21,6 +22,7 @@ Stage 329 — Phase 2B Step 3B (Flex Scroll Containment Fix)
 • Confirm Participant relocated to footer (no behavioural delta)
 • Height constraint corrected for scroll enforcement
 • minHeight applied for flex scroll containment
+• Participant IDs resolved to display names in identity zone
 =====================================================================
 */
 
@@ -62,6 +64,10 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
   const participantIds = event?.participation
     ? [...new Set(event.participation.map(p => p.reviewerId))]
     : [];
+
+  const participantNames = participantIds
+    .map(id => personnel.find(p => p.id === id)?.displayName)
+    .filter(Boolean);
 
   function confirmParticipant(person) {
     const updated = bridgeRecordParticipation({
@@ -141,8 +147,8 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
               <div><strong>Status:</strong> {event.status}</div>
               <div>
                 <strong>Participants:</strong>{" "}
-                {participantIds.length > 0
-                  ? participantIds.join(", ")
+                {participantNames.length > 0
+                  ? participantNames.join(", ")
                   : "None confirmed"}
               </div>
             </div>
