@@ -4,6 +4,8 @@
 METRA — ReviewModal.jsx
 Stage 320A — Review Governance Surface (Advisory Overlay)
 Stage 329 — Phase 2A (Wrapped in GovernanceSurfaceContainer)
+Stage 329 — Phase 2B Step 1 (Identity Zone Introduction)
+Stage 329 — Phase 2B Step 2 (SEM-TS Zone Formalisation)
 ---------------------------------------------------------------------
 • Advisory only
 • No lifecycle mutation
@@ -11,6 +13,8 @@ Stage 329 — Phase 2A (Wrapped in GovernanceSurfaceContainer)
 • No document storage
 • Multi-participant confirmation permitted
 • Structural wrapper introduced (no behavioural delta)
+• Identity zone introduced (render-only)
+• Zones formalised (Identity / Stream / Footer)
 =====================================================================
 */
 
@@ -44,13 +48,14 @@ function nowStamp() {
 export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
-  const [docName, setDocName] = useState("");
-  const [docVersion, setDocVersion] = useState("");
-  const [contextNote, setContextNote] = useState("");
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
+
+  const participantIds = event?.participation
+    ? [...new Set(event.participation.map(p => p.reviewerId))]
+    : [];
 
   function confirmParticipant(person) {
     const updated = bridgeRecordParticipation({
@@ -65,6 +70,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     if (onAddNote) {
       onAddNote(taskId, `[System] Review participant confirmed: ${person.displayName} — ${nowStamp()}`);
     }
+
     setParticipantModalOpen(false);
   }
 
@@ -87,9 +93,6 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     }
 
     setAdvisoryText("");
-    setDocName("");
-    setDocVersion("");
-    setContextNote("");
   }
 
   return (
@@ -110,58 +113,101 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
             background: "#fff",
             width: "600px",
             maxHeight: "80vh",
-            overflowY: "auto",
-            padding: "20px",
             borderRadius: "6px",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <h3>Review Advisory</h3>
 
-          <div style={{ marginBottom: "15px" }}>
-            <button onClick={() => setParticipantModalOpen(true)}>
-              Confirm Participant
-            </button>
-          </div>
+          {/* ================= Identity Zone ================= */}
 
-          {event && event.advisoryRecords.length > 0 && (
-            <div style={{ marginBottom: "15px" }}>
-              <strong>Recorded Advisories</strong>
-              {event.advisoryRecords.map((adv) => (
-                <div
-                  key={adv.advisoryId}
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    marginTop: "6px",
-                    borderRadius: "4px",
-                    background: "#fafafa",
-                  }}
-                >
-                  <div style={{ fontSize: "12px", color: "#666" }}>
-                    {new Date(adv.submittedAt).toLocaleString()}
-                  </div>
-                  <div>{adv.summary}</div>
-                </div>
-              ))}
+          {event && (
+            <div
+              style={{
+                padding: "15px 20px",
+                borderBottom: "1px solid #e5e5e5",
+                fontSize: "13px",
+              }}
+            >
+              <div><strong>Type:</strong> Review</div>
+              <div><strong>Event ID:</strong> {event.eventId}</div>
+              <div><strong>Task:</strong> {event.taskId}</div>
+              <div><strong>Status:</strong> {event.status}</div>
+              <div>
+                <strong>Participants:</strong>{" "}
+                {participantIds.length > 0
+                  ? participantIds.join(", ")
+                  : "None confirmed"}
+              </div>
             </div>
           )}
 
-          <div style={{ marginBottom: "15px" }}>
-            <textarea
-              rows={4}
-              style={{ width: "100%" }}
-              placeholder="Advisory summary (optional)"
-              value={advisoryText}
-              onChange={(e) => setAdvisoryText(e.target.value)}
-            />
+          {/* ================= Transaction Stream ================= */}
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "15px 20px",
+            }}
+          >
+            <h3>Review Advisory</h3>
+
+            <div style={{ marginBottom: "15px" }}>
+              <button onClick={() => setParticipantModalOpen(true)}>
+                Confirm Participant
+              </button>
+            </div>
+
+            {event && event.advisoryRecords.length > 0 && (
+              <div style={{ marginBottom: "15px" }}>
+                <strong>Recorded Advisories</strong>
+                {event.advisoryRecords.map((adv) => (
+                  <div
+                    key={adv.advisoryId}
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: "8px",
+                      marginTop: "6px",
+                      borderRadius: "4px",
+                      background: "#fafafa",
+                    }}
+                  >
+                    <div style={{ fontSize: "12px", color: "#666" }}>
+                      {new Date(adv.submittedAt).toLocaleString()}
+                    </div>
+                    <div>{adv.summary}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ marginBottom: "15px" }}>
+              <textarea
+                rows={4}
+                style={{ width: "100%" }}
+                placeholder="Advisory summary (optional)"
+                value={advisoryText}
+                onChange={(e) => setAdvisoryText(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div style={{ textAlign: "right", marginTop: "15px" }}>
+          {/* ================= Footer (Mutation Boundary) ================= */}
+
+          <div
+            style={{
+              borderTop: "1px solid #e5e5e5",
+              padding: "15px 20px",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "10px",
+            }}
+          >
             <button onClick={recordAdvisory}>Record Advisory</button>
-            <button onClick={onClose} style={{ marginLeft: "10px" }}>
-              Close
-            </button>
+            <button onClick={onClose}>Close</button>
           </div>
+
         </div>
 
         {participantModalOpen && (
