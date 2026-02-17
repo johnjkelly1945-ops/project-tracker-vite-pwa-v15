@@ -6,23 +6,17 @@ Stage 320A — Review Governance Surface (Advisory Overlay)
 Stage 329 — Phase 2A (Wrapped in GovernanceSurfaceContainer)
 Stage 329 — Phase 2B Step 1 (Identity Zone Introduction)
 Stage 329 — Phase 2B Step 2 (SEM-TS Zone Formalisation)
-Stage 329 — Phase 2B Step 3 (Mutation Boundary Alignment)
-Stage 329 — Phase 2B Step 3A (Flex Height Constraint Fix)
-Stage 329 — Phase 2B Step 3B (Flex Scroll Containment Fix)
-Stage 329 — Phase 2B Step 4 (Identity Canonicalisation — Display Names)
+Stage 329 — Phase 2B Step 3B (Mutation Boundary Stable)
+Stage 329 — Phase 2C Step 1 (Commit Relocation + Escalate Render-Only)
 ---------------------------------------------------------------------
 • Advisory only
 • No lifecycle mutation
 • No decision control
 • No document storage
 • Multi-participant confirmation permitted
-• Structural wrapper introduced (no behavioural delta)
-• Identity zone introduced (render-only)
-• Zones formalised (Identity / Stream / Footer)
-• Confirm Participant relocated to footer (no behavioural delta)
-• Height constraint corrected for scroll enforcement
-• minHeight applied for flex scroll containment
-• Participant IDs resolved to display names in identity zone
+• Identity / Stream / Footer zones formalised
+• Commit relocated into Stream zone
+• Escalate introduced (render-only, no wiring)
 =====================================================================
 */
 
@@ -66,8 +60,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     : [];
 
   const participantNames = participantIds
-    .map(id => personnel.find(p => p.id === id)?.displayName)
-    .filter(Boolean);
+    .map(id => personnel.find(p => p.id === id)?.displayName || id);
 
   function confirmParticipant(person) {
     const updated = bridgeRecordParticipation({
@@ -80,7 +73,10 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     setEvent(updated);
 
     if (onAddNote) {
-      onAddNote(taskId, `[System] Review participant confirmed: ${person.displayName} — ${nowStamp()}`);
+      onAddNote(
+        taskId,
+        `[System] Review participant confirmed: ${person.displayName} — ${nowStamp()}`
+      );
     }
 
     setParticipantModalOpen(false);
@@ -136,13 +132,12 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
           {event && (
             <div
               style={{
+                borderBottom: "1px solid #eee",
                 padding: "15px 20px",
-                borderBottom: "1px solid #e5e5e5",
                 fontSize: "13px",
               }}
             >
               <div><strong>Type:</strong> Review</div>
-              <div><strong>Event ID:</strong> {event.eventId}</div>
               <div><strong>Task:</strong> {event.taskId}</div>
               <div><strong>Status:</strong> {event.status}</div>
               <div>
@@ -154,7 +149,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
             </div>
           )}
 
-          {/* ================= Transaction Stream ================= */}
+          {/* ================= Stream Zone ================= */}
 
           <div
             style={{
@@ -189,18 +184,24 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
               </div>
             )}
 
-            <div style={{ marginBottom: "15px" }}>
+            {/* Commit Block (Popup-Aligned) */}
+
+            <div style={{ marginTop: "20px" }}>
               <textarea
                 rows={4}
-                style={{ width: "100%" }}
-                placeholder="Advisory summary (optional)"
+                style={{ width: "100%", marginBottom: "10px" }}
+                placeholder="Advisory summary"
                 value={advisoryText}
                 onChange={(e) => setAdvisoryText(e.target.value)}
               />
+              <button onClick={recordAdvisory}>
+                Record Advisory
+              </button>
             </div>
+
           </div>
 
-          {/* ================= Footer (Mutation Boundary) ================= */}
+          {/* ================= Footer (Governance Control Surface) ================= */}
 
           <div
             style={{
@@ -216,8 +217,12 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
             </button>
 
             <div style={{ display: "flex", gap: "10px" }}>
-              <button onClick={recordAdvisory}>Record Advisory</button>
-              <button onClick={onClose}>Close</button>
+              <button>
+                Escalate
+              </button>
+              <button onClick={onClose}>
+                Close
+              </button>
             </div>
           </div>
 
