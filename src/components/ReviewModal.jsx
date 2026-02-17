@@ -146,7 +146,17 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
                 fontSize: "13px",
               }}
             >
-              <div><strong>Type:</strong> Review</div>
+              <div
+                style={{
+                  textAlign: "center",
+                  fontWeight: 700,
+                  fontSize: "22px",
+                  letterSpacing: "0.5px",
+                  marginBottom: "10px",
+                }}
+              >
+                REVIEW
+              </div>
               <div><strong>Event ID:</strong> {event.eventId}</div>
               <div><strong>Task:</strong> {event.taskId}</div>
               <div><strong>Status:</strong> {event.status}</div>
