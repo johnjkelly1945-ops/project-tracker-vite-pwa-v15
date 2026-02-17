@@ -6,6 +6,9 @@ Stage 320A — Review Governance Surface (Advisory Overlay)
 Stage 329 — Phase 2A (Wrapped in GovernanceSurfaceContainer)
 Stage 329 — Phase 2B Step 1 (Identity Zone Introduction)
 Stage 329 — Phase 2B Step 2 (SEM-TS Zone Formalisation)
+Stage 329 — Phase 2B Step 3 (Mutation Boundary Alignment)
+Stage 329 — Phase 2B Step 3A (Flex Height Constraint Fix)
+Stage 329 — Phase 2B Step 3B (Flex Scroll Containment Fix)
 ---------------------------------------------------------------------
 • Advisory only
 • No lifecycle mutation
@@ -15,6 +18,9 @@ Stage 329 — Phase 2B Step 2 (SEM-TS Zone Formalisation)
 • Structural wrapper introduced (no behavioural delta)
 • Identity zone introduced (render-only)
 • Zones formalised (Identity / Stream / Footer)
+• Confirm Participant relocated to footer (no behavioural delta)
+• Height constraint corrected for scroll enforcement
+• minHeight applied for flex scroll containment
 =====================================================================
 */
 
@@ -112,7 +118,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
           style={{
             background: "#fff",
             width: "600px",
-            maxHeight: "80vh",
+            height: "80vh",
             borderRadius: "6px",
             display: "flex",
             flexDirection: "column",
@@ -147,17 +153,12 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
           <div
             style={{
               flex: 1,
+              minHeight: 0,
               overflowY: "auto",
               padding: "15px 20px",
             }}
           >
             <h3>Review Advisory</h3>
-
-            <div style={{ marginBottom: "15px" }}>
-              <button onClick={() => setParticipantModalOpen(true)}>
-                Confirm Participant
-              </button>
-            </div>
 
             {event && event.advisoryRecords.length > 0 && (
               <div style={{ marginBottom: "15px" }}>
@@ -200,12 +201,18 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
               borderTop: "1px solid #e5e5e5",
               padding: "15px 20px",
               display: "flex",
-              justifyContent: "flex-end",
-              gap: "10px",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <button onClick={recordAdvisory}>Record Advisory</button>
-            <button onClick={onClose}>Close</button>
+            <button onClick={() => setParticipantModalOpen(true)}>
+              Confirm Participant
+            </button>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button onClick={recordAdvisory}>Record Advisory</button>
+              <button onClick={onClose}>Close</button>
+            </div>
           </div>
 
         </div>
