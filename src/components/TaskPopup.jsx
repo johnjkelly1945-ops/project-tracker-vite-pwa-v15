@@ -31,6 +31,7 @@ import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
+import RiskModal from "./RiskModal";
 import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
@@ -79,6 +80,9 @@ export default function TaskPopup({
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [activeReviewEventId, setActiveReviewEventId] = useState(null);
+
+  const [riskModalOpen, setRiskModalOpen] = useState(false);
+  const [activeRiskEventId, setActiveRiskEventId] = useState(null);
 
   const [inlineDraftText, setInlineDraftText] = useState("");
   const inlineRef = useRef(null);
@@ -189,6 +193,36 @@ export default function TaskPopup({
 
     setActiveReviewEventId(event.eventId);
     setReviewModalOpen(true);
+  }
+
+
+  /* ================= Risk Activation ================= */
+
+  function handleInitiateRisk() {
+    if (!isPM) return;
+
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "risk" && e.status === "OPEN"
+    );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "risk",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("Risk initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
+
+    setActiveRiskEventId(event.eventId);
+    setRiskModalOpen(true);
   }
 
   /* ================= Inline Commit ================= */
@@ -341,7 +375,7 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            <span>CC</span> · <span>Risk</span> · <span>Issue</span> · <span>QC</span>
+            <span>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span>Issue</span> · <span>QC</span>
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
@@ -487,6 +521,15 @@ export default function TaskPopup({
           taskId={task.id}
           eventId={activeReviewEventId}
           onClose={() => setReviewModalOpen(false)}
+        />
+      )}
+
+      {riskModalOpen && activeRiskEventId && (
+        <RiskModal
+          taskId={task.id}
+          eventId={activeRiskEventId}
+          onClose={() => setRiskModalOpen(false)}
+          onAddNote={onAddNote}
         />
       )}
     </div>
