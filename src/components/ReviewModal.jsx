@@ -3,25 +3,25 @@
 =====================================================================
 METRA — ReviewModal.jsx
 Stage 320A — Review Governance Surface (Advisory Overlay)
-Stage 329 — Phase 2A (Wrapped in GovernanceSurfaceContainer)
-Stage 329 — Phase 2B Step 1 (Identity Zone Introduction)
-Stage 329 — Phase 2B Step 2 (SEM-TS Zone Formalisation)
-Stage 329 — Phase 2B Step 3B (Mutation Boundary Stable)
-Stage 329 — Phase 2C Step 1 (Commit Relocation + Escalate Render-Only)
+Stage 329 — Phase 2C Step 3 (TaskPopup Grammar Alignment)
 ---------------------------------------------------------------------
 • Advisory only
 • No lifecycle mutation
 • No decision control
 • No document storage
-• Multi-participant confirmation permitted
-• Identity / Stream / Footer zones formalised
-• Commit relocated into Stream zone
-• Escalate introduced (render-only, no wiring)
+• Identity / Stream / Footer zones enforced
+• Scroll containment preserved
+• Commit grammar mirrors TaskPopup
+• Escalate render-only (no wiring)
+• ZERO semantic delta
 =====================================================================
 */
 
-import { useState } from "react";
-import { bridgeRecordParticipation, bridgeSubmitAdvisory } from "../governance/governanceBridge";
+import { useState, useRef } from "react";
+import {
+  bridgeRecordParticipation,
+  bridgeSubmitAdvisory,
+} from "../governance/governanceBridge";
 import { getGovernanceEvent } from "../governance/governanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
@@ -48,6 +48,7 @@ function nowStamp() {
 /* ===================== Component ===================== */
 
 export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
+  const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
 
@@ -56,11 +57,14 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
   );
 
   const participantIds = event?.participation
-    ? [...new Set(event.participation.map(p => p.reviewerId))]
+    ? [...new Set(event.participation.map((p) => p.reviewerId))]
     : [];
 
   const participantNames = participantIds
-    .map(id => personnel.find(p => p.id === id)?.displayName || id);
+    .map((id) => personnel.find((p) => p.id === id)?.displayName)
+    .filter(Boolean);
+
+  /* ================= Participation ================= */
 
   function confirmParticipant(person) {
     const updated = bridgeRecordParticipation({
@@ -82,7 +86,9 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     setParticipantModalOpen(false);
   }
 
-  function recordAdvisory() {
+  /* ================= Inline Commit ================= */
+
+  function handleCommitInlineAdvisory() {
     const summary = advisoryText.trim();
     if (!summary) return;
 
@@ -101,7 +107,11 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     }
 
     setAdvisoryText("");
+
+    if (inlineRef.current) inlineRef.current.focus();
   }
+
+  /* ================= Render ================= */
 
   return (
     <GovernanceSurfaceContainer>
@@ -109,7 +119,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0,0,0,0.35)",
+          background: "rgba(0,0,0,0.3)",
           zIndex: 3000,
           display: "flex",
           alignItems: "center",
@@ -119,25 +129,25 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
         <div
           style={{
             background: "#fff",
-            width: "600px",
+            width: "90%",
             height: "80vh",
-            borderRadius: "6px",
             display: "flex",
             flexDirection: "column",
+            borderRadius: "6px",
           }}
         >
-
           {/* ================= Identity Zone ================= */}
 
           {event && (
             <div
               style={{
-                borderBottom: "1px solid #eee",
+                borderBottom: "1px solid rgba(0,0,0,0.1)",
                 padding: "15px 20px",
                 fontSize: "13px",
               }}
             >
               <div><strong>Type:</strong> Review</div>
+              <div><strong>Event ID:</strong> {event.eventId}</div>
               <div><strong>Task:</strong> {event.taskId}</div>
               <div><strong>Status:</strong> {event.status}</div>
               <div>
@@ -151,81 +161,96 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
 
           {/* ================= Stream Zone ================= */}
 
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: "auto",
-              padding: "15px 20px",
-            }}
-          >
-            <h3>Review Advisory</h3>
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+            <strong>Advisory Notes</strong>
 
-            {event && event.advisoryRecords.length > 0 && (
-              <div style={{ marginBottom: "15px" }}>
-                <strong>Recorded Advisories</strong>
-                {event.advisoryRecords.map((adv) => (
-                  <div
-                    key={adv.advisoryId}
+            <div style={{ marginTop: "12px" }}>
+              {event?.advisoryRecords.map((adv) => (
+                <div key={adv.advisoryId} style={{ marginBottom: "16px" }}>
+                  <span style={{ whiteSpace: "pre-wrap" }}>
+                    {adv.summary}
+                  </span>
+                  <span
                     style={{
-                      border: "1px solid #ddd",
-                      padding: "8px",
-                      marginTop: "6px",
-                      borderRadius: "4px",
-                      background: "#fafafa",
+                      marginLeft: "6px",
+                      fontSize: "12px",
+                      color: "#777",
                     }}
                   >
-                    <div style={{ fontSize: "12px", color: "#666" }}>
-                      {new Date(adv.submittedAt).toLocaleString()}
-                    </div>
-                    <div>{adv.summary}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+                    — {new Date(adv.submittedAt).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            {/* Commit Block (Popup-Aligned) */}
+            {/* Inline transaction input (TaskPopup grammar) */}
 
-            <div style={{ marginTop: "20px" }}>
+            <div
+              style={{
+                marginTop: "16px",
+                borderTop: "1px solid rgba(0,0,0,0.1)",
+                paddingTop: "12px",
+              }}
+            >
               <textarea
-                rows={4}
-                style={{ width: "100%", marginBottom: "10px" }}
-                placeholder="Advisory summary"
+                ref={inlineRef}
+                rows={3}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  border: "none",
+                  outline: "none",
+                  fontSize: "14px",
+                }}
+                placeholder="Enter advisory..."
                 value={advisoryText}
                 onChange={(e) => setAdvisoryText(e.target.value)}
               />
-              <button onClick={recordAdvisory}>
-                Record Advisory
-              </button>
-            </div>
 
+              <div style={{ textAlign: "right", marginTop: "6px" }}>
+                <button onClick={handleCommitInlineAdvisory}>
+                  Commit advisory
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* ================= Footer (Governance Control Surface) ================= */}
+          {/* ================= Footer (Canonical Band) ================= */}
 
           <div
             style={{
-              borderTop: "1px solid #e5e5e5",
-              padding: "15px 20px",
+              borderTop: "1px solid rgba(11,58,102,0.25)",
+              background: "rgba(11,58,102,0.10)",
+              padding: "12px",
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              flexDirection: "column",
+              gap: "10px",
             }}
           >
-            <button onClick={() => setParticipantModalOpen(true)}>
-              Confirm Participant
-            </button>
+            <div
+              style={{
+                textAlign: "center",
+                fontStyle: "italic",
+                color: "#333",
+              }}
+            >
+              <span>Escalate</span>
+            </div>
 
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button>
-                Escalate
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <button onClick={() => setParticipantModalOpen(true)}>
+                Confirm Participant
               </button>
-              <button onClick={onClose}>
-                Close
-              </button>
+
+              <button onClick={onClose}>Close</button>
             </div>
           </div>
-
         </div>
 
         {participantModalOpen && (
