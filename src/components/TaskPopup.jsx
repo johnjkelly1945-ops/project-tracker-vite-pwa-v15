@@ -32,6 +32,7 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import RiskModal from "./RiskModal";
+import IssueModal from "./IssueModal";
 import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
@@ -83,6 +84,11 @@ export default function TaskPopup({
 
   const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [activeRiskEventId, setActiveRiskEventId] = useState(null);
+
+  /* ================= Stage 333 — Issue State ================= */
+  const [issueModalOpen, setIssueModalOpen] = useState(false);
+  const [activeIssueEventId, setActiveIssueEventId] = useState(null);
+  /* ================= End Stage 333 State ================= */
 
   const [inlineDraftText, setInlineDraftText] = useState("");
   const inlineRef = useRef(null);
@@ -223,6 +229,36 @@ export default function TaskPopup({
 
     setActiveRiskEventId(event.eventId);
     setRiskModalOpen(true);
+  }
+
+
+  /* ================= Issue Activation ================= */
+
+  function handleInitiateIssue() {
+    if (!isPM) return;
+
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "issue" && e.status === "OPEN"
+    );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "issue",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("Issue initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
+
+    setActiveIssueEventId(event.eventId);
+    setIssueModalOpen(true);
   }
 
   /* ================= Inline Commit ================= */
@@ -375,7 +411,7 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            <span>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span>Issue</span> · <span>QC</span>
+            <span>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span>QC</span>
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
@@ -551,6 +587,16 @@ export default function TaskPopup({
           onAddNote={onAddNote}
         />
       )}
+
+      {issueModalOpen && activeIssueEventId && (
+        <IssueModal
+          taskId={task.id}
+          eventId={activeIssueEventId}
+          onClose={() => setIssueModalOpen(false)}
+          onAddNote={onAddNote}
+        />
+      )}
+
     </div>
   );
 }
