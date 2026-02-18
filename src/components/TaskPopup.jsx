@@ -33,6 +33,8 @@ import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import RiskModal from "./RiskModal";
 import IssueModal from "./IssueModal";
+import QCModal from "./QCModal";
+import CCModal from "./CCModal";
 import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
@@ -89,6 +91,18 @@ export default function TaskPopup({
   const [issueModalOpen, setIssueModalOpen] = useState(false);
   const [activeIssueEventId, setActiveIssueEventId] = useState(null);
   /* ================= End Stage 333 State ================= */
+
+  /* ================= Stage 334 — QC State ================= */
+  const [qcModalOpen, setQcModalOpen] = useState(false);
+  const [activeQcEventId, setActiveQcEventId] = useState(null);
+  /* ================= End Stage 334 State ================= */
+
+  /* ================= Stage 335 — CC State ================= */
+  const [ccModalOpen, setCcModalOpen] = useState(false);
+  const [activeCcEventId, setActiveCcEventId] = useState(null);
+  /* ================= End Stage 335 State ================= */
+
+
 
   const [inlineDraftText, setInlineDraftText] = useState("");
   const inlineRef = useRef(null);
@@ -234,6 +248,9 @@ export default function TaskPopup({
 
   /* ================= Issue Activation ================= */
 
+
+  /* ================= Issue Activation ================= */
+
   function handleInitiateIssue() {
     if (!isPM) return;
 
@@ -259,6 +276,65 @@ export default function TaskPopup({
 
     setActiveIssueEventId(event.eventId);
     setIssueModalOpen(true);
+  }
+
+  /* ================= QC Activation ================= */
+
+  function handleInitiateQC() {
+    if (!isPM) return;
+
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "qc" && e.status === "OPEN"
+    );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "qc",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("QC initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
+
+    setActiveQcEventId(event.eventId);
+    setQcModalOpen(true);
+  }
+
+
+  /* ================= CC Activation ================= */
+
+  function handleInitiateCC() {
+    if (!isPM) return;
+
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "cc" && e.status === "OPEN"
+    );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "cc",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("CC initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
+
+    setActiveCcEventId(event.eventId);
+    setCcModalOpen(true);
   }
 
   /* ================= Inline Commit ================= */
@@ -411,7 +487,7 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            <span>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span>QC</span>
+            <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateCC : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
@@ -597,6 +673,26 @@ export default function TaskPopup({
         />
       )}
 
+      {qcModalOpen && activeQcEventId && (
+        <QCModal
+          taskId={task.id}
+          eventId={activeQcEventId}
+          onClose={() => setQcModalOpen(false)}
+          onAddNote={onAddNote}
+        />
+      )}
+
+
+      {ccModalOpen && activeCcEventId && (
+        <CCModal
+          taskId={task.id}
+          eventId={activeCcEventId}
+          onClose={() => setCcModalOpen(false)}
+          onAddNote={onAddNote}
+        />
+      )}
+
     </div>
   );
 }
+
