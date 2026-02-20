@@ -126,6 +126,30 @@ export function submitAdvisory({
 
 /*
 =====================================================================
+ESCALATE GOVERNANCE EVENT
+=====================================================================
+*/
+
+export function escalateGovernanceEvent({ eventId }) {
+  const event = getGovernanceEvent(eventId);
+
+  if (!event) throw new Error("Governance event not found");
+
+  // Immutable: only escalate once
+  if (event.escalated === true) {
+    return event;
+  }
+
+  const updatedEvent = {
+    ...event,
+    escalated: true,
+  };
+
+  return updateGovernanceEvent(eventId, updatedEvent);
+}
+
+/*
+=====================================================================
 RECORD DECISION
 =====================================================================
 */
@@ -149,4 +173,3 @@ export function recordDecision({ eventId, decision, decidedBy }) {
 
   return updateGovernanceEvent(eventId, updatedEvent);
 }
-
