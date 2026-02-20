@@ -58,6 +58,7 @@ export function createGovernanceEvent({ eventType, taskId, initiatedBy }) {
     eventType,
     taskId,
     status: "OPEN",
+    escalated: false,
     initiatedAt: Date.now(),
     initiatedBy,
     participation: [],
