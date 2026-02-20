@@ -33,6 +33,7 @@ import {
   triggerGovernanceEvent,
   recordParticipation,
   submitAdvisory,
+  escalateGovernanceEvent,
   recordDecision,
 } from "./governanceEngine";
 
@@ -85,6 +86,22 @@ export function bridgeSubmitAdvisory(payload) {
 
 /*
 =====================================================================
+BRIDGE — ESCALATION
+=====================================================================
+*/
+
+export function bridgeEscalateGovernanceEvent(payload) {
+  const event = escalateGovernanceEvent(payload);
+
+  // Future integration hook:
+  // writePopupEscalation(event);
+  // updateLedgerEscalation(event);
+
+  return event;
+}
+
+/*
+=====================================================================
 BRIDGE — DECISION
 =====================================================================
 */
@@ -98,4 +115,3 @@ export function bridgeRecordDecision(payload) {
 
   return event;
 }
-
