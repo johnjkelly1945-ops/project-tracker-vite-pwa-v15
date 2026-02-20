@@ -35,7 +35,10 @@ import RiskModal from "./RiskModal";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
-import { bridgeTriggerGovernanceEvent } from "../governance/governanceBridge";
+import {
+  bridgeTriggerGovernanceEvent,
+  bridgeEscalateGovernanceEvent,
+} from "../governance/governanceBridge";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 /* ===================== Time helpers ===================== */
@@ -278,7 +281,15 @@ export default function TaskPopup({
     setIssueModalOpen(true);
   }
 
-  /* ================= QC Activation ================= */
+  function handleEscalateIssue() {
+    if (!activeIssueEventId) return;
+
+    const line = systemLine("Issue escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    bridgeEscalateGovernanceEvent({ eventId: activeIssueEventId });
+  }  /* ================= QC Activation ================= */
 
   function handleInitiateQC() {
     if (!isPM) return;
@@ -670,6 +681,7 @@ export default function TaskPopup({
           eventId={activeIssueEventId}
           onClose={() => setIssueModalOpen(false)}
           onAddNote={onAddNote}
+          onEscalate={handleEscalateIssue}
         />
       )}
 

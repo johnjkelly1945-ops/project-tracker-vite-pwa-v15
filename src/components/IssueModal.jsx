@@ -47,7 +47,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function IssueModal({ taskId, eventId, onClose, onAddNote }) {
+export default function IssueModal({ taskId, eventId, onClose, onAddNote, onEscalate }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -55,6 +55,8 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote }) {
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
+
+  const isEscalated = event?.escalated === true;
 
   const participantIds = event?.participation
     ? [...new Set(event.participation.map((p) => p.reviewerId))]
@@ -241,7 +243,7 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote }) {
             </button>
 
             <div style={{ display: "flex", gap: "10px" }}>
-              <button>Escalate</button>
+              <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>
               <button onClick={onClose}>Close</button>
             </div>
           </div>
