@@ -47,7 +47,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function RiskModal({ taskId, eventId, onClose, onAddNote }) {
+export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscalate }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -56,7 +56,10 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote }) {
     getGovernanceEvent(eventId)
   );
 
+
+  const isEscalated = event?.escalated === true;
   const participantIds = event?.participation
+
     ? [...new Set(event.participation.map((p) => p.reviewerId))]
     : [];
 
@@ -244,7 +247,7 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote }) {
                 color: "#333",
               }}
             >
-              <span>Escalate</span>
+              <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>
             </div>
 
             <div

@@ -289,7 +289,39 @@ export default function TaskPopup({
     setDisplayNotes((p) => [...p, line]);
 
     bridgeEscalateGovernanceEvent({ eventId: activeIssueEventId });
-  }  /* ================= QC Activation ================= */
+  }
+  /* ================= QC Activation ================= */
+
+  function handleEscalateRisk() {
+    if (!activeRiskEventId) return;
+
+    const line = systemLine("Risk escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    bridgeEscalateGovernanceEvent({ eventId: activeRiskEventId });
+  }
+
+  function handleEscalateQC() {
+    if (!activeQcEventId) return;
+
+    const line = systemLine("QC escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    bridgeEscalateGovernanceEvent({ eventId: activeQcEventId });
+  }
+
+  function handleEscalateCC() {
+    if (!activeCcEventId) return;
+
+    const line = systemLine("CC escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    bridgeEscalateGovernanceEvent({ eventId: activeCcEventId });
+  }
+
 
   function handleInitiateQC() {
     if (!isPM) return;
@@ -672,6 +704,7 @@ export default function TaskPopup({
           eventId={activeRiskEventId}
           onClose={() => setRiskModalOpen(false)}
           onAddNote={onAddNote}
+          onEscalate={handleEscalateRisk}
         />
       )}
 
@@ -691,6 +724,7 @@ export default function TaskPopup({
           eventId={activeQcEventId}
           onClose={() => setQcModalOpen(false)}
           onAddNote={onAddNote}
+          onEscalate={handleEscalateQC}
         />
       )}
 
@@ -701,6 +735,7 @@ export default function TaskPopup({
           eventId={activeCcEventId}
           onClose={() => setCcModalOpen(false)}
           onAddNote={onAddNote}
+          onEscalate={handleEscalateCC}
         />
       )}
 
