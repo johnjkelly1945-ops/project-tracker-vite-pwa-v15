@@ -28,6 +28,7 @@ Stage 325B — Inline Commit Surface Realisation (UI ONLY)
 
 import { useState, useEffect, useRef } from "react";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
+import TaskDescriptionModal from "./TaskDescriptionModal";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
@@ -70,6 +71,7 @@ export default function TaskPopup({
   summaries = [],
   onClose,
   onAddNote,
+  onAddDescription,
   onAssignTask,
   onStartExecution,
   onSubmitExecution,
@@ -103,6 +105,9 @@ export default function TaskPopup({
   /* ================= Stage 335 — CC State ================= */
   const [ccModalOpen, setCcModalOpen] = useState(false);
   const [activeCcEventId, setActiveCcEventId] = useState(null);
+  /* ================= Stage 341 — Description State ================= */
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  /* ================= End Stage 341 State ================= */
   /* ================= End Stage 335 State ================= */
 
 
@@ -468,8 +473,18 @@ export default function TaskPopup({
           summaryTitle={summaryTitle}
           executionState={executionState}
           onClose={onClose}
+          onTitleClick={() => setDescriptionOpen(true)}
         />
 
+        {descriptionOpen && (
+          <TaskDescriptionModal
+            taskId={task.id}
+            entries={task.descriptionEntries || []}
+            onAddDescription={onAddDescription}
+            onClose={() => setDescriptionOpen(false)}
+            currentUserRole={currentUserRole}
+          />
+        )}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <strong>Notes</strong>
 

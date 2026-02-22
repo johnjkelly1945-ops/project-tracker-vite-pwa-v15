@@ -231,6 +231,26 @@ export default function App() {
     );
   }
 
+  function onAddDescription(taskId, entry) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              descriptionEntries: [
+                ...(t.descriptionEntries || []),
+                entry,
+              ],
+            }
+          : t
+      )
+    );
+  }
+
   function onStartExecution(taskId) {
     if (isReadOnly) return;
 
@@ -355,6 +375,7 @@ export default function App() {
             summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
             onClose={() => setActiveTaskId(null)}
             onAddNote={onAddNote}
+            onAddDescription={onAddDescription}
             onAssignTask={onAssignTask}
             onStartExecution={onStartExecution}
             onSubmitExecution={onSubmitExecution}

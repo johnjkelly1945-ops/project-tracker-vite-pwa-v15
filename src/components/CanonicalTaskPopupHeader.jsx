@@ -6,12 +6,14 @@ Stage 207 — Popup Header Canonicalisation
 Stage 257 Addendum — Personnel Name Resolution (UI Only)
 Stage 257-C — Header Layout Canonical Correction (UI Only)
 Stage 325 — SEM-TS Identity Row Realisation (UI ONLY)
+Stage 341 — Description Title Activation (UI ONLY)
 ---------------------------------------------------------------------
 Purpose:
 • Display single-line Transaction Surface identity row
 • Include Title, Summary (if present), Assignee, State
 • Preserve centered layout
 • UI-only, read-only, non-authoritative
+• Title optionally clickable (Description modal trigger)
 =====================================================================
 */
 
@@ -23,6 +25,7 @@ export default function CanonicalTaskPopupHeader({
   summaryTitle,
   executionState,
   onClose,
+  onTitleClick,
 }) {
   if (!task) return null;
 
@@ -60,7 +63,14 @@ export default function CanonicalTaskPopupHeader({
           textAlign: "center",
         }}
       >
-        {task.title}
+        <span
+          onClick={onTitleClick}
+          style={{
+            cursor: onTitleClick ? "pointer" : "default",
+          }}
+        >
+          {task.title}
+        </span>
         {summaryTitle && ` — ${summaryTitle}`}
         {` · ${assigneeLabel}`}
         {` · ${stateLabel}`}
