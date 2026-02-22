@@ -25,6 +25,7 @@ import {
 import { getGovernanceEvent } from "../governance/governanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
+import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 
 /* ===================== Time Helper ===================== */
@@ -51,6 +52,8 @@ export default function CCModal({ taskId, eventId, onClose, onAddNote, onEscalat
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [descriptionEntries, setDescriptionEntries] = useState([]);
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
@@ -159,7 +162,7 @@ export default function CCModal({ taskId, eventId, onClose, onAddNote, onEscalat
               >
                 CC
               </div>
-              <div><strong>Event ID:</strong> {event.eventId}</div>
+              <div><strong>Event ID:</strong> {" "} <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setDescriptionOpen(true)}>{event.eventId}</span></div>
               <div><strong>Task:</strong> {event.taskId}</div>
               <div><strong>Status:</strong> {event.status}</div>
               <div>
@@ -171,7 +174,15 @@ export default function CCModal({ taskId, eventId, onClose, onAddNote, onEscalat
             </div>
           )}
 
-          {/* ================= Stream Zone ================= */}
+          {descriptionOpen && (
+            <TaskDescriptionModal
+              taskId={event.eventId}
+              entries={descriptionEntries}
+              onAddDescription={(id, text) => setDescriptionEntries(prev => [...prev, text])}
+              onClose={() => setDescriptionOpen(false)}
+              currentUserRole="PM"
+            />
+          )}          {/* ================= Stream Zone ================= */}
 
           <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
             <strong>Advisory Notes</strong>
