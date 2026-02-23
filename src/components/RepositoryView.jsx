@@ -44,22 +44,12 @@ const PLACEHOLDER_REPO_TASKS = [
 /* ----------------------------------------------------------------------
    Intent emitter (intent-only)
    ---------------------------------------------------------------------- */
-function emitIntent(type, payload = null) {
-  const intent = {
-    type,
-    source: "RepositoryView",
-    payload,
-    timestamp: new Date().toISOString()
-  };
 
-  console.log("🧭 REPOSITORY INTENT", intent);
-
-  window.dispatchEvent(
-    new CustomEvent("METRA_INTENT", { detail: intent })
-  );
-}
-
-export default function RepositoryView() {
+export default function RepositoryView({
+  discipline,
+  onDownloadTask,
+  onClose
+}) {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   const selectedTask =
@@ -75,7 +65,7 @@ export default function RepositoryView() {
   const handleDownload = () => {
     if (!selectedTask) return;
 
-    emitIntent("INSTANTIATE_TASK_INTENT", {
+    onDownloadTask?.({
       repoTaskId: selectedTask.id,
       repoSummaryId: null,           // orphan-safe for now
       title: selectedTask.title,
@@ -84,7 +74,7 @@ export default function RepositoryView() {
     });
 
     // Locked rule: repo closes after add
-    emitIntent("CLOSE_REPOSITORY_INTENT");
+    onClose?.()
   };
 
   return (
@@ -96,7 +86,7 @@ export default function RepositoryView() {
 
         <button
           className="repo-close-btn"
-          onClick={() => emitIntent("CLOSE_REPOSITORY_INTENT")}
+          onClick={() => onClose?.()}
         >
           ✕
         </button>
@@ -145,7 +135,7 @@ export default function RepositoryView() {
 
         <button
           className="repo-return-btn"
-          onClick={() => emitIntent("CLOSE_REPOSITORY_INTENT")}
+          onClick={() => onClose?.()}
         >
           Return to Project
         </button>
