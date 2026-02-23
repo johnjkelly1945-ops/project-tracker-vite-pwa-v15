@@ -98,3 +98,22 @@
   background: #94b7e0;
   cursor: not-allowed;
 }
+
+.repo-bottombar {
+  position: relative;
+  z-index: 5;
+}
+
+/* Stage 346C — Override global button hover inside repository overlay */
+
+.repo-overlay .repo-return-btn:hover {
+  background: #002244;
+}
+
+.repo-overlay .repo-close-btn:hover {
+  background: #c9302c;
+}
+
+.repo-overlay .repo-download-btn:hover {
+  background: #1f5fb8;
+}
