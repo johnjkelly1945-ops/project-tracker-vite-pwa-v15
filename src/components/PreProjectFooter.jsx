@@ -16,6 +16,7 @@ export default function PreProjectFooter({
   onCreateTask,
   canCreateSummary,
   onCreateSummary,
+  onOpenRepository,
 }) {
   if (!canCreateTask && !canCreateSummary) return null;
 
@@ -58,6 +59,21 @@ export default function PreProjectFooter({
           }}
         >
           Create Summary
+        </button>
+      )}
+
+      {onOpenRepository && (
+        <button
+          type="button"
+          onClick={onOpenRepository}
+          style={{
+            padding: "6px 14px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Template Repository
         </button>
       )}
     </div>
