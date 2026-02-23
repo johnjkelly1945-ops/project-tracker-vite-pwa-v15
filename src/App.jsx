@@ -334,6 +334,13 @@ export default function App() {
       onCreateTask={onCreateTask}
       canCreateSummary={hasMutationAuthority}
       onCreateSummary={onCreateSummary}
+      onOpenRepository={() =>
+        openRepository(
+          focusedPane === "development"
+            ? "development"
+            : "management"
+        )
+      }
     />
   );
 
@@ -347,6 +354,13 @@ export default function App() {
       onCreateTask={onCreateTask}
       canCreateSummary={hasMutationAuthority}
       onCreateSummary={onCreateSummary}
+      onOpenRepository={() =>
+        openRepository(
+          focusedPane === "development"
+            ? "development"
+            : "management"
+        )
+      }
     />
   );
 
