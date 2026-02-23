@@ -70,6 +70,34 @@ export default function App() {
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
+  /* ================================================================
+     STAGE 346D — Repository Injection (Correct Placement)
+     ================================================================ */
+  function handleRepositoryDownload(payload) {
+
+    const { title, description, targetPane } = payload || {};
+
+    const task = {
+      id: `task-${Date.now()}`,
+      title: (title && String(title).trim()) ? String(title).trim() : "Untitled task",
+      notes: [],
+      descriptionEntries: description
+        ? [{ text: String(description), timestamp: new Date().toISOString() }]
+        : [],
+      summaryId: null,
+      executionState: "NOT_STARTED",
+      taskState: "active",
+    };
+
+    if (targetPane === "development") {
+      setDevTasks((c) => [...c, task]);
+    } else {
+      setMgmtTasks((c) => [...c, task]);
+    }
+
+    closeRepository();
+  }
+
   /* ===================== NAV ===================== */
 
   function handleFocusPane(pane) {
@@ -416,9 +444,14 @@ export default function App() {
       {activeRepositoryDiscipline && (
         <RepositoryView
           discipline={activeRepositoryDiscipline}
+          onDownloadTask={handleRepositoryDownload}
           onClose={closeRepository}
         />
       )}
     </>
   );
 }
+
+  /* ================================================================
+     STAGE 346D — Repository Injection (Additive)
+     ================================================================ */

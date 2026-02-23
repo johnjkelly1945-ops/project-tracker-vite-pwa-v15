@@ -80,7 +80,20 @@ export default function TaskDescriptionModal({
         {/* Content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           {entries.map((line, idx) => {
-            const [text, ts] = line.split(" — ");
+              const rawText =
+                typeof line === "string"
+                  ? line
+                  : line && typeof line === "object" && typeof line.text === "string"
+                    ? line.text
+                    : "";
+
+              const derivedTs =
+                line && typeof line === "object" && typeof line.timestamp === "string"
+                  ? line.timestamp
+                  : "";
+
+              const [text, tsFromString] = rawText.split(" — ");
+              const ts = tsFromString || derivedTs;
             return (
               <div key={idx} style={{ marginBottom: "16px" }}>
                 <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>
