@@ -9,6 +9,7 @@ import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
+import RepositoryView from "./components/RepositoryView";
 import { localAssignees } from "./data/localAssignees";
 
 /*
@@ -33,6 +34,19 @@ export default function App() {
   const [workspaceMode, setWorkspaceMode] = useState("dual");
   const [focusedPane, setFocusedPane] = useState(null);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  /* ================================================================
+     STAGE 345 — REPOSITORY STATE (ADDITIVE ONLY)
+     ================================================================ */
+  const [activeRepositoryDiscipline, setActiveRepositoryDiscipline] = useState(null);
+
+  function openRepository(discipline) {
+    setActiveRepositoryDiscipline(discipline);
+  }
+
+  function closeRepository() {
+    setActiveRepositoryDiscipline(null);
+  }
 
   // ------------------------------------------------------------------
   // AUTHORITY DERIVATION (LOCKED)
@@ -385,6 +399,12 @@ export default function App() {
           />
         )}
       </div>
+      {activeRepositoryDiscipline && (
+        <RepositoryView
+          discipline={activeRepositoryDiscipline}
+          onClose={closeRepository}
+        />
+      )}
     </>
   );
 }
