@@ -104,6 +104,38 @@ export default function App() {
     closeRepository();
   }
 
+  /* ================================================================
+     STAGE 348 — Repository Summary Injection (Additive Only)
+     ================================================================ */
+  function handleRepositorySummaryDownload(payload) {
+
+    const { title } = payload || {};
+    const targetPane = activeRepositoryDiscipline;
+
+    if (!hasMutationAuthority || !targetPane) {
+      closeRepository();
+      return;
+    }
+
+    const id = `summary-${Date.now()}`;
+    const summary = {
+      id,
+      title: (title && String(title).trim())
+        ? String(title).trim()
+        : "Untitled summary",
+    };
+
+    if (targetPane === "development") {
+      setDevSummaries((c) => [...c, summary]);
+      setDevSummaryOrder((c) => [...c, id]);
+    } else {
+      setMgmtSummaries((c) => [...c, summary]);
+      setMgmtSummaryOrder((c) => [...c, id]);
+    }
+
+    closeRepository();
+  }
+
   /* ===================== NAV ===================== */
 
   function handleFocusPane(pane) {
@@ -439,6 +471,7 @@ export default function App() {
         <RepositoryView
           discipline={activeRepositoryDiscipline}
           onDownloadTask={handleRepositoryDownload}
+          onDownloadSummary={handleRepositorySummaryDownload}
           onClose={closeRepository}
         />
       )}
