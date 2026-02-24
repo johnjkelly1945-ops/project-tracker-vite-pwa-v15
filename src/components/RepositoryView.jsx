@@ -1,89 +1,58 @@
 /* ======================================================================
    METRA – RepositoryView.jsx
-   Stage 12.3-B – Single Task Selection & Download Enablement
-   ----------------------------------------------------------------------
-   RESPONSIBILITIES:
-   • Render repository tasks (placeholder data)
-   • Allow SINGLE selection (switching selection allowed)
-   • Enable "Download to Project" only when selected
-   • Emit INSTANTIATE_TASK_INTENT with real task payload
-   • Close repository after successful add
-   ----------------------------------------------------------------------
-   NON-GOALS:
-   • No bulk selection
-   • No summary creation
-   • No workspace mutation here
-   • No activation logic
+   Stage 348 – Corporate Repository (Task Templates Only)
    ====================================================================== */
 
 import React, { useState } from "react";
 import "../Styles/RepositoryView.css";
+import { corporateTemplates } from "../data/corporateTemplates";
 
-/* ----------------------------------------------------------------------
-   Placeholder repository tasks
-   NOTE: Temporary for Stage 12.3; replaced with real repo data in Stage 13
-   ---------------------------------------------------------------------- */
-const PLACEHOLDER_REPO_TASKS = [
-  {
-    id: "repo-task-001",
-    title: "Prepare project initiation notes",
-    description: "Draft initial scope, assumptions, and constraints."
-  },
-  {
-    id: "repo-task-002",
-    title: "Identify key stakeholders",
-    description: "List internal and external stakeholders."
-  },
-  {
-    id: "repo-task-003",
-    title: "Define success criteria",
-    description: "Document measurable success factors."
-  }
-];
+function getEligibleTaskTemplates({ discipline }) {
+  if (!discipline) return [];
 
-/* ----------------------------------------------------------------------
-   Intent emitter (intent-only)
-   ---------------------------------------------------------------------- */
+  return corporateTemplates.filter((t) => {
+    const disciplineMatch =
+      t.discipline === discipline || t.discipline === "both";
+
+    return (
+      t.status === "active" &&
+      t.templateType === "task" &&
+      disciplineMatch
+    );
+  });
+}
 
 export default function RepositoryView({
   discipline,
   onDownloadTask,
   onClose
 }) {
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
 
-  const selectedTask =
-    PLACEHOLDER_REPO_TASKS.find(t => t.id === selectedTaskId) || null;
+  const eligibleTemplates = getEligibleTaskTemplates({ discipline });
 
-  /* ------------------------------------------------------------------
-     Handlers
-     ------------------------------------------------------------------ */
-  const handleSelect = (taskId) => {
-    setSelectedTaskId(taskId);
+  const selectedTemplate =
+    eligibleTemplates.find((t) => t.id === selectedTemplateId) || null;
+
+  const handleSelect = (templateId) => {
+    setSelectedTemplateId(templateId);
   };
 
   const handleDownload = () => {
-    if (!selectedTask) return;
+    if (!selectedTemplate) return;
 
     onDownloadTask?.({
-      repoTaskId: selectedTask.id,
-      repoSummaryId: null,           // orphan-safe for now
-      title: selectedTask.title,
-      description: selectedTask.description,
-      targetPane: "mgmt"
+      title: selectedTemplate.title,
+      description: selectedTemplate.description || ""
     });
 
-    // Locked rule: repo closes after add
-    onClose?.()
+    onClose?.();
   };
 
   return (
     <div className="repo-overlay">
-
-      {/* ===== Top Bar ===== */}
       <div className="repo-topbar">
         <h2>Repository</h2>
-
         <button
           className="repo-close-btn"
           onClick={() => onClose?.()}
@@ -92,47 +61,46 @@ export default function RepositoryView({
         </button>
       </div>
 
-      {/* ===== Main Layout ===== */}
       <div className="repo-content">
-
-        {/* Filters (placeholder) */}
         <div className="repo-filters">
-          <h3>Filters</h3>
+          <h3>Discipline</h3>
           <p className="repo-placeholder">
-            Filtering will be enabled in a later stage.
+            Active: {discipline || "None"}
           </p>
         </div>
 
-        {/* Tasks (SINGLE SELECTION) */}
         <div className="repo-tasks">
-          <h3>Tasks</h3>
+          <h3>Task Templates</h3>
 
-          {PLACEHOLDER_REPO_TASKS.map(task => {
-            const isSelected = task.id === selectedTaskId;
+          {eligibleTemplates.map((template) => {
+            const isSelected = template.id === selectedTemplateId;
 
             return (
               <div
-                key={task.id}
+                key={template.id}
                 className={`repo-task-row ${isSelected ? "selected" : ""}`}
-                onClick={() => handleSelect(task.id)}
+                onClick={() => handleSelect(template.id)}
               >
                 <div className="repo-task-title">
-                  {task.title}
+                  {template.title}
                 </div>
 
                 <div className="repo-task-desc">
-                  {task.description}
+                  {template.description}
                 </div>
               </div>
             );
           })}
-        </div>
 
+          {eligibleTemplates.length === 0 && (
+            <div className="repo-placeholder">
+              No task templates available for this discipline.
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ===== Bottom Bar ===== */}
       <div className="repo-bottombar">
-
         <button
           className="repo-return-btn"
           onClick={() => onClose?.()}
@@ -142,14 +110,12 @@ export default function RepositoryView({
 
         <button
           className="repo-download-btn"
-          disabled={!selectedTask}
+          disabled={!selectedTemplate}
           onClick={handleDownload}
         >
           Download to Project
         </button>
-
       </div>
-
     </div>
   );
 }
