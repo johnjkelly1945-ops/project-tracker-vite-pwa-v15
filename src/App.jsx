@@ -75,7 +75,13 @@ export default function App() {
      ================================================================ */
   function handleRepositoryDownload(payload) {
 
-    const { title, description, targetPane } = payload || {};
+    const { title, description } = payload || {};
+    const targetPane = activeRepositoryDiscipline;
+
+    if (!hasMutationAuthority || !targetPane) {
+      closeRepository();
+      return;
+    }
 
     const task = {
       id: `task-${Date.now()}`,
@@ -84,7 +90,7 @@ export default function App() {
       descriptionEntries: description
         ? [{ text: String(description), timestamp: new Date().toISOString() }]
         : [],
-      summaryId: null,
+      summaryId: activeSummaryId || null,
       executionState: "NOT_STARTED",
       taskState: "active",
     };
@@ -362,13 +368,7 @@ export default function App() {
       onCreateTask={onCreateTask}
       canCreateSummary={hasMutationAuthority}
       onCreateSummary={onCreateSummary}
-      onOpenRepository={() =>
-        openRepository(
-          focusedPane === "development"
-            ? "development"
-            : "management"
-        )
-      }
+      onOpenRepository={() => openRepository("management")}
     />
   );
 
@@ -382,13 +382,7 @@ export default function App() {
       onCreateTask={onCreateTask}
       canCreateSummary={hasMutationAuthority}
       onCreateSummary={onCreateSummary}
-      onOpenRepository={() =>
-        openRepository(
-          focusedPane === "development"
-            ? "development"
-            : "management"
-        )
-      }
+      onOpenRepository={() => openRepository("development")}
     />
   );
 
