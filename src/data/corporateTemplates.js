@@ -1,6 +1,6 @@
 /* ================================================================
-   METRA — Corporate Template Dataset (Stage 349 Phase 1)
-   Canon: Bundle Doctrine Introduction
+   METRA — Corporate Template Dataset (Stage 349 Phase 2A)
+   Canon: Bundle Doctrine + Task Linkage Introduction
    Layer: Corporate (Static, In-Memory)
    ================================================================ */
 
@@ -113,13 +113,16 @@ Success Criteria:
   },
 
   /* --------------------------------------------------------------
-     TASK TEMPLATES
+     TASK TEMPLATES (FIRST-CLASS, LINKED NOT OWNED)
      -------------------------------------------------------------- */
 
   {
     id: "task-product-definition-v1",
     entityType: "task",
     templateType: "task",
+    linkedSummaryIds: [
+      "summary-product-scope-v1"
+    ],
     title: "Product Definition Task",
     description:
 `Product Overview:
@@ -140,6 +143,9 @@ Acceptance Criteria:
     id: "task-generic-instruction-v1",
     entityType: "task",
     templateType: "task",
+    linkedSummaryIds: [
+      "summary-project-charter-v1"
+    ],
     title: "Generic Task Instruction",
     description:
 `Task Purpose:
@@ -156,7 +162,7 @@ Describe the expected output.`,
   },
 
   /* --------------------------------------------------------------
-     TASK DESCRIPTION INSERT TEMPLATES
+     OPERATIONAL INSERT TEMPLATES (NO HIERARCHY LINKAGE)
      -------------------------------------------------------------- */
 
   {
