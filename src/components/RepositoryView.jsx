@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – RepositoryView.jsx
-   Stage 350 Phase 3 — Dimension Filter Application
+   Stage 350A — Repository UI Stabilisation (Zoning Correction)
    ====================================================================== */
 
 import React, { useState, useMemo } from "react";
@@ -26,7 +26,7 @@ export default function RepositoryView({
   }, [discipline]);
 
   /* ================================================================
-     STAGE 350 — FILTER STATE MODEL
+     STAGE 350 — FILTER STATE MODEL (UNCHANGED)
      ================================================================ */
 
   const [selectedType, setSelectedType] = useState(null);
@@ -41,7 +41,7 @@ export default function RepositoryView({
     selectedLevel;
 
   /* ================================================================
-     DIMENSION FILTER APPLICATION
+     DIMENSION FILTER APPLICATION (UNCHANGED)
      ================================================================ */
 
   const filteredEntities = isFilterComplete
@@ -105,14 +105,25 @@ export default function RepositoryView({
   }, [selectedSummaries, tasks]);
 
   /* ================================================================
-     RENDER (STRUCTURE PRESERVED)
+     RENDER — ZONING CORRECTION ONLY
      ================================================================ */
 
   return (
     <div className="repo-overlay">
 
+      {/* ============================================================
+         TOP BAR — Discipline Context Integrated
+         ============================================================ */}
+
       <div className="repo-topbar">
-        <h2>Repository</h2>
+        <h2>
+          Repository
+          {discipline && (
+            <span className="repo-discipline-context">
+              {" — "}{discipline}
+            </span>
+          )}
+        </h2>
         <button
           className="repo-close-btn"
           onClick={() => onClose?.()}
@@ -121,23 +132,29 @@ export default function RepositoryView({
         </button>
       </div>
 
-      <div className="repo-content">
+      {/* ============================================================
+         FILTER HEADER (Filters Only)
+         ============================================================ */}
 
+      <div className="repo-filter-header">
         <div className="repo-filters">
-          <h3>Discipline</h3>
-          <p className="repo-placeholder">
-            Active: {discipline || "None"}
-          </p>
-
-          <h3>Filters</h3>
           <p className="repo-placeholder">
             {isFilterComplete
               ? "Filters Complete"
               : "Select Type, Method, Scope, Level"}
           </p>
         </div>
+      </div>
 
-        <div className="repo-tasks">
+      {/* ============================================================
+         TWO COLUMN STRUCTURE
+         ============================================================ */}
+
+      <div className="repo-columns">
+
+        {/* LEFT COLUMN — Bundles + Summaries */}
+
+        <div className="repo-column-left">
 
           <h3>Bundles</h3>
           {bundles.map(b => (
@@ -175,7 +192,9 @@ export default function RepositoryView({
 
         </div>
 
-        <div className="repo-tasks">
+        {/* RIGHT COLUMN — Tasks */}
+
+        <div className="repo-column-right">
 
           <h3>Tasks</h3>
 
@@ -198,6 +217,10 @@ export default function RepositoryView({
         </div>
 
       </div>
+
+      {/* ============================================================
+         BOTTOM BAR
+         ============================================================ */}
 
       <div className="repo-bottombar">
 

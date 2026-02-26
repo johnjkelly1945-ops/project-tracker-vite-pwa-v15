@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – RepositoryView.css
-   v1 – Fullscreen Layout for Repository
+   Stage 350A — Layout Recomposition (Header + Two Columns)
    ====================================================================== */
 
 .repo-overlay {
@@ -38,24 +38,62 @@
   cursor: pointer;
 }
 
-/* CONTENT GRID */
-.repo-content {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 260px 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  overflow: auto;
+/* ================================================================
+   FILTER HEADER (FIXED ABOVE COLUMNS)
+   ================================================================ */
+
+.repo-filter-header {
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #d8e0ea;
 }
 
-.repo-filters,
-.repo-summaries,
-.repo-tasks {
+.repo-filters {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d8e0ea;
+}
+
+/* ================================================================
+   TWO COLUMN STRUCTURE
+   ================================================================ */
+
+.repo-columns {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  overflow: hidden; /* prevent global scroll */
+}
+
+/* LEFT COLUMN */
+.repo-column-left {
+  flex: 1;
   background: white;
   border-radius: 8px;
   padding: 16px;
   border: 1px solid #d8e0ea;
   overflow-y: auto;
+}
+
+/* RIGHT COLUMN */
+.repo-column-right {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d8e0ea;
+  overflow-y: auto;
+}
+
+/* ================================================================
+   COMMON ELEMENTS
+   ================================================================ */
+
+.repo-task-row {
+  display: block;
+  margin-bottom: 8px;
 }
 
 .repo-placeholder {
@@ -64,7 +102,10 @@
   margin-top: 6px;
 }
 
-/* BOTTOM BAR */
+/* ================================================================
+   BOTTOM BAR
+   ================================================================ */
+
 .repo-bottombar {
   display: flex;
   justify-content: space-between;
@@ -72,6 +113,8 @@
   padding: 12px 20px;
   background: #eaf0f7;
   border-top: 1px solid #c7d2df;
+  position: relative;
+  z-index: 5;
 }
 
 .repo-return-btn {
@@ -99,12 +142,7 @@
   cursor: not-allowed;
 }
 
-.repo-bottombar {
-  position: relative;
-  z-index: 5;
-}
-
-/* Stage 346C — Override global button hover inside repository overlay */
+/* Hover overrides */
 
 .repo-overlay .repo-return-btn:hover {
   background: #002244;
