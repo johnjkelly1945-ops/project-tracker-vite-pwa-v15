@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – RepositoryView.jsx
-   Stage 349 Phase 2B — Incremental Reveal Engine
+   Stage 350 Phase 1 — Filter State & Blank Gating
    ====================================================================== */
 
 import React, { useState, useMemo } from "react";
@@ -15,22 +15,45 @@ export default function RepositoryView({
 }) {
 
   /* ================================================================
-     DISCIPLINE FILTER
+     DISCIPLINE FILTER (BASELINE PRESERVED)
      ================================================================ */
 
-  const filteredEntities = useMemo(() => {
+  const disciplineFiltered = useMemo(() => {
     return corporateTemplates.filter(e =>
       e.status === "active" &&
       (e.discipline === discipline || e.discipline === "both")
     );
   }, [discipline]);
 
+  /* ================================================================
+     STAGE 350 — FILTER STATE MODEL
+     ================================================================ */
+
+  const [selectedType, setSelectedType] = useState(null);
+  const [selectedMethod, setSelectedMethod] = useState(null);
+  const [selectedScope, setSelectedScope] = useState(null);
+  const [selectedLevel, setSelectedLevel] = useState(null);
+
+  const isFilterComplete =
+    selectedType &&
+    selectedMethod &&
+    selectedScope &&
+    selectedLevel;
+
+  /* ================================================================
+     BLANK-UNTIL-FILTER GATE
+     ================================================================ */
+
+  const filteredEntities = isFilterComplete
+    ? disciplineFiltered
+    : [];
+
   const bundles = filteredEntities.filter(e => e.entityType === "bundle");
   const summaries = filteredEntities.filter(e => e.entityType === "summary");
   const tasks = filteredEntities.filter(e => e.entityType === "task");
 
   /* ================================================================
-     SELECTION STATE
+     SELECTION STATE (UNCHANGED)
      ================================================================ */
 
   const [selectedBundles, setSelectedBundles] = useState({});
@@ -38,7 +61,7 @@ export default function RepositoryView({
   const [selectedTasks, setSelectedTasks] = useState({});
 
   /* ================================================================
-     DERIVED — Visible Summaries
+     DERIVED — Visible Summaries (UNCHANGED)
      ================================================================ */
 
   const visibleSummaries = useMemo(() => {
@@ -60,7 +83,7 @@ export default function RepositoryView({
   }, [selectedBundles, bundles, summaries]);
 
   /* ================================================================
-     DERIVED — Visible Tasks
+     DERIVED — Visible Tasks (UNCHANGED)
      ================================================================ */
 
   const visibleTasks = useMemo(() => {
@@ -77,7 +100,7 @@ export default function RepositoryView({
   }, [selectedSummaries, tasks]);
 
   /* ================================================================
-     RENDER
+     RENDER (STRUCTURE PRESERVED)
      ================================================================ */
 
   return (
@@ -99,6 +122,13 @@ export default function RepositoryView({
           <h3>Discipline</h3>
           <p className="repo-placeholder">
             Active: {discipline || "None"}
+          </p>
+
+          <h3>Filters</h3>
+          <p className="repo-placeholder">
+            {isFilterComplete
+              ? "Filters Complete"
+              : "Select Type, Method, Scope, Level"}
           </p>
         </div>
 
