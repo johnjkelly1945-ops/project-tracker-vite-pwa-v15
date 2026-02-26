@@ -1,6 +1,6 @@
 /* ======================================================================
    METRA – RepositoryView.jsx
-   Stage 350 Phase 1 — Filter State & Blank Gating
+   Stage 350 Phase 3 — Dimension Filter Application
    ====================================================================== */
 
 import React, { useState, useMemo } from "react";
@@ -41,11 +41,16 @@ export default function RepositoryView({
     selectedLevel;
 
   /* ================================================================
-     BLANK-UNTIL-FILTER GATE
+     DIMENSION FILTER APPLICATION
      ================================================================ */
 
   const filteredEntities = isFilterComplete
-    ? disciplineFiltered
+    ? disciplineFiltered.filter(e =>
+        e.type === selectedType &&
+        e.method === selectedMethod &&
+        e.scope === selectedScope &&
+        e.level === selectedLevel
+      )
     : [];
 
   const bundles = filteredEntities.filter(e => e.entityType === "bundle");
