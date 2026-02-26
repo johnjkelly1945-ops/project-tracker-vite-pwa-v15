@@ -1,6 +1,6 @@
 /* ================================================================
-   METRA — Corporate Template Dataset (Stage 349 Phase 2A)
-   Canon: Bundle Doctrine + Task Linkage Introduction
+   METRA — Corporate Template Dataset (Stage 350 Phase 2)
+   Canon: Bundle Doctrine + Dimension Modelling (Additive Only)
    Layer: Corporate (Static, In-Memory)
    ================================================================ */
 
@@ -13,6 +13,10 @@ export const corporateTemplates = [
   {
     id: "bundle-programme-launch-pack-v1",
     entityType: "bundle",
+    type: "bundle",
+    method: "standard",
+    scope: "management",
+    level: "core",
     title: "Programme Launch Pack",
     discipline: "management",
     contains: [
@@ -25,6 +29,10 @@ export const corporateTemplates = [
   {
     id: "bundle-governance-setup-pack-v1",
     entityType: "bundle",
+    type: "bundle",
+    method: "standard",
+    scope: "management",
+    level: "core",
     title: "Governance Setup Pack",
     discipline: "management",
     contains: [
@@ -41,6 +49,10 @@ export const corporateTemplates = [
   {
     id: "bundle-product-definition-pack-v1",
     entityType: "bundle",
+    type: "bundle",
+    method: "standard",
+    scope: "development",
+    level: "core",
     title: "Product Definition Pack",
     discipline: "development",
     contains: [
@@ -53,6 +65,10 @@ export const corporateTemplates = [
   {
     id: "bundle-dev-core-setup-pack-v1",
     entityType: "bundle",
+    type: "bundle",
+    method: "standard",
+    scope: "development",
+    level: "core",
     title: "Development Core Setup Pack",
     discipline: "development",
     contains: [
@@ -69,6 +85,10 @@ export const corporateTemplates = [
   {
     id: "summary-project-charter-v1",
     entityType: "summary",
+    type: "summary",
+    method: "standard",
+    scope: "management",
+    level: "core",
     templateType: "summary",
     title: "Project Charter Summary",
     description:
@@ -92,6 +112,10 @@ Success Criteria:
   {
     id: "summary-product-scope-v1",
     entityType: "summary",
+    type: "summary",
+    method: "standard",
+    scope: "development",
+    level: "core",
     templateType: "summary",
     title: "Product Scope Summary",
     description:
@@ -119,6 +143,10 @@ Success Criteria:
   {
     id: "task-product-definition-v1",
     entityType: "task",
+    type: "task",
+    method: "standard",
+    scope: "development",
+    level: "core",
     templateType: "task",
     linkedSummaryIds: [
       "summary-product-scope-v1"
@@ -142,6 +170,10 @@ Acceptance Criteria:
   {
     id: "task-generic-instruction-v1",
     entityType: "task",
+    type: "task",
+    method: "standard",
+    scope: "both",
+    level: "core",
     templateType: "task",
     linkedSummaryIds: [
       "summary-project-charter-v1"
@@ -162,12 +194,16 @@ Describe the expected output.`,
   },
 
   /* --------------------------------------------------------------
-     OPERATIONAL INSERT TEMPLATES (NO HIERARCHY LINKAGE)
+     OPERATIONAL INSERT TEMPLATES
      -------------------------------------------------------------- */
 
   {
     id: "task-description-checklist-v1",
     entityType: "operational",
+    type: "operational",
+    method: "standard",
+    scope: "both",
+    level: "core",
     templateType: "taskDescription",
     title: "Task Description Checklist",
     description:
