@@ -28,6 +28,8 @@ export default function PreProject({
   onCreateTask,
   canCreateSummary = false,
   onCreateSummary,
+  canOpenRepository = false,
+  onOpenRepository,
 }) {
   return (
     <div
@@ -103,6 +105,8 @@ export default function PreProject({
           onCreateTask={onCreateTask}
           canCreateSummary={canCreateSummary}
           onCreateSummary={onCreateSummary}
+          canOpenRepository={canOpenRepository}
+          onOpenRepository={onOpenRepository}
         />
       </div>
     </div>

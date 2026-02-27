@@ -3,10 +3,12 @@
 =====================================================================
 METRA — PreProjectFooter.jsx
 Stage 182 — Summary Creation (Footer Canonisation)
+Stage 353 — Repository Trigger Restoration (UI ONLY)
 ---------------------------------------------------------------------
 - Footer-only creation affordances
 - Mirrors task creation pattern
 - One click → one object (task or summary)
+- Repository trigger is an optional affordance (no mutation here)
 - No selection, no navigation, no side effects
 =====================================================================
 */
@@ -16,8 +18,10 @@ export default function PreProjectFooter({
   onCreateTask,
   canCreateSummary,
   onCreateSummary,
+  canOpenRepository = false,
+  onOpenRepository,
 }) {
-  if (!canCreateTask && !canCreateSummary) return null;
+  if (!canCreateTask && !canCreateSummary && !canOpenRepository) return null;
 
   return (
     <div
@@ -58,6 +62,21 @@ export default function PreProjectFooter({
           }}
         >
           Create Summary
+        </button>
+      )}
+
+      {canOpenRepository && (
+        <button
+          type="button"
+          onClick={onOpenRepository}
+          style={{
+            padding: "6px 14px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Repository
         </button>
       )}
     </div>

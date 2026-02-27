@@ -1,10 +1,11 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Sidebar from "./components/Sidebar";
 import ModuleHeader from "./components/ModuleHeader";
 import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
+import RepositoryView from "./components/RepositoryView";
 import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
@@ -55,6 +56,43 @@ export default function App() {
 
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
+
+  /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
+  const [repositoryOpen, setRepositoryOpen] = useState(false);
+  const [repositoryPane, setRepositoryPane] = useState("mgmt");
+
+  useEffect(() => {
+    function onIntent(e) {
+      const intent = e?.detail;
+      if (!intent || !intent.type) return;
+
+      if (intent.type === "CLOSE_REPOSITORY_INTENT") {
+        setRepositoryOpen(false);
+        return;
+      }
+
+      if (intent.type === "INSTANTIATE_TASK_INTENT") {
+        const p = intent.payload || {};
+        const target = p.targetPane === "dev" ? "dev" : "mgmt";
+
+        const newTask = {
+          id: `task-${Date.now()}`,
+          title: (p.title || "Untitled task").trim(),
+          description: p.description || "",
+          notes: [],
+          summaryId: null,
+          executionState: "NOT_STARTED",
+          taskState: "active",
+        };
+
+        (target === "dev" ? setDevTasks : setMgmtTasks)((c) => [...c, newTask]);
+        setRepositoryOpen(false);
+      }
+    }
+
+    window.addEventListener("METRA_INTENT", onIntent);
+    return () => window.removeEventListener("METRA_INTENT", onIntent);
+  }, []);
 
   /* ===================== NAV ===================== */
 
@@ -320,6 +358,11 @@ export default function App() {
       onCreateTask={onCreateTask}
       canCreateSummary={hasMutationAuthority}
       onCreateSummary={onCreateSummary}
+      canOpenRepository={hasMutationAuthority}
+      onOpenRepository={() => {
+        setRepositoryPane("mgmt");
+        setRepositoryOpen(true);
+      }}
     />
   );
 
@@ -333,6 +376,11 @@ export default function App() {
       onCreateTask={onCreateTask}
       canCreateSummary={hasMutationAuthority}
       onCreateSummary={onCreateSummary}
+      canOpenRepository={hasMutationAuthority}
+      onOpenRepository={() => {
+        setRepositoryPane("dev");
+        setRepositoryOpen(true);
+      }}
     />
   );
 
@@ -358,6 +406,11 @@ export default function App() {
         />
 
         {false && <PersonnelPanel />}
+
+
+        {repositoryOpen && (
+          <RepositoryView pane={repositoryPane} />
+        )}
 
         {activeSummaryId && (
           <SummaryMoveModal
