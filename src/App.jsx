@@ -447,7 +447,7 @@ export default function App() {
   const mgmtBody = (
     <PreProject
       summaries={orderedMgmtSummaries}
-      tasks={mgmtTasks.filter((t) => (t.taskState || "active") !== "archived")}
+      tasks={mgmtTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={hasMutationAuthority}
@@ -465,7 +465,7 @@ export default function App() {
   const devBody = (
     <PreProject
       summaries={orderedDevSummaries}
-      tasks={devTasks.filter((t) => (t.taskState || "active") !== "archived")}
+      tasks={devTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={hasMutationAuthority}

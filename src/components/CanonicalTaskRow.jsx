@@ -52,8 +52,8 @@ export default function CanonicalTaskRow({
     gap: "8px",
     padding: "8px 12px",
     borderBottom: "1px solid #e5e7eb",
-    color: "#111827",
-    opacity: task.isArchived ? 0.6 : 1,
+    color: task.taskState === "archived" ? "#6b7280" : "#111827",
+    opacity: task.taskState === "archived" ? 0.5 : 1,
     userSelect: "none",
     cursor: "pointer",
   };
@@ -69,7 +69,7 @@ export default function CanonicalTaskRow({
 
   const titleStyle = {
     flexGrow: 1,
-    color: "#111827",
+    color: task.taskState === "archived" ? "#6b7280" : "#111827",
     cursor: allowEdit ? "text" : "pointer",
   };
 

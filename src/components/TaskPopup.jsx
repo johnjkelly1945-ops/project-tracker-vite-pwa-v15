@@ -167,6 +167,7 @@ export default function TaskPopup({
   const isCompleted = executionState === "COMPLETED";
 
   const isAssigned = Boolean(localAssigneeId);
+  const isArchived = task.taskState === "archived";
   const isAssignee = localAssigneeId === "current-user";
   const isPM = currentUserRole === "PM";
   const isPMProxy = isPM && isAssigned && !isAssignee;
@@ -393,6 +394,7 @@ export default function TaskPopup({
   /* ================= Inline Commit ================= */
 
   function handleCommitInlineNote() {
+    if (isArchived) return;
     const text = inlineDraftText.trim();
     if (!text) return;
 
