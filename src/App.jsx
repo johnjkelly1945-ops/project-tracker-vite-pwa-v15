@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useEffect, useState } from "react";
+import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
 import Sidebar from "./components/Sidebar";
 import ModuleHeader from "./components/ModuleHeader";
@@ -71,6 +72,47 @@ export default function App() {
         return;
       }
 
+      if (intent.type === "INSTANTIATE_REPOSITORY_SELECTION_INTENT") {
+        const p = intent.payload || {};
+        const target = p.pane === "dev" ? "dev" : "mgmt";
+
+        const setSummaries = target === "dev" ? setDevSummaries : setMgmtSummaries;
+        const setSummaryOrder = target === "dev" ? setDevSummaryOrder : setMgmtSummaryOrder;
+        const setTasks = target === "dev" ? setDevTasks : setMgmtTasks;
+
+        const summaryIdMap = {};
+
+        (p.summaryIds || []).forEach((repoSummaryId) => {
+          const repoSummary = REPO_SUMMARIES.find(s => s.id === repoSummaryId);
+          if (!repoSummary) return;
+
+          const newId = `summary-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+          summaryIdMap[repoSummaryId] = newId;
+
+          setSummaries(c => [...c, { id: newId, title: repoSummary.title }]);
+          setSummaryOrder(c => [...c, newId]);
+        });
+
+        (p.taskIds || []).forEach((repoTaskId) => {
+          const repoTask = REPO_TASKS.find(t => t.id === repoTaskId);
+          if (!repoTask) return;
+
+          const newTask = {
+            id: `task-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+            title: repoTask.title,
+            description: repoTask.description || "",
+            notes: [],
+            summaryId: summaryIdMap[repoTask.summaryId] || null,
+            executionState: "NOT_STARTED",
+            taskState: "active",
+          };
+
+          setTasks(c => [...c, newTask]);
+        });
+
+        setRepositoryOpen(false);
+        return;
+      }
       if (intent.type === "INSTANTIATE_TASK_INTENT") {
         const p = intent.payload || {};
         const target = p.targetPane === "dev" ? "dev" : "mgmt";

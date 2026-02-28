@@ -24,79 +24,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import "../Styles/RepositoryView.css";
+import { REPO_BUNDLES, REPO_SUMMARIES, REPO_TASKS } from "../domain/repository/RepositoryData";
 
 /* ----------------------------------------------------------------------
    Placeholder repository data (Stage 354 scaffolding only)
    ---------------------------------------------------------------------- */
 
-const PLACEHOLDER_REPO_BUNDLES = [
-  {
-    id: "repo-bundle-001",
-    title: "Project Initiation (Generic)",
-    discipline: "management",
-    type: "Generic",
-    scope: "Generic",
-    level: "Project",
-    method: "Generic",
-  },
-  {
-    id: "repo-bundle-002",
-    title: "Delivery Controls (Generic)",
-    discipline: "management",
-    type: "Generic",
-    scope: "Generic",
-    level: "Project",
-    method: "Generic",
-  },
-];
 
-const PLACEHOLDER_REPO_SUMMARIES = [
-  {
-    id: "repo-summary-001",
-    title: "Initiation Summary",
-    discipline: "management",
-    bundleId: "repo-bundle-001",
-  },
-  {
-    id: "repo-summary-002",
-    title: "Delivery Summary",
-    discipline: "management",
-    bundleId: "repo-bundle-002",
-  },
-];
 
-const PLACEHOLDER_REPO_TASKS = [
-  {
-    id: "repo-task-001",
-    title: "Prepare project initiation notes",
-    description: "Draft initial scope, assumptions, and constraints.",
-    discipline: "management",
-    type: "Generic",
-    scope: "Generic",
-    level: "Project",
-    method: "Generic",
-  },
-  {
-    id: "repo-task-002",
-    title: "Identify key stakeholders",
-    description: "List internal and external stakeholders.",
-    discipline: "management",
-    type: "Generic",
-    scope: "Generic",
-    level: "Project",
-    method: "Generic",
-  },
-  {
-    id: "repo-task-003",
-    title: "Define success criteria",
-    description: "Document measurable success factors.",
-    discipline: "management",
-    type: "Generic",
-    scope: "Generic",
-    level: "Project",
-    method: "Generic",
-  },
-];
 
 /* ----------------------------------------------------------------------
    Intent emitter (intent-only)
@@ -169,20 +104,20 @@ export default function RepositoryView(props) {
   /* ===================== LEGACY SELECTION (PARKED) ===================== */
 
   // Kept for continuity; tasks are not surfaced in Stage 354/354A.
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedTaskIds, setSelectedTaskIds] = useState({});
 
   /* ===================== BASE DATASETS ===================== */
 
   const tasksBase = useMemo(() => {
-    return PLACEHOLDER_REPO_TASKS.filter((t) => t.discipline === activeDiscipline);
+    return REPO_TASKS.filter((t) => t.discipline === activeDiscipline);
   }, [activeDiscipline]);
 
   const bundlesBase = useMemo(() => {
-    return PLACEHOLDER_REPO_BUNDLES.filter((b) => b.discipline === activeDiscipline);
+    return REPO_BUNDLES.filter((b) => b.discipline === activeDiscipline);
   }, [activeDiscipline]);
 
   const summariesBase = useMemo(() => {
-    return PLACEHOLDER_REPO_SUMMARIES.filter((s) => s.discipline === activeDiscipline);
+    return REPO_SUMMARIES.filter((s) => s.discipline === activeDiscipline);
   }, [activeDiscipline]);
 
   /* ===================== DROPDOWN OPTIONS ===================== */
@@ -204,6 +139,17 @@ export default function RepositoryView(props) {
 
   const handleClose = () => emitIntent("CLOSE_REPOSITORY_INTENT");
 
+  const handleDownload = () => {
+    const summaryIds = Object.keys(selectedSummaryIds);
+    const taskIds = Object.keys(selectedTaskIds);
+
+    emitIntent("INSTANTIATE_REPOSITORY_SELECTION_INTENT", {
+      pane,
+      summaryIds,
+      taskIds,
+    });
+  };
+
   const clearAll = () => {
     // Clear inputs only (committed results remain until next APPLY or close)
     setSearchTerm("");
@@ -211,7 +157,7 @@ export default function RepositoryView(props) {
     setSelectedScope("");
     setSelectedLevel("");
     setSelectedMethod("NONE");
-    setSelectedTaskId(null);
+    setSelectedTaskIds({});
   };
 
   const handleApply = () => {
@@ -224,7 +170,7 @@ export default function RepositoryView(props) {
     // Reset reveal + selections each time APPLY is committed
     setExpandedBundles({});
     setSelectedSummaryIds({});
-    setSelectedTaskId(null);
+    setSelectedTaskIds({});
 
     setResultsLoaded(true);
   };
@@ -238,6 +184,15 @@ export default function RepositoryView(props) {
       const next = { ...c };
       if (next[summaryId]) delete next[summaryId];
       else next[summaryId] = true;
+      return next;
+    });
+  };
+
+  const toggleTask = (taskId) => {
+    setSelectedTaskIds((c) => {
+      const next = { ...c };
+      if (next[taskId]) delete next[taskId];
+      else next[taskId] = true;
       return next;
     });
   };
@@ -297,6 +252,16 @@ export default function RepositoryView(props) {
   const selectedSummaryCount = useMemo(() => {
     return Object.keys(selectedSummaryIds).length;
   }, [selectedSummaryIds]);
+
+  const selectedTaskCount = useMemo(() => {
+    return Object.keys(selectedTaskIds).length;
+  }, [selectedTaskIds]);
+
+  const totalSelected = selectedSummaryCount + selectedTaskCount;
+
+  const visibleTasks = tasksBase.filter((t) =>
+    selectedSummaryIds[t.summaryId] || selectedTaskIds[t.id]
+  );
 
   return (
     <div className="repo-overlay" role="dialog" aria-modal="true">
@@ -456,7 +421,36 @@ export default function RepositoryView(props) {
           {/* Column 2: Tasks */}
           <div className="repo-panel">
             <h3>Tasks</h3>
-            <div className="repo-empty">Tasks are not surfaced in this stage.</div>
+  {selectedSummaryCount === 0 && selectedTaskCount === 0 ? (
+    <div className="repo-empty">
+      Select at least one summary to reveal tasks.
+    </div>
+  ) : visibleTasks.length === 0 ? (
+    <div className="repo-empty">No tasks available.</div>
+  ) : (
+    visibleTasks.map((t) => {
+      const checked = Boolean(selectedTaskIds[t.id]);
+
+      return (
+        <div
+          key={t.id}
+          className="repo-task-row"
+          role="button"
+          tabIndex={0}
+          onClick={() => toggleTask(t.id)}
+        >
+          <input
+            type="checkbox"
+            className="repo-tick"
+            checked={checked}
+            onChange={() => toggleTask(t.id)}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <span>{t.title}</span>
+        </div>
+      );
+    })
+  )}
           </div>
 
           {/* Column 3: Templates */}
@@ -472,8 +466,8 @@ export default function RepositoryView(props) {
             Return to Project
           </button>
 
-          <button className="repo-download-btn" disabled={true}>
-            Add Selected to Project{selectedSummaryCount > 0 ? ` (${selectedSummaryCount})` : ""}
+          <button className="repo-download-btn" disabled={totalSelected === 0} onClick={handleDownload}>
+            Add Selected to Project{totalSelected > 0 ? ` (${totalSelected})` : ""}
           </button>
         </div>
       </div>
