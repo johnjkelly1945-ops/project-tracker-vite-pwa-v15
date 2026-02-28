@@ -12,6 +12,8 @@ import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
 import { localAssignees } from "./data/localAssignees";
+import { loadWorkspace } from "./storage/workspaceRepository";
+import { saveWorkspace } from "./storage/workspaceRepository";
 
 /*
 =====================================================================
@@ -60,6 +62,58 @@ export default function App() {
 
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Stage 357 — Load workspace on startup
+  useEffect(() => {
+    const saved = loadWorkspace();
+    if (!saved) return;
+
+    if (saved.dev) {
+      setDevSummaries(saved.dev.summaries || []);
+      setDevTasks(saved.dev.tasks || []);
+      setDevSummaryOrder(saved.dev.order || []);
+    }
+
+    if (saved.mgmt) {
+      setMgmtSummaries(saved.mgmt.summaries || []);
+      setMgmtTasks(saved.mgmt.tasks || []);
+      setMgmtSummaryOrder(saved.mgmt.order || []);
+    }
+
+    setWorkspaceMode("dual");
+    setFocusedPane(null);
+    setHydrated(true);
+  }, []);
+
+  // Stage 357 — Save workspace on state change
+  useEffect(() => {
+    const workspaceData = {
+      schemaVersion: 1,
+      dev: {
+        summaries: devSummaries,
+        tasks: devTasks,
+        order: devSummaryOrder,
+      },
+      mgmt: {
+        summaries: mgmtSummaries,
+        tasks: mgmtTasks,
+        order: mgmtSummaryOrder,
+      },
+    };
+
+    if (!hydrated) return;
+    saveWorkspace(workspaceData);
+  }, [
+    devSummaries,
+    devTasks,
+    devSummaryOrder,
+    mgmtSummaries,
+    mgmtTasks,
+    mgmtSummaryOrder,
+  ]);
+
+
   const [repositoryPane, setRepositoryPane] = useState("mgmt");
 
   useEffect(() => {
