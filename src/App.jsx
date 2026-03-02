@@ -217,7 +217,7 @@ export default function App() {
             summaryId: summaryIdMap[repoTask.summaryId] || null,
             executionState: "NOT_STARTED",
             taskState: "active",
-            segmentId: segments[0]?.segmentId,
+            segmentId: effectiveSegmentId,
           };
 
           setTasks(c => [...c, newTask]);
@@ -238,7 +238,7 @@ export default function App() {
           summaryId: null,
           executionState: "NOT_STARTED",
           taskState: "active",
-          segmentId: segments[0]?.segmentId,
+          segmentId: effectiveSegmentId,
         };
 
         (target === "dev" ? setDevTasks : setMgmtTasks)((c) => [...c, newTask]);
@@ -299,7 +299,7 @@ export default function App() {
       summaryId: null,
       executionState: "NOT_STARTED",
       taskState: "active",
-      segmentId: segments[0]?.segmentId,
+      segmentId: effectiveSegmentId,
     };
 
     (isDev ? setDevTasks : setMgmtTasks)((c) => [...c, task]);
@@ -505,10 +505,18 @@ export default function App() {
 
   /* ===================== SURFACES ===================== */
 
+
+  const effectiveSegmentId = activeSegmentId ?? segments[0]?.segmentId ?? null;
+  /* ===================== Stage 359C — Segment Render Filtering ===================== */
+  const visibleDevSummaries = orderedDevSummaries.filter(s => (s.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
+  const visibleDevTasks = devTasks.filter(t => (t.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
+
+  const visibleMgmtSummaries = orderedMgmtSummaries.filter(s => (s.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
+  const visibleMgmtTasks = mgmtTasks.filter(t => (t.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
   const mgmtBody = (
     <PreProject
-      summaries={orderedMgmtSummaries}
-      tasks={mgmtTasks}
+      summaries={visibleMgmtSummaries}
+      tasks={visibleMgmtTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={hasMutationAuthority}
@@ -525,8 +533,8 @@ export default function App() {
 
   const devBody = (
     <PreProject
-      summaries={orderedDevSummaries}
-      tasks={devTasks}
+      summaries={visibleDevSummaries}
+      tasks={visibleDevTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={hasMutationAuthority}
