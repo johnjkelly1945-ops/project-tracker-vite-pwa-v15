@@ -10,7 +10,7 @@
 // This file must contain NO UI logic and NO authority logic.
 // ======================================================================
 
-const STORAGE_KEY = "METRA_WORKSPACE_V1";
+const STORAGE_KEY = "METRA_WORKSPACE_V2";
 
 export function loadFromLocalStorage() {
   try {
@@ -19,7 +19,7 @@ export function loadFromLocalStorage() {
 
     const parsed = JSON.parse(raw);
 
-    if (!parsed || parsed.schemaVersion !== 1) {
+    if (!parsed || typeof parsed.schemaVersion !== "number") {
       console.warn(
         "Invalid or incompatible workspace schema. Starting empty."
       );

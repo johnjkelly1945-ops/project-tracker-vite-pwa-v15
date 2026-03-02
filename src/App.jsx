@@ -62,6 +62,8 @@ export default function App() {
 
   // Stage 359A — Segment structural foundation (no UI use yet)
   const [segments, setSegments] = useState([]);
+
+  const [activeSegmentId, setActiveSegmentId] = useState(null);
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -79,6 +81,7 @@ export default function App() {
 
     if (!saved) {
       setSegments([defaultSegment]);
+      setActiveSegmentId(defaultSegment.segmentId);
       setWorkspaceMode("dual");
       setFocusedPane(null);
       setHydrated(true);
@@ -107,7 +110,7 @@ export default function App() {
       }));
 
       setSegments([defaultSegment]);
-
+      setActiveSegmentId(defaultSegment.segmentId);
       setDevSummaries(upgradedDevSummaries);
       setDevTasks(upgradedDevTasks);
       setDevSummaryOrder(saved.dev?.order || []);
@@ -124,7 +127,9 @@ export default function App() {
 
     if (saved.schemaVersion === 2) {
       setSegments(saved.segments || []);
-
+      if ((saved.segments || []).length > 0) {
+        setActiveSegmentId((saved.segments || [])[0].segmentId);
+      }
       setDevSummaries(saved.dev?.summaries || []);
       setDevTasks(saved.dev?.tasks || []);
       setDevSummaryOrder(saved.dev?.order || []);
