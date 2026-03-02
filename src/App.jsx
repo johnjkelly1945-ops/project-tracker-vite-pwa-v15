@@ -60,36 +60,89 @@ export default function App() {
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
+  // Stage 359A — Segment structural foundation (no UI use yet)
+  const [segments, setSegments] = useState([]);
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  // Stage 357 — Load workspace on startup
+  // Stage 359A — Load workspace with migration
   useEffect(() => {
     const saved = loadWorkspace();
-    if (!saved) return;
 
-    if (saved.dev) {
-      setDevSummaries(saved.dev.summaries || []);
-      setDevTasks(saved.dev.tasks || []);
-      setDevSummaryOrder(saved.dev.order || []);
+    const defaultSegment = {
+      segmentId: `segment-${Date.now()}`,
+      segmentTitle: "Untitled Segment",
+      archived: false,
+      createdAt: Date.now(),
+    };
+
+    if (!saved) {
+      setSegments([defaultSegment]);
+      setWorkspaceMode("dual");
+      setFocusedPane(null);
+      setHydrated(true);
+      return;
     }
 
-    if (saved.mgmt) {
-      setMgmtSummaries(saved.mgmt.summaries || []);
-      setMgmtTasks(saved.mgmt.tasks || []);
-      setMgmtSummaryOrder(saved.mgmt.order || []);
+    if (saved.schemaVersion === 1) {
+      const upgradedDevTasks = (saved.dev?.tasks || []).map(t => ({
+        ...t,
+        segmentId: defaultSegment.segmentId,
+      }));
+
+      const upgradedMgmtTasks = (saved.mgmt?.tasks || []).map(t => ({
+        ...t,
+        segmentId: defaultSegment.segmentId,
+      }));
+
+      const upgradedDevSummaries = (saved.dev?.summaries || []).map(s => ({
+        ...s,
+        segmentId: defaultSegment.segmentId,
+      }));
+
+      const upgradedMgmtSummaries = (saved.mgmt?.summaries || []).map(s => ({
+        ...s,
+        segmentId: defaultSegment.segmentId,
+      }));
+
+      setSegments([defaultSegment]);
+
+      setDevSummaries(upgradedDevSummaries);
+      setDevTasks(upgradedDevTasks);
+      setDevSummaryOrder(saved.dev?.order || []);
+
+      setMgmtSummaries(upgradedMgmtSummaries);
+      setMgmtTasks(upgradedMgmtTasks);
+      setMgmtSummaryOrder(saved.mgmt?.order || []);
+
+      setWorkspaceMode("dual");
+      setFocusedPane(null);
+      setHydrated(true);
+      return;
     }
 
-    setWorkspaceMode("dual");
-    setFocusedPane(null);
-    setHydrated(true);
+    if (saved.schemaVersion === 2) {
+      setSegments(saved.segments || []);
+
+      setDevSummaries(saved.dev?.summaries || []);
+      setDevTasks(saved.dev?.tasks || []);
+      setDevSummaryOrder(saved.dev?.order || []);
+
+      setMgmtSummaries(saved.mgmt?.summaries || []);
+      setMgmtTasks(saved.mgmt?.tasks || []);
+      setMgmtSummaryOrder(saved.mgmt?.order || []);
+
+      setWorkspaceMode("dual");
+      setFocusedPane(null);
+      setHydrated(true);
+    }
   }, []);
-
   // Stage 357 — Save workspace on state change
   useEffect(() => {
     const workspaceData = {
-      schemaVersion: 1,
+      schemaVersion: 2,
+      segments,
       dev: {
         summaries: devSummaries,
         tasks: devTasks,
@@ -159,6 +212,7 @@ export default function App() {
             summaryId: summaryIdMap[repoTask.summaryId] || null,
             executionState: "NOT_STARTED",
             taskState: "active",
+            segmentId: segments[0]?.segmentId,
           };
 
           setTasks(c => [...c, newTask]);
@@ -179,6 +233,7 @@ export default function App() {
           summaryId: null,
           executionState: "NOT_STARTED",
           taskState: "active",
+          segmentId: segments[0]?.segmentId,
         };
 
         (target === "dev" ? setDevTasks : setMgmtTasks)((c) => [...c, newTask]);
@@ -239,6 +294,7 @@ export default function App() {
       summaryId: null,
       executionState: "NOT_STARTED",
       taskState: "active",
+      segmentId: segments[0]?.segmentId,
     };
 
     (isDev ? setDevTasks : setMgmtTasks)((c) => [...c, task]);
