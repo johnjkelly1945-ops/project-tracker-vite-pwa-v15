@@ -73,4 +73,16 @@ export const REPO_TASKS = [
     level: "Project",
     method: "Generic",
   },
+  {
+    id: "repo-task-archive-001",
+    summaryId: "repo-summary-002",
+    title: "Segment Archive Trigger",
+    description: "Record closure decision. Use footer control to archive segment if required.",
+    discipline: "management",
+    type: "Generic",
+    scope: "Generic",
+    level: "Project",
+    method: "Generic",
+    systemAction: "ARCHIVE_SEGMENT",
+  }
 ];

@@ -212,6 +212,7 @@ export default function App() {
           const newTask = {
             id: `task-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
             title: repoTask.title,
+            systemAction: repoTask.systemAction || null,
             description: repoTask.description || "",
             notes: [],
             summaryId: summaryIdMap[repoTask.summaryId] || null,
@@ -565,6 +566,28 @@ export default function App() {
     setActiveSegmentId(newSegment.segmentId);
   }
 
+
+  /* ===================== Stage 360 — Segment Archive Handler ===================== */
+  function handleArchiveSegment(segmentId) {
+    setSegments(prev => {
+      const updated = prev.map(s =>
+        s.segmentId === segmentId
+          ? { ...s, archived: true }
+          : s
+      );
+
+      const remaining = updated.filter(s => !s.archived);
+
+      if (remaining.length > 0) {
+        setActiveSegmentId(remaining[0].segmentId);
+      } else {
+        setActiveSegmentId(null);
+      }
+
+      return updated;
+    });
+  }
+
   /* ===================== RENDER ===================== */
 
   return (
@@ -628,6 +651,9 @@ export default function App() {
 
         {activeTask && (
           <TaskPopup
+            hasMutationAuthority={hasMutationAuthority}
+            workspaceMode={workspaceMode}
+            onArchiveSegment={handleArchiveSegment}
             task={activeTask}
             summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
             onClose={() => setActiveTaskId(null)}

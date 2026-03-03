@@ -79,6 +79,9 @@ export default function TaskPopup({
   onCompleteExecution,
   onChangeTaskSummary,
   onArchiveTask,
+  hasMutationAuthority,
+  workspaceMode,
+  onArchiveSegment,
   currentUserRole = "PM",
 }) {
   if (!task) return null;
@@ -87,6 +90,7 @@ export default function TaskPopup({
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
+  const [segmentArchiveConfirmOpen, setSegmentArchiveConfirmOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [activeReviewEventId, setActiveReviewEventId] = useState(null);
 
@@ -418,9 +422,17 @@ export default function TaskPopup({
     onClose();
   }
 
+
   function confirmArchive() {
     onArchiveTask(task.id);
     setArchiveConfirmOpen(false);
+  }
+
+  function confirmSegmentArchive() {
+    if (!onArchiveSegment) return;
+    onArchiveSegment(task.segmentId);
+    setSegmentArchiveConfirmOpen(false);
+    onClose();
   }
 
   function confirmLinkDocument() {
@@ -593,6 +605,17 @@ export default function TaskPopup({
               {showComplete && (
                 <button onClick={handleCompleteWork}>Complete</button>
               )}
+              {task.systemAction === "ARCHIVE_SEGMENT" &&
+               hasMutationAuthority &&
+               workspaceMode === "single" && (
+                 <button
+                   style={{ marginRight: "8px" }}
+                   onClick={() => setSegmentArchiveConfirmOpen(true)}
+                 >
+                   Archive Segment
+                 </button>
+               )}
+
               <button onClick={() => setArchiveConfirmOpen(true)}>Delete</button>
             </div>
           </div>
@@ -644,6 +667,7 @@ export default function TaskPopup({
         </div>
       )}
 
+
       {archiveConfirmOpen && (
         <div
           style={{
@@ -662,6 +686,32 @@ export default function TaskPopup({
           </div>
         </div>
       )}
+
+      {segmentArchiveConfirmOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2600,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px", width: "420px" }}>
+            <strong>Archive this segment?</strong>
+            <p style={{ marginTop: "10px" }}>
+              This will move the segment to the sidebar and remove it from active view.
+            </p>
+            <div style={{ marginTop: "12px", textAlign: "right" }}>
+              <button onClick={confirmSegmentArchive}>Confirm</button>
+              <button onClick={() => setSegmentArchiveConfirmOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {reviewModalOpen && (
         <ReviewModal
           onAddNote={onAddNote}
