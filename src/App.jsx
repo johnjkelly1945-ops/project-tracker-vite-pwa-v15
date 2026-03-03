@@ -549,6 +549,22 @@ export default function App() {
     />
   );
 
+
+  function handleCreateSegment() {
+    const base = "Untitled Segment";
+    const count = segments.filter(s => s.segmentTitle.startsWith(base)).length;
+    const title = count === 0 ? base : `${base} ${count + 1}`;
+    const newSegment = {
+      segmentId: `segment-${Date.now()}`,
+      segmentTitle: title,
+      archived: false,
+      createdAt: Date.now(),
+    };
+
+    setSegments(prev => [...prev, newSegment]);
+    setActiveSegmentId(newSegment.segmentId);
+  }
+
   /* ===================== RENDER ===================== */
 
   return (
@@ -569,6 +585,13 @@ export default function App() {
               </option>
             ))}
         </select>
+        <button
+          style={{ marginLeft: 8 }}
+          onClick={handleCreateSegment}
+          disabled={!hasMutationAuthority}
+        >
+          + New
+        </button>
       </div>
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
