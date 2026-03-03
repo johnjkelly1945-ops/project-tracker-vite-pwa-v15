@@ -555,6 +555,22 @@ export default function App() {
     <>
       <ModuleHeader />
 
+      <div style={{ padding: "8px 16px", borderBottom: "1px solid #eee" }}>
+        <label style={{ marginRight: 8 }}>Segment:</label>
+        <select
+          value={activeSegmentId ?? ""}
+          onChange={(e) => setActiveSegmentId(e.target.value)}
+        >
+          {segments
+            .filter(s => !s.archived)
+            .map(s => (
+              <option key={s.segmentId} value={s.segmentId}>
+                {s.segmentTitle}
+              </option>
+            ))}
+        </select>
+      </div>
+
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
           expanded={sidebarExpanded}
