@@ -263,6 +263,32 @@ export default function RepositoryView(props) {
     selectedSummaryIds[t.summaryId] || selectedTaskIds[t.id]
   );
 
+  /* ===================== SEARCH RESULTS (STAGE 361) ===================== */
+
+  const searchResults = useMemo(() => {
+    const q = (searchTerm || "").trim().toLowerCase();
+
+    if (q.length < 2) return [];
+
+    const taskMatches = tasksBase
+      .filter((t) => `${t.title}`.toLowerCase().includes(q))
+      .map((t) => ({ type: "task", entity: t }));
+
+    const summaryMatches = summariesBase
+      .filter((s) => `${s.title}`.toLowerCase().includes(q))
+      .map((s) => ({ type: "summary", entity: s }));
+
+    const bundleMatches = bundlesBase
+      .filter((b) => `${b.title}`.toLowerCase().includes(q))
+      .map((b) => ({ type: "bundle", entity: b }));
+
+    return [...taskMatches, ...summaryMatches, ...bundleMatches];
+  }, [searchTerm, tasksBase, summariesBase, bundlesBase]);
+
+  /* ===================== SEARCH ACTIVE FLAG (STAGE 361) ===================== */
+
+  const searchActive = searchResults.length > 0;
+
   return (
     <div className="repo-overlay" role="dialog" aria-modal="true">
       <div className="repo-modal">
@@ -356,6 +382,20 @@ export default function RepositoryView(props) {
         </div>
 
         {/* ===== Main Layout ===== */}
+        {searchActive ? (
+
+          <div className="repo-panel">
+            <h3>Search Results</h3>
+
+            {searchResults.map((r, idx) => (
+              <div key={idx} className="repo-task-row">
+                <span>[{r.type.toUpperCase()}] {r.entity.title}</span>
+              </div>
+            ))}
+
+          </div>
+
+        ) : (
         <div className="repo-content-grid">
           {/* Column 1: Bundles + Summaries */}
           <div className="repo-panel">
@@ -459,6 +499,8 @@ export default function RepositoryView(props) {
             <div className="repo-empty">&nbsp;</div>
           </div>
         </div>
+
+        )}
 
         {/* ===== Bottom Bar ===== */}
         <div className="repo-bottombar">
