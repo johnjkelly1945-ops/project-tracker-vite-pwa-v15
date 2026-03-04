@@ -263,6 +263,19 @@ export default function RepositoryView(props) {
     selectedSummaryIds[t.summaryId] || selectedTaskIds[t.id]
   );
 
+
+/* ================================================================
+   STAGE 362 — Search Result Selection Bridge
+   ================================================================ */
+
+function handleSearchResultClick(result) {
+  if (!result) return;
+
+  if (result.type === "task") {
+    toggleTask(result.entity.id);
+  }
+}
+
   /* ===================== SEARCH RESULTS (STAGE 361) ===================== */
 
   const searchResults = useMemo(() => {
@@ -388,7 +401,7 @@ export default function RepositoryView(props) {
             <h3>Search Results</h3>
 
             {searchResults.map((r, idx) => (
-              <div key={idx} className="repo-task-row">
+              <div key={idx} className="repo-task-row" onClick={() => handleSearchResultClick(r)}>
                 <span>[{r.type.toUpperCase()}] {r.entity.title}</span>
               </div>
             ))}
