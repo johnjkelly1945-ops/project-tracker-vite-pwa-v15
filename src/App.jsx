@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
 import Sidebar from "./components/Sidebar";
@@ -65,6 +65,12 @@ export default function App() {
   const [segments, setSegments] = useState([]);
 
   const [activeSegmentId, setActiveSegmentId] = useState(null);
+
+  const activeSegmentIdRef = useRef(null);
+
+  useEffect(() => {
+    activeSegmentIdRef.current = activeSegmentId;
+  }, [activeSegmentId]);
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -230,7 +236,7 @@ export default function App() {
             summaryId: summaryIdMap[repoTask.summaryId] || null,
             executionState: "NOT_STARTED",
             taskState: "active",
-            segmentId: effectiveSegmentId,
+            segmentId: activeSegmentIdRef.current,
           };
 
           setTasks(c => [...c, newTask]);
@@ -251,7 +257,7 @@ export default function App() {
           summaryId: null,
           executionState: "NOT_STARTED",
           taskState: "active",
-          segmentId: effectiveSegmentId,
+            segmentId: activeSegmentIdRef.current,
         };
 
         (target === "dev" ? setDevTasks : setMgmtTasks)((c) => [...c, newTask]);
@@ -312,7 +318,7 @@ export default function App() {
       summaryId: null,
       executionState: "NOT_STARTED",
       taskState: "active",
-      segmentId: effectiveSegmentId,
+            segmentId: activeSegmentIdRef.current,
     };
 
     (isDev ? setDevTasks : setMgmtTasks)((c) => [...c, task]);
@@ -519,13 +525,14 @@ export default function App() {
   /* ===================== SURFACES ===================== */
 
 
-  const effectiveSegmentId = activeSegmentId ?? segments[0]?.segmentId ?? null;
+  const activeWorkspaceSegments = segments.filter(s => !s.archived);
+  const effectiveSegmentId = activeSegmentId ?? activeWorkspaceSegments[0]?.segmentId ?? null;
   /* ===================== Stage 359C — Segment Render Filtering ===================== */
-  const visibleDevSummaries = orderedDevSummaries.filter(s => (s.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
-  const visibleDevTasks = devTasks.filter(t => (t.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
+  const visibleDevSummaries = orderedDevSummaries.filter(s => (s.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
+  const visibleDevTasks = devTasks.filter(t => (t.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
 
-  const visibleMgmtSummaries = orderedMgmtSummaries.filter(s => (s.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
-  const visibleMgmtTasks = mgmtTasks.filter(t => (t.segmentId ?? segments[0]?.segmentId) === effectiveSegmentId);
+  const visibleMgmtSummaries = orderedMgmtSummaries.filter(s => (s.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
+  const visibleMgmtTasks = mgmtTasks.filter(t => (t.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
   const mgmtBody = (
     <PreProject
       summaries={visibleMgmtSummaries}
