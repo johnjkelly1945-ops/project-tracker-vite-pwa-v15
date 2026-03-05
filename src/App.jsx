@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
 import Sidebar from "./components/Sidebar";
+import ArchiveHost from "./components/archive/ArchiveHost";
 import ModuleHeader from "./components/ModuleHeader";
 import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
@@ -66,6 +67,7 @@ export default function App() {
   const [activeSegmentId, setActiveSegmentId] = useState(null);
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   // Stage 359A — Load workspace with migration
@@ -178,6 +180,16 @@ export default function App() {
     function onIntent(e) {
       const intent = e?.detail;
       if (!intent || !intent.type) return;
+
+      if (intent.type === "OPEN_ARCHIVE_INTENT") {
+        setArchiveOpen(true);
+        return;
+      }
+
+      if (intent.type === "CLOSE_ARCHIVE_INTENT") {
+        setArchiveOpen(false);
+        return;
+      }
 
       if (intent.type === "CLOSE_REPOSITORY_INTENT") {
         setRepositoryOpen(false);
@@ -572,7 +584,7 @@ export default function App() {
     setSegments(prev => {
       const updated = prev.map(s =>
         s.segmentId === segmentId
-          ? { ...s, archived: true }
+          ? { ...s, archived: true, archivedAt: s.archivedAt || Date.now() }
           : s
       );
 
@@ -637,6 +649,13 @@ export default function App() {
 
         {repositoryOpen && (
           <RepositoryView pane={repositoryPane} />
+        )}
+
+        {archiveOpen && (
+          <ArchiveHost
+            segments={segments}
+            onClose={() => setArchiveOpen(false)}
+          />
         )}
 
         {activeSummaryId && (

@@ -31,6 +31,14 @@ function emitRegisterReveal(register) {
   );
 }
 
+function emitModuleIntent(type, payload) {
+  window.dispatchEvent(
+    new CustomEvent("METRA_INTENT", {
+      detail: { type, payload },
+    })
+  );
+}
+
 export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
   return (
     <aside
@@ -150,7 +158,12 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
               <div>Template Repository</div>
               <div>Summary / Task Repository</div>
               <div>Personnel</div>
-              <div>Archive</div>
+              <div
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => emitModuleIntent("OPEN_ARCHIVE_INTENT")}
+              >
+                Archive
+              </div>
               <div>Help</div>
               <div style={{ opacity: 0.6 }}>Future Modules</div>
             </div>
