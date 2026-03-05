@@ -204,6 +204,12 @@ export default function App() {
 
       if (intent.type === "INSTANTIATE_REPOSITORY_SELECTION_INTENT") {
         const p = intent.payload || {};
+
+      /* ===== SEGMENT SAFETY GUARD ===== */
+      if (!activeSegmentIdRef.current) {
+        console.warn("Repository instantiation blocked: no active segment");
+        return;
+      }
         const target = p.pane === "dev" ? "dev" : "mgmt";
 
         const setSummaries = target === "dev" ? setDevSummaries : setMgmtSummaries;
@@ -219,7 +225,7 @@ export default function App() {
           const newId = `summary-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
           summaryIdMap[repoSummaryId] = newId;
 
-          setSummaries(c => [...c, { id: newId, title: repoSummary.title }]);
+          setSummaries(c => [...c, { id: newId, title: repoSummary.title, segmentId: activeSegmentIdRef.current }]);
           setSummaryOrder(c => [...c, newId]);
         });
 
@@ -247,6 +253,12 @@ export default function App() {
       }
       if (intent.type === "INSTANTIATE_TASK_INTENT") {
         const p = intent.payload || {};
+
+      /* ===== SEGMENT SAFETY GUARD ===== */
+      if (!activeSegmentIdRef.current) {
+        console.warn("Repository instantiation blocked: no active segment");
+        return;
+      }
         const target = p.targetPane === "dev" ? "dev" : "mgmt";
 
         const newTask = {
