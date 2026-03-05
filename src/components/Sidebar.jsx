@@ -150,6 +150,7 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
               <div>Template Repository</div>
               <div>Summary / Task Repository</div>
               <div>Personnel</div>
+              <div>Archive</div>
               <div>Help</div>
               <div style={{ opacity: 0.6 }}>Future Modules</div>
             </div>
