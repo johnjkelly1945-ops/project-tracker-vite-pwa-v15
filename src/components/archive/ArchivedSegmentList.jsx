@@ -5,6 +5,7 @@ METRA — ArchivedSegmentList.jsx
 =====================================================================
 
 Stage 364 — Archive Surface
+Stage 366 — Discovery Refinement
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -13,6 +14,7 @@ Render a read-only list of archived segments.
 • Projection-only
 • Selection for inspection only
 • No mutation
+• Display most recent archived segments (max 10)
 =====================================================================
 */
 
@@ -30,20 +32,26 @@ export default function ArchivedSegmentList({
   selectedSegmentId = null,
   onSelect = () => {},
 }) {
+
+  const recentSegments = archivedSegments
+    .slice()
+    .sort((a,b) => (b.archivedAt || 0) - (a.archivedAt || 0))
+    .slice(0,10);
+
   return (
     <div style={{ width: "40%", borderRight: "1px solid #ddd", padding: "12px" }}>
       <div style={{ fontWeight: "700", marginBottom: "10px" }}>
         Archived Segments
       </div>
 
-      {archivedSegments.length === 0 && (
+      {recentSegments.length === 0 && (
         <div style={{ opacity: 0.7, fontSize: "13px" }}>
           No archived segments found.
         </div>
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        {archivedSegments.map((s) => {
+        {recentSegments.map((s) => {
           const isSelected = s.segmentId === selectedSegmentId;
           const line = `${s.segmentTitle} — ${fmtDate(s.archivedAt)} — ${s.segmentId}`;
 

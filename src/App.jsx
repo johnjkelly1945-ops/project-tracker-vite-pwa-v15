@@ -345,10 +345,10 @@ export default function App() {
     const id = `summary-${Date.now()}`;
 
     if (isDev) {
-      setDevSummaries((c) => [...c, { id, title: title.trim() }]);
+      setDevSummaries((c) => [...c, { id, title: title.trim(), segmentId: activeSegmentIdRef.current }]);
       setDevSummaryOrder((c) => [...c, id]);
     } else {
-      setMgmtSummaries((c) => [...c, { id, title: title.trim() }]);
+      setMgmtSummaries((c) => [...c, { id, title: title.trim(), segmentId: activeSegmentIdRef.current }]);
       setMgmtSummaryOrder((c) => [...c, id]);
     }
   }
@@ -673,6 +673,8 @@ export default function App() {
         {archiveOpen && (
           <ArchiveHost
             segments={segments}
+            summaries={[...devSummaries, ...mgmtSummaries]}
+            tasks={[...devTasks, ...mgmtTasks]}
             onClose={() => setArchiveOpen(false)}
           />
         )}
@@ -680,7 +682,7 @@ export default function App() {
         {activeSummaryId && (
           <SummaryMoveModal
             summaryId={activeSummaryId}
-            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
             onMove={moveSummary}
             onRemove={removeSummary}
             onClose={() => setActiveSummaryId(null)}
@@ -693,7 +695,7 @@ export default function App() {
             workspaceMode={workspaceMode}
             onArchiveSegment={handleArchiveSegment}
             task={activeTask}
-            summaries={isDev ? orderedDevSummaries : orderedMgmtSummaries}
+            summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
             onClose={() => setActiveTaskId(null)}
             onAddNote={onAddNote}
             onAddDescription={onAddDescription}

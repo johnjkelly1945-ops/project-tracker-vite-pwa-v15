@@ -4,15 +4,16 @@
 METRA — ArchiveViewer.jsx
 =====================================================================
 
-Stage 364 — Archive Surface
+Stage 364 — Viewer Foundation
+Stage 366 — Structural Inspection (Read-Only)
 
 PURPOSE
 ---------------------------------------------------------------------
-Read-only inspection surface for a selected archived segment.
+Inspect archived segment structure.
 
-• Inspection only
+• Projection only
 • No mutation
-• No lifecycle transitions
+• Read-only inspection of summaries and tasks
 =====================================================================
 */
 
@@ -25,48 +26,90 @@ function fmtDateTime(ts) {
   }
 }
 
-export default function ArchiveViewer({ segment = null }) {
+export default function ArchiveViewer({
+  segment,
+  summaries = [],
+  tasks = []
+}) {
+
+  if (!segment) {
+    return (
+      <div style={{ padding: "12px", width: "60%" }}>
+        <div style={{ opacity: 0.7 }}>
+          Select an archived segment to inspect.
+        </div>
+      </div>
+    );
+  }
+
+  const segmentSummaries =
+    summaries.filter(s => s.segmentId === segment.segmentId);
+
   return (
-    <div style={{ width: "60%", padding: "12px" }}>
+    <div style={{ padding: "12px", width: "60%" }}>
+
       <div style={{ fontWeight: "700", marginBottom: "10px" }}>
         Archive Viewer
       </div>
 
-      {!segment && (
-        <div style={{ opacity: 0.7, fontSize: "13px" }}>
-          Select an archived segment to inspect.
+      <div style={{ marginBottom: "16px", fontSize: "13px" }}>
+        <div><strong>{segment.segmentTitle}</strong></div>
+        <div>Segment ID: {segment.segmentId}</div>
+        <div>Archived: {segment.archived ? "true" : "false"}</div>
+        <div>Archived At: {fmtDateTime(segment.archivedAt)}</div>
+        <div>Created At: {fmtDateTime(segment.createdAt)}</div>
+      </div>
+
+      <div style={{
+        border: "1px solid #ddd",
+        borderRadius: "6px",
+        padding: "10px",
+        background: "#fafafa"
+      }}>
+
+        <div style={{ fontWeight: "600", marginBottom: "8px" }}>
+          Summaries
         </div>
-      )}
 
-      {segment && (
-        <>
-          <div style={{ fontSize: "14px", fontWeight: "700", marginBottom: "8px" }}>
-            {segment.segmentTitle}
-          </div>
+        {segmentSummaries.length === 0 && (
+          <div style={{ opacity: 0.7 }}>No summaries found.</div>
+        )}
 
-          <div style={{ fontSize: "13px", marginBottom: "10px" }}>
-            <div><strong>Segment ID:</strong> {segment.segmentId}</div>
-            <div><strong>Archived:</strong> {segment.archived ? "true" : "false"}</div>
-            <div><strong>Archived At:</strong> {fmtDateTime(segment.archivedAt)}</div>
-            <div><strong>Created At:</strong> {fmtDateTime(segment.createdAt)}</div>
-          </div>
+        {segmentSummaries.map(summary => {
 
-          <div
-            style={{
-              border: "1px dashed #ccc",
-              borderRadius: "8px",
-              padding: "10px",
-              fontSize: "13px",
-              opacity: 0.85,
-            }}
-          >
-            Viewer foundation only (Stage 364).
-            <br />
-            Structural inspection of bundles → summaries → tasks and governance artefacts
-            will be introduced in later stages without enabling mutation.
-          </div>
-        </>
-      )}
+          const summaryTasks =
+            tasks.filter(
+              t =>
+                t.summaryId === summary.id &&
+                (t.segmentId ?? segment.segmentId) === segment.segmentId
+            );
+
+          return (
+            <div key={summary.id} style={{ marginBottom: "12px" }}>
+
+              <div style={{ fontWeight: "600", fontSize: "13px" }}>
+                {summary.title}
+              </div>
+
+              <div style={{ marginLeft: "12px", marginTop: "4px" }}>
+
+                {summaryTasks.length === 0 && (
+                  <div style={{ opacity: 0.7 }}>No tasks</div>
+                )}
+
+                {summaryTasks.map(task => (
+                  <div key={task.id} style={{ fontSize: "12px" }}>
+                    • {task.title}
+                  </div>
+                ))}
+
+              </div>
+            </div>
+          );
+        })}
+
+      </div>
+
     </div>
   );
 }

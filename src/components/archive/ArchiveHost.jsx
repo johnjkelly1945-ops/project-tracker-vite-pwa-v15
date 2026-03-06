@@ -5,6 +5,7 @@ METRA — ArchiveHost.jsx
 =====================================================================
 
 Stage 364 — Archive Surface
+Stage 366 — Structural Inspection Support
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -21,7 +22,13 @@ import { useMemo, useState } from "react";
 import ArchivedSegmentList from "./ArchivedSegmentList";
 import ArchiveViewer from "./ArchiveViewer";
 
-export default function ArchiveHost({ segments = [], onClose = () => {} }) {
+export default function ArchiveHost({
+  segments = [],
+  summaries = [],
+  tasks = [],
+  onClose = () => {}
+}) {
+
   const archivedSegments = useMemo(
     () => (segments || []).filter((s) => !!s.archived),
     [segments]
@@ -32,7 +39,8 @@ export default function ArchiveHost({ segments = [], onClose = () => {} }) {
   );
 
   const selected = useMemo(
-    () => archivedSegments.find((s) => s.segmentId === selectedSegmentId) || null,
+    () =>
+      archivedSegments.find((s) => s.segmentId === selectedSegmentId) || null,
     [archivedSegments, selectedSegmentId]
   );
 
@@ -71,6 +79,7 @@ export default function ArchiveHost({ segments = [], onClose = () => {} }) {
           }}
         >
           <div style={{ fontWeight: "800" }}>Archive</div>
+
           <button
             type="button"
             onClick={onClose}
@@ -93,7 +102,12 @@ export default function ArchiveHost({ segments = [], onClose = () => {} }) {
             selectedSegmentId={selectedSegmentId}
             onSelect={(id) => setSelectedSegmentId(id)}
           />
-          <ArchiveViewer segment={selected} />
+
+          <ArchiveViewer
+            segment={selected}
+            summaries={summaries}
+            tasks={tasks}
+          />
         </div>
       </div>
     </div>
