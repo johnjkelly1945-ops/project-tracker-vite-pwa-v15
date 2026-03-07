@@ -83,8 +83,11 @@ export default function TaskPopup({
   workspaceMode,
   onArchiveSegment,
   currentUserRole = "PM",
+  readOnly = false,
 }) {
   if (!task) return null;
+
+  const isReadOnly = readOnly === true;
 
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");

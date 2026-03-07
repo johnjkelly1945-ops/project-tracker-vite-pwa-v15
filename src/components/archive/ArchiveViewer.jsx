@@ -1,3 +1,4 @@
+import { useState } from "react";
 // @ts-nocheck
 /*
 =====================================================================
@@ -7,6 +8,7 @@ METRA — ArchiveViewer.jsx
 Stage 364 — Viewer Foundation
 Stage 366 — Structural Inspection (Read-Only)
 Stage 367 — Dual-Pane Archive Mirror
+Stage 368 — Archived Task Inspection + Archive Search
 
 PURPOSE
 ---------------------------------------------------------------------
@@ -20,6 +22,7 @@ Inspect archived segment structure.
 */
 
 import DualPane from "../DualPane";
+import TaskPopup from "../TaskPopup";
 
 function fmtDateTime(ts) {
   if (!ts) return "—";
@@ -30,7 +33,7 @@ function fmtDateTime(ts) {
   }
 }
 
-function PaneRenderer({ discipline, segment, summaries, tasks }) {
+function PaneRenderer({ discipline, segment, summaries, tasks, onTaskSelect, searchTerm }) {
 
   const paneSummaries =
     summaries.filter(
@@ -40,11 +43,21 @@ function PaneRenderer({ discipline, segment, summaries, tasks }) {
     );
 
   const paneTasks =
-    tasks.filter(
-      t =>
-        ((t.segmentId ?? segment.segmentId) === segment.segmentId) &&
-        (t.discipline ?? discipline) === discipline
-    );
+    tasks.filter(t => {
+      const matchesSegment =
+        ((t.segmentId ?? segment.segmentId) === segment.segmentId);
+
+      const matchesDiscipline =
+        ((t.discipline ?? discipline) === discipline);
+
+      const matchesSearch =
+        !searchTerm ||
+        searchTerm.length < 2 ||
+        (t.title &&
+         t.title.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      return matchesSegment && matchesDiscipline && matchesSearch;
+    });
 
   return (
     <div>
@@ -65,7 +78,12 @@ function PaneRenderer({ discipline, segment, summaries, tasks }) {
 
               {summaryTasks.map(task => (
                 <div key={task.id} style={{ fontSize: "12px" }}>
-                  • {task.title}
+                  • <span
+                      style={{ cursor: "pointer" }}
+                      onClick={() => onTaskSelect(task)}
+                    >
+                      {task.title}
+                    </span>
                 </div>
               ))}
 
@@ -78,7 +96,12 @@ function PaneRenderer({ discipline, segment, summaries, tasks }) {
         .filter(t => !t.summaryId)
         .map(task => (
           <div key={task.id} style={{ fontSize: "12px" }}>
-            • {task.title}
+            • <span
+                style={{ cursor: "pointer" }}
+                onClick={() => onTaskSelect(task)}
+              >
+                {task.title}
+              </span>
           </div>
         ))}
 
@@ -91,6 +114,9 @@ export default function ArchiveViewer({
   summaries = [],
   tasks = []
 }) {
+
+  const [selectedArchivedTask, setSelectedArchivedTask] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   if (!segment) {
     return (
@@ -109,6 +135,16 @@ export default function ArchiveViewer({
         Archive Viewer
       </div>
 
+      <div style={{ padding: "0 12px 12px" }}>
+        <input
+          type="text"
+          placeholder="Search archived tasks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: "100%", padding: "6px" }}
+        />
+      </div>
+
       <div style={{ padding: "0 12px 12px", fontSize: "13px" }}>
         <div><strong>{segment.segmentTitle}</strong></div>
         <div>Segment ID: {segment.segmentId}</div>
@@ -117,7 +153,7 @@ export default function ArchiveViewer({
         <div>Created At: {fmtDateTime(segment.createdAt)}</div>
       </div>
 
-      <div style={{ flex: 1, height: "calc(100% - 110px)" }}>
+      <div style={{ flex: 1, height: "calc(100% - 140px)" }}>
 
         <DualPane
           mode="dual"
@@ -127,6 +163,8 @@ export default function ArchiveViewer({
               segment={segment}
               summaries={summaries}
               tasks={tasks}
+              onTaskSelect={setSelectedArchivedTask}
+              searchTerm={searchTerm}
             />
           }
           developmentBody={
@@ -135,11 +173,22 @@ export default function ArchiveViewer({
               segment={segment}
               summaries={summaries}
               tasks={tasks}
+              onTaskSelect={setSelectedArchivedTask}
+              searchTerm={searchTerm}
             />
           }
         />
 
       </div>
+
+      {selectedArchivedTask && (
+        <TaskPopup
+          task={selectedArchivedTask}
+          summaries={summaries}
+          readOnly={true}
+          onClose={() => setSelectedArchivedTask(null)}
+        />
+      )}
 
     </div>
   );
