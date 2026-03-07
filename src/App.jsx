@@ -600,6 +600,7 @@ export default function App() {
 
   /* ===================== Stage 360 — Segment Archive Handler ===================== */
   function handleArchiveSegment(segmentId) {
+  setActiveSegmentId(null);
     setSegments(prev => {
       const updated = prev.map(s =>
         s.segmentId === segmentId
