@@ -12,6 +12,7 @@ import TaskPopup from "./components/TaskPopup";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
+import GovernanceModule from "./components/governance/GovernanceModule";
 import { localAssignees } from "./data/localAssignees";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
@@ -665,6 +666,7 @@ export default function App() {
         />
 
         {false && <PersonnelPanel />}
+        {true && <GovernanceModule />}
 
 
         {repositoryOpen && (
