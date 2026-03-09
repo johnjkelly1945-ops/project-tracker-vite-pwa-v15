@@ -79,3 +79,22 @@ export function getRiskArtefacts() {
 export function getRiskArtefactById(id) {
   return governanceArtefacts.find(a => a.artefactId === id)
 }
+
+/*
+=====================================================================
+ARTEFACT RETRIEVAL UTILITIES
+=====================================================================
+Stage 372 — Register Support
+=====================================================================
+*/
+
+export function getAllGovernanceArtefacts() {
+  return [...governanceArtefacts]
+}
+
+export function getGovernanceArtefactsByType(type) {
+  return governanceArtefacts.filter(
+    artefact => artefact.artefactType.toLowerCase() === type.toLowerCase()
+  )
+}
+
