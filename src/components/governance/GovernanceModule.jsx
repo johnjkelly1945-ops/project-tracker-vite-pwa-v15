@@ -5,6 +5,7 @@ METRA — GOVERNANCE MODULE
 
 Stage Introduced:
 Stage 370 — Governance Module Foundation
+Stage 371D — Register Surface using Artefact Repository
 
 Purpose:
 Container for governance artefact editing.
@@ -13,20 +14,17 @@ Layout:
 
 Left Pane  → Risk Register
 Right Pane → Risk Artefact Editor
-
-Note:
-Module currently not connected to task triggers.
 =====================================================================
 */
 
 import React, { useState } from "react"
-import { getRiskArtefacts } from "../../domain/governance/GovernanceStore"
+import { artefactGetByType } from "../../domain/governance/GovernanceArtefactRepository"
 
 export default function GovernanceModule() {
 
   const [selectedRiskId, setSelectedRiskId] = useState(null)
 
-  const risks = getRiskArtefacts()
+  const risks = artefactGetByType("risk")
 
   const selectedRisk = risks.find(r => r.artefactId === selectedRiskId)
 
