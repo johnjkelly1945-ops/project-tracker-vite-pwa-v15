@@ -666,7 +666,7 @@ export default function App() {
         />
 
         {false && <PersonnelPanel />}
-        {true && <GovernanceModule />}
+        {false && <GovernanceModule />}
 
 
         {repositoryOpen && (
