@@ -34,6 +34,7 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import RiskModal from "./RiskModal";
+import RiskRegisterModal from "./RiskRegisterModal";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
@@ -98,6 +99,7 @@ export default function TaskPopup({
   const [activeReviewEventId, setActiveReviewEventId] = useState(null);
 
   const [riskModalOpen, setRiskModalOpen] = useState(false);
+  const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
   const [activeRiskEventId, setActiveRiskEventId] = useState(null);
 
   /* ================= Stage 333 — Issue State ================= */
@@ -241,29 +243,7 @@ export default function TaskPopup({
 
   function handleInitiateRisk() {
     if (!isPM) return;
-
-    const existing = getGovernanceEventsByTask(task.id).find(
-      (e) => e.eventType === "risk" && e.status === "OPEN"
-    );
-
-    let event;
-
-    if (existing) {
-      event = existing;
-    } else {
-      event = bridgeTriggerGovernanceEvent({
-        eventType: "risk",
-        taskId: task.id,
-        initiatedBy: "PM",
-      });
-
-      const line = systemLine("Risk initiated by PM");
-      onAddNote(task.id, line);
-      setDisplayNotes((p) => [...p, line]);
-    }
-
-    setActiveRiskEventId(event.eventId);
-    setRiskModalOpen(true);
+    setRiskRegisterOpen(true);
   }
 
 
@@ -724,7 +704,19 @@ export default function TaskPopup({
         />
       )}
 
-      {riskModalOpen && activeRiskEventId && (
+
+      {riskRegisterOpen && (
+        <RiskRegisterModal
+          taskId={task.id}
+          onClose={() => setRiskRegisterOpen(false)}
+          openRiskEvent={(eventId) => {
+            setActiveRiskEventId(eventId);
+            setRiskRegisterOpen(false);
+            setRiskModalOpen(true);
+          }}
+        />
+      )}
+      {riskModalOpen && (
         <RiskModal
           taskId={task.id}
           eventId={activeRiskEventId}

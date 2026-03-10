@@ -203,42 +203,6 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscal
           )}
 
 
-          {/* ================= Task Risk Register ================= */}
-
-          <div
-            style={{
-              borderBottom: "1px solid rgba(0,0,0,0.1)",
-              padding: "10px 20px",
-              fontSize: "13px",
-            }}
-          >
-            <div style={{ fontWeight: 600, marginBottom: "6px" }}>TASK RISKS</div>
-
-            {taskRisks.length === 0 && (
-              <div style={{ fontStyle: "italic", color: "#666" }}>
-                No risks recorded for this task
-              </div>
-            )}
-
-            {taskRisks.map((r) => (
-              <div
-                key={r.eventId}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "3px 0",
-                }}
-              >
-                <span>{r.eventId}</span>
-                <span
-                  style={{ cursor: "pointer", textDecoration: "underline" }}
-                  onClick={() => setEvent(getGovernanceEvent(r.eventId))}
-                >
-                  Open
-                </span>
-              </div>
-            ))}
-          </div>
           {/* ================= Stream Zone ================= */}
 
           <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
@@ -331,8 +295,8 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscal
               <button onClick={onClose}>Close</button>
             </div>
           </div>
-        </div>
 
+        </div>
         {participantModalOpen && (
           <SubordinateSelectionModal
             title="Confirm Risk Participant"
