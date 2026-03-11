@@ -8,16 +8,16 @@ Stage 374 — Risk Register Navigation Surface
 
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
-import { getGovernanceEventsByTask } from "../governance/governanceStore";
-import { createRiskArtefact } from "../domain/governance/GovernanceStore";
+import { createRiskArtefact, getRiskArtefacts } from "../domain/governance/GovernanceStore";
+import { createGovernanceEvent } from "../governance/governanceStore";
 
 export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
   const [, refresh] = useState(0);
 
   const risks =
-    getGovernanceEventsByTask(taskId)
-      .filter(e => e.eventType === "RISK");
+    getRiskArtefacts()
+      .filter(risk => risk.taskId === taskId);
 
   return (
     <div
@@ -47,7 +47,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
           {risks.map(risk => (
             <div
-              key={risk.id}
+              key={risk.artefactId}
               style={{
                 borderBottom: "1px solid #ddd",
                 padding: "8px 0"
@@ -55,7 +55,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
             >
 
               <div style={{ fontWeight: "bold" }}>
-                {risk.title || `Risk ${risk.id}`}
+                {risk.title || risk.reference}
               </div>
 
               <div style={{ fontSize: "12px", opacity: 0.7 }}>
@@ -63,7 +63,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                <button onClick={() => openRiskEvent(risk.id)}>
+                <button onClick={() => openRiskEvent(createGovernanceEvent({ eventType: "RISK", taskId, initiatedBy: "PM" }).eventId)}>
                   Advisory
                 </button>
               </div>
@@ -75,7 +75,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
             <button
               onClick={() => {
                 const r = createRiskArtefact(null, taskId);
-                openRiskEvent(r.eventId);
+                refresh(x => x + 1);
               }}
             >
               New Risk
