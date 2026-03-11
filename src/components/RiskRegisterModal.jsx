@@ -2,7 +2,7 @@
 /*
 =====================================================================
 METRA — RiskRegisterModal.jsx
-Stage 374 — Risk Register Navigation Surface
+Stage 376 — Risk Register Entry Surface
 =====================================================================
 */
 
@@ -15,9 +15,45 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
   const [, refresh] = useState(0);
 
+  const [creating, setCreating] = useState(false);
+
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    probability: "",
+    impact: "",
+    owner: "",
+    mitigation: ""
+  });
+
   const risks =
     getRiskArtefacts()
       .filter(risk => risk.taskId === taskId);
+
+  function createEntry() {
+
+    const r = createRiskArtefact({
+      title: form.title,
+      description: form.description,
+      probability: form.probability,
+      impact: form.impact,
+      owner: form.owner,
+      mitigation: form.mitigation
+    }, taskId);
+
+    setCreating(false);
+
+    setForm({
+      title: "",
+      description: "",
+      probability: "",
+      impact: "",
+      owner: "",
+      mitigation: ""
+    });
+
+    refresh(x => x + 1);
+  }
 
   return (
     <div
@@ -38,6 +74,64 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
           <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
             Risk Register
           </div>
+
+          {creating && (
+
+            <div style={{ border: "1px solid #ddd", padding: "10px", marginBottom: "12px" }}>
+
+              <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+                New Risk
+              </div>
+
+              <input
+                placeholder="Title"
+                value={form.title}
+                onChange={e => setForm({ ...form, title: e.target.value })}
+                style={{ width: "100%", marginBottom: "6px" }}
+              />
+
+              <textarea
+                placeholder="Description"
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                style={{ width: "100%", marginBottom: "6px" }}
+              />
+
+              <input
+                placeholder="Probability"
+                value={form.probability}
+                onChange={e => setForm({ ...form, probability: e.target.value })}
+                style={{ width: "100%", marginBottom: "6px" }}
+              />
+
+              <input
+                placeholder="Impact"
+                value={form.impact}
+                onChange={e => setForm({ ...form, impact: e.target.value })}
+                style={{ width: "100%", marginBottom: "6px" }}
+              />
+
+              <input
+                placeholder="Owner"
+                value={form.owner}
+                onChange={e => setForm({ ...form, owner: e.target.value })}
+                style={{ width: "100%", marginBottom: "6px" }}
+              />
+
+              <textarea
+                placeholder="Mitigation"
+                value={form.mitigation}
+                onChange={e => setForm({ ...form, mitigation: e.target.value })}
+                style={{ width: "100%", marginBottom: "6px" }}
+              />
+
+              <button onClick={createEntry}>
+                Create Entry
+              </button>
+
+            </div>
+
+          )}
 
           {risks.length === 0 && (
             <div style={{ opacity: 0.6 }}>
@@ -72,12 +166,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
           ))}
 
           <div style={{ marginTop: "16px" }}>
-            <button
-              onClick={() => {
-                const r = createRiskArtefact(null, taskId);
-                refresh(x => x + 1);
-              }}
-            >
+            <button onClick={() => setCreating(true)}>
               New Risk
             </button>
           </div>
