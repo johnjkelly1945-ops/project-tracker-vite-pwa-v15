@@ -50,13 +50,14 @@ CREATE EVENT
 =====================================================================
 */
 
-export function createGovernanceEvent({ eventType, taskId, initiatedBy }) {
+export function createGovernanceEvent({ eventType, taskId, initiatedBy, artefactId = null }) {
   const eventId = generateEventId();
 
   const event = {
     eventId,
     eventType,
     taskId,
+    artefactId,
     status: "OPEN",
     escalated: false,
     initiatedAt: Date.now(),

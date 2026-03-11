@@ -2,13 +2,13 @@
 /*
 =====================================================================
 METRA — RiskRegisterModal.jsx
-Stage 376 — Risk Register Entry Surface
+Stage 378 — Risk Register Editing Surface
 =====================================================================
 */
 
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
-import { createRiskArtefact, getRiskArtefacts } from "../domain/governance/GovernanceStore";
+import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
 
 export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
@@ -16,6 +16,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
   const [, refresh] = useState(0);
 
   const [creating, setCreating] = useState(false);
+  const [editingRisk, setEditingRisk] = useState(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -30,18 +31,37 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
     getRiskArtefacts()
       .filter(risk => risk.taskId === taskId);
 
-  function createEntry() {
+  function saveEntry() {
 
-    const r = createRiskArtefact({
-      title: form.title,
-      description: form.description,
-      probability: form.probability,
-      impact: form.impact,
-      owner: form.owner,
-      mitigation: form.mitigation
-    }, taskId);
+    if (editingRisk) {
 
-    setCreating(false);
+      updateRiskArtefact(editingRisk.artefactId, {
+        title: form.title,
+        description: form.description,
+        probability: form.probability,
+        impact: form.impact,
+        owner: form.owner,
+        mitigation: form.mitigation
+      });
+
+      setEditingRisk(null);
+      setCreating(false);
+
+    } else {
+
+      const r = createRiskArtefact(null, taskId);
+
+      updateRiskArtefact(r.artefactId, {
+        title: form.title,
+        description: form.description,
+        probability: form.probability,
+        impact: form.impact,
+        owner: form.owner,
+        mitigation: form.mitigation
+      });
+
+      setCreating(false);
+    }
 
     setForm({
       title: "",
@@ -53,6 +73,21 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
     });
 
     refresh(x => x + 1);
+  }
+
+  function resetForm() {
+
+    setCreating(false);
+    setEditingRisk(null);
+
+    setForm({
+      title: "",
+      description: "",
+      probability: "",
+      impact: "",
+      owner: "",
+      mitigation: ""
+    });
   }
 
   return (
@@ -75,16 +110,12 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
             Risk Register
           </div>
 
-          {creating && (
+          {(creating || editingRisk) && (
 
             <div style={{ border: "1px solid #ddd", padding: "10px", marginBottom: "12px" }}>
 
-              <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-                New Risk
-              </div>
-
               <input
-                placeholder="Title"
+                placeholder="Risk title"
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
@@ -125,30 +156,60 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
-              <button onClick={createEntry}>
-                Create Entry
-              </button>
+              <div style={{ marginTop: "8px" }}>
 
-            </div>
+                <button onClick={saveEntry}>
+                  {editingRisk ? "Update Risk" : "Create Risk"}
+                </button>
 
-          )}
+                <button
+                  style={{ marginLeft: "8px" }}
+                  onClick={resetForm}
+                >
+                  Cancel
+                </button>
 
-          {risks.length === 0 && (
-            <div style={{ opacity: 0.6 }}>
-              No risks recorded for this task
+              </div>
+
             </div>
           )}
 
           {risks.map(risk => (
+
             <div
               key={risk.artefactId}
               style={{
                 borderBottom: "1px solid #ddd",
-                padding: "8px 0"
+                padding: "8px 0",
+                transition: "background 0.15s"
               }}
+              onMouseEnter={e => e.currentTarget.style.background = "#f5f8ff"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
 
-              <div style={{ fontWeight: "bold" }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  color: "#0b5ed7",
+                  textDecoration: "underline"
+                }}
+                onClick={() => {
+
+                  setEditingRisk(risk);
+                  setCreating(false);
+
+                  setForm({
+                    title: risk.title || "",
+                    description: risk.description || "",
+                    probability: risk.probability || "",
+                    impact: risk.impact || "",
+                    owner: risk.owner || "",
+                    mitigation: risk.mitigation || ""
+                  });
+
+                }}
+              >
                 {risk.title || risk.reference}
               </div>
 
@@ -157,12 +218,13 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                <button onClick={() => openRiskEvent(createGovernanceEvent({ eventType: "RISK", taskId, initiatedBy: "PM" }).eventId)}>
+                <button onClick={() => openRiskEvent(createGovernanceEvent({ eventType: "RISK", taskId, initiatedBy: "PM", artefactId: risk.artefactId }).eventId)}>
                   Advisory
                 </button>
               </div>
 
             </div>
+
           ))}
 
           <div style={{ marginTop: "16px" }}>

@@ -23,6 +23,7 @@ import {
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
 import { getGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getRiskArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
@@ -58,6 +59,8 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscal
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
+
+  const risk = event?.artefactId ? getRiskArtefactById(event.artefactId) : null;
 
 
 
@@ -166,7 +169,7 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscal
                   marginBottom: "10px",
                 }}
               >
-                RISK
+                {risk ? `${risk.reference} — ${risk.title}` : "RISK"}
               </div>
 
               <div>
