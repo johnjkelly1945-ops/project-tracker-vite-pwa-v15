@@ -98,3 +98,168 @@ export function getGovernanceArtefactsByType(type) {
   )
 }
 
+
+/*
+=====================================================================
+ISSUE ARTEFACT SUPPORT
+Stage 378 — Governance Artefact Generalisation
+=====================================================================
+*/
+
+export function createIssueArtefact(segmentId, taskId, createdBy = "system") {
+  const artefact = {
+    artefactId: crypto.randomUUID(),
+    artefactType: "Issue",
+
+    segmentId,
+    taskId,
+
+    reference: "ISSUE-" + String(artefactCounter).padStart(3, "0"),
+    title: "",
+    description: "",
+    owner: "",
+
+    status: "Open",
+    notes: "",
+
+    createdBy,
+    createdDate: new Date().toISOString(),
+    updatedDate: new Date().toISOString()
+  }
+
+  artefactCounter++
+
+  governanceArtefacts.push(artefact)
+
+  return artefact
+}
+
+export function updateIssueArtefact(artefactId, updates) {
+  const artefact = governanceArtefacts.find(a => a.artefactId === artefactId)
+
+  if (!artefact) return null
+
+  Object.assign(artefact, updates)
+
+  artefact.updatedDate = new Date().toISOString()
+
+  return artefact
+}
+
+export function getIssueArtefacts() {
+  return governanceArtefacts.filter(a => a.artefactType === "Issue")
+}
+
+export function getIssueArtefactById(id) {
+  return governanceArtefacts.find(a => a.artefactId === id)
+}
+
+/*
+=====================================================================
+QC ARTEFACT SUPPORT
+Stage 378 — Governance Artefact Generalisation
+=====================================================================
+*/
+
+export function createQCArtefact(segmentId, taskId, createdBy = "system") {
+  const artefact = {
+    artefactId: crypto.randomUUID(),
+    artefactType: "QC",
+
+    segmentId,
+    taskId,
+
+    reference: "QC-" + String(artefactCounter).padStart(3, "0"),
+    title: "",
+    description: "",
+    owner: "",
+
+    status: "Open",
+    notes: "",
+
+    createdBy,
+    createdDate: new Date().toISOString(),
+    updatedDate: new Date().toISOString()
+  }
+
+  artefactCounter++
+
+  governanceArtefacts.push(artefact)
+
+  return artefact
+}
+
+export function updateQCArtefact(artefactId, updates) {
+  const artefact = governanceArtefacts.find(a => a.artefactId === artefactId)
+
+  if (!artefact) return null
+
+  Object.assign(artefact, updates)
+
+  artefact.updatedDate = new Date().toISOString()
+
+  return artefact
+}
+
+export function getQCArtefacts() {
+  return governanceArtefacts.filter(a => a.artefactType === "QC")
+}
+
+export function getQCArtefactById(id) {
+  return governanceArtefacts.find(a => a.artefactId === id)
+}
+
+/*
+=====================================================================
+CHANGE CONTROL ARTEFACT SUPPORT
+Stage 378 — Governance Artefact Generalisation
+=====================================================================
+*/
+
+export function createChangeArtefact(segmentId, taskId, createdBy = "system") {
+  const artefact = {
+    artefactId: crypto.randomUUID(),
+    artefactType: "Change",
+
+    segmentId,
+    taskId,
+
+    reference: "CC-" + String(artefactCounter).padStart(3, "0"),
+    title: "",
+    description: "",
+    owner: "",
+
+    status: "Open",
+    notes: "",
+
+    createdBy,
+    createdDate: new Date().toISOString(),
+    updatedDate: new Date().toISOString()
+  }
+
+  artefactCounter++
+
+  governanceArtefacts.push(artefact)
+
+  return artefact
+}
+
+export function updateChangeArtefact(artefactId, updates) {
+  const artefact = governanceArtefacts.find(a => a.artefactId === artefactId)
+
+  if (!artefact) return null
+
+  Object.assign(artefact, updates)
+
+  artefact.updatedDate = new Date().toISOString()
+
+  return artefact
+}
+
+export function getChangeArtefacts() {
+  return governanceArtefacts.filter(a => a.artefactType === "Change")
+}
+
+export function getChangeArtefactById(id) {
+  return governanceArtefacts.find(a => a.artefactId === id)
+}
