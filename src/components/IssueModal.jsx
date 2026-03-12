@@ -2,7 +2,7 @@
 /*
 =====================================================================
 METRA — IssueModal.jsx
-Stage 333 — Issue Governance Surface (Parallel to Risk)
+Stage 331 — Issue Governance Surface (Parallel to Review)
 
 ---------------------------------------------------------------------
 • Advisory only
@@ -13,7 +13,7 @@ Stage 333 — Issue Governance Surface (Parallel to Risk)
 • Scroll containment preserved
 • Commit grammar mirrors TaskPopup
 • Escalate render-only (no wiring)
-• ZERO semantic delta relative to Risk
+• ZERO semantic delta relative to Review
 =====================================================================
 */
 
@@ -22,7 +22,8 @@ import {
   bridgeRecordParticipation,
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
-import { getGovernanceEvent } from "../governance/governanceStore";
+import { getGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getIssueArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
@@ -59,9 +60,17 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote, onEsca
     getGovernanceEvent(eventId)
   );
 
-  const isEscalated = event?.escalated === true;
+  const issue = event?.artefactId ? getIssueArtefactById(event.artefactId) : null;
 
+
+
+  /* ================= Task Issue Events ================= */
+
+  const taskIssues = getGovernanceEventsByTask(taskId)
+    .filter((e) => e.eventType === "ISSUE");
+  const isEscalated = event?.escalated === true;
   const participantIds = event?.participation
+
     ? [...new Set(event.participation.map((p) => p.reviewerId))]
     : [];
 
@@ -160,9 +169,19 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote, onEsca
                   marginBottom: "10px",
                 }}
               >
-                ISSUE
+                {issue ? `${issue.reference} — ${issue.title}` : "ISSUE"}
               </div>
-              <div><strong>Event ID:</strong> {" "} <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setDescriptionOpen(true)}>{event.eventId}</span></div>
+
+              <div>
+                <strong>Event ID:</strong>{" "}
+                <span
+                  style={{ cursor: "pointer", textDecoration: "underline" }}
+                  onClick={() => setDescriptionOpen(true)}
+                >
+                  {event.eventId}
+                </span>
+              </div>
+
               <div><strong>Task:</strong> {event.taskId}</div>
               <div><strong>Status:</strong> {event.status}</div>
               <div>
@@ -176,13 +195,18 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote, onEsca
 
           {descriptionOpen && (
             <TaskDescriptionModal
-              taskId={event.eventId}
+              taskId={taskId}
               entries={descriptionEntries}
-              onAddDescription={(id, text) => setDescriptionEntries(prev => [...prev, text])}
+              onAddDescription={(taskId, stamped) =>
+                setDescriptionEntries((prev) => [...prev, stamped])
+              }
               onClose={() => setDescriptionOpen(false)}
               currentUserRole="PM"
             />
-          )}          {/* ================= Stream Zone ================= */}
+          )}
+
+
+          {/* ================= Stream Zone ================= */}
 
           <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
             <strong>Advisory Notes</strong>
@@ -206,7 +230,7 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote, onEsca
               ))}
             </div>
 
-            {/* Inline transaction input */}
+            {/* Inline transaction input (TaskPopup grammar) */}
 
             <div
               style={{
@@ -238,28 +262,44 @@ export default function IssueModal({ taskId, eventId, onClose, onAddNote, onEsca
             </div>
           </div>
 
-          {/* ================= Footer ================= */}
+          {/* ================= Footer (Canonical Band) ================= */}
 
           <div
             style={{
-              borderTop: "1px solid rgba(0,0,0,0.1)",
+              borderTop: "1px solid rgba(11,58,102,0.25)",
+              background: "rgba(11,58,102,0.10)",
               padding: "12px",
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              flexDirection: "column",
+              gap: "10px",
             }}
           >
-            <button onClick={() => setParticipantModalOpen(true)}>
-              Confirm Participant
-            </button>
-
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div
+              style={{
+                textAlign: "center",
+                fontStyle: "italic",
+                color: "#333",
+              }}
+            >
               <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <button onClick={() => setParticipantModalOpen(true)}>
+                Confirm Participant
+              </button>
+
               <button onClick={onClose}>Close</button>
             </div>
           </div>
-        </div>
 
+        </div>
         {participantModalOpen && (
           <SubordinateSelectionModal
             title="Confirm Issue Participant"

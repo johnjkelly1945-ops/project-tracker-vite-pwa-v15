@@ -35,6 +35,7 @@ import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import RiskModal from "./RiskModal";
 import RiskRegisterModal from "./RiskRegisterModal";
+import IssueRegisterModal from "./IssueRegisterModal";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
@@ -104,6 +105,7 @@ export default function TaskPopup({
 
   /* ================= Stage 333 — Issue State ================= */
   const [issueModalOpen, setIssueModalOpen] = useState(false);
+  const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
   const [activeIssueEventId, setActiveIssueEventId] = useState(null);
   /* ================= End Stage 333 State ================= */
 
@@ -254,31 +256,8 @@ export default function TaskPopup({
 
   function handleInitiateIssue() {
     if (!isPM) return;
-
-    const existing = getGovernanceEventsByTask(task.id).find(
-      (e) => e.eventType === "issue" && e.status === "OPEN"
-    );
-
-    let event;
-
-    if (existing) {
-      event = existing;
-    } else {
-      event = bridgeTriggerGovernanceEvent({
-        eventType: "issue",
-        taskId: task.id,
-        initiatedBy: "PM",
-      });
-
-      const line = systemLine("Issue initiated by PM");
-      onAddNote(task.id, line);
-      setDisplayNotes((p) => [...p, line]);
-    }
-
-    setActiveIssueEventId(event.eventId);
-    setIssueModalOpen(true);
+    setIssueRegisterOpen(true);
   }
-
   function handleEscalateIssue() {
     if (!activeIssueEventId) return;
 
@@ -715,6 +694,16 @@ export default function TaskPopup({
             setRiskModalOpen(true);
           }}
         />
+      )}
+      {issueRegisterOpen && (
+        <IssueRegisterModal
+          taskId={task.id}
+          onClose={() => setIssueRegisterOpen(false)}
+          openIssueEvent={(eventId) => {
+            setActiveIssueEventId(eventId);
+            setIssueRegisterOpen(false);
+            setIssueModalOpen(true);
+          }}        />
       )}
       {riskModalOpen && (
         <RiskModal
