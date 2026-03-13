@@ -23,6 +23,7 @@ import {
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
 import { getGovernanceEvent } from "../governance/governanceStore";
+import { getQCArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
@@ -57,9 +58,10 @@ export default function QCModal({ taskId, eventId, onClose, onAddNote, onEscalat
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
-
-  const artefact = getQCArtefacts().find(a => a.artefactId === event?.artefactId);
   );
+
+  const artefact = event?.artefactId ? getQCArtefactById(event.artefactId) : null;
+
 
 
   const isEscalated = event?.escalated === true;
