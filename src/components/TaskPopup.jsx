@@ -36,6 +36,8 @@ import ReviewModal from "./ReviewModal";
 import RiskModal from "./RiskModal";
 import RiskRegisterModal from "./RiskRegisterModal";
 import IssueRegisterModal from "./IssueRegisterModal";
+import QCRegisterModal from "./QCRegisterModal";
+import CCRegisterModal from "./CCRegisterModal";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
@@ -111,6 +113,8 @@ export default function TaskPopup({
 
   /* ================= Stage 334 — QC State ================= */
   const [qcModalOpen, setQcModalOpen] = useState(false);
+  const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
+  const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
   const [activeQcEventId, setActiveQcEventId] = useState(null);
   /* ================= End Stage 334 State ================= */
 
@@ -302,29 +306,7 @@ export default function TaskPopup({
 
   function handleInitiateQC() {
     if (!isPM) return;
-
-    const existing = getGovernanceEventsByTask(task.id).find(
-      (e) => e.eventType === "qc" && e.status === "OPEN"
-    );
-
-    let event;
-
-    if (existing) {
-      event = existing;
-    } else {
-      event = bridgeTriggerGovernanceEvent({
-        eventType: "qc",
-        taskId: task.id,
-        initiatedBy: "PM",
-      });
-
-      const line = systemLine("QC initiated by PM");
-      onAddNote(task.id, line);
-      setDisplayNotes((p) => [...p, line]);
-    }
-
-    setActiveQcEventId(event.eventId);
-    setQcModalOpen(true);
+    setQcRegisterOpen(true);
   }
 
 
@@ -515,7 +497,7 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateCC : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
+            <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? () => setCcRegisterOpen(true) : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
@@ -705,15 +687,39 @@ export default function TaskPopup({
             setIssueModalOpen(true);
           }}        />
       )}
-      {riskModalOpen && (
-        <RiskModal
-          taskId={task.id}
-          eventId={activeRiskEventId}
-          onClose={() => setRiskModalOpen(false)}
-          onAddNote={onAddNote}
-          onEscalate={handleEscalateRisk}
-        />
-      )}
+
+        {qcRegisterOpen && (
+          <QCRegisterModal
+            taskId={task.id}
+            onClose={() => setQcRegisterOpen(false)}
+            openQCEvent={(eventId) => {
+              setActiveQcEventId(eventId);
+              setQcRegisterOpen(false);
+              setQcModalOpen(true);
+            }}
+          />
+        )}
+
+        {ccRegisterOpen && (
+          <CCRegisterModal
+            taskId={task.id}
+            onClose={() => setCcRegisterOpen(false)}
+            openCCEvent={(id) => {
+              setActiveCcEventId(id);
+              setCcModalOpen(true);
+            }}
+          />
+        )}
+
+        {riskModalOpen && (
+          <RiskModal
+            taskId={task.id}
+            eventId={activeRiskEventId}
+            onClose={() => setRiskModalOpen(false)}
+            onAddNote={onAddNote}
+            onEscalate={handleEscalateRisk}
+          />
+        )}
 
       {issueModalOpen && activeIssueEventId && (
         <IssueModal
