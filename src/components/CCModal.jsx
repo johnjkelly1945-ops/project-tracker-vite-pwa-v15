@@ -57,6 +57,8 @@ export default function CCModal({ taskId, eventId, onClose, onAddNote, onEscalat
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
+
+  const artefact = getChangeArtefacts().find(a => a.artefactId === event?.artefactId);
   );
 
 
@@ -160,7 +162,7 @@ export default function CCModal({ taskId, eventId, onClose, onAddNote, onEscalat
                   marginBottom: "10px",
                 }}
               >
-                CC
+                {artefact?.reference + (artefact?.title ? " — " + artefact.title : "")}
               </div>
               <div><strong>Event ID:</strong> {" "} <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setDescriptionOpen(true)}>{event.eventId}</span></div>
               <div><strong>Task:</strong> {event.taskId}</div>

@@ -210,7 +210,7 @@ export default function QCRegisterModal({ taskId, onClose, openQCEvent }) {
 
                 }}
               >
-                {qc.title || qc.reference}
+                {qc.reference + (qc.title ? " — " + qc.title : "")}
               </div>
 
               <div style={{ fontSize: "12px", opacity: 0.7 }}>

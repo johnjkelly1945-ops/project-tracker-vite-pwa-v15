@@ -210,7 +210,7 @@ export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
 
                 }}
               >
-                {cc.title || cc.reference}
+                {cc.reference + (cc.title ? " — " + cc.title : "")}
               </div>
 
               <div style={{ fontSize: "12px", opacity: 0.7 }}>

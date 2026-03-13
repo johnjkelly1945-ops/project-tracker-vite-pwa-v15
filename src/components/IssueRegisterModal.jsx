@@ -184,7 +184,7 @@ export default function IssueRegisterModal({ taskId, onClose, openIssueEvent }) 
 
                 }}
               >
-                {issue.title || issue.reference}
+                {issue.reference + (issue.title ? " — " + issue.title : "")}
               </div>
 
               <div style={{ fontSize: "12px", opacity: 0.7 }}>

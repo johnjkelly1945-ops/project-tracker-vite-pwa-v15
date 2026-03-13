@@ -210,7 +210,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
                 }}
               >
-                {risk.title || risk.reference}
+                {risk.reference + (risk.title ? " — " + risk.title : "")}
               </div>
 
               <div style={{ fontSize: "12px", opacity: 0.7 }}>

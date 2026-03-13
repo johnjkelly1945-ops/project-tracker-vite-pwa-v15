@@ -57,6 +57,8 @@ export default function QCModal({ taskId, eventId, onClose, onAddNote, onEscalat
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
+
+  const artefact = getQCArtefacts().find(a => a.artefactId === event?.artefactId);
   );
 
 
@@ -160,7 +162,7 @@ export default function QCModal({ taskId, eventId, onClose, onAddNote, onEscalat
                   marginBottom: "10px",
                 }}
               >
-                QC
+                {artefact?.reference + (artefact?.title ? " — " + artefact.title : "")}
               </div>
               <div><strong>Event ID:</strong> {" "} <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setDescriptionOpen(true)}>{event.eventId}</span></div>
               <div><strong>Task:</strong> {event.taskId}</div>
