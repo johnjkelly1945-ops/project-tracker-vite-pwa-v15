@@ -2,16 +2,16 @@
 /*
 =====================================================================
 METRA — EscalationModal.jsx
-Stage 388 — Escalation Surface Refinement
-
-Operational escalation only
-NOT governance escalation
-Append-only discussion with structured escalation metadata
+Stage 390 — Escalation Advisory Surface
+Operational escalation (not governance)
 =====================================================================
 */
 
 import { useState, useRef } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
+import SubordinateSelectionModal from "./SubordinateSelectionModal";
+import TaskDescriptionModal from "./TaskDescriptionModal";
+import { personnel } from "../data/personnel";
 
 function nowStamp() {
   const d = new Date();
@@ -29,37 +29,33 @@ function nowStamp() {
   );
 }
 
-export default function EscalationModal({ taskId, onClose, onAddNote }) {
+export default function EscalationModal({ taskId, escalation, onClose }) {
 
   const inlineRef = useRef(null);
 
-  const [entries, setEntries] = useState([]);
+  const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [draft, setDraft] = useState("");
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [descriptionEntries, setDescriptionEntries] = useState([]);
 
-  // Stage 388 metadata
-  const [type, setType] = useState("");
-  const [participants, setParticipants] = useState("");
-  const [outcome, setOutcome] = useState("");
+  const participantNames = escalation.participants
+    ? escalation.participants.split(",")
+    : [];
 
-  function handleCommit() {
+  function handleCommitInlineAdvisory() {
 
     const text = draft.trim();
     if (!text) return;
 
     const entry = {
       id: Date.now(),
-      text,
-      timestamp: nowStamp()
+      summary: text,
+      submittedAt: nowStamp()
     };
 
-    setEntries((p) => [...p, entry]);
+    if (!escalation.entries) escalation.entries = [];
 
-    if (onAddNote) {
-      onAddNote(
-        taskId,
-        `[System] Escalation note recorded — ${nowStamp()}`
-      );
-    }
+    escalation.entries.push(entry);
 
     setDraft("");
 
@@ -77,7 +73,7 @@ export default function EscalationModal({ taskId, onClose, onAddNote }) {
           zIndex: 3000,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
 
@@ -88,109 +84,136 @@ export default function EscalationModal({ taskId, onClose, onAddNote }) {
             height: "80vh",
             display: "flex",
             flexDirection: "column",
-            borderRadius: "6px"
+            borderRadius: "6px",
           }}
         >
+
+          {/* Identity Zone */}
 
           <div
             style={{
               borderBottom: "1px solid rgba(0,0,0,0.1)",
               padding: "15px 20px",
-              textAlign: "center",
-              fontSize: "13px"
+              fontSize: "13px",
             }}
           >
-            Escalation discussion — Task {taskId}
+
+            <div
+              style={{
+                textAlign: "center",
+                fontWeight: 700,
+                fontSize: "22px",
+                marginBottom: "10px",
+              }}
+            >
+              Escalation — {escalation.reference || "001"} — {escalation.title || "Untitled"}
+            </div>
+
+            <div>
+              <strong>ESC ID:</strong>{" "}
+              <span
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => setDescriptionOpen(true)}
+              >
+                {escalation.escalationId}
+              </span>
+            </div>
+
+            <div><strong>Task:</strong> {taskId}</div>
+
+            <div>
+              <strong>Participants:</strong>{" "}
+              {participantNames.length > 0
+                ? participantNames.join(", ")
+                : "None confirmed"}
+            </div>
+
           </div>
 
-          {/* Stage 388 — Escalation Metadata Panel */}
-
-          <div
-            style={{
-              borderBottom: "1px solid rgba(0,0,0,0.1)",
-              padding: "12px 20px",
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-              fontSize: "12px"
-            }}
-          >
-
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              style={{ padding: "6px" }}
-            >
-              <option value="">Type</option>
-              <option value="schedule">Schedule</option>
-              <option value="resource">Resource</option>
-              <option value="scope">Scope</option>
-              <option value="dependency">Dependency</option>
-              <option value="external">External</option>
-              <option value="delivery-risk">Delivery Risk</option>
-            </select>
-
-            <input
-              type="text"
-              value={participants}
-              onChange={(e) => setParticipants(e.target.value)}
-              placeholder="Participants"
-              style={{ padding: "6px", flex: 1 }}
+          {descriptionOpen && (
+            <TaskDescriptionModal
+              taskId={taskId}
+              entries={descriptionEntries}
+              onAddDescription={(taskId, stamped) =>
+                setDescriptionEntries((prev) => [...prev, stamped])
+              }
+              onClose={() => setDescriptionOpen(false)}
+              currentUserRole="PM"
             />
+          )}
 
-            <select
-              value={outcome}
-              onChange={(e) => setOutcome(e.target.value)}
-              style={{ padding: "6px" }}
-            >
-              <option value="">Outcome</option>
-              <option value="open">Open</option>
-              <option value="mitigated">Mitigated</option>
-              <option value="resolved">Resolved</option>
-              <option value="escalated">Escalated Operationally</option>
-            </select>
+          {/* Stream Zone */}
 
-          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
 
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "20px"
-            }}
-          >
+            <strong>Advisory Notes</strong>
 
-            {entries.map((e) => (
-              <div key={e.id} style={{ marginBottom: "12px" }}>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  {e.timestamp}
+            <div style={{ marginTop: "12px" }}>
+              {(escalation.entries || []).map((adv) => (
+                <div key={adv.id} style={{ marginBottom: "16px" }}>
+                  <span style={{ whiteSpace: "pre-wrap" }}>
+                    {adv.summary}
+                  </span>
+                  <span
+                    style={{
+                      marginLeft: "6px",
+                      fontSize: "12px",
+                      color: "#777",
+                    }}
+                  >
+                    — {adv.submittedAt}
+                  </span>
                 </div>
-                <div>{e.text}</div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                marginTop: "16px",
+                borderTop: "1px solid rgba(0,0,0,0.1)",
+                paddingTop: "12px",
+              }}
+            >
+
+              <textarea
+                ref={inlineRef}
+                rows={3}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  border: "none",
+                  outline: "none",
+                  fontSize: "14px",
+                }}
+                placeholder="Enter advisory..."
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+
+              <div style={{ textAlign: "right", marginTop: "6px" }}>
+                <button onClick={handleCommitInlineAdvisory}>
+                  Commit advisory
+                </button>
               </div>
-            ))}
+
+            </div>
 
           </div>
 
+          {/* Footer */}
+
           <div
             style={{
-              borderTop: "1px solid rgba(0,0,0,0.1)",
-              padding: "15px",
+              borderTop: "1px solid rgba(11,58,102,0.25)",
+              background: "rgba(11,58,102,0.10)",
+              padding: "12px",
               display: "flex",
-              gap: "10px"
+              justifyContent: "space-between",
             }}
           >
 
-            <input
-              ref={inlineRef}
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Record escalation note..."
-              style={{ flex: 1, padding: "8px" }}
-            />
-
-            <button onClick={handleCommit}>
-              Commit
+            <button onClick={() => setParticipantModalOpen(true)}>
+              Confirm Participant
             </button>
 
             <button onClick={onClose}>
@@ -200,6 +223,22 @@ export default function EscalationModal({ taskId, onClose, onAddNote }) {
           </div>
 
         </div>
+
+        {participantModalOpen && (
+          <SubordinateSelectionModal
+            title="Confirm Escalation Participant"
+            items={personnel}
+            onSelect={(person) => {
+              escalation.participants =
+                escalation.participants
+                  ? escalation.participants + "," + person.displayName
+                  : person.displayName;
+
+              setParticipantModalOpen(false);
+            }}
+            onClose={() => setParticipantModalOpen(false)}
+          />
+        )}
 
       </div>
 
