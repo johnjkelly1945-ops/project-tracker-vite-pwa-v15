@@ -2,11 +2,11 @@
 /*
 =====================================================================
 METRA — EscalationModal.jsx
-Stage 387 — Operational Escalation Surface (Design Preparation)
+Stage 388 — Escalation Surface Refinement
 
-NOT governance
-Advisory discussion only
-Append-only learning record
+Operational escalation only
+NOT governance escalation
+Append-only discussion with structured escalation metadata
 =====================================================================
 */
 
@@ -32,8 +32,14 @@ function nowStamp() {
 export default function EscalationModal({ taskId, onClose, onAddNote }) {
 
   const inlineRef = useRef(null);
+
   const [entries, setEntries] = useState([]);
   const [draft, setDraft] = useState("");
+
+  // Stage 388 metadata
+  const [type, setType] = useState("");
+  const [participants, setParticipants] = useState("");
+  const [outcome, setOutcome] = useState("");
 
   function handleCommit() {
 
@@ -95,6 +101,55 @@ export default function EscalationModal({ taskId, onClose, onAddNote }) {
             }}
           >
             Escalation discussion — Task {taskId}
+          </div>
+
+          {/* Stage 388 — Escalation Metadata Panel */}
+
+          <div
+            style={{
+              borderBottom: "1px solid rgba(0,0,0,0.1)",
+              padding: "12px 20px",
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              fontSize: "12px"
+            }}
+          >
+
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              style={{ padding: "6px" }}
+            >
+              <option value="">Type</option>
+              <option value="schedule">Schedule</option>
+              <option value="resource">Resource</option>
+              <option value="scope">Scope</option>
+              <option value="dependency">Dependency</option>
+              <option value="external">External</option>
+              <option value="delivery-risk">Delivery Risk</option>
+            </select>
+
+            <input
+              type="text"
+              value={participants}
+              onChange={(e) => setParticipants(e.target.value)}
+              placeholder="Participants"
+              style={{ padding: "6px", flex: 1 }}
+            />
+
+            <select
+              value={outcome}
+              onChange={(e) => setOutcome(e.target.value)}
+              style={{ padding: "6px" }}
+            >
+              <option value="">Outcome</option>
+              <option value="open">Open</option>
+              <option value="mitigated">Mitigated</option>
+              <option value="resolved">Resolved</option>
+              <option value="escalated">Escalated Operationally</option>
+            </select>
+
           </div>
 
           <div
