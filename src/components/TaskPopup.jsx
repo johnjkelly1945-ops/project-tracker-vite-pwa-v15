@@ -41,7 +41,7 @@ import CCRegisterModal from "./CCRegisterModal";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
-import EscalationModal from "./EscalationModal";
+import EscalationRegisterModal from "./EscalationRegisterModal";
 import {
   bridgeTriggerGovernanceEvent,
   bridgeEscalateGovernanceEvent,
@@ -121,7 +121,7 @@ export default function TaskPopup({
 
   /* ================= Stage 335 — CC State ================= */
   const [ccModalOpen, setCcModalOpen] = useState(false);
-  const [escalationModalOpen, setEscalationModalOpen] = useState(false);
+  const [escalationRegisterOpen, setEscalationRegisterOpen] = useState(false);
   const [activeCcEventId, setActiveCcEventId] = useState(null);
   /* ================= Stage 341 — Description State ================= */
   const [descriptionOpen, setDescriptionOpen] = useState(false);
@@ -504,7 +504,7 @@ export default function TaskPopup({
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
             {" | "}
-            <span style={{ cursor: "pointer" }} onClick={() => setEscalationModalOpen(true)}>Escalate</span>
+            <span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>
           </div>
 
           <div
@@ -755,10 +755,10 @@ export default function TaskPopup({
       )}
 
 
-      {escalationModalOpen && (
-        <EscalationModal
+      {escalationRegisterOpen && (
+        <EscalationRegisterModal
           taskId={task.id}
-          onClose={() => setEscalationModalOpen(false)}
+          onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
         />
       )}
