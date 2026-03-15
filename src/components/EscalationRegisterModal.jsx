@@ -2,7 +2,7 @@
 /*
 =====================================================================
 METRA — EscalationRegisterModal.jsx
-Stage 390 — Escalation Register Surface (Correct Creation Flow)
+Stage 391 — Escalation Register Identity Stabilisation
 =====================================================================
 
 Purpose
@@ -50,7 +50,10 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
     const escalation = {
       escalationId: crypto.randomUUID(),
       taskId,
+
       number: sequence,
+      reference: sequence,
+
       title: draftTitle.trim(),
       createdDate: new Date().toISOString(),
       status: "Open"
@@ -187,6 +190,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
 
       {activeEscalation && (
         <EscalationModal
+          taskId={taskId}
           escalation={activeEscalation}
           onClose={() => setActiveEscalationId(null)}
         />
