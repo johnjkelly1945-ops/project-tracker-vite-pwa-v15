@@ -37,6 +37,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
   const [draft, setDraft] = useState("");
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionEntries, setDescriptionEntries] = useState([]);
+  const [classification, setClassification] = useState("");
 
   const participantNames = escalation.participants
     ? escalation.participants.split(",")
@@ -174,6 +175,26 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
                 paddingTop: "12px",
               }}
             >
+
+
+              <div style={{ marginBottom: "6px" }}>
+                <strong>Classification</strong>
+              </div>
+
+              <select
+                value={classification || ""}
+                onChange={(e) => setClassification(e.target.value)}
+                style={{ marginBottom: "10px" }}
+              >
+                <option value="">None</option>
+                <option value="TECH">TECH</option>
+                <option value="SCHED">SCHED</option>
+                <option value="RES">RES</option>
+                <option value="COMM">COMM</option>
+                <option value="DES">DES</option>
+                <option value="COMP">COMP</option>
+                <option value="OTHER">OTHER</option>
+              </select>
 
               <textarea
                 ref={inlineRef}
