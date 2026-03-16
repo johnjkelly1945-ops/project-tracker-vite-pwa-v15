@@ -51,6 +51,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
     const entry = {
       id: Date.now(),
       summary: text,
+      classification: classification || null,
       submittedAt: nowStamp()
     };
 
