@@ -191,6 +191,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
       {activeEscalation && (
         <EscalationModal
           taskId={taskId}
+    taskTitle={taskTitle}
           escalation={activeEscalation}
           onClose={() => setActiveEscalationId(null)}
         />

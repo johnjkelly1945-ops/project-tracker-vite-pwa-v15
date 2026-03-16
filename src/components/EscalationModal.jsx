@@ -29,7 +29,7 @@ function nowStamp() {
   );
 }
 
-export default function EscalationModal({ taskId, escalation, onClose }) {
+export default function EscalationModal({ taskId, taskTitle, escalation, onClose }) {
 
   const inlineRef = useRef(null);
 
@@ -119,7 +119,7 @@ export default function EscalationModal({ taskId, escalation, onClose }) {
               </span>
             </div>
 
-            <div><strong>Task:</strong> {taskId}</div>
+            <div><strong>Task:</strong> {taskTitle || taskId}</div>
 
             <div>
               <strong>Participants:</strong>{" "}

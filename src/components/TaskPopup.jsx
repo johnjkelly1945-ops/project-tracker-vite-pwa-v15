@@ -432,6 +432,8 @@ export default function TaskPopup({
         {descriptionOpen && (
           <TaskDescriptionModal
             taskId={task.id}
+          taskTitle={task.title}
+    taskTitle={task.title}
             entries={task.descriptionEntries || []}
             onAddDescription={onAddDescription}
             onClose={() => setDescriptionOpen(false)}
