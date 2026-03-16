@@ -49,7 +49,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscalate }) {
+export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -182,7 +182,7 @@ export default function RiskModal({ taskId, eventId, onClose, onAddNote, onEscal
                 </span>
               </div>
 
-              <div><strong>Task:</strong> {event.taskId}</div>
+              <div><strong>Task:</strong> {taskTitle}</div>
               <div><strong>Status:</strong> {event.status}</div>
               <div>
                 <strong>Participants:</strong>{" "}

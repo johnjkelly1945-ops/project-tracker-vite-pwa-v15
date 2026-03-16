@@ -717,6 +717,7 @@ export default function TaskPopup({
 
         {riskModalOpen && (
           <RiskModal
+            taskTitle={task.title}
             taskId={task.id}
             eventId={activeRiskEventId}
             onClose={() => setRiskModalOpen(false)}
@@ -729,6 +730,7 @@ export default function TaskPopup({
         <IssueModal
           taskId={task.id}
           eventId={activeIssueEventId}
+          taskTitle={task.title}
           onClose={() => setIssueModalOpen(false)}
           onAddNote={onAddNote}
           onEscalate={handleEscalateIssue}
@@ -738,6 +740,7 @@ export default function TaskPopup({
       {qcModalOpen && activeQcEventId && (
         <QCModal
           taskId={task.id}
+          taskTitle={task.title}
           eventId={activeQcEventId}
           onClose={() => setQcModalOpen(false)}
           onAddNote={onAddNote}
@@ -749,6 +752,7 @@ export default function TaskPopup({
       {ccModalOpen && activeCcEventId && (
         <CCModal
           taskId={task.id}
+          taskTitle={task.title}
           eventId={activeCcEventId}
           onClose={() => setCcModalOpen(false)}
           onAddNote={onAddNote}
@@ -760,6 +764,7 @@ export default function TaskPopup({
       {escalationRegisterOpen && (
         <EscalationRegisterModal
           taskId={task.id}
+          taskTitle={task.title}
           onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
         />
