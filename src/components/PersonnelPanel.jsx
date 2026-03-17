@@ -68,7 +68,7 @@ export default function PersonnelPanel() {
         <ul style={{ marginTop: "12px" }}>
           {people.map((p, i) => (
             <li key={i} style={{ marginBottom: "8px" }}>
-              <strong>{p.name}</strong>
+              <strong>{p.displayName}</strong>
               {p.org && <div>{p.org}</div>}
               {p.email && <div>{p.email}</div>}
               {p.notes && <div style={{ opacity: 0.7 }}>{p.notes}</div>}
@@ -90,7 +90,7 @@ function AddPersonCard({ onSave, onCancel }) {
     if (!name.trim()) return;
 
     onSave({
-      name: name.trim(),
+      displayName: name.trim(),
       org: org.trim(),
       email: email.trim(),
       notes: notes.trim(),
