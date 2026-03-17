@@ -7,6 +7,7 @@ Stage 257 Addendum — Personnel Name Resolution (UI Only)
 Stage 257-C — Header Layout Canonical Correction (UI Only)
 Stage 325 — SEM-TS Identity Row Realisation (UI ONLY)
 Stage 341 — Description Title Activation (UI ONLY)
+Stage 398 — Dynamic Personnel Registry Resolution (UI ONLY)
 ---------------------------------------------------------------------
 Purpose:
 • Display single-line Transaction Surface identity row
@@ -19,6 +20,7 @@ Purpose:
 
 import React from "react";
 import { personnel } from "../data/personnel";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 export default function CanonicalTaskPopupHeader({
   task,
@@ -31,9 +33,15 @@ export default function CanonicalTaskPopupHeader({
 
   const assigneeId = task.assigneeId;
 
+  // Merge static + dynamic personnel
+  const staticList = Array.isArray(personnel) ? personnel : [];
+  const dynamicList = Array.isArray(getPersonnel()) ? getPersonnel() : [];
+
+  const combined = [...staticList, ...dynamicList];
+
   const assignee =
     assigneeId &&
-    personnel.find((p) => p.id === assigneeId);
+    combined.find((p) => p.id === assigneeId);
 
   const assigneeLabel = assignee
     ? assignee.displayName
