@@ -623,10 +623,6 @@ export default function App() {
 
   /* ===================== RENDER ===================== */
 
-  // Stage 399H — TaskSurface activation toggle (inactive)
-  const useTaskSurface = false;
-
-
   return (
     <>
       <ModuleHeader />
@@ -696,8 +692,7 @@ export default function App() {
           />
         )}
 
-
-        {activeTask && !useTaskSurface && (
+        {activeTask && (
           <TaskPopup
             hasMutationAuthority={hasMutationAuthority}
             workspaceMode={workspaceMode}
@@ -715,28 +710,6 @@ export default function App() {
             onArchiveTask={onArchiveTask}
           />
         )}
-
-        {activeTask && useTaskSurface && (
-          <TaskSurface>
-            <TaskPopup
-              hasMutationAuthority={hasMutationAuthority}
-              workspaceMode={workspaceMode}
-              onArchiveSegment={handleArchiveSegment}
-              task={activeTask}
-              summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
-              onClose={() => setActiveTaskId(null)}
-              onAddNote={onAddNote}
-              onAddDescription={onAddDescription}
-              onAssignTask={onAssignTask}
-              onStartExecution={onStartExecution}
-              onSubmitExecution={onSubmitExecution}
-              onCompleteExecution={onCompleteExecution}
-              onChangeTaskSummary={onChangeTaskSummary}
-              onArchiveTask={onArchiveTask}
-            />
-          </TaskSurface>
-        )}
-
       </div>
     </>
   );
