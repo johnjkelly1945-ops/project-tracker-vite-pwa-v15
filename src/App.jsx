@@ -710,6 +710,27 @@ export default function App() {
             onArchiveTask={onArchiveTask}
           />
         )}
+
+        {false && activeTask && (
+          <TaskSurface>
+            <TaskPopup
+              hasMutationAuthority={hasMutationAuthority}
+              workspaceMode={workspaceMode}
+              onArchiveSegment={handleArchiveSegment}
+              task={activeTask}
+              summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
+              onClose={() => setActiveTaskId(null)}
+              onAddNote={onAddNote}
+              onAddDescription={onAddDescription}
+              onAssignTask={onAssignTask}
+              onStartExecution={onStartExecution}
+              onSubmitExecution={onSubmitExecution}
+              onCompleteExecution={onCompleteExecution}
+              onChangeTaskSummary={onChangeTaskSummary}
+              onArchiveTask={onArchiveTask}
+            />
+          </TaskSurface>
+        )}
       </div>
     </>
   );
