@@ -4,14 +4,18 @@
 METRA — PersonnelRecordModal.jsx
 Stage 404 — Personnel Record Surface (Read-Only)
 Stage 405 — Stabilisation + Safe Registry Merge
+Stage 406A — Edit Mode Toggle (No Mutation)
 =====================================================================
 */
 
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 export default function PersonnelRecordModal({ person, onClose }) {
   if (!person) return null;
+
+  const [editing, setEditing] = useState(false);
 
   const registryPerson = getPersonnel().find(p => p.id === person?.id);
   const resolvedPerson = registryPerson
@@ -45,7 +49,13 @@ export default function PersonnelRecordModal({ person, onClose }) {
         </div>
 
         <div style={{ marginTop: "16px", textAlign: "right" }}>
-          <button onClick={onClose}>Close</button>
+          {!editing && (
+            <button onClick={() => setEditing(true)}>Edit</button>
+          )}
+          {editing && (
+            <button onClick={() => setEditing(false)}>Cancel</button>
+          )}
+          <button onClick={onClose} style={{ marginLeft: "8px" }}>Close</button>
         </div>
       </div>
     </div>,
