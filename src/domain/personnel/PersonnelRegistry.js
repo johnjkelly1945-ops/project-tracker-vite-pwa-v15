@@ -1,39 +1,53 @@
 /*
 =====================================================================
-METRA — PersonnelRegistry.js
+METRA — PersonnelRegistry (Stage 402)
 =====================================================================
 
 STAGE
 ---------------------------------------------------------------------
-Stage 255-C — Personnel Reference Pool (Read-Only)
+Stage 402 — Personnel Registry (Read-Only + Runtime Overlay)
 
 PURPOSE
 ---------------------------------------------------------------------
-Provide an in-memory, read-only reference pool for personnel records.
+Provide a read-only personnel data source with temporary runtime
+overlay to preserve UI behaviour.
 
 AUTHORITATIVE RULES
 ---------------------------------------------------------------------
-• PersonnelPanel is the sole writer
-• All consumers are read-only
+• Seed data is read-only
+• Runtime additions are in-memory only
 • No persistence
 • No authority logic
-• No mutation APIs exposed
+• No lifecycle interaction
+• No UI ownership
+
+This module is a passive identity provider with a temporary
+runtime overlay for behavioural continuity.
 
 =====================================================================
 */
 
-let personnel = [];
+import { personnel as seedPersonnel } from "../../data/personnel";
 
 /**
- * Authoritative write — INTERNAL USE ONLY (PersonnelPanel)
+ * Runtime overlay (in-memory only)
  */
-export function setPersonnel(next) {
-  personnel = Array.isArray(next) ? [...next] : [];
-}
+let runtimePersonnel = [];
 
 /**
  * Read-only access for consumers
  */
 export function getPersonnel() {
-  return [...personnel];
+  return [...seedPersonnel, ...runtimePersonnel];
 }
+
+/**
+ * Runtime mutation (non-persistent)
+ * Preserves existing behaviour without introducing authority
+ */
+export function setPersonnel(next) {
+  if (!Array.isArray(next)) return;
+
+  runtimePersonnel = [...next];
+}
+
