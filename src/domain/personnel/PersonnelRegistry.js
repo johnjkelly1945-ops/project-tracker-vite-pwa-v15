@@ -1,53 +1,38 @@
 /*
-=====================================================================
-METRA — PersonnelRegistry (Stage 402)
-=====================================================================
-
-STAGE
----------------------------------------------------------------------
-Stage 402 — Personnel Registry (Read-Only + Runtime Overlay)
-
-PURPOSE
----------------------------------------------------------------------
-Provide a read-only personnel data source with temporary runtime
-overlay to preserve UI behaviour.
-
-AUTHORITATIVE RULES
----------------------------------------------------------------------
-• Seed data is read-only
-• Runtime additions are in-memory only
-• No persistence
-• No authority logic
-• No lifecycle interaction
-• No UI ownership
-
-This module is a passive identity provider with a temporary
-runtime overlay for behavioural continuity.
-
-=====================================================================
+Stage 403 — Runtime overlay stabilisation (session-backed)
 */
 
 import { personnel as seedPersonnel } from "../../data/personnel";
 
-/**
- * Runtime overlay (in-memory only)
- */
-let runtimePersonnel = [];
+const STORAGE_KEY = "metra_personnel_runtime";
 
-/**
- * Read-only access for consumers
- */
+function loadRuntime() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRuntime(data) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+let runtimePersonnel = loadRuntime();
+
 export function getPersonnel() {
   return [...seedPersonnel, ...runtimePersonnel];
 }
 
-/**
- * Runtime mutation (non-persistent)
- * Preserves existing behaviour without introducing authority
- */
 export function setPersonnel(next) {
   if (!Array.isArray(next)) return;
 
-  runtimePersonnel = [...next];
-}
+  const seedIds = new Set(seedPersonnel.map(p => p.id));
 
+  runtimePersonnel = next.filter(p => !seedIds.has(p.id));
+
+  saveRuntime(runtimePersonnel);
+}
