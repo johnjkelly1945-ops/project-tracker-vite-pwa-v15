@@ -36,6 +36,14 @@ Design Authority:
 */
 
 export default function App() {
+
+  // STAGE 412 — ACTING USER (TEMPORARY CANONICAL ACTOR)
+  const actingUser = {
+    id: "user-1",
+    displayName: "Test PM",
+    role: "PM"
+  };
+
   const [workspaceMode, setWorkspaceMode] = useState("dual");
   const [focusedPane, setFocusedPane] = useState(null);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -698,6 +706,7 @@ export default function App() {
             workspaceMode={workspaceMode}
             onArchiveSegment={handleArchiveSegment}
             task={activeTask}
+            actingUser={actingUser}
             summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
             onClose={() => setActiveTaskId(null)}
             onAddNote={onAddNote}
