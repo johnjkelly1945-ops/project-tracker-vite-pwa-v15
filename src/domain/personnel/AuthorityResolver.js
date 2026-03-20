@@ -1,6 +1,7 @@
 // =====================================================================
 // METRA — AuthorityResolver
 // Stage 407 — Personnel Edit Authority
+// Stage 408 — Segment Admin Authority (Controlled Context Introduction)
 // =====================================================================
 
 export function canEditPersonnel(person) {
@@ -8,5 +9,9 @@ export function canEditPersonnel(person) {
 
   const role = person.role;
 
-  return role === "PM" || role === "Admin";
+  if (role === "PM") return true;
+
+  if (role === "Admin" && person.isSegmentAdmin === true) return true;
+
+  return false;
 }
