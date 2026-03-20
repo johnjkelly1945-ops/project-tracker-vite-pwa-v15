@@ -3,18 +3,14 @@
 =====================================================================
 METRA — SubordinateSelectionModal.jsx
 Stage 398 — Modal-contained Personnel Interaction (Extension)
----------------------------------------------------------------------
-EXTENSION ONLY:
-• Preserves selection behaviour
-• Adds modal-owned personnel card flow
-• Keeps existing seeded items visible
-• No regression to original functionality
+Stage 405B — Personnel Record Inspection (Additive View Control)
 =====================================================================
 */
 
 import React, { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import AddPersonCard from "./AddPersonCard";
+import PersonnelRecordModal from "./PersonnelRecordModal";
 import { getPersonnel, setPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 function normalizeItem(item, index) {
@@ -67,6 +63,7 @@ export default function SubordinateSelectionModal({
 }) {
   const [showAddPerson, setShowAddPerson] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [viewPerson, setViewPerson] = useState(null);
 
   function handleAddPerson(person) {
     const current = Array.isArray(getPersonnel()) ? getPersonnel() : [];
@@ -74,6 +71,10 @@ export default function SubordinateSelectionModal({
     setPersonnel(updated);
     setShowAddPerson(false);
     setRefreshTick((n) => n + 1);
+  }
+
+  function handleViewPerson(person) {
+    setViewPerson(person);
   }
 
   const visibleItems = useMemo(() => {
@@ -197,6 +198,16 @@ export default function SubordinateSelectionModal({
                       {[item.email, item.phone].filter(Boolean).join(" • ")}
                     </div>
                   )}
+
+                  <div
+                    style={{ fontSize: "12px", color: "#888", cursor: "pointer", marginTop: "4px" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewPerson(item);
+                    }}
+                  >
+                    View
+                  </div>
                 </div>
               ))}
 
@@ -209,6 +220,13 @@ export default function SubordinateSelectionModal({
           )}
         </div>
       </div>
+
+      {viewPerson && (
+        <PersonnelRecordModal
+          person={viewPerson}
+          onClose={() => setViewPerson(null)}
+        />
+      )}
     </div>,
     document.body
   );

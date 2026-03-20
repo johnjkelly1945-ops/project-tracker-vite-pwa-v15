@@ -3,9 +3,11 @@
 =====================================================================
 METRA — AddPersonCard.jsx
 Stage 398 — Personnel Card Capture Surface
+Stage 406B — Edit Mode Support (Initial Data Injection)
 ---------------------------------------------------------------------
 Purpose:
 • Capture structured personnel record
+• Support both create and edit flows
 • Modal-contained interaction
 • No external authority
 • Returns full person object via onSave
@@ -14,13 +16,13 @@ Purpose:
 
 import React, { useState } from "react";
 
-export default function AddPersonCard({ onSave, onCancel }) {
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [department, setDepartment] = useState("");
-  const [role, setRole] = useState("Assignee");
-  const [organisationType, setOrganisationType] = useState("internal");
+export default function AddPersonCard({ onSave, onCancel, initialData }) {
+  const [displayName, setDisplayName] = useState(initialData?.displayName || "");
+  const [email, setEmail] = useState(initialData?.email || "");
+  const [phone, setPhone] = useState(initialData?.phone || "");
+  const [department, setDepartment] = useState(initialData?.department || "");
+  const [role, setRole] = useState(initialData?.role || "Assignee");
+  const [organisationType, setOrganisationType] = useState(initialData?.organisationType || "internal");
 
   function handleSave() {
     if (!displayName.trim()) return;
@@ -31,7 +33,7 @@ export default function AddPersonCard({ onSave, onCancel }) {
     const safeDepartment = department.trim();
 
     const person = {
-      id: `person-${Date.now()}`,
+      id: initialData?.id || `person-${Date.now()}`,
       displayName: safeName,
       email: safeEmail,
       phone: safePhone,
@@ -46,7 +48,9 @@ export default function AddPersonCard({ onSave, onCancel }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      <div style={{ fontWeight: 600 }}>Add Person</div>
+      <div style={{ fontWeight: 600 }}>
+        {initialData ? "Edit Person" : "Add Person"}
+      </div>
 
       <input
         type="text"
