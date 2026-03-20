@@ -2,23 +2,42 @@
 /*
 =====================================================================
 METRA — AuthorityResolver.js
-Stage 409 — Context-Based Authority Structure (Non-Behavioural)
+Stage 410 — Actor + Action Introduction (Canon Alignment)
 =====================================================================
 
 Purpose
 ---------------------------------------------------------------------
-Extend authority resolver to accept structured input without changing
-existing behaviour.
+Introduce actor + action based authority evaluation.
 
 Rules
 ---------------------------------------------------------------------
-• No behavioural change
 • Backward compatible
 • No identity inference
+• No UI dependency
 • Context accepted but not used
 
 =====================================================================
 */
+
+// ACTION CONSTANTS (Stage 410 — single action only)
+const ACTIONS = {
+  EDIT_PERSONNEL: "EDIT_PERSONNEL"
+};
+
+// CORE AUTHORITY FUNCTION (NEW)
+export function canPerformAction({ actingUser, action, target, context }) {
+  if (!actingUser) return false;
+
+  const role = actingUser.role;
+
+  if (action === ACTIONS.EDIT_PERSONNEL) {
+    if (role === "PM") return true;
+    if (role === "Admin" && actingUser.isSegmentAdmin === true) return true;
+    return false;
+  }
+
+  return false;
+}
 
 // EXISTING LOGIC PRESERVED
 function legacyCanEditPersonnel(person) {
@@ -32,20 +51,26 @@ function legacyCanEditPersonnel(person) {
   return false;
 }
 
-// NEW WRAPPER (STAGE 409)
+// UPDATED WRAPPER (Stage 409 + 410)
 export function canEditPersonnel(input) {
   // LEGACY MODE (unchanged behaviour)
   if (!input || typeof input !== "object" || input.role) {
     return legacyCanEditPersonnel(input);
   }
 
-  // STRUCTURED MODE (Stage 409)
   const { actingUser, targetPerson, context } = input;
 
-  // IMPORTANT:
-  // • actingUser not yet enforced
-  // • context not yet used
-  // • behaviour must remain identical to Stage 408
+  // Fallback if no acting user (non-regression)
+  if (!actingUser) {
+    return legacyCanEditPersonnel(targetPerson);
+  }
 
-  return legacyCanEditPersonnel(targetPerson);
+  // NEW PATH (Stage 410)
+  return canPerformAction({
+    actingUser,
+    action: ACTIONS.EDIT_PERSONNEL,
+    target: targetPerson,
+    context
+  });
 }
+
