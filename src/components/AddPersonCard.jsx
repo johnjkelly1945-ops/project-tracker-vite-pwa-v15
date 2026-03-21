@@ -21,6 +21,7 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
   const [email, setEmail] = useState(initialData?.email || "");
   const [phone, setPhone] = useState(initialData?.phone || "");
   const [department, setDepartment] = useState(initialData?.department || "");
+  const [organisation, setOrganisation] = useState(initialData?.organisation || "");
   const [role, setRole] = useState(initialData?.role || "Assignee");
   const [organisationType, setOrganisationType] = useState(initialData?.organisationType || "internal");
 
@@ -30,12 +31,14 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
     const safeName = displayName.trim();
     const safeEmail = email.trim();
     const safePhone = phone.trim();
+    const safeOrganisation = organisation.trim();
     const safeDepartment = department.trim();
 
     const person = {
       id: initialData?.id || `person-${Date.now()}`,
       displayName: safeName,
       email: safeEmail,
+      organisation: safeOrganisation,
       phone: safePhone,
       department: safeDepartment,
       role,
@@ -100,6 +103,17 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
         }}
       />
 
+      <input
+        type="text"
+        placeholder="Organisation"
+        value={organisation}
+        onChange={(e) => setOrganisation(e.target.value)}
+        style={{
+          padding: "8px",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+        }}
+      />
       <select
         value={organisationType}
         onChange={(e) => setOrganisationType(e.target.value)}

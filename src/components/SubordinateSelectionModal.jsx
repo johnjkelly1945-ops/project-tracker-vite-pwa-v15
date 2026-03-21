@@ -179,6 +179,7 @@ export default function SubordinateSelectionModal({
                     padding: "8px 10px",
                     borderBottom: "1px solid #eee",
                     cursor: "pointer",
+                    position: "relative",
                   }}
                 >
                   <div style={{ fontWeight: 500 }}>
@@ -200,7 +201,14 @@ export default function SubordinateSelectionModal({
                   )}
 
                   <div
-                    style={{ fontSize: "12px", color: "#888", cursor: "pointer", marginTop: "4px" }}
+                    style={{
+                      fontSize: "12px",
+                      color: "#888",
+                      cursor: "pointer",
+                      position: "absolute",
+                      right: 0,
+                      top: 8
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleViewPerson(item);

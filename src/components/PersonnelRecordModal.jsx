@@ -62,6 +62,7 @@ export default function PersonnelRecordModal({ person, onClose }) {
             <div><strong>Name:</strong> {resolvedPerson.displayName}</div>
             {resolvedPerson.role && <div><strong>Role:</strong> {resolvedPerson.role}</div>}
             {resolvedPerson.department && <div><strong>Department:</strong> {resolvedPerson.department}</div>}
+            {resolvedPerson.organisation && <div><strong>Organisation:</strong> {resolvedPerson.organisation}</div>}
             {resolvedPerson.email && <div><strong>Email:</strong> {resolvedPerson.email}</div>}
             {resolvedPerson.phone && <div><strong>Phone:</strong> {resolvedPerson.phone}</div>}
           </div>
