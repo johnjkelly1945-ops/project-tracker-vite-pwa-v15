@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useEffect, useRef, useState } from "react";
+import { setActingUser } from "./domain/actor/ActingUser";
 import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
 import Sidebar from "./components/Sidebar";
@@ -43,6 +44,11 @@ export default function App() {
     displayName: "Test PM",
     role: "PM"
   };
+
+  // STAGE 413 — REGISTER ACTOR (CANONICAL)
+  useEffect(() => {
+    setActingUser(actingUser);
+  }, []);
 
   const [workspaceMode, setWorkspaceMode] = useState("dual");
   const [focusedPane, setFocusedPane] = useState(null);
