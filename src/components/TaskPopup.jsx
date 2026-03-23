@@ -28,6 +28,7 @@ Stage 325B — Inline Commit Surface Realisation (UI ONLY)
 */
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { attemptAction } from "../domain/authority/ActionExecutor.js";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
@@ -350,8 +351,25 @@ export default function TaskPopup({
 
     const actor = `[${currentUserRole}]`;
     const stamped = `${actor} ${text} — ${nowStamp()}`;
+    const actorObj = { role: currentUserRole };
 
-    onAddNote(task.id, stamped);
+    const target = {
+      id: task.id,
+      surface: "TASK",
+      segmentId: task.segmentId
+    };
+
+    const context = {
+      segmentId: task.segmentId
+    };
+
+    attemptAction({
+      actor: actorObj,
+      action: "ADD_TASK_NOTE",
+      target,
+      context,
+      execute: () => onAddNote(task.id, stamped)
+    });
     setDisplayNotes((p) => [...p, stamped]);
     setInlineDraftText("");
 
