@@ -186,14 +186,13 @@ export default function SubordinateSelectionModal({
                     {item.displayName || item.title || String(item)}
                   </div>
 
-                  {(item.role || item.department || item.organisationType) && (
+                  {(item.department || item.organisationType) && (
                     <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                      {[item.role, item.department, item.organisationType]
+                      {[item.department, item.organisationType]
                         .filter(Boolean)
                         .join(" • ")}
                     </div>
                   )}
-
                   {(item.email || item.phone) && (
                     <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
                       {[item.email, item.phone].filter(Boolean).join(" • ")}

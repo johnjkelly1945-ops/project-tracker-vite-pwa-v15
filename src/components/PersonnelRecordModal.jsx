@@ -21,7 +21,14 @@ export default function PersonnelRecordModal({ person, onClose }) {
 
   const [editing, setEditing] = useState(false);
 
-  const registryPerson = getPersonnel().find(p => p.id === person?.id);
+  const registry = Array.isArray(getPersonnel()) ? getPersonnel() : [];
+
+  const registryPerson = registry.find(p =>
+    p.id === person?.id ||
+    (p.displayName && p.displayName === person?.displayName) ||
+    (p.email && p.email === person?.email)
+  );
+
   const resolvedPerson = registryPerson
     ? { ...person, ...registryPerson }
     : person;
