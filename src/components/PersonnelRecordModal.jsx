@@ -14,7 +14,6 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import AddPersonCard from "./AddPersonCard";
 import { getPersonnel, setPersonnel } from "../domain/personnel/PersonnelRegistry";
-import { canEditPersonnel } from "../domain/personnel/AuthorityResolver";
 
 export default function PersonnelRecordModal({ person, onClose }) {
   if (!person) return null;
@@ -44,8 +43,6 @@ export default function PersonnelRecordModal({ person, onClose }) {
     setEditing(false);
   }
 
-  const canEdit = canEditPersonnel(resolvedPerson);
-
   return createPortal(
     <div style={{
       position: "fixed",
@@ -67,7 +64,6 @@ export default function PersonnelRecordModal({ person, onClose }) {
         {!editing && (
           <div style={{ marginTop: "10px" }}>
             <div><strong>Name:</strong> {resolvedPerson.displayName}</div>
-            {resolvedPerson.role && <div><strong>Role:</strong> {resolvedPerson.role}</div>}
             {resolvedPerson.department && <div><strong>Department:</strong> {resolvedPerson.department}</div>}
             {resolvedPerson.organisation && <div><strong>Organisation:</strong> {resolvedPerson.organisation}</div>}
             {resolvedPerson.email && <div><strong>Email:</strong> {resolvedPerson.email}</div>}
@@ -86,7 +82,7 @@ export default function PersonnelRecordModal({ person, onClose }) {
         )}
 
         <div style={{ marginTop: "16px", textAlign: "right" }}>
-          {!editing && canEdit && (
+          {!editing && (
             <button onClick={() => setEditing(true)}>Edit</button>
           )}
           {editing && (

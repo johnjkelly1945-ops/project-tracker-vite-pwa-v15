@@ -193,6 +193,7 @@ export default function SubordinateSelectionModal({
                         .join(" • ")}
                     </div>
                   )}
+
                   {(item.email || item.phone) && (
                     <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
                       {[item.email, item.phone].filter(Boolean).join(" • ")}

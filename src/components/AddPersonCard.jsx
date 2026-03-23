@@ -22,7 +22,6 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
   const [phone, setPhone] = useState(initialData?.phone || "");
   const [department, setDepartment] = useState(initialData?.department || "");
   const [organisation, setOrganisation] = useState(initialData?.organisation || "");
-  const [role, setRole] = useState(initialData?.role || "Assignee");
   const [organisationType, setOrganisationType] = useState(initialData?.organisationType || "internal");
 
   function handleSave() {
@@ -41,7 +40,6 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
       organisation: safeOrganisation,
       phone: safePhone,
       department: safeDepartment,
-      role,
       organisationType,
       title: safeName,
     };
@@ -125,21 +123,6 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
       >
         <option value="internal">Internal</option>
         <option value="external">External</option>
-      </select>
-
-      <select
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
-        style={{
-          padding: "8px",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-        }}
-      >
-        <option value="PM">PM</option>
-        <option value="Assignee">Assignee</option>
-        <option value="Advisor">Advisor</option>
-        <option value="Admin">Admin</option>
       </select>
 
       <div style={{ display: "flex", gap: "8px" }}>
