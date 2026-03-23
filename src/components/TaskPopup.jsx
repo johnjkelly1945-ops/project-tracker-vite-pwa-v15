@@ -48,6 +48,7 @@ import {
   bridgeEscalateGovernanceEvent,
 } from "../governance/governanceBridge";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 /* ===================== Time helpers ===================== */
 
@@ -96,6 +97,7 @@ export default function TaskPopup({
   const isReadOnly = readOnly === true;
 
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
+
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
@@ -189,6 +191,19 @@ export default function TaskPopup({
   const isAssignee = localAssigneeId === "current-user";
   const isPM = currentUserRole === "PM";
   const isPMProxy = isPM && isAssigned && !isAssignee;
+
+  // STAGE 420 — SURFACE SELECTION (CANONICAL)
+
+  const isOperational = isPM || isAssignee;
+
+  if (!isOperational) {
+    return (
+      <div style={{ padding: "20px" }}>
+        Advisory View (placeholder)
+      </div>
+    );
+  }
+
 
   const showStart = executionState === "NOT_STARTED" && (isAssignee || isPMProxy);
   const showSubmit = executionState === "IN_PROGRESS" && (isAssignee || isPMProxy);

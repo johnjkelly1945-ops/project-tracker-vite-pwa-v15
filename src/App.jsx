@@ -42,7 +42,7 @@ export default function App() {
   const actingUser = {
     id: "user-1",
     displayName: "Test PM",
-    role: "PM"
+    role: "ADVISOR"
   };
 
   // STAGE 413 — REGISTER ACTOR (CANONICAL)
