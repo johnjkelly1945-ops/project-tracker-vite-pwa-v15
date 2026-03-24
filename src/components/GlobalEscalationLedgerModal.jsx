@@ -6,6 +6,7 @@ Stage 423 — Phase 2 Global Ledger Shell
 =====================================================================
 */
 
+import { getAllEscalations } from "../domain/escalation/EscalationStore";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 
 export default function GlobalEscalationLedgerModal({ onClose }) {
@@ -37,11 +38,42 @@ export default function GlobalEscalationLedgerModal({ onClose }) {
             Global Escalation Ledger
           </div>
 
-          {/* Placeholder */}
 
-          <div style={{ fontSize: "13px", opacity: 0.7 }}>
-            (Global escalation ledger — data binding in next phase)
-          </div>
+          {/* Global Ledger List */}
+
+          {(() => {
+            const escalations = getAllEscalations();
+
+            if (escalations.length === 0) {
+              return (
+                <div style={{ fontSize: "13px", opacity: 0.7 }}>
+                  No escalations recorded.
+                </div>
+              );
+            }
+
+            return escalations.map((e) => (
+              <div
+                key={`${e.taskId}-${e.reference}`}
+                style={{
+                  borderBottom: "1px solid #ddd",
+                  padding: "8px 0"
+                }}
+              >
+                <div style={{ fontWeight: "bold", color: "#0b5ed7" }}>
+                  ESC-{String(e.reference).padStart(3, "0")} — {e.title}
+                </div>
+
+                <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                  Task: {e.taskId}
+                </div>
+
+                <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                  Advisory count: {e.advisoryRecords.length}
+                </div>
+              </div>
+            ));
+          })()}
 
           {/* Footer */}
 
