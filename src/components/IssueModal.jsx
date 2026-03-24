@@ -165,26 +165,16 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 style={{
                   textAlign: "center",
                   fontWeight: 700,
-                  fontSize: "22px",
+                  fontSize: "18px",
                   letterSpacing: "0.5px",
                   marginBottom: "10px",
                 }}
               >
-                {issue ? `${issue.reference} — ${issue.title}` : "ISSUE"}
-              </div>
-
-              <div>
-                <strong>Event ID:</strong>{" "}
-                <span
-                  style={{ cursor: "pointer", textDecoration: "underline" }}
-                  onClick={() => setDescriptionOpen(true)}
-                >
-                  {event.eventId}
-                </span>
+                Issue — {issue?.reference} — {issue?.title || "Untitled"}
               </div>
 
               <div><strong>Task:</strong> {taskTitle}</div>
-              <div><strong>Status:</strong> {event.status}</div>
+
               <div>
                 <strong>Participants:</strong>{" "}
                 {participantNames.length > 0
@@ -193,7 +183,6 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
               </div>
             </div>
           )}
-
           {descriptionOpen && (
             <TaskDescriptionModal
               taskId={taskId}

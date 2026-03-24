@@ -165,26 +165,16 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                 style={{
                   textAlign: "center",
                   fontWeight: 700,
-                  fontSize: "22px",
+                  fontSize: "18px",
                   letterSpacing: "0.5px",
                   marginBottom: "10px",
                 }}
               >
-                {risk ? `${risk.reference} — ${risk.title}` : "RISK"}
-              </div>
-
-              <div>
-                <strong>Event ID:</strong>{" "}
-                <span
-                  style={{ cursor: "pointer", textDecoration: "underline" }}
-                  onClick={() => setDescriptionOpen(true)}
-                >
-                  {event.eventId}
-                </span>
+                Risk — {risk?.reference} — {risk?.title || "Untitled"}
               </div>
 
               <div><strong>Task:</strong> {taskTitle}</div>
-              <div><strong>Status:</strong> {event.status}</div>
+
               <div>
                 <strong>Participants:</strong>{" "}
                 {participantNames.length > 0
@@ -193,7 +183,6 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
               </div>
             </div>
           )}
-
           {descriptionOpen && (
             <TaskDescriptionModal
               taskId={taskId}

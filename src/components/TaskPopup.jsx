@@ -698,6 +698,7 @@ export default function TaskPopup({
           onAddNote={onAddNote}
           taskId={task.id}
           eventId={activeReviewEventId}
+          taskTitle={task.title}
           onClose={() => setReviewModalOpen(false)}
         />
       )}

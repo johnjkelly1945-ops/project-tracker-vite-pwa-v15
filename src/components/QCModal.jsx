@@ -160,16 +160,16 @@ export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 style={{
                   textAlign: "center",
                   fontWeight: 700,
-                  fontSize: "22px",
+                  fontSize: "18px",
                   letterSpacing: "0.5px",
                   marginBottom: "10px",
                 }}
               >
-                {artefact?.reference + (artefact?.title ? " — " + artefact.title : "")}
+                QC — {artefact?.reference} — {artefact?.title || "Untitled"}
               </div>
-              <div><strong>Event ID:</strong> {" "} <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setDescriptionOpen(true)}>{event.eventId}</span></div>
+
               <div><strong>Task:</strong> {taskTitle}</div>
-              <div><strong>Status:</strong> {event.status}</div>
+
               <div>
                 <strong>Participants:</strong>{" "}
                 {participantNames.length > 0
@@ -178,7 +178,6 @@ export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote
               </div>
             </div>
           )}
-
           {descriptionOpen && (
             <TaskDescriptionModal
               taskId={event.eventId}

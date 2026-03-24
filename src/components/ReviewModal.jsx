@@ -48,7 +48,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
+export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAddNote }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -151,16 +151,16 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
                 style={{
                   textAlign: "center",
                   fontWeight: 700,
-                  fontSize: "22px",
+                  fontSize: "18px",
                   letterSpacing: "0.5px",
                   marginBottom: "10px",
                 }}
               >
-                REVIEW
+                Review
               </div>
-              <div><strong>Event ID:</strong> {event.eventId}</div>
-              <div><strong>Task:</strong> {event.taskId}</div>
-              <div><strong>Status:</strong> {event.status}</div>
+
+              <div><strong>Task:</strong> {taskTitle}</div>
+
               <div>
                 <strong>Participants:</strong>{" "}
                 {participantNames.length > 0
