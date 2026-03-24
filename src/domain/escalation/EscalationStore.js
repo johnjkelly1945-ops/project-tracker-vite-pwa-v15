@@ -122,6 +122,36 @@ export function appendEscalationAdvisory({
   return advisory;
 }
 
+
+/*
+---------------------------------------------------------------------
+STAGE 423 — Global Aggregation (Canonical)
+---------------------------------------------------------------------
+Purpose:
+Provide cross-task escalation visibility.
+
+Rules:
+• Pure read-only aggregation
+• No mutation
+• No re-sequencing
+• No transformation
+---------------------------------------------------------------------
+*/
+export function getAllEscalations() {
+  const result = [];
+
+  Object.values(escalationsByTask).forEach((taskEscalations) => {
+    if (Array.isArray(taskEscalations)) {
+      taskEscalations.forEach((esc) => {
+        result.push(esc);
+      });
+    }
+  });
+
+  return result;
+}
+
+
 // ------------------------------------------------------------------
 // DEBUG (NON-CANONICAL — DO NOT USE IN UI)
 // ------------------------------------------------------------------
