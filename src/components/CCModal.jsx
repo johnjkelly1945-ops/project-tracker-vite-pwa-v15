@@ -28,6 +28,7 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 /* ===================== Time Helper ===================== */
 
@@ -70,7 +71,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
     : [];
 
   const participantNames = participantIds
-    .map((id) => personnel.find((p) => p.id === id)?.displayName)
+    .map((id) => getPersonnel().find((p) => p.id === id)?.displayName)
     .filter(Boolean);
 
   /* ================= Participation ================= */
@@ -283,7 +284,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
         {participantModalOpen && (
           <SubordinateSelectionModal
             title="Confirm CC Participant"
-            items={personnel}
+            items={[]}
             onSelect={confirmParticipant}
             onClose={() => setParticipantModalOpen(false)}
           />

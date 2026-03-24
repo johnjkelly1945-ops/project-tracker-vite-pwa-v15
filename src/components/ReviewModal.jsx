@@ -26,6 +26,7 @@ import { getGovernanceEvent } from "../governance/governanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { personnel } from "../data/personnel";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 /* ===================== Time Helper ===================== */
 
@@ -61,7 +62,7 @@ export default function ReviewModal({ taskId, eventId, onClose, onAddNote }) {
     : [];
 
   const participantNames = participantIds
-    .map((id) => personnel.find((p) => p.id === id)?.displayName)
+    .map((id) => getPersonnel().find((p) => p.id === id)?.displayName)
     .filter(Boolean);
 
   /* ================= Participation ================= */

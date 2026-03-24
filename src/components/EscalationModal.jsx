@@ -249,7 +249,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
         {participantModalOpen && (
           <SubordinateSelectionModal
             title="Confirm Escalation Participant"
-            items={personnel}
+            items={[]}
             onSelect={(person) => {
               escalation.participants =
                 escalation.participants
