@@ -9,6 +9,7 @@ Stage 421 — Escalation Register Canonical Store Integration
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
+import EscalationLedgerModal from "./EscalationLedgerModal";
 import {
   createEscalation,
   getEscalationsByTask,
@@ -23,6 +24,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
   const [draftTitle, setDraftTitle] = useState("");
 
   const [activeReference, setActiveReference] = useState(null);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
 
   const taskEscalations = getEscalationsByTask(taskId);
 
@@ -108,6 +110,12 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
                 </button>
               </div>
 
+              <div style={{ marginTop: "8px" }}>
+                <button onClick={() => setLedgerOpen(true)}>
+                  Ledger
+                </button>
+              </div>
+
             </>
           )}
 
@@ -169,6 +177,14 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
           taskTitle={taskTitle}
           escalation={activeEscalation}
           onClose={() => setActiveReference(null)}
+        />
+      )}
+
+      {ledgerOpen && (
+        <EscalationLedgerModal
+          taskId={taskId}
+          taskTitle={taskTitle}
+          onClose={() => setLedgerOpen(false)}
         />
       )}
 
