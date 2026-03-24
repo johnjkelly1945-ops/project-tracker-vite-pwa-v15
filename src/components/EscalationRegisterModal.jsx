@@ -4,25 +4,12 @@
 METRA — EscalationRegisterModal.jsx
 Stage 391 — Escalation Register Identity Stabilisation
 =====================================================================
-
-Purpose
-Operational escalation register for a task.
-
-Rules
-
-• Operational escalation only
-• Not a governance artefact
-• Escalation number assigned only at creation
-• Title captured before creation
-• Title becomes immutable after creation
-• Advisory discussion opened from register
-
-=====================================================================
 */
 
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
+import { createEscalation } from "../domain/escalation/EscalationStore";
 
 /*
 Temporary in-memory escalation store
@@ -45,21 +32,22 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
 
     if (!draftTitle.trim()) return;
 
-    const sequence = taskEscalations.length + 1;
+    const escalation = createEscalation({
+      taskId,
+      title: draftTitle.trim(),
+      classification: null
+    });
 
-    const escalation = {
+    // TEMPORARY MIRROR (Phase 3 only)
+    escalations.push({
       escalationId: crypto.randomUUID(),
       taskId,
-
-      number: sequence,
-      reference: sequence,
-
-      title: draftTitle.trim(),
-      createdDate: new Date().toISOString(),
+      number: parseInt(escalation.reference, 10),
+      reference: escalation.reference,
+      title: escalation.title,
+      createdDate: escalation.createdAt,
       status: "Open"
-    };
-
-    escalations.push(escalation);
+    });
 
     setDraftTitle("");
     setCreateMode(false);
@@ -191,7 +179,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
       {activeEscalation && (
         <EscalationModal
           taskId={taskId}
-    taskTitle={taskTitle}
+          taskTitle={taskTitle}
           escalation={activeEscalation}
           onClose={() => setActiveEscalationId(null)}
         />
