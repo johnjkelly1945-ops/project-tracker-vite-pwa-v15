@@ -12,6 +12,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
+import { appendEscalationAdvisory } from "../domain/escalation/EscalationStore";
 
 function nowStamp() {
   const d = new Date();
@@ -48,16 +49,13 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
     const text = draft.trim();
     if (!text) return;
 
-    const entry = {
-      id: Date.now(),
+    appendEscalationAdvisory({
+      taskId,
+      reference: escalation.reference,
       summary: text,
       classification: classification || null,
-      submittedAt: nowStamp()
-    };
-
-    if (!escalation.entries) escalation.entries = [];
-
-    escalation.entries.push(entry);
+      actor: "USER"
+    });
 
     setDraft("");
 
@@ -151,8 +149,8 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
             <strong>Advisory Notes</strong>
 
             <div style={{ marginTop: "12px" }}>
-              {(escalation.entries || []).map((adv) => (
-                <div key={adv.id} style={{ marginBottom: "16px" }}>
+              {(escalation.advisoryRecords || []).map((adv) => (
+                <div key={adv.advisoryId} style={{ marginBottom: "16px" }}>
                   <span style={{ whiteSpace: "pre-wrap" }}>
                     {adv.summary}
                   </span>
