@@ -2,19 +2,18 @@
 /*
 =====================================================================
 METRA — EscalationRegisterModal.jsx
-Stage 391 — Escalation Register Identity Stabilisation
+Stage 421 — Escalation Register Canonical Store Integration
 =====================================================================
 */
 
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
-import { createEscalation } from "../domain/escalation/EscalationStore";
-
-/*
-Temporary in-memory escalation store
-*/
-const escalations = [];
+import {
+  createEscalation,
+  getEscalationsByTask,
+  getEscalation
+} from "../domain/escalation/EscalationStore";
 
 export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) {
 
@@ -23,30 +22,18 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
   const [createMode, setCreateMode] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
 
-  const [activeEscalationId, setActiveEscalationId] = useState(null);
+  const [activeReference, setActiveReference] = useState(null);
 
-  const taskEscalations =
-    escalations.filter(e => e.taskId === taskId);
+  const taskEscalations = getEscalationsByTask(taskId);
 
   function commitCreateEscalation() {
 
     if (!draftTitle.trim()) return;
 
-    const escalation = createEscalation({
+    createEscalation({
       taskId,
       title: draftTitle.trim(),
       classification: null
-    });
-
-    // TEMPORARY MIRROR (Phase 3 only)
-    escalations.push({
-      escalationId: crypto.randomUUID(),
-      taskId,
-      number: parseInt(escalation.reference, 10),
-      reference: escalation.reference,
-      title: escalation.title,
-      createdDate: escalation.createdAt,
-      status: "Open"
     });
 
     setDraftTitle("");
@@ -56,7 +43,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
   }
 
   const activeEscalation =
-    escalations.find(e => e.escalationId === activeEscalationId);
+    activeReference ? getEscalation(taskId, activeReference) : null;
 
   return (
     <div
@@ -90,7 +77,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
               {taskEscalations.map(e => (
 
                 <div
-                  key={e.escalationId}
+                  key={e.reference}
                   style={{
                     borderBottom: "1px solid #ddd",
                     padding: "8px 0"
@@ -98,15 +85,15 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
                 >
 
                   <div style={{ fontWeight: "bold", color: "#0b5ed7" }}>
-                    ESC-{String(e.number).padStart(3,"0")} — {e.title}
+                    ESC-{String(e.reference).padStart(3,"0")} — {e.title}
                   </div>
 
                   <div style={{ fontSize: "12px", opacity: 0.7 }}>
-                    Status: {e.status}
+                    Status: Open
                   </div>
 
                   <div style={{ marginTop: "6px" }}>
-                    <button onClick={() => setActiveEscalationId(e.escalationId)}>
+                    <button onClick={() => setActiveReference(e.reference)}>
                       Advisory
                     </button>
                   </div>
@@ -181,7 +168,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
           taskId={taskId}
           taskTitle={taskTitle}
           escalation={activeEscalation}
-          onClose={() => setActiveEscalationId(null)}
+          onClose={() => setActiveReference(null)}
         />
       )}
 
