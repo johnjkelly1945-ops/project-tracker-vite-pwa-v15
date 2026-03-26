@@ -30,7 +30,7 @@ function nowStamp() {
   );
 }
 
-export default function EscalationModal({ taskId, taskTitle, escalation, onClose }) {
+export default function EscalationModal({ taskId, taskTitle, escalation, onClose, readOnly = false }) {
 
   const inlineRef = useRef(null);
 
@@ -45,6 +45,8 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
     : [];
 
   function handleCommitInlineAdvisory() {
+
+    if (readOnly) return;
 
     const text = draft.trim();
     if (!text) return;
@@ -74,6 +76,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          pointerEvents: readOnly ? "none" : "auto"
         }}
       >
 
@@ -85,6 +88,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
             display: "flex",
             flexDirection: "column",
             borderRadius: "6px",
+            pointerEvents: "auto"
           }}
         >
 
@@ -167,56 +171,57 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
               ))}
             </div>
 
-            <div
-              style={{
-                marginTop: "16px",
-                borderTop: "1px solid rgba(0,0,0,0.1)",
-                paddingTop: "12px",
-              }}
-            >
-
-
-              <div style={{ marginBottom: "6px" }}>
-                <strong>Classification</strong>
-              </div>
-
-              <select
-                value={classification || ""}
-                onChange={(e) => setClassification(e.target.value)}
-                style={{ marginBottom: "10px" }}
-              >
-                <option value="">None</option>
-                <option value="TECH">TECH</option>
-                <option value="SCHED">SCHED</option>
-                <option value="RES">RES</option>
-                <option value="COMM">COMM</option>
-                <option value="DES">DES</option>
-                <option value="COMP">COMP</option>
-                <option value="OTHER">OTHER</option>
-              </select>
-
-              <textarea
-                ref={inlineRef}
-                rows={3}
+            {!readOnly && (
+              <div
                 style={{
-                  width: "100%",
-                  resize: "vertical",
-                  border: "none",
-                  outline: "none",
-                  fontSize: "14px",
+                  marginTop: "16px",
+                  borderTop: "1px solid rgba(0,0,0,0.1)",
+                  paddingTop: "12px",
                 }}
-                placeholder="Enter advisory..."
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-              />
+              >
 
-              <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button onClick={handleCommitInlineAdvisory}>
-                  Commit advisory
-                </button>
+                <div style={{ marginBottom: "6px" }}>
+                  <strong>Classification</strong>
+                </div>
+
+                <select
+                  value={classification || ""}
+                  onChange={(e) => setClassification(e.target.value)}
+                  style={{ marginBottom: "10px" }}
+                >
+                  <option value="">None</option>
+                  <option value="TECH">TECH</option>
+                  <option value="SCHED">SCHED</option>
+                  <option value="RES">RES</option>
+                  <option value="COMM">COMM</option>
+                  <option value="DES">DES</option>
+                  <option value="COMP">COMP</option>
+                  <option value="OTHER">OTHER</option>
+                </select>
+
+                <textarea
+                  ref={inlineRef}
+                  rows={3}
+                  style={{
+                    width: "100%",
+                    resize: "vertical",
+                    border: "none",
+                    outline: "none",
+                    fontSize: "14px",
+                  }}
+                  placeholder="Enter advisory..."
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                />
+
+                <div style={{ textAlign: "right", marginTop: "6px" }}>
+                  <button onClick={handleCommitInlineAdvisory}>
+                    Commit advisory
+                  </button>
+                </div>
+
               </div>
-
-            </div>
+            )}
 
           </div>
 
@@ -232,9 +237,11 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
             }}
           >
 
-            <button onClick={() => setParticipantModalOpen(true)}>
-              Confirm Participant
-            </button>
+            {!readOnly && (
+              <button onClick={() => setParticipantModalOpen(true)}>
+                Confirm Participant
+              </button>
+            )}
 
             <button onClick={onClose}>
               Close
@@ -244,7 +251,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
 
         </div>
 
-        {participantModalOpen && (
+        {participantModalOpen && !readOnly && (
           <SubordinateSelectionModal
             title="Confirm Escalation Participant"
             items={[]}

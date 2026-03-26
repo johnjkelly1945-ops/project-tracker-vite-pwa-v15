@@ -100,6 +100,7 @@ export default function EscalationLedgerModal({ taskId, taskTitle, onClose }) {
           taskId={taskId}
           taskTitle={taskTitle}
           escalation={activeEscalation}
+          readOnly={true}
           onClose={() => setActiveReference(null)}
         />
       )}
