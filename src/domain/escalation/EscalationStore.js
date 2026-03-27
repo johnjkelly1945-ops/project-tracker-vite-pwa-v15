@@ -2,47 +2,25 @@
 /*
 =====================================================================
 METRA — EscalationStore.js
-Stage 421 — Escalation Ledger Introduction (Minimal Canonical Store)
-=====================================================================
-
-Purpose
----------------------------------------------------------------------
-Provide a single-source, in-memory ledger for Escalation records.
-
-Principles
----------------------------------------------------------------------
-• Additive only (no impact on existing behaviour)
-• No UI coupling
-• No authority logic
-• No lifecycle management
-• Escalation domain only (strict separation from governance)
-
+Stage 425 — Global Sequential Escalation Canon
 =====================================================================
 */
 
-// ------------------------------------------------------------------
-// INTERNAL STORE
-// ------------------------------------------------------------------
-
 const escalationStore = {
-  byTask: {}
+  byTask: {},
+  all: []
 };
-
-// ------------------------------------------------------------------
-// UTIL — Timestamp
-// ------------------------------------------------------------------
 
 function now() {
   return new Date().toISOString();
 }
 
 // ------------------------------------------------------------------
-// UTIL — Reference Generator (per-task sequential)
+// GLOBAL REFERENCE (CANONICAL)
 // ------------------------------------------------------------------
 
-function nextReference(taskId) {
-  const list = escalationStore.byTask[taskId] || [];
-  const next = list.length + 1;
+function nextReference() {
+  const next = escalationStore.all.length + 1;
   return String(next).padStart(3, "0");
 }
 
@@ -54,7 +32,7 @@ export function createEscalation({ taskId, title, classification = null }) {
   if (!taskId) throw new Error("createEscalation requires taskId");
   if (!title) throw new Error("createEscalation requires title");
 
-  const reference = nextReference(taskId);
+  const reference = nextReference();
 
   const escalation = {
     reference,
@@ -70,12 +48,13 @@ export function createEscalation({ taskId, title, classification = null }) {
   }
 
   escalationStore.byTask[taskId].push(escalation);
+  escalationStore.all.push(escalation);
 
   return escalation;
 }
 
 // ------------------------------------------------------------------
-// GET ALL ESCALATIONS FOR TASK
+// GET ESCALATIONS BY TASK
 // ------------------------------------------------------------------
 
 export function getEscalationsByTask(taskId) {
@@ -93,7 +72,15 @@ export function getEscalation(taskId, reference) {
 }
 
 // ------------------------------------------------------------------
-// APPEND ADVISORY RECORD
+// GLOBAL LEDGER (FIXED)
+// ------------------------------------------------------------------
+
+export function getAllEscalations() {
+  return escalationStore.all;
+}
+
+// ------------------------------------------------------------------
+// APPEND ADVISORY
 // ------------------------------------------------------------------
 
 export function appendEscalationAdvisory({
@@ -122,38 +109,8 @@ export function appendEscalationAdvisory({
   return advisory;
 }
 
-
-/*
----------------------------------------------------------------------
-STAGE 423 — Global Aggregation (Canonical)
----------------------------------------------------------------------
-Purpose:
-Provide cross-task escalation visibility.
-
-Rules:
-• Pure read-only aggregation
-• No mutation
-• No re-sequencing
-• No transformation
----------------------------------------------------------------------
-*/
-export function getAllEscalations() {
-  const result = [];
-
-  Object.values(escalationsByTask).forEach((taskEscalations) => {
-    if (Array.isArray(taskEscalations)) {
-      taskEscalations.forEach((esc) => {
-        result.push(esc);
-      });
-    }
-  });
-
-  return result;
-}
-
-
 // ------------------------------------------------------------------
-// DEBUG (NON-CANONICAL — DO NOT USE IN UI)
+// DEBUG
 // ------------------------------------------------------------------
 
 export function __debug_getStore() {

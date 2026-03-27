@@ -756,7 +756,7 @@ export default function TaskPopup({
             eventId={activeRiskEventId}
             onClose={() => setRiskModalOpen(false)}
             onAddNote={onAddNote}
-            onEscalate={handleEscalateRisk}
+            onEscalate={() => setEscalationRegisterOpen(true)}
           />
         )}
 
