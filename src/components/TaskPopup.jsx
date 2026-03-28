@@ -564,7 +564,10 @@ export default function TaskPopup({
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
             {" | "}
-            <span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>
+            <span style={{ cursor: "pointer" }} onClick={() => {
+                setEscalationContext(null);
+                setEscalationRegisterOpen(true);
+              }}>Escalate</span>
           </div>
 
           <div
