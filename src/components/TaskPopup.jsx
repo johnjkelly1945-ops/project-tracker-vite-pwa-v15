@@ -799,6 +799,8 @@ export default function TaskPopup({
         <EscalationRegisterModal
           taskId={task.id}
           taskTitle={task.title}
+          sourceType="RISK"
+          sourceId={activeRiskEventId}
           onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
         />

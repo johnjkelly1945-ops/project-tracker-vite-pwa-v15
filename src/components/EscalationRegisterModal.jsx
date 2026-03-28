@@ -16,7 +16,7 @@ import {
   getEscalation
 } from "../domain/escalation/EscalationStore";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, onClose, sourceType, sourceId }) {
 
   const [, refresh] = useState(0);
 
@@ -35,7 +35,9 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose }) 
     createEscalation({
       taskId,
       title: draftTitle.trim(),
-      classification: null
+      classification: null,
+      sourceType,
+      sourceId
     });
 
     setDraftTitle("");

@@ -2,7 +2,7 @@
 /*
 =====================================================================
 METRA — EscalationStore.js
-Stage 425 — Global Sequential Escalation Canon
+Stage 426 — Source Linkage (Additive Extension)
 =====================================================================
 */
 
@@ -25,14 +25,24 @@ function nextReference() {
 }
 
 // ------------------------------------------------------------------
-// CREATE ESCALATION
+// CREATE ESCALATION (EXTENDED)
 // ------------------------------------------------------------------
 
-export function createEscalation({ taskId, title, classification = null }) {
+export function createEscalation({
+  taskId,
+  title,
+  classification = null,
+  sourceType,
+  sourceId
+}) {
   if (!taskId) throw new Error("createEscalation requires taskId");
   if (!title) throw new Error("createEscalation requires title");
 
   const reference = nextReference();
+
+  // Stage 426 — additive fallback (NON-BREAKING)
+  const resolvedSourceType = sourceType || "TASK";
+  const resolvedSourceId = sourceId || taskId;
 
   const escalation = {
     reference,
@@ -40,6 +50,11 @@ export function createEscalation({ taskId, title, classification = null }) {
     title,
     classification,
     createdAt: now(),
+
+    // NEW — Stage 426 (additive only)
+    sourceType: resolvedSourceType,
+    sourceId: resolvedSourceId,
+
     advisoryRecords: []
   };
 
@@ -80,7 +95,7 @@ export function getAllEscalations() {
 }
 
 // ------------------------------------------------------------------
-// APPEND ADVISORY
+// APPEND ADVISORY (UNCHANGED)
 // ------------------------------------------------------------------
 
 export function appendEscalationAdvisory({
