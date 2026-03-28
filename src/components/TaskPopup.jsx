@@ -152,6 +152,13 @@ export default function TaskPopup({
   const [summaryEditing, setSummaryEditing] = useState(false);
   const [selectedSummaryId, setSelectedSummaryId] = useState(currentSummaryId);
 
+  /* =====================================================
+     STAGE 427 — ESCALATION CONTEXT CARRIER (PHASE 1A)
+     Additive only — no behaviour change
+     ===================================================== */
+  const [escalationContext, setEscalationContext] = useState(null);
+
+
   useEffect(() => {
     setDisplayNotes(task.notes || []);
     setLocalAssigneeId(task.assigneeId || "");
@@ -287,7 +294,14 @@ export default function TaskPopup({
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
 
+    setEscalationContext({
+      sourceType: "ISSUE",
+      sourceId: activeIssueEventId
+    });
+
     bridgeEscalateGovernanceEvent({ eventId: activeIssueEventId });
+
+    setEscalationRegisterOpen(true);
   }
   /* ================= QC Activation ================= */
 
@@ -308,9 +322,15 @@ export default function TaskPopup({
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
 
-    bridgeEscalateGovernanceEvent({ eventId: activeQcEventId });
-  }
+    setEscalationContext({
+      sourceType: "QC",
+      sourceId: activeQcEventId
+    });
 
+    bridgeEscalateGovernanceEvent({ eventId: activeQcEventId });
+
+    setEscalationRegisterOpen(true);
+  }
   function handleEscalateCC() {
     if (!activeCcEventId) return;
 
@@ -318,10 +338,15 @@ export default function TaskPopup({
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
 
+    setEscalationContext({
+      sourceType: "CC",
+      sourceId: activeCcEventId
+    });
+
     bridgeEscalateGovernanceEvent({ eventId: activeCcEventId });
+
+    setEscalationRegisterOpen(true);
   }
-
-
   function handleInitiateQC() {
     if (!isPM) return;
     setQcRegisterOpen(true);
@@ -756,7 +781,13 @@ export default function TaskPopup({
             eventId={activeRiskEventId}
             onClose={() => setRiskModalOpen(false)}
             onAddNote={onAddNote}
-            onEscalate={() => setEscalationRegisterOpen(true)}
+            onEscalate={() => {
+              setEscalationContext({
+                sourceType: "RISK",
+                sourceId: activeRiskEventId
+              });
+              setEscalationRegisterOpen(true);
+            }}
           />
         )}
 
@@ -799,8 +830,8 @@ export default function TaskPopup({
         <EscalationRegisterModal
           taskId={task.id}
           taskTitle={task.title}
-          sourceType="RISK"
-          sourceId={activeRiskEventId}
+          sourceType={(escalationContext && escalationContext.sourceType) || "TASK"}
+          sourceId={(escalationContext && escalationContext.sourceId) || task.id}
           onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
         />
