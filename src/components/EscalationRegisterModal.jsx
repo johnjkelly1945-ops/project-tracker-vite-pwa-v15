@@ -78,6 +78,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose, so
           {!createMode && (
 
             <>
+
               {taskEscalations.map(e => (
 
                 <div
@@ -95,6 +96,13 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose, so
                   <div style={{ fontSize: "12px", opacity: 0.7 }}>
                     Status: Open
                   </div>
+
+                  {/* NEW — STAGE 428 SOURCE LABEL (READ-ONLY) */}
+                  {e.sourceType && (
+                    <div style={{ fontSize: "11px", opacity: 0.6 }}>
+                      Source: {e.sourceType}
+                    </div>
+                  )}
 
                   <div style={{ marginTop: "6px" }}>
                     <button onClick={() => setActiveReference(e.reference)}>
