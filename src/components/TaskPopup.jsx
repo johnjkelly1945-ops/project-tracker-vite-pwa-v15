@@ -96,6 +96,37 @@ export default function TaskPopup({
 
   const isReadOnly = readOnly === true;
 
+  /* ================= Stage 429 — Navigation Handler (Routing) ================= */
+  function handleNavigateToEscalationSource(e) {
+    const actor = getActingUser();
+    if (!actor) return;
+
+    switch (e.sourceType) {
+      case "RISK":
+        setActiveRiskEventId(e.sourceId);
+        setRiskModalOpen(true);
+        break;
+
+      case "ISSUE":
+        setActiveIssueEventId(e.sourceId);
+        setIssueModalOpen(true);
+        break;
+
+      case "QC":
+        setActiveQcEventId(e.sourceId);
+        setQcModalOpen(true);
+        break;
+
+      case "CC":
+        setActiveCcEventId(e.sourceId);
+        setCcModalOpen(true);
+        break;
+
+      default:
+        return;
+    }
+  }
+  /* ================= End Stage 429 ================= */
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
 
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
@@ -828,7 +859,6 @@ export default function TaskPopup({
         />
       )}
 
-
       {escalationRegisterOpen && (
         <EscalationRegisterModal
           taskId={task.id}
@@ -837,6 +867,7 @@ export default function TaskPopup({
           sourceId={(escalationContext && escalationContext.sourceId) || task.id}
           onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
+          onNavigate={handleNavigateToEscalationSource}
         />
       )}
     </div>

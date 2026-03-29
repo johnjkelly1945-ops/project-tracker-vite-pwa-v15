@@ -238,15 +238,6 @@ export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAdd
               gap: "10px",
             }}
           >
-            <div
-              style={{
-                textAlign: "center",
-                fontStyle: "italic",
-                color: "#333",
-              }}
-            >
-              <span>Escalate</span>
-            </div>
 
             <div
               style={{

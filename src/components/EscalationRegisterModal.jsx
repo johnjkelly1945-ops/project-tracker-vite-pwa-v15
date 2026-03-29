@@ -16,7 +16,7 @@ import {
   getEscalation
 } from "../domain/escalation/EscalationStore";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, onClose, sourceType, sourceId }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, onClose, sourceType, sourceId, onNavigate }) {
 
   const [, refresh] = useState(0);
 
