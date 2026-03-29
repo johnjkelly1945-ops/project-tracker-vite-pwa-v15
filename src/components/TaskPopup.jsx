@@ -98,7 +98,11 @@ export default function TaskPopup({
 
   /* ================= Stage 429 — Navigation Handler (Routing) ================= */
   function handleNavigateToEscalationSource(e) {
-    const actor = getActingUser();
+    const personId = getPersonId(getCurrentUserFromStorage());
+    const actor = personId
+      ? getPersonnel().find(p => p.id === personId)
+      : null;
+
     if (!actor) return;
 
     switch (e.sourceType) {
