@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import { setActingUser } from "./domain/actor/ActingUser";
+import { getActingUser } from "./domain/actor/ActingUser";
 import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
 import Sidebar from "./components/Sidebar";
@@ -42,7 +43,6 @@ export default function App() {
   const actingUser = {
     id: "user-1",
     displayName: "Test PM",
-    role: "ADVISOR"
   };
 
   // STAGE 413 — REGISTER ACTOR (CANONICAL)
@@ -601,11 +601,14 @@ export default function App() {
     const base = "Untitled Segment";
     const count = segments.filter(s => s.segmentTitle.startsWith(base)).length;
     const title = count === 0 ? base : `${base} ${count + 1}`;
+    const actor = getActingUser();
+
     const newSegment = {
       segmentId: `segment-${Date.now()}`,
       segmentTitle: title,
       archived: false,
       createdAt: Date.now(),
+      pmId: actor?.id
     };
 
     setSegments(prev => [...prev, newSegment]);
