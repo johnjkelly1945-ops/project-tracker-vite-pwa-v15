@@ -426,7 +426,7 @@ export default function TaskPopup({
 
     const actor = `[${currentUserRole}]`;
     const stamped = `${actor} ${text} — ${nowStamp()}`;
-    const actorObj = { role: currentUserRole };
+    const actorObj = getActingUser();
 
     const target = {
       id: task.id,
