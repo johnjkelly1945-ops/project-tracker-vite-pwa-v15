@@ -9,6 +9,7 @@ Stage 421 — Escalation Register Canonical Store Integration
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
+import { getActingUser } from "../domain/actor/ActingUser";
 import EscalationLedgerModal from "./EscalationLedgerModal";
 import {
   createEscalation,
@@ -17,6 +18,9 @@ import {
 } from "../domain/escalation/EscalationStore";
 
 export default function EscalationRegisterModal({ taskId, taskTitle, onClose, sourceType, sourceId, onNavigate }) {
+
+  const actor = getActingUser();
+  const isPM = actor?.id === "user-1"; // temporary restore of PM working behaviour
 
   const [, refresh] = useState(0);
 
@@ -121,7 +125,11 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose, so
               </div>
 
               <div style={{ marginTop: "8px" }}>
-                <button onClick={() => setLedgerOpen(true)}>
+                <button onClick={() => {
+                  if (isPM || actor?.permissions?.ledgerAccess === true) {
+                    setLedgerOpen(true);
+                  }
+                }}>
                   Ledger
                 </button>
               </div>
