@@ -1,14 +1,31 @@
 // @ts-nocheck
 
-import { isActionAllowed } from "./PermissionMatrix.js";
+import {
+  getCurrentPM,
+  getActorRoleInSegment
+} from "../actor/SegmentRoleStore.js";
 
 export function canPerformAction({ actor, action, target, context }) {
   if (!actor) return false;
   if (!action) return false;
 
-  const role = actor.role;
+  /* ================= Stage 431 — Canonical Authority (Segment Role Based) ================= */
 
-  if (!isActionAllowed(role, action)) {
+  const segmentId = context?.segmentId;
+
+  if (!segmentId) return false;
+
+  const pmId = getCurrentPM(segmentId);
+
+  const isPM = actor.id === pmId;
+
+  const role = getActorRoleInSegment(actor.id, segmentId);
+
+  const isAdminWithAuthority =
+    role === "Admin" &&
+    actor.governanceAuthority === true;
+
+  if (!(isPM || isAdminWithAuthority)) {
     return false;
   }
 
