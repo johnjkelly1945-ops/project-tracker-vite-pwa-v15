@@ -41,8 +41,8 @@ export default function App() {
 
   // STAGE 412 — ACTING USER (TEMPORARY CANONICAL ACTOR)
   const actingUser = {
-    id: "user-1",
-    displayName: "Test PM",
+    id: "john kelly",
+    displayName: "john kelly",
   };
 
   // STAGE 413 — REGISTER ACTOR (CANONICAL)

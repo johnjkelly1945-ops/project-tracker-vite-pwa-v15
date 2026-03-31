@@ -438,13 +438,16 @@ export default function TaskPopup({
       segmentId: task.segmentId
     };
 
-    attemptAction({
+    const success = attemptAction({
       actor: actorObj,
       action: "ADD_TASK_NOTE",
       target,
       context,
       execute: () => onAddNote(task.id, stamped)
     });
+
+    if (!success) return;
+
     setDisplayNotes((p) => [...p, stamped]);
     setInlineDraftText("");
 
