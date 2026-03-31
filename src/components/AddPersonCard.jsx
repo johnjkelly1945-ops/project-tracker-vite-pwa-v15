@@ -24,6 +24,11 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
   const [organisation, setOrganisation] = useState(initialData?.organisation || "");
   const [organisationType, setOrganisationType] = useState(initialData?.organisationType || "internal");
 
+  /* ================= Stage 433 — Segment Authority ================= */
+
+  const [isPM, setIsPM] = useState(initialData?.isPM || false);
+  const [isAdmin, setIsAdmin] = useState(initialData?.isAdmin || false);
+
   function handleSave() {
     if (!displayName.trim()) return;
 
@@ -42,6 +47,10 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
       department: safeDepartment,
       organisationType,
       title: safeName,
+
+      /* ================= Stage 433 — Persist Authority ================= */
+      isPM,
+      isAdmin
     };
 
     onSave(person);
@@ -112,6 +121,7 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
           borderRadius: "4px",
         }}
       />
+
       <select
         value={organisationType}
         onChange={(e) => setOrganisationType(e.target.value)}
@@ -124,6 +134,32 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
         <option value="internal">Internal</option>
         <option value="external">External</option>
       </select>
+
+      {/* ================= Stage 433 — Segment Authority ================= */}
+
+      <div style={{ marginTop: "6px" }}>
+        <strong>Segment Authority</strong><br />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={isPM}
+            onChange={(e) => setIsPM(e.target.checked)}
+          />
+          Project Manager (PM)
+        </label>
+
+        <br />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={isAdmin}
+            onChange={(e) => setIsAdmin(e.target.checked)}
+          />
+          Segment Admin
+        </label>
+      </div>
 
       <div style={{ display: "flex", gap: "8px" }}>
         <button type="button" onClick={handleSave}>Save</button>

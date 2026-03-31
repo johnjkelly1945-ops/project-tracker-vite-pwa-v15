@@ -5,6 +5,8 @@ import {
   getActorRoleInSegment
 } from "../actor/SegmentRoleStore.js";
 
+import { getPersonnel } from "../personnel/PersonnelRegistry";
+
 export function canPerformAction({ actor, action, target, context }) {
   if (!actor) return false;
   if (!action) return false;
@@ -15,17 +17,20 @@ export function canPerformAction({ actor, action, target, context }) {
 
   if (!segmentId) return false;
 
-  const pmId = getCurrentPM(segmentId);
+  /* ================= Stage 433 — Personnel-Based Authority ================= */
 
-  const isPM = actor.id === pmId;
+  const people = getPersonnel() || [];
 
-  const role = getActorRoleInSegment(actor.id, segmentId);
+  const person = people.find(
+    p =>
+      p.id === actor.id ||
+      p.displayName === actor.displayName
+  );
 
-  const isAdminWithAuthority =
-    role === "Admin" &&
-    actor.governanceAuthority === true;
+  const isPM = person?.isPM === true;
+  const isAdmin = person?.isAdmin === true;
 
-  if (!(isPM || isAdminWithAuthority)) {
+  if (!(isPM || isAdmin)) {
     return false;
   }
 

@@ -86,6 +86,11 @@ function AddPersonCard({ onSave, onCancel }) {
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
 
+  /* ================= Stage 433 — Segment Authority ================= */
+
+  const [isPM, setIsPM] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   function handleSave() {
     if (!name.trim()) return;
 
@@ -94,6 +99,10 @@ function AddPersonCard({ onSave, onCancel }) {
       org: org.trim(),
       email: email.trim(),
       notes: notes.trim(),
+
+      /* ================= Stage 433 — Persist Authority ================= */
+      isPM,
+      isAdmin
     });
   }
 
@@ -139,6 +148,32 @@ function AddPersonCard({ onSave, onCancel }) {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
+        </label>
+      </div>
+
+      {/* ================= Stage 433 — Segment Authority ================= */}
+
+      <div style={{ marginBottom: "8px" }}>
+        <strong>Segment Authority</strong><br />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={isPM}
+            onChange={(e) => setIsPM(e.target.checked)}
+          />
+          Project Manager (PM)
+        </label>
+
+        <br />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={isAdmin}
+            onChange={(e) => setIsAdmin(e.target.checked)}
+          />
+          Segment Admin
         </label>
       </div>
 

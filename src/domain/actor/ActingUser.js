@@ -1,53 +1,28 @@
 // @ts-nocheck
 /*
 =====================================================================
-METRA — ActingUser.js
-Stage 413 — Actor Injection & System Identity Layer
-=====================================================================
-
-Purpose
----------------------------------------------------------------------
-Provide a canonical, explicit acting user for authority evaluation.
-
-Rules
----------------------------------------------------------------------
-• No implicit actor
-• No fallback actor
-• No UI dependency
-• Actor must be explicitly set
-• If no actor → authority MUST deny
-
+METRA — ActingUser.js (Stage 433 Fix)
+Global singleton actor (window-bound)
 =====================================================================
 */
 
-let currentActor = null;
-
-/*
-=====================================================================
-SET ACTING USER
-=====================================================================
-*/
+function ensureGlobal() {
+  if (!window.__METRA_ACTOR__) {
+    window.__METRA_ACTOR__ = null;
+  }
+}
 
 export function setActingUser(user) {
-  currentActor = user || null;
+  ensureGlobal();
+  window.__METRA_ACTOR__ = user || null;
 }
-
-/*
-=====================================================================
-GET ACTING USER
-=====================================================================
-*/
 
 export function getActingUser() {
-  return currentActor;
+  ensureGlobal();
+  return window.__METRA_ACTOR__;
 }
 
-/*
-=====================================================================
-CLEAR ACTING USER (OPTIONAL)
-=====================================================================
-*/
-
 export function clearActingUser() {
-  currentActor = null;
+  ensureGlobal();
+  window.__METRA_ACTOR__ = null;
 }
