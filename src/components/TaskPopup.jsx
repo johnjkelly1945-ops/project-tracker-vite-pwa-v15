@@ -419,14 +419,17 @@ export default function TaskPopup({
 
   /* ================= Inline Commit ================= */
 
+  /* ================= Inline Commit ================= */
+
   function handleCommitInlineNote() {
     if (isArchived) return;
     const text = inlineDraftText.trim();
     if (!text) return;
 
-    const actor = `[${currentUserRole}]`;
-    const stamped = `${actor} ${text} — ${nowStamp()}`;
     const actorObj = getActingUser();
+    const actorName = actorObj?.displayName || "PM";
+
+    const stamped = `[${actorName}] ${text} — ${nowStamp()}`;
 
     const target = {
       id: task.id,
@@ -451,10 +454,8 @@ export default function TaskPopup({
     setDisplayNotes((p) => [...p, stamped]);
     setInlineDraftText("");
 
-    // keep the surface ready for the next entry
     if (inlineRef.current) inlineRef.current.focus();
   }
-
   function confirmSummaryEdit() {
     if (selectedSummaryId !== currentSummaryId) {
       onChangeTaskSummary(task.id, selectedSummaryId || null);
