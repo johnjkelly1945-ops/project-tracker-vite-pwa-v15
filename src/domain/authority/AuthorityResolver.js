@@ -21,11 +21,21 @@ export function canPerformAction({ actor, action, target, context }) {
 
   const people = getPersonnel() || [];
 
-  const person = people.find(
-    p =>
-      p.id === actor.id ||
-      p.displayName === actor.displayName
-  );
+  let person = people.find(p => p.id === actor.id);
+
+  // Stage 434 — controlled fallback (non-breaking)
+  if (!person && actor.displayName) {
+    person = people.find(p => p.displayName === actor.displayName);
+
+    if (person) {
+      console.warn(
+        "[Stage 434] Fallback identity match used:",
+        actor.displayName,
+        "→",
+        person.id
+      );
+    }
+  }
 
   const isPM = person?.isPM === true;
   const isAdmin = person?.isAdmin === true;
