@@ -54,5 +54,17 @@ export function canPerformAction({ actor, action, target, context }) {
     return false;
   }
 
+
+  /* ================= Stage 435 — Contextual Authority Expansion ================= */
+
+  if (action === "ADD_TASK_NOTE") {
+    const isAssignee =
+      target &&
+      target.assigneeId &&
+      actor.id === target.assigneeId;
+
+    if (isAssignee) return true;
+  }
+
   return true;
 }
