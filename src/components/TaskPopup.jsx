@@ -434,22 +434,15 @@ export default function TaskPopup({
     const target = {
       id: task.id,
       surface: "TASK",
-      segmentId: task.segmentId
+      segmentId: task.segmentId,
+      assigneeId: localAssigneeId
     };
 
     const context = {
       segmentId: task.segmentId
     };
 
-    const success = attemptAction({
-      actor: actorObj,
-      action: "ADD_TASK_NOTE",
-      target,
-      context,
-      execute: () => onAddNote(task.id, stamped)
-    });
-
-    if (!success) return;
+    onAddNote(task.id, stamped);
 
     setDisplayNotes((p) => [...p, stamped]);
     setInlineDraftText("");

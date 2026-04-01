@@ -61,7 +61,7 @@ export function canPerformAction({ actor, action, target, context }) {
     const isAssignee =
       target &&
       target.assigneeId &&
-      actor.id === target.assigneeId;
+      person && person.id === target.assigneeId;
 
     if (isAssignee) return true;
   }

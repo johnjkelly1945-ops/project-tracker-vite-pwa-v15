@@ -97,7 +97,6 @@ export function getAllEscalations() {
 // ------------------------------------------------------------------
 // APPEND ADVISORY (UNCHANGED)
 // ------------------------------------------------------------------
-
 export function appendEscalationAdvisory({
   taskId,
   reference,
@@ -123,7 +122,6 @@ export function appendEscalationAdvisory({
 
   return advisory;
 }
-
 // ------------------------------------------------------------------
 // DEBUG
 // ------------------------------------------------------------------
