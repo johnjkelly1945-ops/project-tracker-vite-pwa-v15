@@ -110,9 +110,15 @@ export function appendEscalationAdvisory({
     throw new Error("Escalation not found for advisory append");
   }
 
+  const actorName =
+    actor && actor.displayName ? actor.displayName : "Unknown";
+
+  const stampedSummary =
+    "[" + actorName + "] " + (summary || "");
+
   const advisory = {
     advisoryId: `${reference}-${escalation.advisoryRecords.length + 1}`,
-    summary,
+    summary: stampedSummary,
     classification,
     actor,
     submittedAt: now()

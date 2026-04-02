@@ -1,4 +1,5 @@
 // @ts-nocheck
+// @ts-nocheck
 /*
 =====================================================================
 METRA — EscalationModal.jsx
@@ -13,7 +14,7 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { appendEscalationAdvisory } from "../domain/escalation/EscalationStore";
-
+import { getActingUser } from "../domain/actor/ActingUser";
 function nowStamp() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");
@@ -56,7 +57,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
       reference: escalation.reference,
       summary: text,
       classification: classification || null,
-      actor: "USER"
+      actor: getActingUser()
     });
 
     setDraft("");
