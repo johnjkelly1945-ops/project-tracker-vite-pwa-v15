@@ -21,7 +21,7 @@ export default function DualPane({
   managementBody,
   developmentBody,
 }) {
-  const isDual = mode === "dual";
+  const isDual = mode === "dual" && focusedPane === null;
 
   return (
     <div

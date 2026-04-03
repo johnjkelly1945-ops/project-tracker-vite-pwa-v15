@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { setActingUser, getActingUser } from "./domain/actor/ActingUser";
 import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
+import { hasContext } from "./domain/authority/hasContext";
 import Sidebar from "./components/Sidebar";
 import ArchiveHost from "./components/archive/ArchiveHost";
 import ModuleHeader from "./components/ModuleHeader";
@@ -561,7 +562,14 @@ export default function App() {
   const visibleDevTasks = devTasks.filter(t => (t.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
 
   const visibleMgmtSummaries = orderedMgmtSummaries.filter(s => (s.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
-  const visibleMgmtTasks = mgmtTasks.filter(t => (t.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
+  const actor = getActingUser();
+
+  const visibleMgmtTasks = (mgmtTasks || [])
+    .filter(t => t && t.segmentId === effectiveSegmentId)
+    .filter(t => {
+      if (workspaceMode === "dual") return true;
+      return actor && hasContext(actor, t);
+    });
   const mgmtBody = (
     <PreProject
       summaries={visibleMgmtSummaries}
