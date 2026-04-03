@@ -261,6 +261,7 @@ export default function App() {
             executionState: "NOT_STARTED",
             taskState: "active",
             segmentId: activeSegmentIdRef.current,
+      assigneeId: null,
           };
 
           setTasks(c => [...c, newTask]);
