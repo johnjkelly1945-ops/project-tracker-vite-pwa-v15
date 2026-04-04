@@ -22,6 +22,8 @@ inspection-only reveal intent. Sidebar remains:
 */
 
 import SidebarArtefactRegister from "./sidebar/SidebarArtefactRegister";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { setActingUser } from "../domain/actor/ActingUser";
 
 function emitRegisterReveal(register) {
   window.dispatchEvent(
@@ -91,6 +93,34 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
       >
         {expanded && (
           <>
+            <div style={{ marginBottom: "12px" }}>
+              <select
+                onChange={(e) => {
+                  const personnel = getPersonnel() || [];
+                  const selectedId = e.target.value;
+                  const person = personnel.find(p => p.id === selectedId);
+                  if (!person) return;
+
+                  setActingUser(person);
+
+                  try {
+                    localStorage.setItem("metra_acting_user", JSON.stringify(person));
+                  } catch (e) {
+                    console.warn("Failed to persist actor");
+                  }
+
+                  window.location.reload();
+                }}
+                style={{ width: "100%" }}
+              >
+                <option value="">Select Actor</option>
+                {(getPersonnel() || []).map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.displayName}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div style={{ marginBottom: "12px", fontWeight: "bold" }}>
               Modules
             </div>

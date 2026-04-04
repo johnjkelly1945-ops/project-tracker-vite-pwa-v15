@@ -111,11 +111,10 @@ export function submitAdvisory({
     advisoryId: `adv_${Date.now()}`,
     submittedBy,
     submittedAt: Date.now(),
-    summary,
+    summary: `[${submittedBy}] ${summary}`,
     artefactId,
     templateId,
   };
-
   const updatedEvent = {
     ...event,
     advisoryRecords: [...event.advisoryRecords, advisoryRecord],

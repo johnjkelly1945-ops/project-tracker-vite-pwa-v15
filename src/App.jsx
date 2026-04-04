@@ -16,6 +16,7 @@ import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
 import GovernanceModule from "./components/governance/GovernanceModule";
 import { localAssignees } from "./data/localAssignees";
+import { getPersonnel } from "./domain/personnel/PersonnelRegistry";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
 
@@ -36,22 +37,37 @@ Design Authority:
 • SEM-NR-01-A — Authority Derivation & Pane Semantics
 =====================================================================
 */
-
 export default function App() {
 
-  // STAGE 412 — ACTING USER (TEMPORARY CANONICAL ACTOR)
-  const actingUser = {
-    id: "john kelly",
-    displayName: "john kelly",
-  };
+  const people = getPersonnel();
 
-  // STAGE 413 — REGISTER ACTOR (CANONICAL)
+  const actingUser =
+    people && people.length
+      ? people[0]
+      : {
+          id: "john kelly",
+          displayName: "john kelly",
+          isPM: true,
+        };
+
   useEffect(() => {
+
+    const stored = localStorage.getItem("metra_acting_user");
+
+    if (stored) {
+      try {
+        setActingUser(JSON.parse(stored));
+      } catch (e) {
+        console.warn("Invalid stored actor");
+      }
+    }
+
     const current = getActingUser();
 
     if (!current || !current.id) {
       setActingUser(actingUser);
     }
+
   }, []);
   const [workspaceMode, setWorkspaceMode] = useState("dual");
   const [focusedPane, setFocusedPane] = useState(null);
