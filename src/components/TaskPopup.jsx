@@ -49,6 +49,7 @@ import {
 } from "../governance/governanceBridge";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 /* ===================== Time helpers ===================== */
 
@@ -227,11 +228,18 @@ export default function TaskPopup({
   /* ================= Execution ================= */
 
   const isCompleted = executionState === "COMPLETED";
+  const actor = getActingUser();
 
-  const isAssigned = Boolean(localAssigneeId);
+  const isAssigned = Boolean(task && task.assigneeId);
   const isArchived = task.taskState === "archived";
-  const isAssignee = localAssigneeId === "current-user";
-  const isPM = currentUserRole === "PM";
+
+  const isAssignee =
+    actor &&
+    task &&
+    actor.id === task.assigneeId;
+
+  const person = getPersonnel().find(p => p.id === actor?.id);
+  const isPM = person?.isPM === true;
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
   // STAGE 420 — SURFACE SELECTION (CANONICAL)
@@ -253,7 +261,15 @@ export default function TaskPopup({
 
   function handleStartWork() {
     if (!showStart) return;
-    const line = systemLine(isPMProxy ? "Work started by PM (proxy)" : "Work started");
+
+    const actorName = actor?.displayName || "Unknown";
+
+    const line = systemLine(
+      isPMProxy
+        ? `${actorName} — Work started by PM (proxy)`
+        : `${actorName} — Work started`
+    );
+
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
     onStartExecution(task.id);
@@ -261,7 +277,15 @@ export default function TaskPopup({
 
   function handleSubmitWork() {
     if (!showSubmit) return;
-    const line = systemLine(isPMProxy ? "Work submitted by PM (proxy)" : "Work submitted");
+
+    const actorName = actor?.displayName || "Unknown";
+
+    const line = systemLine(
+      isPMProxy
+        ? `${actorName} — Work submitted by PM (proxy)`
+        : `${actorName} — Work submitted`
+    );
+
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
     onSubmitExecution(task.id);
