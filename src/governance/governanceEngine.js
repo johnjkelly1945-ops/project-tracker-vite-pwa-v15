@@ -1,3 +1,4 @@
+import { getActingUser } from "../domain/actor/ActingUser";
 // @ts-nocheck
 /*
 =====================================================================
@@ -107,11 +108,14 @@ export function submitAdvisory({
   if (!event.participation.length)
     throw new Error("Participation must be recorded before advisory");
 
+
+  const actor = getActingUser();
+
   const advisoryRecord = {
     advisoryId: `adv_${Date.now()}`,
     submittedBy,
     submittedAt: Date.now(),
-    summary: `[${submittedBy}] ${summary}`,
+    summary: `[${actor?.displayName || submittedBy}] ${summary}`,
     artefactId,
     templateId,
   };

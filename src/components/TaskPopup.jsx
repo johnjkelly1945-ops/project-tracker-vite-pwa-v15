@@ -559,7 +559,7 @@ export default function TaskPopup({
           <strong>Notes</strong>
 
           <div style={{ marginTop: "12px" }}>
-            {displayNotes.map((line, idx) => {
+            {(displayNotes || []).map((line, idx) => {
               const [text, ts] = line.split(" — ");
               return (
                 <div key={idx} style={{ marginBottom: "16px" }}>
@@ -621,7 +621,7 @@ export default function TaskPopup({
             )}
             {" | "}
               <span style={{ cursor: "pointer" }} onClick={() => {
-                  if (!resolvedActor?.isPM) return;
+                  if (!actor?.isPM) return;
                   setEscalationContext(null);
                   setEscalationRegisterOpen(true);
                 }}>Escalate</span>
@@ -653,7 +653,7 @@ export default function TaskPopup({
                     onChange={(e) => setSelectedSummaryId(e.target.value)}
                   >
                     <option value="">No summary</option>
-                    {summaries.map((s) => (
+                    {(summaries || []).map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.title}
                       </option>
@@ -842,7 +842,7 @@ export default function TaskPopup({
             onClose={() => setRiskModalOpen(false)}
             onAddNote={onAddNote}
             onEscalate={
-              resolvedActor?.isPM === true
+              actor?.isPM === true
                 ? () => {
               setEscalationContext({
                 sourceType: "RISK",
