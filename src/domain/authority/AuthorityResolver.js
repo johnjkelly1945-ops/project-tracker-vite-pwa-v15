@@ -40,7 +40,7 @@ export function canPerformAction({ actor, action, target, context }) {
   const isPM = person?.isPM === true;
   const isAdmin = person?.isAdmin === true;
 
-  if (!(isPM || isAdmin)) {
+  if (!isPM) {
     return false;
   }
 
