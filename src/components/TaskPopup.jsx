@@ -620,10 +620,11 @@ export default function TaskPopup({
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
             {" | "}
-            <span style={{ cursor: "pointer" }} onClick={() => {
-                setEscalationContext(null);
-                setEscalationRegisterOpen(true);
-              }}>Escalate</span>
+              <span style={{ cursor: "pointer" }} onClick={() => {
+                  if (!resolvedActor?.isPM) return;
+                  setEscalationContext(null);
+                  setEscalationRegisterOpen(true);
+                }}>Escalate</span>
           </div>
 
           <div
@@ -840,13 +841,17 @@ export default function TaskPopup({
             eventId={activeRiskEventId}
             onClose={() => setRiskModalOpen(false)}
             onAddNote={onAddNote}
-            onEscalate={() => {
+            onEscalate={
+              resolvedActor?.isPM === true
+                ? () => {
               setEscalationContext({
                 sourceType: "RISK",
                 sourceId: activeRiskEventId
               });
               setEscalationRegisterOpen(true);
-            }}
+                }
+                : undefined
+            }
           />
         )}
 
