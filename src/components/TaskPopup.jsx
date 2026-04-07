@@ -242,29 +242,6 @@ export default function TaskPopup({
   const isPM = person?.isPM === true;
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
-  /* ================= Stage 445 — Contextual Governance Visibility ================= */
-
-  const events = (task && task.id)
-    ? (getGovernanceEventsByTask(task.id) || [])
-    : [];
-
-  const isParticipant = (type) => {
-    if (!actor || !actor.id) return false;
-
-    return events.some(
-      (e) =>
-        (e.eventType === type || e.type === type) &&
-        Array.isArray(e.participants) &&
-        e.participants.includes(actor.id)
-    );
-  };
-
-  const canSeeCC = isPM || isParticipant("CC");
-  const canSeeRisk = isPM || isParticipant("RISK");
-  const canSeeIssue = isPM || isParticipant("ISSUE");
-  const canSeeQC = isPM || isParticipant("QC");
-
-
   // STAGE 420 — SURFACE SELECTION (CANONICAL)
 
   const isOperational = isPM || isAssignee;
@@ -638,33 +615,15 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-          <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            {[
-              canSeeCC && <span key="cc" style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span>,
-              canSeeRisk && <span key="risk" style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span>,
-              canSeeIssue && <span key="issue" style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span>,
-              canSeeQC && <span key="qc" style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span>,
-            ]
-              .filter(Boolean)
-              .reduce((acc, el, i) => {
-                if (i === 0) return [el];
-                return [...acc, " · ", el];
-              }, [])
-            }
-
+            <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? () => setCcRegisterOpen(true) : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-
             {" | "}
-
-            {isPM && (
               <span style={{ cursor: "pointer" }} onClick={() => {
-                setEscalationContext(null);
-                setEscalationRegisterOpen(true);
-              }}>Escalate</span>
-            )}
-          </div>
+                  if (!actor?.isPM) return;
+                  setEscalationContext(null);
+                  setEscalationRegisterOpen(true);
                 }}>Escalate</span>
           </div>
 
