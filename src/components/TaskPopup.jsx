@@ -614,18 +614,20 @@ export default function TaskPopup({
             gap: "10px",
           }}
         >
-          <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? () => setCcRegisterOpen(true) : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
-            {executionState === "SUBMITTED" && isPM && (
-              <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
-            )}
-            {" | "}
+          {isPM && (
+            <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
+              <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? () => setCcRegisterOpen(true) : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
+              {executionState === "SUBMITTED" && isPM && (
+                <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
+              )}
+              {" | "}
               <span style={{ cursor: "pointer" }} onClick={() => {
-                  if (!actor?.isPM) return;
-                  setEscalationContext(null);
-                  setEscalationRegisterOpen(true);
-                }}>Escalate</span>
-          </div>
+                if (!actor?.isPM) return;
+                setEscalationContext(null);
+                setEscalationRegisterOpen(true);
+              }}>Escalate</span>
+            </div>
+          )}
 
           <div
             style={{
