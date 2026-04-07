@@ -111,14 +111,17 @@ export function submitAdvisory({
 
   const actor = getActingUser();
 
-  const advisoryRecord = {
-    advisoryId: `adv_${Date.now()}`,
-    submittedBy,
-    submittedAt: Date.now(),
-    summary: `[${actor?.displayName || submittedBy}] ${summary}`,
-    artefactId,
-    templateId,
-  };
+
+const advisoryRecord = {
+advisoryId: `adv_${Date.now()}`,
+submittedBy,
+submittedAt: Date.now(),
+summary: `[${actor?.displayName || submittedBy}] ${summary}`,
+submittedByName: actor?.displayName || "Unknown",
+artefactId,
+templateId,
+};
+
   const updatedEvent = {
     ...event,
     advisoryRecords: [...event.advisoryRecords, advisoryRecord],
