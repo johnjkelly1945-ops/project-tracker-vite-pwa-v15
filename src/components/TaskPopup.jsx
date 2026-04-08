@@ -636,12 +636,12 @@ export default function TaskPopup({
             }}
           >
             <div>
-              {!isCompleted && (
+              {!isCompleted && isPM && (
                 <button onClick={() => setAssignmentModalOpen(true)}>
                   {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
               )}
-              {!isCompleted && !summaryEditing && (
+              {!isCompleted && isPM && !summaryEditing && (
                 <button onClick={() => setSummaryEditing(true)}>
                   Link summary
                 </button>
@@ -682,7 +682,7 @@ export default function TaskPopup({
                  </button>
                )}
 
-              <button onClick={() => setArchiveConfirmOpen(true)}>Delete</button>
+              {isPM && (<button onClick={() => setArchiveConfirmOpen(true)}>Delete</button>)}
             </div>
           </div>
         </div>
