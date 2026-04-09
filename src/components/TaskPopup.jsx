@@ -619,7 +619,7 @@ export default function TaskPopup({
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-            {" | "}
+{isAssignee && (<span style={{ cursor: "pointer" }} onClick={() => setRiskModalOpen(true)}>Advisory</span>)}{" | "}
               <span style={{ cursor: "pointer" }} onClick={() => {
                   if (!actor?.isPM) return;
                   setEscalationContext(null);
