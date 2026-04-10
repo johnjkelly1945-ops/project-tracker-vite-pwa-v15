@@ -1,4 +1,7 @@
 /* ======================================================================
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { getActingUser } from "../domain/actor/ActingUser";
    METRA – RepositoryView.jsx
    Stage 354 – APPLY Commit Model (Bundles → Summaries Reveal)
    Stage 354A — Summary Checkbox Selection (UI ONLY)
@@ -257,12 +260,27 @@ export default function RepositoryView(props) {
     return Object.keys(selectedTaskIds).length;
   }, [selectedTaskIds]);
 
+  const actor = getActingUser();
+  const person = getPersonnel().find(p => p.id === actor?.id);
+  const isPM = person?.isPM === true;
+
+  const visibleTasks = tasksBase.filter((t) => {
+    const isSelected =
+      selectedSummaryIds[t.summaryId] || selectedTaskIds[t.id];
+
+    const isAssignee = actor && t.assigneeId === actor.id;
+
+    const isAdvisor =
+      actor &&
+      getGovernanceEventsByTask(t.id).some(e =>
+        (e.participation || []).some(p => p.reviewerId === actor.id) ||
+        e.reviewerId === actor.id
+      );
+
+    return isSelected || isPM || isAssignee || isAdvisor;
+  });
+
   const totalSelected = selectedSummaryCount + selectedTaskCount;
-
-  const visibleTasks = tasksBase.filter((t) =>
-    selectedSummaryIds[t.summaryId] || selectedTaskIds[t.id]
-  );
-
 
 /* ================================================================
    STAGE 362 — Search Result Selection Bridge

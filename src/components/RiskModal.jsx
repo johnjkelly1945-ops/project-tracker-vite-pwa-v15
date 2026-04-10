@@ -29,6 +29,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 /* ===================== Time Helper ===================== */
 
@@ -52,6 +53,8 @@ function nowStamp() {
 
 export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate }) {
   const inlineRef = useRef(null);
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
   const [descriptionOpen, setDescriptionOpen] = useState(false);
@@ -60,6 +63,16 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
+
+  useEffect(() => {
+    if (!eventId) return;
+
+    const loaded = getGovernanceEvent(eventId);
+    if (loaded) setEvent(loaded);
+  }, [eventId]);
+
+
+  if (!event) return null;
 
   const risk = event?.artefactId ? getRiskArtefactById(event.artefactId) : null;
 
@@ -271,7 +284,7 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                 color: "#333",
               }}
             >
-              <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>
+              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
@@ -281,9 +294,7 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                 alignItems: "center",
               }}
             >
-              <button onClick={() => setParticipantModalOpen(true)}>
-                Confirm Participant
-              </button>
+              {isPM && <button onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
 
               <button onClick={onClose}>Close</button>
             </div>

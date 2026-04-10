@@ -109,7 +109,16 @@ export default function TaskPopup({
     switch (e.sourceType) {
       case "RISK":
         setActiveRiskEventId(e.sourceId);
-        setRiskModalOpen(true);
+{
+  const existing = getGovernanceEventsByTask(task.id)
+    .find(e => e.eventType === "RISK");
+
+  if (existing) {
+    setActiveRiskEventId(existing.eventId);
+  }
+
+  setRiskModalOpen(true);
+}
         break;
 
       case "ISSUE":
@@ -615,16 +624,12 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? () => setCcRegisterOpen(true) : undefined}>CC</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateRisk : undefined}>Risk</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateIssue : undefined}>Issue</span> · <span style={{ cursor: isPM ? "pointer" : "default", opacity: isPM ? 1 : 0.5 }} onClick={isPM ? handleInitiateQC : undefined}>QC</span>
+            {isPM && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-{isAssignee && (<span style={{ cursor: "pointer" }} onClick={() => setRiskModalOpen(true)}>Advisory</span>)}{" | "}
-              <span style={{ cursor: "pointer" }} onClick={() => {
-                  if (!actor?.isPM) return;
-                  setEscalationContext(null);
-                  setEscalationRegisterOpen(true);
-                }}>Escalate</span>
+{isAssignee && (<span style={{ cursor: "pointer" }} onClick={() => setRiskModalOpen(true)}>Advisory</span>)}
+              {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
           <div
