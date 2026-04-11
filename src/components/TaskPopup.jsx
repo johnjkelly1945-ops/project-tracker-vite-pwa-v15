@@ -251,9 +251,17 @@ export default function TaskPopup({
   const isPM = person?.isPM === true;
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
+  const events = getGovernanceEventsByTask(task.id) || [];
+
+  const isAdvisor = events.some(e =>
+    Array.isArray(e.participation) &&
+    e.participation.some(p => p.reviewerId === actor.id)
+  );
+
+
   // STAGE 420 — SURFACE SELECTION (CANONICAL)
 
-  const isOperational = isPM || isAssignee;
+  const isOperational = isPM || isAssignee || isAdvisor;
 
   if (!isOperational) {
     return (
