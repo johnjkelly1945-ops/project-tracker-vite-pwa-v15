@@ -342,6 +342,10 @@ export default function TaskPopup({
 
   function handleInitiateRisk() {
     if (!isPM) return;
+
+    const risks = getGovernanceEventsByTask(task.id)
+      .filter(e => e.eventType === "RISK");
+
     setRiskRegisterOpen(true);
   }
 
@@ -628,7 +632,7 @@ export default function TaskPopup({
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-{isAssignee && (<span style={{ cursor: "pointer" }} onClick={() => setRiskModalOpen(true)}>Advisory</span>)}
+{isAssignee && (<span style={{ cursor: "pointer" }} onClick={() => { const existing = getGovernanceEventsByTask(task.id).find(e => e.eventType === "RISK"); if (!existing) return; setActiveRiskEventId(existing.eventId); setRiskModalOpen(true); }}>Advisory</span>)}
               {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
