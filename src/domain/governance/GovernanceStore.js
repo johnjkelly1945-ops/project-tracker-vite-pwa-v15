@@ -19,15 +19,80 @@ Rules:
 =====================================================================
 */
 
-const governanceArtefacts = []
+const ARTEFACT_STORAGE_KEY = "metra_governance_artefacts"
 
-let artefactCounter = 1
+function loadArtefacts() {
+  const raw = localStorage.getItem(ARTEFACT_STORAGE_KEY)
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+const governanceArtefacts = loadArtefacts()
+
+function saveArtefacts() {
+  localStorage.setItem(ARTEFACT_STORAGE_KEY, JSON.stringify(governanceArtefacts))
+}
+
+let artefactCounter = governanceArtefacts.length + 1
 
 function generateReference() {
   const ref = "RISK-" + String(artefactCounter).padStart(3, "0")
   artefactCounter++
   return ref
 }
+
+function reconcileRiskArtefactsFromEvents() {
+  const raw = localStorage.getItem("metra_governance_events")
+  if (!raw) return
+
+  try {
+    const parsed = JSON.parse(raw)
+    const events =
+      parsed && typeof parsed === "object"
+        ? Object.values(parsed)
+        : []
+
+    const known = new Set(governanceArtefacts.map(a => a.artefactId))
+
+    events
+      .filter(event => event && event.eventType === "RISK" && event.artefactId)
+      .forEach(event => {
+        if (known.has(event.artefactId)) return
+
+        governanceArtefacts.push({
+          artefactId: event.artefactId,
+          artefactType: "Risk",
+          segmentId: null,
+          taskId: event.taskId || null,
+          reference: generateReference(),
+          title: "",
+          category: "",
+          probability: "",
+          impact: "",
+          mitigation: "",
+          owner: "",
+          status: "Open",
+          reviewDate: "",
+          notes: "",
+          createdBy: event.initiatedBy || "system",
+          createdDate: new Date(event.initiatedAt || Date.now()).toISOString(),
+          updatedDate: new Date(event.initiatedAt || Date.now()).toISOString()
+        })
+
+        known.add(event.artefactId)
+      })
+
+    saveArtefacts()
+  } catch {
+  }
+}
+
+reconcileRiskArtefactsFromEvents()
 
 export function createRiskArtefact(segmentId, taskId, createdBy = "system") {
   const artefact = {
@@ -56,6 +121,7 @@ export function createRiskArtefact(segmentId, taskId, createdBy = "system") {
   }
 
   governanceArtefacts.push(artefact)
+  saveArtefacts()
 
   return artefact
 }
@@ -67,6 +133,7 @@ export function updateRiskArtefact(artefactId, updates) {
 
   Object.assign(artefact, updates)
 
+  saveArtefacts()
   artefact.updatedDate = new Date().toISOString()
 
   return artefact
@@ -128,6 +195,7 @@ export function createIssueArtefact(segmentId, taskId, createdBy = "system") {
   }
 
   artefactCounter++
+  saveArtefacts()
 
   governanceArtefacts.push(artefact)
 
@@ -139,6 +207,7 @@ export function updateIssueArtefact(artefactId, updates) {
 
   if (!artefact) return null
 
+  saveArtefacts()
   Object.assign(artefact, updates)
 
   artefact.updatedDate = new Date().toISOString()
@@ -181,6 +250,7 @@ export function createQCArtefact(segmentId, taskId, createdBy = "system") {
     createdDate: new Date().toISOString(),
     updatedDate: new Date().toISOString()
   }
+  saveArtefacts()
 
   artefactCounter++
 
@@ -192,6 +262,7 @@ export function createQCArtefact(segmentId, taskId, createdBy = "system") {
 export function updateQCArtefact(artefactId, updates) {
   const artefact = governanceArtefacts.find(a => a.artefactId === artefactId)
 
+  saveArtefacts()
   if (!artefact) return null
 
   Object.assign(artefact, updates)
@@ -241,6 +312,7 @@ export function createChangeArtefact(segmentId, taskId, createdBy = "system") {
 
   governanceArtefacts.push(artefact)
 
+  saveArtefacts()
   return artefact
 }
 

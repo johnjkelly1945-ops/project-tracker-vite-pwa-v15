@@ -654,7 +654,50 @@ export default function TaskPopup({
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-{isAssignee && (<span style={{ cursor: "pointer" }} onClick={() => { const existing = getGovernanceEventsByTask(task.id).find(e => e.eventType === "RISK"); if (!existing) return; setActiveRiskEventId(existing.eventId); setRiskModalOpen(true); }}>Advisory</span>)}
+{isAdvisor && (() => {
+  const advisoryTypes = [
+    ...new Set(
+      events
+        .filter(e =>
+          Array.isArray(e.participation) &&
+          e.participation.some(p => p && p.reviewerId === actor.id)
+        )
+        .map(e => e.eventType)
+    )
+  ];
+
+  if (advisoryTypes.length === 0) return null;
+
+  return (
+    <>
+      <span>Advisory</span>
+      {" - "}
+      {advisoryTypes.includes("RISK") && (
+        <span style={{ cursor: "pointer" }} onClick={() => {
+          const existing = getGovernanceEventsByTask(task.id)
+            .find(e => e.eventType === "RISK");
+          if (!existing) return;
+          setActiveRiskEventId(existing.eventId);
+          setRiskModalOpen(true);
+        }}>
+          Risk
+        </span>
+      )}
+      {advisoryTypes.includes("RISK") && advisoryTypes.includes("ISSUE") && " / "}
+      {advisoryTypes.includes("ISSUE") && (
+        <span style={{ cursor: "pointer" }} onClick={() => {
+          const existing = getGovernanceEventsByTask(task.id)
+            .find(e => e.eventType === "ISSUE");
+          if (!existing) return;
+          setActiveIssueEventId(existing.eventId);
+          setIssueModalOpen(true);
+        }}>
+          Issue
+        </span>
+      )}
+    </>
+  );
+})()}
               {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
