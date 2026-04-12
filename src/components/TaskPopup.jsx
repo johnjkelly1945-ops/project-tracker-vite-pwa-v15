@@ -705,6 +705,17 @@ export default function TaskPopup({
           {" / "}QC
         </span>
       )}
+      {advisoryTypes.includes("CC") && (
+        <span style={{ cursor: "pointer" }} onClick={() => {
+          const existing = getGovernanceEventsByTask(task.id)
+            .find(e => e.eventType === "CC");
+          if (!existing) return;
+          setActiveCcEventId(existing.eventId);
+          setCcModalOpen(true);
+        }}>
+          {" / "}CC
+        </span>
+      )}
     </>
   );
 })()}
