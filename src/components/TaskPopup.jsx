@@ -106,6 +106,20 @@ export default function TaskPopup({
 
     if (!actor) return;
 
+    const advisoryTypes = [
+      ...new Set(
+        events
+          .filter(e =>
+            Array.isArray(e.participation) &&
+            e.participation.some(p => p.reviewerId === actor.id)
+          )
+          .map(e => e.eventType)
+      )
+    ];
+
+    if (isAdvisor && !isAssignee && advisoryTypes.length > 1) {
+      return;
+    }
     switch (e.sourceType) {
       case "RISK":
         setActiveRiskEventId(e.sourceId);
