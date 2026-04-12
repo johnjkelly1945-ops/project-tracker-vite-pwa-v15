@@ -17,7 +17,7 @@ Stage 334 — QC Governance Surface (Parallel to Risk)
 =====================================================================
 */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   bridgeRecordParticipation,
   bridgeSubmitAdvisory,
@@ -57,9 +57,16 @@ export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionEntries, setDescriptionEntries] = useState([]);
 
-  const [event, setEvent] = useState(() =>
-    getGovernanceEvent(eventId)
-  );
+const [event, setEvent] = useState(null);
+
+
+useEffect(() => {
+  if (!eventId) return;
+  const loaded = getGovernanceEvent(eventId);
+  if (loaded) setEvent(loaded);
+}, [eventId]);
+
+if (!event) return null;
 
   const artefact = event?.artefactId ? getQCArtefactById(event.artefactId) : null;
 
@@ -192,7 +199,7 @@ export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote
             <strong>Advisory Notes</strong>
 
             <div style={{ marginTop: "12px" }}>
-              {event?.advisoryRecords.map((adv) => (
+{(Array.isArray(event?.advisoryRecords) ? event.advisoryRecords : []).map((adv) => (
                 <div key={adv.advisoryId} style={{ marginBottom: "16px" }}>
                   <span style={{ whiteSpace: "pre-wrap" }}>
                     {adv.summary}

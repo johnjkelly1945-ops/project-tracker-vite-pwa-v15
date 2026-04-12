@@ -657,7 +657,7 @@ export default function TaskPopup({
 {isAdvisor && (() => {
   const advisoryTypes = [
     ...new Set(
-      events
+      (getGovernanceEventsByTask(task.id) || [])
         .filter(e =>
           Array.isArray(e.participation) &&
           e.participation.some(p => p && p.reviewerId === actor.id)
@@ -683,7 +683,6 @@ export default function TaskPopup({
           Risk
         </span>
       )}
-      {advisoryTypes.includes("RISK") && advisoryTypes.includes("ISSUE") && " / "}
       {advisoryTypes.includes("ISSUE") && (
         <span style={{ cursor: "pointer" }} onClick={() => {
           const existing = getGovernanceEventsByTask(task.id)
@@ -692,7 +691,18 @@ export default function TaskPopup({
           setActiveIssueEventId(existing.eventId);
           setIssueModalOpen(true);
         }}>
-          Issue
+          {" / "}Issue
+        </span>
+      )}
+      {advisoryTypes.includes("QC") && (
+        <span style={{ cursor: "pointer" }} onClick={() => {
+          const existing = getGovernanceEventsByTask(task.id)
+            .find(e => e.eventType === "QC");
+          if (!existing) return;
+          setActiveQcEventId(existing.eventId);
+          setQcModalOpen(true);
+        }}>
+          {" / "}QC
         </span>
       )}
     </>
