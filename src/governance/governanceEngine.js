@@ -80,7 +80,7 @@ export function recordParticipation({
 
   const updatedEvent = {
     ...event,
-    participation: [...event.participation, participationRecord],
+    participation: [...(event.participation || []), participationRecord],
   };
 
   return updateGovernanceEvent(eventId, updatedEvent);
