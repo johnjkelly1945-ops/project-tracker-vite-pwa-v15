@@ -10,6 +10,7 @@ import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createChangeArtefact, getChangeArtefacts, updateChangeArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
 
@@ -218,7 +219,19 @@ export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                <button onClick={() => openCCEvent(createGovernanceEvent({ eventType: "CC", taskId, initiatedBy: "PM", artefactId: cc.artefactId }).eventId)}>
+                <button onClick={() => {
+                  const existing = getGovernanceEventsByTask(taskId)
+                    .find(e => e.eventType === "CC");
+                  const eventIdToOpen = existing
+                    ? existing.eventId
+                    : createGovernanceEvent({
+                        eventType: "CC",
+                        taskId,
+                        initiatedBy: "PM",
+                        artefactId: cc.artefactId
+                      }).eventId;
+                  openCCEvent(eventIdToOpen);
+                }}>
                   Advisory
                 </button>
               </div>

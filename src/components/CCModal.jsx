@@ -17,7 +17,7 @@ Stage 335 — CC Governance Surface (Parallel to Risk)
 =====================================================================
 */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   bridgeRecordParticipation,
   bridgeSubmitAdvisory,
@@ -60,7 +60,6 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
-
   const artefact = event?.artefactId ? getChangeArtefactById(event.artefactId) : null;
 
 
