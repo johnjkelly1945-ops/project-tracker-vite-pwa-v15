@@ -957,7 +957,7 @@ export default function TaskPopup({
           taskTitle={task.title}
           onClose={() => setIssueModalOpen(false)}
           onAddNote={onAddNote}
-          onEscalate={handleEscalateIssue}
+          onEscalate={isPM ? handleEscalateIssue : undefined}
         />
       )}
 
