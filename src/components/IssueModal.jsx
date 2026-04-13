@@ -29,6 +29,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 /* ===================== Time Helper ===================== */
 
@@ -62,6 +63,8 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
   );
 
   const issue = event?.artefactId ? getIssueArtefactById(event.artefactId) : null;
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
 
 
 
@@ -271,7 +274,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 color: "#333",
               }}
             >
-              <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>
+              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
@@ -281,9 +284,9 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 alignItems: "center",
               }}
             >
-              <button onClick={() => setParticipantModalOpen(true)}>
+              {isPM && <button onClick={() => setParticipantModalOpen(true)}>
                 Confirm Participant
-              </button>
+              </button>}
 
               <button onClick={onClose}>Close</button>
             </div>
