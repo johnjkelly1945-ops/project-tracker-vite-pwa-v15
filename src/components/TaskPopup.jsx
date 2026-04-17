@@ -674,20 +674,31 @@ export default function TaskPopup({
         }}>
           Risk
         </span>
+        )}
         {advisoryTypes.includes("ISSUE") && (
             <span style={{ cursor: "pointer" }} onClick={() => {
-              setActiveIssueEventId(e.sourceId);
+              const list = getGovernanceEventsByTask(task.id)
+                .filter(e => e.eventType === "ISSUE");
+              if (!list.length) return;
+              const selected = list[list.length - 1];
+              setActiveIssueEventId(selected.eventId);
               setIssueModalOpen(true);
             }}>
             {" / "}Issue
           </span>
         )}
-          setActiveQcEventId(existing.eventId);
-          setQcModalOpen(true);
-        }}>
-          {" / "}QC
-        </span>
-      )}
+        {advisoryTypes.includes("QC") && (
+          <span style={{ cursor: "pointer" }} onClick={() => {
+            const list = getGovernanceEventsByTask(task.id)
+              .filter(e => e.eventType === "QC");
+            if (!list.length) return;
+            const selected = list[list.length - 1];
+            setActiveQcEventId(selected.eventId);
+            setQcModalOpen(true);
+          }}>
+            {" / "}QC
+          </span>
+        )}
       {advisoryTypes.includes("CC") && (
         <span style={{ cursor: "pointer" }} onClick={() => {
           const existing = getGovernanceEventsByTask(task.id)
