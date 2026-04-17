@@ -324,6 +324,7 @@ export function updateChangeArtefact(artefactId, updates) {
   Object.assign(artefact, updates)
 
   artefact.updatedDate = new Date().toISOString()
+  saveArtefacts()
 
   return artefact
 }

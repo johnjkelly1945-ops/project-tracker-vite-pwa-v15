@@ -38,6 +38,7 @@ import {
   getGovernanceEvent,
   updateGovernanceEvent,
 } from "./governanceStore";
+import { updateChangeArtefact } from "../domain/governance/GovernanceStore";
 
 /*
 =====================================================================
@@ -131,7 +132,17 @@ templateId,
     advisoryRecords: [...existingAdvisories, advisoryRecord],
   };
 
-  return updateGovernanceEvent(eventId, updatedEvent);
+const persisted = updateGovernanceEvent(eventId, updatedEvent);
+
+if (persisted?.eventType === "CC" && persisted?.artefactId) {
+  try {
+    updateChangeArtefact(persisted.artefactId, { title: summary });
+  } catch (e) {
+    console.warn("CC title sync failed", e);
+  }
+}
+
+return persisted;
 }
 
 /*
