@@ -122,9 +122,13 @@ artefactId,
 templateId,
 };
 
+  const existingAdvisories = Array.isArray(event.advisoryRecords)
+    ? event.advisoryRecords
+    : [];
+
   const updatedEvent = {
     ...event,
-    advisoryRecords: [...event.advisoryRecords, advisoryRecord],
+    advisoryRecords: [...existingAdvisories, advisoryRecord],
   };
 
   return updateGovernanceEvent(eventId, updatedEvent);

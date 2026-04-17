@@ -82,11 +82,28 @@ export function repoGetByTask(taskId) {
 
 export function repoUpdate(eventId, updatedEvent) {
   if (!events[eventId]) return null;
-  events[eventId] = updatedEvent;
+
+  const existing = events[eventId] || {};
+
+  const safeEvent = {
+    ...existing,
+    ...updatedEvent,
+    participation: Array.isArray(updatedEvent.participation)
+      ? updatedEvent.participation
+      : Array.isArray(existing.participation)
+      ? existing.participation
+      : [],
+    advisoryRecords: Array.isArray(updatedEvent.advisoryRecords)
+      ? updatedEvent.advisoryRecords
+      : Array.isArray(existing.advisoryRecords)
+      ? existing.advisoryRecords
+      : [],
+  };
+
+  events[eventId] = safeEvent;
   save(events);
   return events[eventId];
 }
-
 export function repoReset() {
   events = {};
   save(events);
