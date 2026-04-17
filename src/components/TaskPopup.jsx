@@ -123,16 +123,7 @@ export default function TaskPopup({
     switch (e.sourceType) {
       case "RISK":
         setActiveRiskEventId(e.sourceId);
-{
-  const existing = getGovernanceEventsByTask(task.id)
-    .find(e => e.eventType === "RISK");
-
-  if (existing) {
-    setActiveRiskEventId(existing.eventId);
-  }
-
-  setRiskModalOpen(true);
-}
+        setRiskModalOpen(true);
         break;
 
       case "ISSUE":
@@ -674,31 +665,23 @@ export default function TaskPopup({
       {" - "}
       {advisoryTypes.includes("RISK") && (
         <span style={{ cursor: "pointer" }} onClick={() => {
-          const existing = getGovernanceEventsByTask(task.id)
-            .find(e => e.eventType === "RISK");
-          if (!existing) return;
-          setActiveRiskEventId(existing.eventId);
-          setRiskModalOpen(true);
+            const list = getGovernanceEventsByTask(task.id)
+              .filter(e => e.eventType === "RISK");
+            if (!list.length) return;
+            const selected = list[list.length - 1];
+            setActiveRiskEventId(selected.eventId);
+            setRiskModalOpen(true);
         }}>
           Risk
         </span>
-      )}
-      {advisoryTypes.includes("ISSUE") && (
-        <span style={{ cursor: "pointer" }} onClick={() => {
-          const existing = getGovernanceEventsByTask(task.id)
-            .find(e => e.eventType === "ISSUE");
-          if (!existing) return;
-          setActiveIssueEventId(existing.eventId);
-          setIssueModalOpen(true);
-        }}>
-          {" / "}Issue
-        </span>
-      )}
-      {advisoryTypes.includes("QC") && (
-        <span style={{ cursor: "pointer" }} onClick={() => {
-          const existing = getGovernanceEventsByTask(task.id)
-            .find(e => e.eventType === "QC");
-          if (!existing) return;
+        {advisoryTypes.includes("ISSUE") && (
+            <span style={{ cursor: "pointer" }} onClick={() => {
+              setActiveIssueEventId(e.sourceId);
+              setIssueModalOpen(true);
+            }}>
+            {" / "}Issue
+          </span>
+        )}
           setActiveQcEventId(existing.eventId);
           setQcModalOpen(true);
         }}>
