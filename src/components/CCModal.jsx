@@ -50,7 +50,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate }) {
+export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, isPM }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -261,7 +261,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 color: "#333",
               }}
             >
-              <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>
+              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
@@ -271,9 +271,11 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 alignItems: "center",
               }}
             >
-              <button onClick={() => setParticipantModalOpen(true)}>
-                Confirm Participant
-              </button>
+              {isPM && (
+                <button onClick={() => setParticipantModalOpen(true)}>
+                  Confirm Participant
+                </button>
+              )}
 
               <button onClick={onClose}>Close</button>
             </div>

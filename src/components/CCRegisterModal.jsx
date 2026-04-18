@@ -221,7 +221,7 @@ export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
               <div style={{ marginTop: "6px" }}>
                 <button onClick={() => {
                   const existing = getGovernanceEventsByTask(taskId)
-                    .find(e => e.eventType === "CC");
+                    .find(e => e.artefactId === cc.artefactId);
                   const eventIdToOpen = existing
                     ? existing.eventId
                     : createGovernanceEvent({

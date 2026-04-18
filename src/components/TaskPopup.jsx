@@ -702,10 +702,9 @@ export default function TaskPopup({
       {advisoryTypes.includes("CC") && (
         <span style={{ cursor: "pointer" }} onClick={() => {
           const existing = getGovernanceEventsByTask(task.id)
-            .find(e => e.eventType === "CC");
-          if (!existing) return;
-          setActiveCcEventId(existing.eventId);
-          setCcModalOpen(true);
+              .filter(e => e.eventType === "CC");
+            if (!existing.length) return;
+              if (existing.length === 1) { setActiveCcEventId(existing[0].eventId); setCcModalOpen(true); } else if (existing.length > 1) setCcRegisterOpen(true);
         }}>
           {" / "}CC
         </span>
@@ -970,11 +969,12 @@ export default function TaskPopup({
       {ccModalOpen && activeCcEventId && (
         <CCModal
           taskId={task.id}
+          isPM={isPM}
           taskTitle={task.title}
           eventId={activeCcEventId}
           onClose={() => setCcModalOpen(false)}
           onAddNote={onAddNote}
-          onEscalate={handleEscalateCC}
+                onEscalate={isPM ? handleEscalateCC : null}
         />
       )}
 

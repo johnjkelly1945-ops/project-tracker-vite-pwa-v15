@@ -134,13 +134,6 @@ templateId,
 
 const persisted = updateGovernanceEvent(eventId, updatedEvent);
 
-if (persisted?.eventType === "CC" && persisted?.artefactId) {
-  try {
-    updateChangeArtefact(persisted.artefactId, { title: summary });
-  } catch (e) {
-    console.warn("CC title sync failed", e);
-  }
-}
 
 return persisted;
 }
