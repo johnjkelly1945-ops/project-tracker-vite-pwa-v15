@@ -9,7 +9,7 @@ Stage 378 — Risk Register Editing Surface
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../domain/governance/GovernanceStore";
-import { createGovernanceEvent } from "../governance/governanceStore";
+import { createGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
 
 export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 

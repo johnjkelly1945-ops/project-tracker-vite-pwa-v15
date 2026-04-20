@@ -51,6 +51,16 @@ CREATE EVENT
 */
 
 export function createGovernanceEvent({ eventType, taskId, initiatedBy, artefactId = null }) {
+
+  // 🔒 Enforce 1 artefact → 1 event
+  const existing = repoGetByTask(taskId)
+    .find(e =>
+      e.eventType === eventType &&
+      e.artefactId === artefactId
+    );
+
+  if (existing) return existing;
+
   const eventId = generateEventId();
 
   const event = {

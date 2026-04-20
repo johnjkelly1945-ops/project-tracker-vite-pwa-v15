@@ -665,12 +665,19 @@ export default function TaskPopup({
       {" - "}
       {advisoryTypes.includes("RISK") && (
         <span style={{ cursor: "pointer" }} onClick={() => {
-            const list = getGovernanceEventsByTask(task.id)
-              .filter(e => e.eventType === "RISK");
-            if (!list.length) return;
-            const selected = list[list.length - 1];
-            setActiveRiskEventId(selected.eventId);
+          const list = getGovernanceEventsByTask(task.id)
+            .filter(e =>
+              e.eventType === "RISK" &&
+              Array.isArray(e.participation) &&
+              e.participation.some(p => p && p.reviewerId === actor.id)
+            );
+          if (!list.length) return;
+          if (list.length === 1) {
+            setActiveRiskEventId(list[0].eventId);
             setRiskModalOpen(true);
+          } else {
+            setRiskRegisterOpen(true);
+          }
         }}>
           Risk
         </span>

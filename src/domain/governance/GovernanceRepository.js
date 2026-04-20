@@ -88,11 +88,10 @@ export function repoUpdate(eventId, updatedEvent) {
   const safeEvent = {
     ...existing,
     ...updatedEvent,
-    participation: Array.isArray(updatedEvent.participation)
-      ? updatedEvent.participation
-      : Array.isArray(existing.participation)
-      ? existing.participation
-      : [],
+    participation: [
+      ...(Array.isArray(existing.participation) ? existing.participation : []),
+      ...(Array.isArray(updatedEvent.participation) ? updatedEvent.participation : []),
+    ],
     advisoryRecords: Array.isArray(updatedEvent.advisoryRecords)
       ? updatedEvent.advisoryRecords
       : Array.isArray(existing.advisoryRecords)
