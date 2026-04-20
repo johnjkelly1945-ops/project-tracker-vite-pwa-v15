@@ -10,6 +10,7 @@ import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
@@ -27,9 +28,26 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
     mitigation: ""
   });
 
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
+
+  const advisoryRiskArtefactIds = new Set(
+    getGovernanceEventsByTask(taskId)
+      .filter(e =>
+        e.eventType === "RISK" &&
+        Array.isArray(e.participation) &&
+        e.participation.some(p => p && p.reviewerId === actor?.id)
+      )
+      .map(e => e.artefactId)
+      .filter(Boolean)
+  );
+
   const risks =
     getRiskArtefacts()
-      .filter(risk => risk.taskId === taskId);
+      .filter(risk =>
+        risk.taskId === taskId &&
+        (isPM || advisoryRiskArtefactIds.has(risk.artefactId))
+      );
 
   function saveEntry() {
 
