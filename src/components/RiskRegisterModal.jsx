@@ -90,7 +90,6 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
       mitigation: ""
     });
 
-    refresh(x => x + 1);
   }
 
   function resetForm() {
@@ -186,12 +185,12 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
                 >
                   Cancel
                 </button>
-
               </div>
 
             </div>
           )}
 
+          <div style={{ maxHeight: "300px", overflowY: "auto", marginTop: "10px" }}>
           {risks.map(risk => (
 
             <div
@@ -244,6 +243,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
             </div>
 
           ))}
+          </div>
 
           <div style={{ marginTop: "16px" }}>
             <button onClick={() => setCreating(true)}>
