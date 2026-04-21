@@ -92,7 +92,7 @@ function reconcileRiskArtefactsFromEvents() {
   }
 }
 
-reconcileRiskArtefactsFromEvents()
+// reconcileRiskArtefactsFromEvents()
 
 export function createRiskArtefact(segmentId, taskId, createdBy = "system") {
   const artefact = {
