@@ -12,7 +12,7 @@ import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../dom
 import { createGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function RiskRegisterModal({ taskId, onClose, openRiskEvent, isPM }) {
+export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
   const [, refresh] = useState(0);
 
@@ -29,6 +29,8 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent, isPM
   });
 
   const actor = getActingUser();
+  const isPM = actor?.isPM === true;
+
   const advisoryRiskArtefactIds = new Set(
     getGovernanceEventsByTask(taskId)
       .filter(e =>
@@ -65,27 +67,18 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent, isPM
 
     } else {
 
-        console.log("DEBUG CREATE RISK taskId:", taskId);
-        const r = createRiskArtefact({
-          taskId,
-          title: form.title,
-          description: form.description,
-          probability: form.probability,
-          impact: form.impact,
-          owner: form.owner,
-          mitigation: form.mitigation
-        });
+      const r = createRiskArtefact(null, taskId);
 
-        const e = createGovernanceEvent({
-          eventType: "RISK",
-          taskId,
-          initiatedBy: "PM",
-          artefactId: r.artefactId
-        });
+      updateRiskArtefact(r.artefactId, {
+        title: form.title,
+        description: form.description,
+        probability: form.probability,
+        impact: form.impact,
+        owner: form.owner,
+        mitigation: form.mitigation
+      });
 
-        openRiskEvent(e.eventId);
-
-        setCreating(false);
+      setCreating(false);
     }
 
     setForm({
@@ -253,7 +246,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent, isPM
           </div>
 
           <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)} disabled={!isPM}>
+            <button onClick={() => setCreating(true)}>
               New Risk
             </button>
           </div>
