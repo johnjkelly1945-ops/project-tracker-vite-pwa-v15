@@ -92,7 +92,7 @@ function reconcileRiskArtefactsFromEvents() {
   }
 }
 
-reconcileRiskArtefactsFromEvents()
+// reconcileRiskArtefactsFromEvents()
 
 export function createRiskArtefact(segmentId, taskId, createdBy = "system") {
   const artefact = {
@@ -250,11 +250,10 @@ export function createQCArtefact(segmentId, taskId, createdBy = "system") {
     createdDate: new Date().toISOString(),
     updatedDate: new Date().toISOString()
   }
-  saveArtefacts()
 
   artefactCounter++
-
   governanceArtefacts.push(artefact)
+  saveArtefacts()
 
   return artefact
 }
@@ -262,10 +261,11 @@ export function createQCArtefact(segmentId, taskId, createdBy = "system") {
 export function updateQCArtefact(artefactId, updates) {
   const artefact = governanceArtefacts.find(a => a.artefactId === artefactId)
 
-  saveArtefacts()
   if (!artefact) return null
 
   Object.assign(artefact, updates)
+
+  saveArtefacts()
 
   artefact.updatedDate = new Date().toISOString()
 

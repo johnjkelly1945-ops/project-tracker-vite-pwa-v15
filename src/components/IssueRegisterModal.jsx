@@ -45,25 +45,14 @@ export default function IssueRegisterModal({ taskId, onClose, openIssueEvent }) 
 
     } else {
 
-        const r = createIssueArtefact(null, taskId);
+      const r = createIssueArtefact(null, taskId);
 
-        updateIssueArtefact(r.artefactId, {
-          title: form.title,
-          description: form.description,
-          owner: form.owner,
-          resolution: form.resolution
-        });
-
-        const e = createGovernanceEvent({
-          eventType: "ISSUE",
-          taskId,
-          initiatedBy: "PM",
-          artefactId: r.artefactId
-        });
-
-        openIssueEvent(e.eventId);
-
-
+      updateIssueArtefact(r.artefactId, {
+        title: form.title,
+        description: form.description,
+        owner: form.owner,
+        resolution: form.resolution
+      });
 
       setCreating(false);
     }
