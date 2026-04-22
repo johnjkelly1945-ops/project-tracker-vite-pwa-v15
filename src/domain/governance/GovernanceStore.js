@@ -92,7 +92,7 @@ function reconcileRiskArtefactsFromEvents() {
   }
 }
 
-// reconcileRiskArtefactsFromEvents()
+reconcileRiskArtefactsFromEvents()
 
 export function createRiskArtefact(segmentId, taskId, createdBy = "system") {
   const artefact = {
@@ -194,10 +194,9 @@ export function createIssueArtefact(segmentId, taskId, createdBy = "system") {
     updatedDate: new Date().toISOString()
   }
 
-  artefactCounter++
-  saveArtefacts()
-
-  governanceArtefacts.push(artefact)
+    artefactCounter++
+    governanceArtefacts.push(artefact)
+    saveArtefacts()
 
   return artefact
 }
@@ -207,8 +206,9 @@ export function updateIssueArtefact(artefactId, updates) {
 
   if (!artefact) return null
 
-  saveArtefacts()
   Object.assign(artefact, updates)
+
+  saveArtefacts()
 
   artefact.updatedDate = new Date().toISOString()
 

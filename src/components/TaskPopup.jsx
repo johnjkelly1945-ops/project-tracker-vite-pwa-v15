@@ -682,18 +682,27 @@ export default function TaskPopup({
           Risk
         </span>
         )}
-        {advisoryTypes.includes("ISSUE") && (
+          {advisoryTypes.includes("ISSUE") && (
             <span style={{ cursor: "pointer" }} onClick={() => {
               const list = getGovernanceEventsByTask(task.id)
-                .filter(e => e.eventType === "ISSUE");
+                .filter(e =>
+                  e.eventType === "ISSUE" &&
+                  Array.isArray(e.participation) &&
+                  e.participation.some(p => p && p.reviewerId === actor.id)
+                );
+
               if (!list.length) return;
-              const selected = list[list.length - 1];
-              setActiveIssueEventId(selected.eventId);
-              setIssueModalOpen(true);
+
+              if (list.length === 1) {
+                setActiveIssueEventId(list[0].eventId);
+                setIssueModalOpen(true);
+              } else {
+                setIssueRegisterOpen(true);
+              }
             }}>
-            {" / "}Issue
-          </span>
-        )}
+              {" / "}Issue
+            </span>
+          )}
         {advisoryTypes.includes("QC") && (
           <span style={{ cursor: "pointer" }} onClick={() => {
             const list = getGovernanceEventsByTask(task.id)
@@ -893,6 +902,7 @@ export default function TaskPopup({
             setRiskRegisterOpen(false);
             setRiskModalOpen(true);
           }}
+          isPM={isPM}
         />
       )}
       {issueRegisterOpen && (
@@ -921,6 +931,7 @@ export default function TaskPopup({
         {ccRegisterOpen && (
           <CCRegisterModal
             taskId={task.id}
+            isPM={isPM}
             onClose={() => setCcRegisterOpen(false)}
             openCCEvent={(id) => {
               setActiveCcEventId(id);

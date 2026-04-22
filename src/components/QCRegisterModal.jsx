@@ -174,6 +174,7 @@ export default function QCRegisterModal({ taskId, onClose, openQCEvent }) {
             </div>
           )}
 
+          <div style={{ maxHeight: "300px", overflowY: "auto", marginTop: "10px" }}>
           {qcs.map(qc => (
 
             <div
@@ -226,6 +227,7 @@ export default function QCRegisterModal({ taskId, onClose, openQCEvent }) {
             </div>
 
           ))}
+          </div>
 
           <div style={{ marginTop: "16px" }}>
             <button onClick={() => setCreating(true)}>

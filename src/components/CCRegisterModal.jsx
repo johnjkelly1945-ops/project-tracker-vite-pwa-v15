@@ -12,7 +12,7 @@ import { createChangeArtefact, getChangeArtefacts, updateChangeArtefact } from "
 import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
+export default function CCRegisterModal({ taskId, onClose, openCCEvent, isPM }) {
 
   const [, refresh] = useState(0);
 
@@ -175,6 +175,7 @@ export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
             </div>
           )}
 
+          <div style={{ maxHeight: "300px", overflowY: "auto", marginTop: "10px" }}>
           {ccs.map(cc => (
 
             <div
@@ -239,9 +240,10 @@ export default function CCRegisterModal({ taskId, onClose, openCCEvent }) {
             </div>
 
           ))}
+          </div>
 
           <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)}>
+            <button onClick={() => setCreating(true)} disabled={!isPM}>
               New CC
             </button>
           </div>
