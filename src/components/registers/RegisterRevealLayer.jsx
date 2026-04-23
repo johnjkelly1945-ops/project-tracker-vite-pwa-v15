@@ -16,6 +16,7 @@ lifecycle canon, tooltip transparency, and projection invariants.
 */
 
 import { useEffect, useState } from "react";
+import { getRiskArtefacts, getIssueArtefacts, getQCArtefacts, getChangeArtefacts } from "../../domain/governance/GovernanceStore";
 import { createPortal } from "react-dom";
 
 let listenersAttached = false;
@@ -142,10 +143,66 @@ export default function RegisterRevealLayer() {
     artefacts: ARTEFACT_EVENT_STUB,
   };
 
-  const source = ledgerSourceMap[activeRegister] || [];
+  console.log("ACTIVE REGISTER:", activeRegister);
+  let source = [];
+
+  if (activeRegister === "risks") {
+    source = getRiskArtefacts().map(a => ({
+      title: a.title || "Untitled",
+      changeId: a.reference,
+      createdBy: a.createdBy || "—",
+      createdOn: a.createdDate || "—",
+      originatingTaskName: a.taskId,
+      taskId: a.taskId,
+      closed: a.status === "Closed",
+      state: a.status || "Open",
+      severity: "",
+      category: a.category || "",
+    }));
+  } else if (activeRegister === "issues" || activeRegister === "issue") {
+    source = getIssueArtefacts().map(a => ({
+      title: a.title || "Untitled",
+      changeId: a.reference,
+      createdBy: a.createdBy || "—",
+      createdOn: a.createdDate || "—",
+      originatingTaskName: a.taskId,
+      taskId: a.taskId,
+      closed: a.status === "Closed",
+      state: a.status || "Open",
+      severity: "",
+      category: "",
+    }));
+  } else if (activeRegister === "qc") {
+    source = getQCArtefacts().map(a => ({
+      title: a.title || "Untitled",
+      changeId: a.reference,
+      createdBy: a.createdBy || "—",
+      createdOn: a.createdDate || "—",
+      originatingTaskName: a.taskId,
+      taskId: a.taskId,
+      closed: a.status === "Closed",
+      state: a.status || "Open",
+      severity: "",
+      category: "",
+    }));
+  } else if (activeRegister === "change") {
+    source = getChangeArtefacts().map(a => ({
+      title: a.title || "Untitled",
+      changeId: a.reference,
+      createdBy: a.createdBy || "—",
+      createdOn: a.createdDate || "—",
+      originatingTaskName: a.taskId,
+      taskId: a.taskId,
+      closed: a.status === "Closed",
+      state: a.status || "Open",
+      severity: "",
+      category: "",
+    }));
+  } else {
+    source = ledgerSourceMap[activeRegister] || [];
+  }
 
   const headerMap = {
-    change: "Change Ledger",
     risks: "Risk Ledger",
     issues: "Issue Ledger",
     qc: "Quality Control Ledger",
