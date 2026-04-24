@@ -17,6 +17,7 @@ lifecycle canon, tooltip transparency, and projection invariants.
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { getIssueArtefacts, getRiskArtefacts, getQCArtefacts, getChangeArtefacts } from "../../domain/governance/GovernanceStore";
 
 let listenersAttached = false;
 
@@ -142,7 +143,22 @@ export default function RegisterRevealLayer() {
     artefacts: ARTEFACT_EVENT_STUB,
   };
 
-  const source = ledgerSourceMap[activeRegister] || [];
+let source = ledgerSourceMap[activeRegister] || [];
+
+if (activeRegister === "issues") {
+  source = getIssueArtefacts();
+}
+
+if (activeRegister === "risks") {
+  source = getRiskArtefacts();
+}
+if (activeRegister === "qc") {
+  source = getQCArtefacts();
+}
+
+if (activeRegister === "change") {
+  source = getChangeArtefacts();
+}
 
   const headerMap = {
     change: "Change Ledger",
