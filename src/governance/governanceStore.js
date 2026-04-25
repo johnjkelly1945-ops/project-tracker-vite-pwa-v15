@@ -69,6 +69,8 @@ export function createGovernanceEvent({ eventType, taskId, initiatedBy, artefact
     taskId,
     artefactId,
     status: "OPEN",
+    closedAt: null,
+    closedBy: null,
     escalated: false,
     initiatedAt: Date.now(),
     initiatedBy,

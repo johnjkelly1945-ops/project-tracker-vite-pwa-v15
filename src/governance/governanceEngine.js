@@ -187,3 +187,35 @@ export function recordDecision({ eventId, decision, decidedBy }) {
 
   return updateGovernanceEvent(eventId, updatedEvent);
 }
+
+/*
+=====================================================================
+CLOSE GOVERNANCE EVENT (LIFECYCLE TRANSITION)
+=====================================================================
+*/
+
+export function closeGovernanceEvent({ eventId }) {
+  const event = getGovernanceEvent(eventId);
+
+  if (!event) throw new Error("Governance event not found");
+
+  const actor = getActingUser();
+
+  if (!actor?.isPM) {
+    throw new Error("Only PM can close governance items");
+  }
+
+  if (event.status !== "OPEN") {
+    return event;
+  }
+
+  const updatedEvent = {
+    ...event,
+    status: "CLOSED",
+    closedAt: Date.now(),
+    closedBy: actor?.displayName || actor?.id || "PM",
+  };
+
+  return updateGovernanceEvent(eventId, updatedEvent);
+}
+

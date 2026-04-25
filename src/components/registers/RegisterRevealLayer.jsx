@@ -1,3 +1,4 @@
+import { getGovernanceEventsByTask } from "../../governance/governanceStore";
 // @ts-nocheck
 /*
 =====================================================================
@@ -146,19 +147,27 @@ export default function RegisterRevealLayer() {
   console.log("ACTIVE REGISTER:", activeRegister);
   let source = [];
 
-  if (activeRegister === "risks") {
-    source = getRiskArtefacts().map(a => ({
-      title: a.title || "Untitled",
-      changeId: a.reference,
-      createdBy: a.createdBy || "—",
-      createdOn: a.createdDate || "—",
-      originatingTaskName: a.taskId,
-      taskId: a.taskId,
-      closed: a.status === "Closed",
-      state: a.status || "Open",
-      severity: "",
-      category: a.category || "",
-    }));
+    if (activeRegister === "risks" || activeRegister === "risk") {
+      source = getRiskArtefacts().map(a => {
+        const events = getGovernanceEventsByTask(a.taskId)
+          .filter(e => e.artefactId === a.artefactId);
+
+        const latest = events[events.length - 1];
+        const status = latest?.status || "OPEN";
+
+        return {
+          title: a.title || "Untitled",
+          changeId: a.reference,
+          createdBy: a.createdBy || "—",
+          createdOn: a.createdDate || "—",
+          originatingTaskName: a.taskTitle || a.taskId,
+          taskId: a.taskId,
+          closed: status === "CLOSED",
+          state: status,
+          severity: "",
+          category: a.category || "",
+        };
+      });
   } else if (activeRegister === "issues" || activeRegister === "issue") {
     source = getIssueArtefacts().map(a => ({
       title: a.title || "Untitled",
@@ -441,14 +450,12 @@ export default function RegisterRevealLayer() {
                       {r.title}
                     </td>
 
-                    <td
-                      style={tdStyle}
-                      title={`${r.originatingTaskName} — ${r.taskId}`}
-                    >
-                      {r.originatingTaskName}
-                      <span style={idStyle}>{r.taskId}</span>
-                    </td>
-
+                      <td
+                        style={tdStyle}
+                        title={r.originatingTaskName}
+                      >
+                        {r.originatingTaskName}
+                      </td>
                     <td style={tdStyle} title={r.category || ""}>
                       {r.category}
                     </td>
@@ -456,6 +463,7 @@ export default function RegisterRevealLayer() {
                     <td style={tdStyle} title={r.changeId}>
                       <span style={idStyle}>{r.changeId}</span>
                     </td>
+                      <td style={tdStyle}>{r.closed ? "CLOSED" : "OPEN"}</td>
 
                     <td style={tdStyle} title={r.createdBy}>
                       {r.createdBy}

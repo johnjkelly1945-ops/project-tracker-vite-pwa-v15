@@ -94,13 +94,23 @@ function reconcileRiskArtefactsFromEvents() {
 
 // reconcileRiskArtefactsFromEvents()
 
-export function createRiskArtefact(segmentId, taskId, createdBy = "system") {
+export function createRiskArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", createdBy = "system") {
+
+  let taskTitle = "";
+  if (typeof taskTitleOrCreatedBy === "string" && taskTitleOrCreatedBy.startsWith("task-")) {
+    // old call pattern: (segmentId, taskId, createdBy)
+    createdBy = taskTitleOrCreatedBy;
+  } else {
+    taskTitle = taskTitleOrCreatedBy || "";
+  }
+
   const artefact = {
     artefactId: crypto.randomUUID(),
     artefactType: "Risk",
 
     segmentId,
     taskId,
+    taskTitle: taskTitle || "",
 
     reference: generateReference(),
     title: "",

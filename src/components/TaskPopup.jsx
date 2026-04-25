@@ -897,14 +897,13 @@ export default function TaskPopup({
           taskId={task.id}
           eventId={activeReviewEventId}
           taskTitle={task.title}
-          onClose={() => setReviewModalOpen(false)}
-        />
+          />
       )}
-
 
       {riskRegisterOpen && (
         <RiskRegisterModal
           taskId={task.id}
+          taskTitle={task.title}
           onClose={() => setRiskRegisterOpen(false)}
           openRiskEvent={(eventId) => {
             setActiveRiskEventId(eventId);
@@ -914,6 +913,7 @@ export default function TaskPopup({
           isPM={isPM}
         />
       )}
+
       {issueRegisterOpen && (
         <IssueRegisterModal
           taskId={task.id}
@@ -922,15 +922,9 @@ export default function TaskPopup({
             setActiveIssueEventId(eventId);
             setIssueRegisterOpen(false);
             setIssueModalOpen(true);
-          }}        />
+          }}
+        />
       )}
-
-        {qcRegisterOpen && (
-          <QCRegisterModal
-            taskId={task.id}
-            onClose={() => setQcRegisterOpen(false)}
-            openQCEvent={(eventId) => {
-              setActiveQcEventId(eventId);
               setQcRegisterOpen(false);
               setQcModalOpen(true);
             }}

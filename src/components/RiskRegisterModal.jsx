@@ -12,9 +12,10 @@ import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../dom
 import { createGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
+export default function RiskRegisterModal({ taskId, taskTitle, onClose, openRiskEvent }) {
 
   const [, refresh] = useState(0);
+  console.log("TASK TITLE IN MODAL:", taskTitle);
 
   const [creating, setCreating] = useState(false);
   const [editingRisk, setEditingRisk] = useState(null);
@@ -67,7 +68,7 @@ export default function RiskRegisterModal({ taskId, onClose, openRiskEvent }) {
 
     } else {
 
-      const r = createRiskArtefact(null, taskId);
+      const r = createRiskArtefact(null, taskId, taskTitle);
 
       updateRiskArtefact(r.artefactId, {
         title: form.title,

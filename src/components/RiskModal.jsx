@@ -23,6 +23,7 @@ import {
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
 import { getGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
+import { closeGovernanceEvent } from "../governance/governanceEngine";
 import { getRiskArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
@@ -61,13 +62,14 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
   const [descriptionEntries, setDescriptionEntries] = useState([]);
 
   const [event, setEvent] = useState(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     if (!eventId) return;
 
     const loaded = getGovernanceEvent(eventId);
     if (loaded) setEvent(loaded);
-  }, [eventId]);
+  }, [eventId, refreshTick]);
 
 
   if (!event) return null;
@@ -111,6 +113,12 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
 
   /* ================= Inline Commit ================= */
 
+
+  function handleCloseItem() {
+    closeGovernanceEvent({ eventId });
+    const fresh = getGovernanceEvent(eventId);
+    if (fresh) setEvent({ ...fresh });
+  }
   function handleCommitInlineAdvisory() {
     const summary = advisoryText.trim();
     if (!summary) return;
@@ -178,7 +186,8 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                   marginBottom: "10px",
                 }}
               >
-                Risk — {risk?.reference} — {risk?.title || "Untitled"}
+                <div>Risk — {risk?.reference} — {risk?.title || "Untitled"}</div>
+                <div>Status: {event?.status || "OPEN"}</div>
               </div>
 
               <div><strong>Task:</strong> {taskTitle}</div>
@@ -279,6 +288,7 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                 color: "#333",
               }}
             >
+              {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
               {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
