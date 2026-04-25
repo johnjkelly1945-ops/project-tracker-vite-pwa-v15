@@ -4,6 +4,25 @@ import React from "react";
 export default function RegisterItemView({ item, onClose }) {
   if (!item) return null;
 
+  const formattedDate = item.createdOn
+    ? new Date(item.createdOn).toLocaleString()
+    : "—";
+
+  const val = (v) => (v && v !== "" ? v : "—");
+
+  const fieldStyle = {
+    width: "100%",
+    marginBottom: "12px",
+    padding: "8px",
+    background: "#f9f9f9",
+  };
+
+  const labelStyle = {
+    fontSize: "13px",
+    fontWeight: "bold",
+    marginBottom: "4px",
+  };
+
   return (
     <div
       style={{
@@ -17,27 +36,78 @@ export default function RegisterItemView({ item, onClose }) {
         justifyContent: "center",
         alignItems: "center",
         zIndex: 2147483647,
-        pointerEvents: "auto"
       }}
     >
       <div
         style={{
           background: "#fff",
-          padding: "20px",
-          width: "500px",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          padding: "24px",
+          width: "640px",
+          maxHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: "10px",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
         }}
       >
-        <h3 style={{ marginTop: 0 }}>
-          {item.changeId || item.reference} — {item.title || "Untitled"}
-        </h3>
+        {/* HEADER */}
+        <h2 style={{ marginBottom: "16px" }}>
+          {val(item.changeId || item.reference)} — {val(item.title)}
+        </h2>
 
-        <div style={{ marginBottom: "12px", color: "#555" }}>
-          {item.description || "No description"}
+        {/* SCROLLABLE CONTENT */}
+        <div style={{ overflowY: "auto", paddingRight: "8px" }}>
+
+          <div style={labelStyle}>Title</div>
+          <input value={val(item.title)} readOnly style={fieldStyle} />
+
+          <div style={labelStyle}>Description</div>
+          <textarea
+            value={val(item.description)}
+            readOnly
+            style={{ ...fieldStyle, minHeight: "60px" }}
+          />
+
+          <div style={labelStyle}>Severity</div>
+          <input value={val(item.severity)} readOnly style={fieldStyle} />
+
+          <div style={labelStyle}>Impact</div>
+          <input value={val(item.impact)} readOnly style={fieldStyle} />
+
+          <div style={labelStyle}>Owner</div>
+          <input
+            value={val(item.owner || item.createdBy)}
+            readOnly
+            style={fieldStyle}
+          />
+
+          <div style={labelStyle}>Mitigation</div>
+          <textarea
+            value={val(item.mitigation)}
+            readOnly
+            style={{ ...fieldStyle, minHeight: "60px" }}
+          />
+
+          <div style={{ marginTop: "12px", fontSize: "13px", color: "#666" }}>
+            <div><strong>Status:</strong> {val(item.state)}</div>
+            <div><strong>Created On:</strong> {formattedDate}</div>
+          </div>
+
         </div>
 
-        <button onClick={onClose}>Close</button>
+        {/* FOOTER (STICKY) */}
+        <div
+          style={{
+            textAlign: "right",
+            marginTop: "12px",
+            position: "sticky",
+            bottom: 0,
+            background: "#fff",
+            paddingTop: "8px",
+          }}
+        >
+          <button onClick={onClose}>Close</button>
+        </div>
       </div>
     </div>
   );
