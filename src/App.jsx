@@ -19,6 +19,7 @@ import { localAssignees } from "./data/localAssignees";
 import { getPersonnel } from "./domain/personnel/PersonnelRegistry";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
+import RegisterItemView from "./components/RegisterItemView";
 
 /*
 =====================================================================
@@ -108,6 +109,7 @@ export default function App() {
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [hydrated, setHydrated] = useState(false);
 
   // Stage 359A — Load workspace with migration
@@ -220,6 +222,11 @@ export default function App() {
     function onIntent(e) {
       const intent = e?.detail;
       if (!intent || !intent.type) return;
+      if (intent.type === "OPEN_REGISTER_ITEM_VIEW") {
+        console.log("INTENT RECEIVED:", intent.payload);
+        setActiveRegisterItem(intent.payload);
+        return;
+      }
 
       if (intent.type === "OPEN_ARCHIVE_INTENT") {
         setArchiveOpen(true);
@@ -669,6 +676,14 @@ export default function App() {
 
   return (
     <>
+
+      {activeRegisterItem && (
+        <RegisterItemView
+          item={activeRegisterItem}
+          onClose={() => setActiveRegisterItem(null)}
+        />
+      )}
+
       <ModuleHeader />
 
       <div style={{ padding: "8px 16px", borderBottom: "1px solid #eee" }}>
@@ -756,6 +771,14 @@ export default function App() {
           />
         )}
       </div>
+
+      {activeRegisterItem && (
+        <RegisterItemView
+          item={activeRegisterItem}
+          onClose={() => setActiveRegisterItem(null)}
+        />
+      )}
+
     </>
   );
 }

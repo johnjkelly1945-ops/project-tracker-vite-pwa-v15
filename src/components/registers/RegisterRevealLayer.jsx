@@ -425,7 +425,7 @@ export default function RegisterRevealLayer() {
                   : null;
 
                 return (
-                  <tr key={i} style={{ opacity: r.closed ? 0.5 : 1 }}>
+                  <tr key={i} style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); }}>
                     <td style={tdStyle} title={r.title}>
                       {isGovernanceLedger && lifecycleClass && (
                         <span
