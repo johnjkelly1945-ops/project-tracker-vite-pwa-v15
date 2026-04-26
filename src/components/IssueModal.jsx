@@ -274,7 +274,8 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 color: "#333",
               }}
             >
-              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+                {isPM && event?.status === "OPEN" && <button>Close Item</button>}
+                {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
