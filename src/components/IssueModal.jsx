@@ -17,12 +17,13 @@ Stage 331 — Issue Governance Surface (Parallel to Review)
 =====================================================================
 */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   bridgeRecordParticipation,
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
 import { getGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
+import { closeGovernanceEvent } from "../governance/governanceEngine";
 import { getIssueArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
@@ -53,30 +54,36 @@ function nowStamp() {
 
 export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate }) {
   const inlineRef = useRef(null);
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionEntries, setDescriptionEntries] = useState([]);
 
-  const [event, setEvent] = useState(() =>
-    getGovernanceEvent(eventId)
-  );
+  const [event, setEvent] = useState(null);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  useEffect(() => {
+    if (!eventId) return;
+
+    const loaded = getGovernanceEvent(eventId);
+    if (loaded) setEvent(loaded);
+  }, [eventId, refreshTick]);
+
+
+  if (!event) return null;
 
   const issue = event?.artefactId ? getIssueArtefactById(event.artefactId) : null;
-  const actor = getActingUser();
-  const isPM = actor?.isPM === true;
 
 
 
-  /* ================= Task Issue Events ================= */
+  /* ================= Task Issue Register ================= */
 
   const taskIssues = getGovernanceEventsByTask(taskId)
-    .filter((e) => e.eventType === "ISSUE");
+    .filter((e) => e.eventType === "RISK");
   const isEscalated = event?.escalated === true;
-  const participantIds = event?.participation
-
-    ? [...new Set(event.participation.map((p) => p.reviewerId))]
-    : [];
+  const participantIds = Array.isArray(event?.participation) ? [...new Set(event.participation.map((p) => p.reviewerId))] : [];
 
   const participantNames = participantIds
     .map((id) => getPersonnel().find((p) => p.id === id)?.displayName)
@@ -106,6 +113,12 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
 
   /* ================= Inline Commit ================= */
 
+
+  function handleCloseItem() {
+    closeGovernanceEvent({ eventId });
+    const fresh = getGovernanceEvent(eventId);
+    if (fresh) setEvent({ ...fresh });
+  }
   function handleCommitInlineAdvisory() {
     const summary = advisoryText.trim();
     if (!summary) return;
@@ -114,7 +127,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
       eventId,
       submittedBy: "PM",
       summary,
-      artefactId: null,
+      artefactId: event?.artefactId,
       templateId: null,
     });
 
@@ -173,7 +186,8 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                   marginBottom: "10px",
                 }}
               >
-                Issue — {issue?.reference} — {issue?.title || "Untitled"}
+                <div>Issue — {issue?.reference} — {issue?.title || "Untitled"}</div>
+                <div>Status: {event?.status || "OPEN"}</div>
               </div>
 
               <div><strong>Task:</strong> {taskTitle}</div>
@@ -205,7 +219,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
             <strong>Advisory Notes</strong>
 
             <div style={{ marginTop: "12px" }}>
-              {event?.advisoryRecords.map((adv) => (
+              {(Array.isArray(event?.advisoryRecords) ? event.advisoryRecords : []).map((adv) => (
                 <div key={adv.advisoryId} style={{ marginBottom: "16px" }}>
                   <span style={{ whiteSpace: "pre-wrap" }}>
                     {adv.summary}
@@ -274,8 +288,8 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 color: "#333",
               }}
             >
-                {isPM && event?.status === "OPEN" && <button>Close Item</button>}
-                {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+              {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
+              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
@@ -285,9 +299,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 alignItems: "center",
               }}
             >
-              {isPM && <button onClick={() => setParticipantModalOpen(true)}>
-                Confirm Participant
-              </button>}
+              {isPM && <button onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
 
               <button onClick={onClose}>Close</button>
             </div>
