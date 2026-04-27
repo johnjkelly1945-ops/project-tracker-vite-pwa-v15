@@ -917,6 +917,7 @@ export default function TaskPopup({
       {issueRegisterOpen && (
         <IssueRegisterModal
           taskId={task.id}
+          taskTitle={task.title}
           onClose={() => setIssueRegisterOpen(false)}
           openIssueEvent={(eventId) => {
             setActiveIssueEventId(eventId);

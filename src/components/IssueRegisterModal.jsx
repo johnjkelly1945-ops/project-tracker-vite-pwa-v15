@@ -11,7 +11,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createIssueArtefact, getIssueArtefacts, updateIssueArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
 
-export default function IssueRegisterModal({ taskId, onClose, openIssueEvent }) {
+export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIssueEvent }) {
 
   const [, refresh] = useState(0);
 
@@ -46,6 +46,8 @@ export default function IssueRegisterModal({ taskId, onClose, openIssueEvent }) 
     } else {
 
       const r = createIssueArtefact(null, taskId);
+      updateIssueArtefact(r.artefactId, { taskTitle });
+      console.log("ISSUE AFTER UPDATE:", r);
 
       updateIssueArtefact(r.artefactId, {
         title: form.title,
