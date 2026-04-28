@@ -183,7 +183,7 @@ Stage 378 — Governance Artefact Generalisation
 =====================================================================
 */
 
-export function createIssueArtefact(segmentId, taskId, createdBy = "system") {
+export function createIssueArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", createdBy = "system") {
   const artefact = {
     artefactId: crypto.randomUUID(),
     artefactType: "Issue",
@@ -195,6 +195,7 @@ export function createIssueArtefact(segmentId, taskId, createdBy = "system") {
     title: "",
     description: "",
     owner: "",
+    taskTitle: typeof taskTitleOrCreatedBy === "string" ? taskTitleOrCreatedBy : "",
 
     status: "Open",
     notes: "",
