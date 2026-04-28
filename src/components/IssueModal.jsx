@@ -81,7 +81,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
   /* ================= Task Issue Register ================= */
 
   const taskIssues = getGovernanceEventsByTask(taskId)
-    .filter((e) => e.eventType === "RISK");
+    .filter((e) => e.eventType === "ISSUE");
   const isEscalated = event?.escalated === true;
   const participantIds = Array.isArray(event?.participation) ? [...new Set(event.participation.map((p) => p.reviewerId))] : [];
 
