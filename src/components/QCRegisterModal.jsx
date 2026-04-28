@@ -11,7 +11,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createQCArtefact, getQCArtefacts, updateQCArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
 
-export default function QCRegisterModal({ taskId, onClose, openQCEvent }) {
+export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEvent }) {
 
   const [, refresh] = useState(0);
 
@@ -49,7 +49,7 @@ export default function QCRegisterModal({ taskId, onClose, openQCEvent }) {
 
     } else {
 
-      const r = createQCArtefact(null, taskId);
+      const r = createQCArtefact(null, taskId, taskTitle);
 
       updateQCArtefact(r.artefactId, {
         title: form.title,

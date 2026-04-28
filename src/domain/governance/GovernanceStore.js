@@ -242,6 +242,16 @@ Stage 378 — Governance Artefact Generalisation
 */
 
 export function createQCArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", createdBy = "system") {
+
+  let taskTitle = "";
+  let resolvedCreatedBy = createdBy;
+
+  if (typeof taskTitleOrCreatedBy === "string" && taskTitleOrCreatedBy.startsWith("task-")) {
+    resolvedCreatedBy = taskTitleOrCreatedBy;
+  } else {
+    taskTitle = taskTitleOrCreatedBy || "";
+  }
+
   const artefact = {
     artefactId: crypto.randomUUID(),
     artefactType: "QC",
@@ -253,12 +263,12 @@ export function createQCArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", c
     title: "",
     description: "",
     owner: "",
-    taskTitle: typeof taskTitleOrCreatedBy === "string" ? taskTitleOrCreatedBy : "",
+    taskTitle: taskTitle,
 
     status: "Open",
     notes: "",
 
-    createdBy,
+    createdBy: resolvedCreatedBy,
     createdDate: new Date().toISOString(),
     updatedDate: new Date().toISOString()
   }
@@ -269,7 +279,6 @@ export function createQCArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", c
 
   return artefact
 }
-
 export function updateQCArtefact(artefactId, updates) {
   const artefact = governanceArtefacts.find(a => a.artefactId === artefactId)
 

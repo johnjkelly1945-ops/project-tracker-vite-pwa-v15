@@ -187,7 +187,7 @@ export default function RegisterRevealLayer() {
       changeId: a.reference,
       createdBy: a.createdBy || "—",
       createdOn: a.createdDate || "—",
-      originatingTaskName: a.taskId,
+        originatingTaskName: a.taskTitle || a.taskId,
       taskId: a.taskId,
       closed: a.status === "Closed",
       state: a.status || "Open",

@@ -929,6 +929,7 @@ export default function TaskPopup({
         {qcRegisterOpen && (
           <QCRegisterModal
             taskId={task.id}
+              taskTitle={task.title}
             onClose={() => setQcRegisterOpen(false)}
             openQCEvent={(eventId) => {
               setActiveQcEventId(eventId);
