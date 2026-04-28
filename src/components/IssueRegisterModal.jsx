@@ -10,6 +10,8 @@ import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createIssueArtefact, getIssueArtefacts, updateIssueArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIssueEvent }) {
 
@@ -25,9 +27,25 @@ export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIss
     resolution: ""
   });
 
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
+
+  const advisoryIssueArtefactIds = new Set(
+    getGovernanceEventsByTask(taskId)
+      .filter(e =>
+        e.eventType === "ISSUE" &&
+        Array.isArray(e.participation) &&
+        e.participation.some(p => p && p.reviewerId === actor?.id)
+      )
+      .map(e => e.artefactId)
+      .filter(Boolean)
+  );
   const issues =
     getIssueArtefacts()
-      .filter(issue => issue.taskId === taskId);
+      .filter(issue =>
+        issue.taskId === taskId &&
+        (isPM || advisoryIssueArtefactIds.has(issue.artefactId))
+      );
 
   function saveEntry() {
 
@@ -45,8 +63,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIss
 
     } else {
 
-      const r = createIssueArtefact(null, taskId);
-      updateIssueArtefact(r.artefactId, { taskTitle });
+      const r = createIssueArtefact(null, taskId, taskTitle);
       console.log("ISSUE AFTER UPDATE:", r);
 
       updateIssueArtefact(r.artefactId, {
@@ -190,11 +207,30 @@ export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIss
               </div>
 
               <div style={{ fontSize: "12px", opacity: 0.7 }}>
-                Status: {issue.status || "Open"}
+                Status: {
+                  (getGovernanceEventsByTask(taskId)
+                    .filter(e => e && e.artefactId === issue.artefactId)
+                    .slice(-1)[0]?.status) || "Open"
+                }
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                <button onClick={() => openIssueEvent(createGovernanceEvent({ eventType: "ISSUE", taskId, initiatedBy: "PM", artefactId: issue.artefactId }).eventId)}>
+                <button onClick={() => {
+                  const events = getGovernanceEventsByTask(taskId)
+                    .filter(e => e && e.artefactId === issue?.artefactId);
+
+                  const targetEvent =
+                    events.length > 0
+                      ? events[events.length - 1]
+                      : createGovernanceEvent({
+                          eventType: "ISSUE",
+                          taskId,
+                          initiatedBy: "PM",
+                          artefactId: issue.artefactId
+                        });
+
+                  openIssueEvent(targetEvent.eventId);
+                }}>
                   Advisory
                 </button>
               </div>
