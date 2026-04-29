@@ -172,7 +172,12 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                     Quality Control
                   </div>
 
-                  <div>Escalation</div>
+                    <div
+                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                      onClick={() => emitRegisterReveal("escalation")}
+                    >
+                      Escalation
+                    </div>
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
