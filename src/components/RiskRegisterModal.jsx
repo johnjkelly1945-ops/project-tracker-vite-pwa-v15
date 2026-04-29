@@ -90,6 +90,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, onClose, openRisk
       owner: "",
       mitigation: ""
     });
+      refresh(x => x + 1);
 
   }
 
