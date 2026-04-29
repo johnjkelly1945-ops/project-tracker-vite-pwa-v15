@@ -10,6 +10,7 @@ import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createChangeArtefact, getChangeArtefacts, updateChangeArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
+import { getActingUser } from "../domain/actor/ActingUser";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 export default function CCRegisterModal({ taskId, taskTitle, onClose, openCCEvent, isPM }) {
@@ -19,6 +20,18 @@ export default function CCRegisterModal({ taskId, taskTitle, onClose, openCCEven
   const [creating, setCreating] = useState(false);
   const [editingCC, setEditingCC] = useState(null);
 
+  const actor = getActingUser();
+
+  const advisoryCCArtefactIds = new Set(
+    getGovernanceEventsByTask(taskId)
+      .filter(e =>
+        e.eventType === "CHANGE" &&
+        Array.isArray(e.participation) &&
+        e.participation.some(p => p && p.reviewerId === actor?.id)
+      )
+      .map(e => e.artefactId)
+      .filter(Boolean)
+  );
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -30,7 +43,10 @@ export default function CCRegisterModal({ taskId, taskTitle, onClose, openCCEven
 
   const ccs =
     getChangeArtefacts()
-      .filter(cc => cc.taskId === taskId);
+      .filter(cc =>
+        cc.taskId === taskId &&
+        (isPM || advisoryCCArtefactIds.has(cc.artefactId))
+      )
 
   function saveEntry() {
 

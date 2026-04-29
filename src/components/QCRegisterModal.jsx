@@ -10,6 +10,8 @@ import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { createQCArtefact, getQCArtefacts, updateQCArtefact } from "../domain/governance/GovernanceStore";
 import { createGovernanceEvent } from "../governance/governanceStore";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEvent }) {
 
@@ -27,9 +29,25 @@ export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEven
     mitigation: ""
   });
 
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
+
+  const advisoryQCArtefactIds = new Set(
+    getGovernanceEventsByTask(taskId)
+      .filter(e =>
+        e.eventType === "QC" &&
+        Array.isArray(e.participation) &&
+        e.participation.some(p => p && p.reviewerId === actor?.id)
+      )
+      .map(e => e.artefactId)
+      .filter(Boolean)
+  );
   const qcs =
     getQCArtefacts()
-      .filter(qc => qc.taskId === taskId);
+      .filter(qc =>
+        qc.taskId === taskId &&
+        (isPM || advisoryQCArtefactIds.has(qc.artefactId))
+      )
 
   function saveEntry() {
 
