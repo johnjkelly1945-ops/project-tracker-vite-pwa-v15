@@ -12,7 +12,7 @@ import { createChangeArtefact, getChangeArtefacts, updateChangeArtefact } from "
 import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function CCRegisterModal({ taskId, onClose, openCCEvent, isPM }) {
+export default function CCRegisterModal({ taskId, taskTitle, onClose, openCCEvent, isPM }) {
 
   const [, refresh] = useState(0);
 
@@ -50,7 +50,7 @@ export default function CCRegisterModal({ taskId, onClose, openCCEvent, isPM }) 
 
     } else {
 
-      const r = createChangeArtefact(null, taskId);
+      const r = createChangeArtefact(null, taskId, taskTitle);
 
       updateChangeArtefact(r.artefactId, {
         title: form.title,

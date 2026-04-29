@@ -87,13 +87,6 @@ export function bridgeSubmitAdvisory(payload) {
       if (eventType === "QC") artefactType = "qc";
       if (eventType === "CHANGE") artefactType = "change";
 
-      if (artefactType) {
-        createGovernanceArtefact({
-          type: artefactType,
-          eventId,
-          taskId,
-        });
-      }
 
     }
   }

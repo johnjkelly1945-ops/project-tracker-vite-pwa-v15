@@ -308,13 +308,19 @@ Stage 378 — Governance Artefact Generalisation
 =====================================================================
 */
 
-export function createChangeArtefact(segmentId, taskId, createdBy = "system") {
+export function createChangeArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", createdBy = "system") {
+  console.log("createChangeArtefact args:", segmentId, taskId, taskTitleOrCreatedBy);
+
+    const taskTitle = taskTitleOrCreatedBy || "";
+    const resolvedCreatedBy = createdBy;
+
   const artefact = {
     artefactId: crypto.randomUUID(),
     artefactType: "Change",
 
     segmentId,
     taskId,
+    taskTitle: taskTitle,
 
     reference: "CC-" + String(artefactCounter).padStart(3, "0"),
     title: "",
@@ -324,7 +330,7 @@ export function createChangeArtefact(segmentId, taskId, createdBy = "system") {
     status: "Open",
     notes: "",
 
-    createdBy,
+    createdBy: resolvedCreatedBy,
     createdDate: new Date().toISOString(),
     updatedDate: new Date().toISOString()
   }
