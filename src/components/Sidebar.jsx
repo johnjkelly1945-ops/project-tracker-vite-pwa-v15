@@ -174,7 +174,7 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
 
                     <div
                       style={{ cursor: "pointer", textDecoration: "underline" }}
-                      onClick={() => emitRegisterReveal("escalation")}
+                      onClick={() => emitModuleIntent("OPEN_GLOBAL_ESCALATION_LEDGER")}
                     >
                       Escalation
                     </div>
