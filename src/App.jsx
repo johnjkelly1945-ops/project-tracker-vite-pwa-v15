@@ -780,6 +780,7 @@ export default function App() {
 
       {globalEscalationLedgerOpen && (
         <GlobalEscalationLedgerModal
+          tasks={[...devTasks, ...mgmtTasks]}
           onClose={() => setGlobalEscalationLedgerOpen(false)}
         />
       )}

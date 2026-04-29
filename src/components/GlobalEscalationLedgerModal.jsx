@@ -10,7 +10,7 @@ import { useState } from "react";
 import EscalationModal from "./EscalationModal";
 import { getAllEscalations } from "../domain/escalation/EscalationStore";
 
-export default function GlobalEscalationLedgerModal({ onClose }) {
+export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
 
   const [activeEscalation, setActiveEscalation] = useState(null);
 
