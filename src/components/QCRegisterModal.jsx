@@ -50,6 +50,8 @@ export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEven
       )
 
   function saveEntry() {
+  if (!isPM) return;
+  if (!isPM) return;
 
     if (editingQC) {
 
@@ -132,42 +134,42 @@ export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEven
 
             <div style={{ border: "1px solid #ddd", padding: "10px", marginBottom: "12px" }}>
 
-              <input
+              <input disabled={!isPM}
                 placeholder="QC title"
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
-              <textarea
+              <textarea disabled={!isPM}
                 placeholder="Description"
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
-              <input
+              <input disabled={!isPM}
                 placeholder="Probability"
                 value={form.probability}
                 onChange={e => setForm({ ...form, probability: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
-              <input
+              <input disabled={!isPM}
                 placeholder="Impact"
                 value={form.impact}
                 onChange={e => setForm({ ...form, impact: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
-              <input
+              <input disabled={!isPM}
                 placeholder="Owner"
                 value={form.owner}
                 onChange={e => setForm({ ...form, owner: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
-              <textarea
+              <textarea disabled={!isPM}
                 placeholder="Mitigation"
                 value={form.mitigation}
                 onChange={e => setForm({ ...form, mitigation: e.target.value })}
@@ -176,7 +178,7 @@ export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEven
 
               <div style={{ marginTop: "8px" }}>
 
-                <button onClick={saveEntry}>
+                <button onClick={saveEntry} disabled={!isPM}>
                   {editingQC ? "Update QC" : "Create QC"}
                 </button>
 

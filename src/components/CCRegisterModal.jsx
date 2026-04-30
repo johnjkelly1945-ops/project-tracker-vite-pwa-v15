@@ -237,17 +237,7 @@ export default function CCRegisterModal({ taskId, taskTitle, onClose, openCCEven
 
               <div style={{ marginTop: "6px" }}>
                 <button onClick={() => {
-                  const existing = getGovernanceEventsByTask(taskId)
-                    .find(e => e.artefactId === cc.artefactId);
-                  const eventIdToOpen = existing
-                    ? existing.eventId
-                    : createGovernanceEvent({
-                        eventType: "CC",
-                        taskId,
-                        initiatedBy: "PM",
-                        artefactId: cc.artefactId
-                      }).eventId;
-                  openCCEvent(eventIdToOpen);
+                  openCCEvent(createGovernanceEvent({ eventType: "CHANGE", taskId, initiatedBy: "PM", artefactId: cc.artefactId, participation: [{ reviewerId: actor?.id, participationType: "ASSIGNED" }] }).eventId);
                 }}>
                   Advisory
                 </button>

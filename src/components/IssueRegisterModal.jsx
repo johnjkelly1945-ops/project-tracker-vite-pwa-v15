@@ -214,26 +214,13 @@ export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIss
                 }
               </div>
 
-              <div style={{ marginTop: "6px" }}>
-                <button onClick={() => {
-                  const events = getGovernanceEventsByTask(taskId)
-                    .filter(e => e && e.artefactId === issue?.artefactId);
-
-                  const targetEvent =
-                    events.length > 0
-                      ? events[events.length - 1]
-                      : createGovernanceEvent({
-                          eventType: "ISSUE",
-                          taskId,
-                          initiatedBy: "PM",
-                          artefactId: issue.artefactId
-                        });
-
-                  openIssueEvent(targetEvent.eventId);
-                }}>
-                  Advisory
-                </button>
-              </div>
+                <div style={{ marginTop: "6px" }}>
+                  <button onClick={() => {
+                    openIssueEvent(createGovernanceEvent({ eventType: "ISSUE", taskId, initiatedBy: "PM", artefactId: issue.artefactId }).eventId);
+                  }}>
+                    Advisory
+                  </button>
+                </div>
 
             </div>
 
