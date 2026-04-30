@@ -9,12 +9,38 @@ Stage 423 — Global Escalation Ledger (Cross-Task Visibility)
 import { useState } from "react";
 import EscalationModal from "./EscalationModal";
 import { getAllEscalations } from "../domain/escalation/EscalationStore";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
 
   const [activeEscalation, setActiveEscalation] = useState(null);
 
-  const escalations = getAllEscalations();
+  const storeEscalations = getAllEscalations();
+
+  const governanceEscalations = [];
+
+  (tasks || []).forEach(task => {
+    const events = getGovernanceEventsByTask(task.id) || [];
+
+    events
+      .filter(e => e.escalated === true)
+      .forEach(e => {
+        governanceEscalations.push({
+          reference: `ESC-${e.eventId}`,
+          title: `${e.eventType} escalation`,
+          taskId: task.id,
+          taskTitle: task.title,
+          advisoryRecords: e.advisoryRecords || [],
+          sourceType: e.eventType,
+          sourceId: e.eventId
+        });
+      });
+  });
+
+  const escalations = [
+    ...storeEscalations,
+    ...governanceEscalations
+  ];
 
   return (
     <div
