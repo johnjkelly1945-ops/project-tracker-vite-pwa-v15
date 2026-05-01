@@ -20,6 +20,7 @@ import { getPersonnel } from "./domain/personnel/PersonnelRegistry";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
 import RegisterItemView from "./components/RegisterItemView";
+import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModal";
 
 /*
 =====================================================================
@@ -109,6 +110,7 @@ export default function App() {
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -222,6 +224,10 @@ export default function App() {
     function onIntent(e) {
       const intent = e?.detail;
       if (!intent || !intent.type) return;
+      if (intent.type === "OPEN_GLOBAL_ESCALATION_LEDGER") {
+        setGlobalEscalationLedgerOpen(true);
+        return;
+      }
       if (intent.type === "OPEN_REGISTER_ITEM_VIEW") {
         console.log("INTENT RECEIVED:", intent.payload);
         setActiveRegisterItem(intent.payload);
@@ -772,6 +778,12 @@ export default function App() {
         )}
       </div>
 
+      {globalEscalationLedgerOpen && (
+        <GlobalEscalationLedgerModal
+          tasks={[...devTasks, ...mgmtTasks]}
+          onClose={() => setGlobalEscalationLedgerOpen(false)}
+        />
+      )}
       {activeRegisterItem && (
         <RegisterItemView
           item={activeRegisterItem}

@@ -2,7 +2,7 @@
 /*
 =====================================================================
 METRA — GlobalEscalationLedgerModal.jsx
-Stage 423 — Global Escalation Ledger (Cross-Task Visibility)
+Stage 463 FIX — Escalation Canon Restored (Display Enhancement Only)
 =====================================================================
 */
 
@@ -15,6 +15,14 @@ export default function GlobalEscalationLedgerModal({ onClose }) {
   const [activeEscalation, setActiveEscalation] = useState(null);
 
   const escalations = getAllEscalations();
+
+  // ✅ SAFE ADD: task title resolver (no model change)
+  const tasks = JSON.parse(localStorage.getItem("metra_tasks") || "[]");
+
+  function resolveTaskTitle(taskId) {
+    const t = tasks.find(t => t.id === taskId);
+    return t?.title || taskId;
+  }
 
   return (
     <div
@@ -65,16 +73,19 @@ export default function GlobalEscalationLedgerModal({ onClose }) {
                 cursor: "pointer",
               }}
               onClick={(e) => {
-                e.stopPropagation();   // 🔴 CRITICAL FIX
+                e.stopPropagation();
                 setActiveEscalation(esc);
               }}
             >
               <div style={{ fontWeight: 600 }}>
                 {esc.reference} — {esc.title}
               </div>
+
+              {/* ✅ FIX: show proper task title */}
               <div style={{ fontSize: "12px", color: "#555" }}>
-                Task: {esc.taskId}
+                Task: {resolveTaskTitle(esc.taskId)}
               </div>
+
               <div style={{ fontSize: "12px", color: "#777" }}>
                 Advisory count: {(esc.advisoryRecords || []).length}
               </div>
@@ -98,7 +109,7 @@ export default function GlobalEscalationLedgerModal({ onClose }) {
       {activeEscalation && (
         <EscalationModal
           taskId={activeEscalation.taskId}
-          taskTitle={activeEscalation.taskTitle}
+          taskTitle={resolveTaskTitle(activeEscalation.taskId)}
           escalation={activeEscalation}
           readOnly={true}
           onClose={() => setActiveEscalation(null)}
