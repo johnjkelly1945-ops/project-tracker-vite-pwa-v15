@@ -73,7 +73,7 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
                 {esc.reference} — {esc.title}
               </div>
               <div style={{ fontSize: "12px", color: "#555" }}>
-                Task: {esc.taskId}
+                Task: {(tasks.find(t => t.id === esc.taskId)?.title) || esc.taskId}
               </div>
               <div style={{ fontSize: "12px", color: "#777" }}>
                 Advisory count: {(esc.advisoryRecords || []).length}
