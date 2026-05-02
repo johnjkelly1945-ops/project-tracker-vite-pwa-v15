@@ -50,7 +50,7 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
         style={{
           background: "#fff",
           width: "80%",
-          height: "75vh",
+          maxHeight: "75vh",
           display: "flex",
           flexDirection: "column",
           borderRadius: "6px",
@@ -131,6 +131,7 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
             padding: "10px",
             borderTop: "1px solid rgba(0,0,0,0.1)",
             textAlign: "right",
+            flexShrink: 0,
           }}
         >
           <button onClick={onClose}>Close</button>
