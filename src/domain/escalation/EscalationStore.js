@@ -6,10 +6,37 @@ Stage 426 — Source Linkage (Additive Extension)
 =====================================================================
 */
 
+import {
+  loadEscalations,
+  appendEscalation,
+  updateEscalation
+} from "./EscalationRepository";
+
+
 const escalationStore = {
   byTask: {},
   all: []
 };
+
+// ------------------------------------------------------------------
+// INITIAL LOAD FROM REPOSITORY (Stage 464)
+// ------------------------------------------------------------------
+
+const persisted = loadEscalations();
+
+if (persisted.length > 0) {
+  escalationStore.all = persisted;
+
+  escalationStore.byTask = {};
+
+  persisted.forEach(e => {
+    if (!escalationStore.byTask[e.taskId]) {
+      escalationStore.byTask[e.taskId] = [];
+    }
+    escalationStore.byTask[e.taskId].push(e);
+  });
+}
+
 
 function now() {
   return new Date().toISOString();
@@ -64,6 +91,7 @@ export function createEscalation({
 
   escalationStore.byTask[taskId].push(escalation);
   escalationStore.all.push(escalation);
+  appendEscalation(escalation);
 
   return escalation;
 }
@@ -125,6 +153,7 @@ export function appendEscalationAdvisory({
   };
 
   escalation.advisoryRecords.push(advisory);
+  updateEscalation(escalation);
 
   return advisory;
 }
