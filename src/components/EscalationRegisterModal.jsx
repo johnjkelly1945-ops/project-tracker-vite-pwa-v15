@@ -16,6 +16,7 @@ import {
   getEscalationsByTask,
   getEscalation
 } from "../domain/escalation/EscalationStore";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 export default function EscalationRegisterModal({ taskId, taskTitle, onClose, sourceType, sourceId, onNavigate }) {
 
@@ -41,7 +42,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose, so
       title: draftTitle.trim(),
       classification: null,
       sourceType,
-      sourceId
+        sourceId: (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId) || sourceId
     });
 
     setDraftTitle("");

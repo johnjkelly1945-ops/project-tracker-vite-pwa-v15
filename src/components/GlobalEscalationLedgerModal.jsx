@@ -55,8 +55,10 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
           {escalations.length === 0 && (
             <div>No escalations recorded</div>
           )}
+          {escalations.map((esc) => {
 
-          {escalations.map((esc) => (
+
+            return (
             <div
               key={esc.reference}
               style={{
@@ -75,11 +77,12 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
               <div style={{ fontSize: "12px", color: "#555" }}>
                 Task: {(tasks.find(t => t.id === esc.taskId)?.title) || esc.taskId}
               </div>
-              <div style={{ fontSize: "12px", color: "#777" }}>
-                Advisory count: {(esc.advisoryRecords || []).length}
-              </div>
+                <div style={{ fontSize: "11px", color: "#777" }}>
+                  Source: {esc.sourceType || "TASK"}
+                </div>
             </div>
-          ))}
+            );
+          })}
 
         </div>
 
