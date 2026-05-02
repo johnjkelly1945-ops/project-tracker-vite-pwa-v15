@@ -72,13 +72,19 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
               }}
             >
               <div style={{ fontWeight: 600 }}>
-                {esc.reference} — {esc.title}
+                {`ESC-${String(esc.reference).padStart(3, "0")} — ${esc.title}`}
               </div>
               <div style={{ fontSize: "12px", color: "#555" }}>
                 Task: {(tasks.find(t => t.id === esc.taskId)?.title) || esc.taskId}
               </div>
                 <div style={{ fontSize: "11px", color: "#777" }}>
                   Source: {esc.sourceType || "TASK"}
+                </div>
+                <div style={{ fontSize: "11px", color: "#777" }}>
+                  Category: {esc.classification || "—"}
+                </div>
+                <div style={{ fontSize: "11px", color: "#777" }}>
+                  Date: {esc.createdAt ? new Date(esc.createdAt).toLocaleDateString() : "—"}
                 </div>
             </div>
             );
