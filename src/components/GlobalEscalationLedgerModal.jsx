@@ -13,8 +13,25 @@ import { getAllEscalations } from "../domain/escalation/EscalationStore";
 export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
 
   const [activeEscalation, setActiveEscalation] = useState(null);
+  const [query, setQuery] = useState("");
 
   const escalations = getAllEscalations();
+
+  const filteredEscalations = escalations.filter((esc) => {
+    const q = query.toLowerCase();
+
+    const taskTitle =
+      (tasks.find(t => t.id === esc.taskId)?.title) || "";
+
+    return (
+      esc.title?.toLowerCase().includes(q) ||
+      esc.reference?.toString().includes(q) ||
+      esc.sourceType?.toLowerCase().includes(q) ||
+      esc.classification?.toLowerCase().includes(q) ||
+      taskTitle.toLowerCase().includes(q)
+    );
+  });
+
 
   return (
     <div
@@ -50,12 +67,29 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
           Global Escalation Ledger
         </div>
 
+
+        <div style={{ padding: "10px 20px" }}>
+          <input
+            type="text"
+            placeholder="Search escalations..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              fontSize: "14px",
+              border: "1px solid #ccc",
+              borderRadius: "4px"
+            }}
+          />
+        </div>
+
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
 
           {escalations.length === 0 && (
             <div>No escalations recorded</div>
           )}
-          {escalations.map((esc) => {
+            {filteredEscalations.map((esc) => {
 
 
             return (
