@@ -30,6 +30,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { resolveDocuments, createDocument } from "../domain/documents/DocumentStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
 /* ===================== Time Helper ===================== */
@@ -75,6 +76,12 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
   if (!event) return null;
 
   const issue = event?.artefactId ? getIssueArtefactById(event.artefactId) : null;
+
+  const documents = resolveDocuments({
+    taskId,
+    artefactId: event?.artefactId,
+  });
+
 
 
 
@@ -141,6 +148,26 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
 
     if (inlineRef.current) inlineRef.current.focus();
   }
+
+
+
+  function handleLinkDocument() {
+    try {
+      createDocument({
+        name: "Test Document",
+        url: "https://www.google.com",
+        eventId: event?.eventId,
+        addedBy: actor?.displayName || actor?.id || "system",
+      });
+
+      setRefreshTick((t) => t + 1);
+
+    } catch (e) {
+      console.error(e);
+      alert(e.message);
+    }
+  }
+
 
   /* ================= Render ================= */
 
@@ -266,6 +293,39 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                   Commit advisory
                 </button>
               </div>
+
+                {/* Documents Section (Stage 466) */}
+                <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                    📎 Documents
+                  </div>
+                    <div style={{ fontSize: "13px", color: "#555" }}>
+                      {documents.length === 0 ? (
+                        "(no documents yet)"
+                      ) : (
+                        documents.map((d) => (
+                          <div key={d.id}>
+                            <a href={d.url} target="_blank" rel="noreferrer">
+                              {d.name}
+                            </a>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      cursor: "pointer",
+                      color: "#0b3a66",
+                      textDecoration: "underline",
+                      fontSize: "13px"
+                    }}
+                    onClick={handleLinkDocument}
+                  >
+                    + Link document
+                  </div>
+                </div>
+
             </div>
           </div>
 
