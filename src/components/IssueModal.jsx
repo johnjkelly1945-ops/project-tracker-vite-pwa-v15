@@ -153,8 +153,9 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
   function handleLinkDocument() {
     try {
       createDocument({
-        name: "Test Document",
-        url: "https://www.google.com",
+        name: "Reference Only Document",
+        url: "",
+        reference: "Finance Drive > 2026 > Forecasts",
         eventId: event?.eventId,
         addedBy: actor?.displayName || actor?.id || "system",
       });
@@ -303,11 +304,20 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                         "(no documents yet)"
                       ) : (
                         documents.map((d) => (
-                          <div key={d.id}>
-                            <a href={d.url} target="_blank" rel="noreferrer">
-                              {d.name}
-                            </a>
-                          </div>
+                            <div key={d.id}>
+                              {d.url ? (
+                                <a href={d.url} target="_blank" rel="noreferrer">
+                                  {d.name}
+                                </a>
+                              ) : (
+                                <span>{d.name}</span>
+                              )}
+                              {d.reference && (
+                                <div style={{ fontSize: "12px", color: "#666" }}>
+                                  {d.reference}
+                                </div>
+                              )}
+                            </div>
                         ))
                       )}
                     </div>

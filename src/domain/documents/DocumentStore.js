@@ -57,15 +57,16 @@ function validateContext({ taskId, eventId, artefactId }) {
 
 export function createDocument({
   name,
-  url,
-  taskId = null,
-  eventId = null,
-  artefactId = null,
-  addedBy = "system",
+    url,
+    reference = "",
+    taskId = null,
+    eventId = null,
+    artefactId = null,
+    addedBy = "system",
 }) {
-  if (!name || !url) {
-    throw new Error("Document requires name and url");
-  }
+    if (!name || (!url && !reference)) {
+      throw new Error("Document requires name and either url or reference");
+    }
 
   validateContext({ taskId, eventId, artefactId });
 
@@ -75,6 +76,7 @@ export function createDocument({
     id: generateId(),
     name,
     url,
+      reference,
 
     taskId,
     eventId,
