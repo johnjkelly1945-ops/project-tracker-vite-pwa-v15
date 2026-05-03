@@ -77,10 +77,9 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
 
   const issue = event?.artefactId ? getIssueArtefactById(event.artefactId) : null;
 
-  const documents = resolveDocuments({
-    taskId,
-    artefactId: event?.artefactId,
-  });
+    const documents = resolveDocuments({
+      eventId: event?.eventId,
+    });
 
 
 
