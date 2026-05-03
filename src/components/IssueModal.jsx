@@ -61,6 +61,9 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
   const [advisoryText, setAdvisoryText] = useState("");
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionEntries, setDescriptionEntries] = useState([]);
+    const [docName, setDocName] = useState("");
+    const [docUrl, setDocUrl] = useState("");
+    const [docRef, setDocRef] = useState("");
 
   const [event, setEvent] = useState(null);
   const [refreshTick, setRefreshTick] = useState(0);
@@ -152,13 +155,20 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
 
   function handleLinkDocument() {
     try {
+        if (!docName || (!docUrl && !docRef)) return;
       createDocument({
-        name: "Reference Only Document",
-        url: "",
-        reference: "Finance Drive > 2026 > Forecasts",
+          name: docName,
+          url: docUrl,
+          reference: docRef,
         eventId: event?.eventId,
         addedBy: actor?.displayName || actor?.id || "system",
       });
+        if (onAddNote) {
+          onAddNote(
+            taskId,
+            `[System] Document attached by ${actor?.displayName || actor?.id || "system"}: ${docName} — ${nowStamp()}`
+          );
+        }
 
       setRefreshTick((t) => t + 1);
 
@@ -304,35 +314,13 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                         "(no documents yet)"
                       ) : (
                         documents.map((d) => (
-                            <div key={d.id}>
-                              {d.url ? (
-                                <a href={d.url} target="_blank" rel="noreferrer">
-                                  {d.name}
-                                </a>
-                              ) : (
-                                <span>{d.name}</span>
-                              )}
-                              {d.reference && (
-                                <div style={{ fontSize: "12px", color: "#666" }}>
-                                  {d.reference}
-                                </div>
-                              )}
-                            </div>
+                          <div key={d.id}>
+                              {d.url ? (<span style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={() => window.open(d.url, "_blank")}>{d.name}</span>) : (<span>{d.name}</span>)}
+                          </div>
                         ))
                       )}
                     </div>
-                  <div
-                    style={{
-                      marginTop: "6px",
-                      cursor: "pointer",
-                      color: "#0b3a66",
-                      textDecoration: "underline",
-                      fontSize: "13px"
-                    }}
-                    onClick={handleLinkDocument}
-                  >
-                    + Link document
-                  </div>
+                    <div style={{ marginTop: "6px", fontSize: "13px" }}><input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} /><input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} /><input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} /><button onClick={handleLinkDocument}>Add</button></div>
                 </div>
 
             </div>
