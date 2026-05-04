@@ -31,6 +31,7 @@ import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { getActingUser } from "../domain/actor/ActingUser";
+import { resolveDocuments, createDocument } from "../domain/documents/DocumentStore";
 
 /* ===================== Time Helper ===================== */
 
@@ -63,6 +64,9 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
 
   const [event, setEvent] = useState(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [docName, setDocName] = useState("");
+  const [docUrl, setDocUrl] = useState("");
+  const [docRef, setDocRef] = useState("");
 
   useEffect(() => {
     if (!eventId) return;
@@ -76,6 +80,22 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
 
   const risk = event?.artefactId ? getRiskArtefactById(event.artefactId) : null;
 
+  const documents = resolveDocuments({ eventId: event?.eventId });
+
+  function handleLinkDocument() {
+    if (!docName || (!docUrl && !docRef)) return;
+    createDocument({
+      name: docName,
+      url: docUrl,
+      reference: docRef,
+      eventId: event?.eventId,
+      addedBy: actor?.displayName || actor?.id || "system"
+    });
+    onAddNote && onAddNote(
+      taskId,
+      `[System] Document attached by ${actor?.displayName || actor?.id || "system"}: ${docName} — ${nowStamp()}`
+    );
+  }
 
 
   /* ================= Task Risk Register ================= */
@@ -265,6 +285,39 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                 <button onClick={handleCommitInlineAdvisory}>
                   Commit advisory
                 </button>
+              </div>
+
+              {/* Documents Section (Stage 469) */}
+              <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                  📎 Documents
+                </div>
+                <div style={{ fontSize: "13px", color: "#555" }}>
+                  {documents.length === 0 ? (
+                    "(no documents yet)"
+                  ) : (
+                    documents.map((d) => (
+                      <div key={d.id}>
+                        {d.url ? (
+                          <span
+                            style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
+                            onClick={() => window.open(d.url, "_blank")}
+                          >
+                            {d.name}
+                          </span>
+                        ) : (
+                          <span>{d.name}</span>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                  <input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} />
+                  <input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} />
+                  <input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} />
+                  <button onClick={handleLinkDocument}>Add</button>
+                </div>
               </div>
             </div>
           </div>
