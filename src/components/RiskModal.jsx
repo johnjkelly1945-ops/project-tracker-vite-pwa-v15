@@ -301,7 +301,7 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                         {d.url ? (
                           <span
                             style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
-                            onClick={() => window.open(d.url, "_blank")}
+                            onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}
                           >
                             {d.name}
                           </span>

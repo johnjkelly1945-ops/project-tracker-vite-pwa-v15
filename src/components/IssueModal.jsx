@@ -315,7 +315,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                       ) : (
                         documents.map((d) => (
                           <div key={d.id}>
-                              {d.url ? (<span style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={() => window.open(d.url, "_blank")}>{d.name}</span>) : (<span>{d.name}</span>)}
+                              {d.url ? (<span style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}>{d.name}</span>) : (<span>{d.name}</span>)}
                           </div>
                         ))
                       )}

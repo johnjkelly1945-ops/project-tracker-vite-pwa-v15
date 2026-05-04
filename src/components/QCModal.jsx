@@ -277,6 +277,40 @@ if (!event) return null;
                   Commit advisory
                 </button>
               </div>
+
+              {/* Documents Section (Stage 469) */}
+              <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                  📎 Documents
+                </div>
+                <div style={{ fontSize: "13px", color: "#555" }}>
+                  {documents.length === 0 ? (
+                    "(no documents yet)"
+                  ) : (
+                    documents.map((d) => (
+                      <div key={d.id}>
+                        {d.url ? (
+                          <span
+                            style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
+                            onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}
+                          >
+                            {d.name}
+                          </span>
+                        ) : (
+                          <span>{d.name}</span>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                  <input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} />
+                  <input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} />
+                  <input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} />
+                  <button onClick={handleLinkDocument}>Add</button>
+                </div>
+              </div>
+
             </div>
           </div>
 
