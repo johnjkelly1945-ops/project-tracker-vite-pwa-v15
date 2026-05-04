@@ -30,6 +30,8 @@ import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
+import { createDocument } from "../domain/documents/DocumentStore";
+import { resolveDocuments } from "../domain/documents/DocumentStore";
 /* ===================== Time Helper ===================== */
 
 function nowStamp() {
@@ -56,11 +58,16 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   const [advisoryText, setAdvisoryText] = useState("");
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionEntries, setDescriptionEntries] = useState([]);
+  const [docName, setDocName] = useState("");
+  const [docUrl, setDocUrl] = useState("");
+  const [docRef, setDocRef] = useState("");
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
   const artefact = event?.artefactId ? getChangeArtefactById(event.artefactId) : null;
+  const documents = resolveDocuments({ eventId });
 
 
 
@@ -120,6 +127,39 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
     if (inlineRef.current) inlineRef.current.focus();
   }
 
+  function handleAddDocument() {
+    const name = docName.trim();
+    const url = docUrl.trim();
+    const reference = docRef.trim();
+
+    if (!name) return;
+    if (!url && !reference) return;
+
+    try {
+      createDocument({
+        name,
+        url,
+        reference,
+        eventId,
+        addedBy: "PM",
+      });
+
+      if (onAddNote) {
+        onAddNote(
+          taskId,
+          `[System] Document attached by PM: ${name} — ${nowStamp()}`
+        );
+      }
+
+      setDocName("");
+      setDocUrl("");
+      setDocRef("");
+      setRefreshTick((t) => t + 1);
+    } catch (e) {
+      console.error(e);
+      alert(e.message);
+    }
+  }
   /* ================= Render ================= */
 
   return (
@@ -239,6 +279,38 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                   Commit advisory
                 </button>
               </div>
+                  {/* Documents Section (Stage 469) */}
+                  <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+                    <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                      📎 Documents
+                    </div>
+                    <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                      <div style={{ fontSize: "13px", color: "#555" }}>
+                        {documents.length === 0 ? (
+                          "(no documents yet)"
+                        ) : (
+                          documents.map((d) => (
+                            <div key={d.id}>
+                              {d.url ? (
+                                <span
+                                  style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
+                                  onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}
+                                >
+                                  {d.name}
+                                </span>
+                              ) : (
+                                <span>{d.name}</span>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} />
+                      <input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} />
+                      <input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} />
+                      <button onClick={handleAddDocument}>Add</button>
+                    </div>
+                  </div>
             </div>
           </div>
 
