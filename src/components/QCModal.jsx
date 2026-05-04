@@ -30,6 +30,7 @@ import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { getActingUser } from "../domain/actor/ActingUser";
+import { resolveDocuments, createDocument } from "../domain/documents/DocumentStore";
 
 /* ===================== Time Helper ===================== */
 
@@ -59,6 +60,10 @@ export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   const [descriptionEntries, setDescriptionEntries] = useState([]);
 
 const [event, setEvent] = useState(null);
+  const [docName, setDocName] = useState("");
+  const [docUrl, setDocUrl] = useState("");
+  const [docRef, setDocRef] = useState("");
+  const [refreshTick, setRefreshTick] = useState(0);
 
 
 useEffect(() => {
@@ -70,6 +75,29 @@ useEffect(() => {
 if (!event) return null;
 
   const artefact = event?.artefactId ? getQCArtefactById(event.artefactId) : null;
+  const documents = resolveDocuments({ eventId: event?.eventId });
+
+  function handleLinkDocument() {
+    if (!docName || (!docUrl && !docRef)) return;
+
+    createDocument({
+      name: docName,
+      url: docUrl,
+      reference: docRef,
+      eventId: event?.eventId,
+      addedBy: actor?.displayName || actor?.id || "system"
+    });
+
+    onAddNote && onAddNote(
+      taskId,
+      `[System] Document attached by ${actor?.displayName || actor?.id || "system"}: ${docName} — ${nowStamp()}`
+    );
+
+    setDocName("");
+    setDocUrl("");
+    setDocRef("");
+    setRefreshTick((t) => t + 1);
+  }
   const actor = getActingUser();
   const isPM = actor?.isPM === true;
 
