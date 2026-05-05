@@ -32,6 +32,7 @@ import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { resolveDocuments, createDocument } from "../domain/documents/DocumentStore";
 import { getActingUser } from "../domain/actor/ActingUser";
+import DocumentEntryModal from "./DocumentEntryModal";
 
 /* ===================== Time Helper ===================== */
 
@@ -64,6 +65,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
     const [docName, setDocName] = useState("");
     const [docUrl, setDocUrl] = useState("");
     const [docRef, setDocRef] = useState("");
+    const [docModalOpen, setDocModalOpen] = useState(false);
 
   const [event, setEvent] = useState(null);
   const [refreshTick, setRefreshTick] = useState(0);
@@ -306,21 +308,18 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
 
                 {/* Documents Section (Stage 466) */}
                 <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-                  <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                    📎 Documents
-                  </div>
-                    <div style={{ fontSize: "13px", color: "#555" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span><span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span></div>
+                      <div style={{ fontSize: "13px", color: "#555" }}>
                       {documents.length === 0 ? (
                         "(no documents yet)"
                       ) : (
                         documents.map((d) => (
                           <div key={d.id}>
-                              {d.url ? (<span style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}>{d.name}</span>) : (<span>{d.name}</span>)}
+                                {(typeof d.url === "string" && (d.url.startsWith("http://") || d.url.startsWith("https://"))) ? (<span title={d.url} style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); try { new URL(d.url); window.open(d.url, "_blank", "noopener,noreferrer"); } catch (err) { console.warn("Blocked invalid URL:", d.url); } }}>{d.name}</span>) : (<span title={d.reference || d.url || ""}>{d.name}</span>)}
                           </div>
                         ))
                       )}
                     </div>
-                    <div style={{ marginTop: "6px", fontSize: "13px" }}><input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} /><input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} /><input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} /><button onClick={handleLinkDocument}>Add</button></div>
                 </div>
 
             </div>
@@ -371,6 +370,23 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
             onClose={() => setParticipantModalOpen(false)}
           />
         )}
+        <>
+          <DocumentEntryModal
+            open={docModalOpen}
+            onClose={() => setDocModalOpen(false)}
+            onConfirm={({ name, location }) => {
+              createDocument({
+                eventId,
+                name,
+                url: location,
+                reference: location,
+                addedBy: actor?.displayName || actor?.id || "system",
+              });
+              setRefreshTick((t) => t + 1);
+              setDocModalOpen(false);
+            }}
+          />
+        </>
       </div>
     </GovernanceSurfaceContainer>
   );
