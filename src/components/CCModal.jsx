@@ -32,6 +32,8 @@ import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 import { createDocument } from "../domain/documents/DocumentStore";
 import { resolveDocuments } from "../domain/documents/DocumentStore";
+import { getActingUser } from "../domain/actor/ActingUser";
+import DocumentEntryModal from "./DocumentEntryModal";
 /* ===================== Time Helper ===================== */
 
 function nowStamp() {
@@ -62,12 +64,14 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   const [docUrl, setDocUrl] = useState("");
   const [docRef, setDocRef] = useState("");
   const [refreshTick, setRefreshTick] = useState(0);
+  const [docModalOpen, setDocModalOpen] = useState(false);
 
+  const actor = getActingUser();
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
   const artefact = event?.artefactId ? getChangeArtefactById(event.artefactId) : null;
-  const documents = resolveDocuments({ eventId });
+  const documents = resolveDocuments({ eventId: event?.eventId });
 
 
 
@@ -162,8 +166,24 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   }
   /* ================= Render ================= */
 
-  return (
-    <GovernanceSurfaceContainer>
+    return (
+      <>
+        <DocumentEntryModal
+          open={docModalOpen}
+          onClose={() => setDocModalOpen(false)}
+          onConfirm={({ name, location }) => {
+            createDocument({
+              eventId,
+              name,
+              url: location,
+              reference: location,
+              addedBy: actor?.displayName || actor?.id || "system",
+            });
+            setRefreshTick((t) => t + 1);
+            setDocModalOpen(false);
+          }}
+        />
+        <GovernanceSurfaceContainer>
       <div
         style={{
           position: "fixed",
@@ -281,9 +301,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
               </div>
                   {/* Documents Section (Stage 469) */}
                   <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-                    <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                      📎 Documents
-                    </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span><span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span></div>
                     <div style={{ marginTop: "6px", fontSize: "13px" }}>
                       <div style={{ fontSize: "13px", color: "#555" }}>
                         {documents.length === 0 ? (
@@ -305,10 +323,6 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                           ))
                         )}
                       </div>
-                      <input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} />
-                      <input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} />
-                      <input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} />
-                      <button onClick={handleAddDocument}>Add</button>
                     </div>
                   </div>
             </div>
@@ -364,5 +378,6 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
         )}
       </div>
     </GovernanceSurfaceContainer>
+      </>
   );
 }
