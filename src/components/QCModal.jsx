@@ -31,6 +31,7 @@ import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { resolveDocuments, createDocument } from "../domain/documents/DocumentStore";
+import DocumentEntryModal from "./DocumentEntryModal";
 
 /* ===================== Time Helper ===================== */
 
@@ -64,6 +65,7 @@ const [event, setEvent] = useState(null);
   const [docUrl, setDocUrl] = useState("");
   const [docRef, setDocRef] = useState("");
   const [refreshTick, setRefreshTick] = useState(0);
+  const [docModalOpen, setDocModalOpen] = useState(false);
 
 
 useEffect(() => {
@@ -161,8 +163,24 @@ if (!event) return null;
 
   /* ================= Render ================= */
 
-  return (
-    <GovernanceSurfaceContainer>
+    return (
+      <>
+        <DocumentEntryModal
+          open={docModalOpen}
+          onClose={() => setDocModalOpen(false)}
+          onConfirm={({ name, location }) => {
+            createDocument({
+              eventId,
+              name,
+              url: location,
+              reference: location,
+              addedBy: actor?.displayName || actor?.id || "system",
+            });
+            setRefreshTick((t) => t + 1);
+            setDocModalOpen(false);
+          }}
+        />
+        <GovernanceSurfaceContainer>
       <div
         style={{
           position: "fixed",
@@ -280,9 +298,7 @@ if (!event) return null;
 
               {/* Documents Section (Stage 469) */}
               <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                  📎 Documents
-                </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span><span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span></div>
                 <div style={{ fontSize: "13px", color: "#555" }}>
                   {documents.length === 0 ? (
                     "(no documents yet)"
@@ -302,12 +318,6 @@ if (!event) return null;
                       </div>
                     ))
                   )}
-                </div>
-                <div style={{ marginTop: "6px", fontSize: "13px" }}>
-                  <input placeholder="Name" value={docName} onChange={(e)=>setDocName(e.target.value)} style={{width:"90px"}} />
-                  <input placeholder="URL" value={docUrl} onChange={(e)=>setDocUrl(e.target.value)} style={{width:"110px"}} />
-                  <input placeholder="Ref" value={docRef} onChange={(e)=>setDocRef(e.target.value)} style={{width:"90px"}} />
-                  <button onClick={handleLinkDocument}>Add</button>
                 </div>
               </div>
 
@@ -361,5 +371,6 @@ if (!event) return null;
         )}
       </div>
     </GovernanceSurfaceContainer>
+      </>
   );
 }
