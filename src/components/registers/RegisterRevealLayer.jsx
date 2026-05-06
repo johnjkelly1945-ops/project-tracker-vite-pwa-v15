@@ -161,7 +161,7 @@ export default function RegisterRevealLayer() {
     closed: false,
     state: "DOCUMENT",
     severity: "",
-    category: "DOCUMENT",
+      category: "DOCUMENT",
     url: d.url || null,
   }));
 
