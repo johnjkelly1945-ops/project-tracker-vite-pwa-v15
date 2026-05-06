@@ -119,3 +119,7 @@ export function resolveDocuments({
     );
   });
 }
+
+export function getAllDocuments() {
+  return load();
+}

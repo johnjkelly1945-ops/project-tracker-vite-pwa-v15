@@ -19,6 +19,7 @@ lifecycle canon, tooltip transparency, and projection invariants.
 import { useEffect, useState } from "react";
 import { getRiskArtefacts, getIssueArtefacts, getQCArtefacts, getChangeArtefacts } from "../../domain/governance/GovernanceStore";
 import { createPortal } from "react-dom";
+import { getAllDocuments } from "../../domain/documents/DocumentStore";
 
 let listenersAttached = false;
 
@@ -145,6 +146,25 @@ export default function RegisterRevealLayer() {
   };
 
   console.log("ACTIVE REGISTER:", activeRegister);
+
+  /* ===============================
+     STAGE 471 — DOCUMENT PROJECTION
+     =============================== */
+
+  const documentRows = getAllDocuments().map((d) => ({
+    title: d.name || "Untitled Document",
+    changeId: d.reference || "DOC",
+    createdBy: d.addedBy || "—",
+    createdOn: d.createdAt || "—",
+    originatingTaskName: d.taskId || "—",
+    taskId: d.taskId || "—",
+    closed: false,
+    state: "DOCUMENT",
+    severity: "",
+    category: "DOCUMENT",
+    url: d.url || null,
+  }));
+
   let source = [];
 
     if (activeRegister === "risks" || activeRegister === "risk") {
@@ -206,10 +226,12 @@ export default function RegisterRevealLayer() {
       state: a.status || "Open",
       severity: "",
       category: "",
-    }));
-  } else {
-    source = ledgerSourceMap[activeRegister] || [];
-  }
+      }));
+    } else if (activeRegister === "artefacts") {
+      source = documentRows;
+    } else {
+      source = ledgerSourceMap[activeRegister] || [];
+    }
 
   const headerMap = {
     risks: "Risk Ledger",
@@ -434,7 +456,7 @@ export default function RegisterRevealLayer() {
                   : null;
 
                 return (
-                  <tr key={i} style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); }}>
+                  <tr key={i} style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { if (r.category === "DOCUMENT" && r.url) { window.open(r.url.startsWith("http") ? r.url : `https://${r.url}`, "_blank"); } else { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); } }}>
                     <td style={tdStyle} title={r.title}>
                       {isGovernanceLedger && lifecycleClass && (
                         <span
