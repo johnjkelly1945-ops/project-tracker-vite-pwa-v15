@@ -20,6 +20,7 @@ import { getPersonnel } from "./domain/personnel/PersonnelRegistry";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
 import RegisterItemView from "./components/RegisterItemView";
+import DocumentModal from "./components/DocumentModal";
 import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModal";
 
 /*
@@ -112,6 +113,8 @@ export default function App() {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
+  const [documentItem, setDocumentItem] = useState(null);
+  const [documentOpen, setDocumentOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   // Stage 359A — Load workspace with migration
@@ -228,11 +231,19 @@ export default function App() {
         setGlobalEscalationLedgerOpen(true);
         return;
       }
-      if (intent.type === "OPEN_REGISTER_ITEM_VIEW") {
-        console.log("INTENT RECEIVED:", intent.payload);
-        setActiveRegisterItem(intent.payload);
-        return;
-      }
+        if (intent.type === "OPEN_REGISTER_ITEM_VIEW") {
+          console.log("INTENT RECEIVED FULL:", JSON.stringify(intent.payload, null, 2));
+          const payload = intent.payload;
+
+          if (payload && payload.category === "DOCUMENT") {
+            setDocumentItem(payload);
+            setDocumentOpen(true);
+          } else {
+            console.log("SETTING REGISTER ITEM:", payload);
+            setActiveRegisterItem(payload);
+          }
+          return;
+        }
 
       if (intent.type === "OPEN_ARCHIVE_INTENT") {
         setArchiveOpen(true);
@@ -689,6 +700,12 @@ export default function App() {
           onClose={() => setActiveRegisterItem(null)}
         />
       )}
+        {documentOpen && (
+          <DocumentModal
+            document={documentItem}
+            onClose={() => setDocumentOpen(false)}
+          />
+        )}
 
       <ModuleHeader />
 

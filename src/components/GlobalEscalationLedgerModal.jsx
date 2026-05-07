@@ -33,35 +33,6 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
   });
 
 
-
-  /* =========================
-     STAGE 471 — DOCUMENT PROJECTION (READ-ONLY)
-  ========================= */
-
-  const allDocuments = resolveDocuments({});
-
-  const documentRows = allDocuments.map((doc) => {
-    let category = "DOCUMENT (TASK)";
-
-    if (doc.eventId) {
-      category = "DOCUMENT (GOV)";
-    } else if (doc.artefactId) {
-      category = "DOCUMENT (ARTEFACT)";
-    }
-
-    return {
-      type: "DOCUMENT",
-      category,
-      name: doc.name,
-      reference: doc.reference,
-      taskId: doc.taskId || "-",
-      taskTitle: (tasks.find(t => t.id === doc.taskId)?.title) || doc.taskId || "-",
-      addedBy: doc.addedBy,
-      createdAt: doc.addedAt,
-      url: doc.url,
-    };
-  });
-
   return (
     <div
       style={{
@@ -118,12 +89,12 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
           {escalations.length === 0 && (
             <div>No escalations recorded</div>
           )}
-            {[...filteredEscalations, ...documentRows].map((item) => {
+            {filteredEscalations.map((esc) => {
 
 
             return (
             <div
-                key={item.reference || item.name}
+              key={esc.reference}
               style={{
                 padding: "12px",
                 borderBottom: "1px solid rgba(0,0,0,0.1)",
@@ -131,25 +102,23 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
               }}
               onClick={(e) => {
                 e.stopPropagation();   // 🔴 CRITICAL FIX
-                  item.type !== "DOCUMENT" && setActiveEscalation(item);
+                setActiveEscalation(esc);
               }}
             >
               <div style={{ fontWeight: 600 }}>
-                  {item.type === "DOCUMENT"
-                    ? `DOC — ${item.name}`
-                    : `ESC-${String(item.reference).padStart(3, "0")} — ${item.title}`}
+                {`ESC-${String(esc.reference).padStart(3, "0")} — ${esc.title}`}
               </div>
               <div style={{ fontSize: "12px", color: "#555" }}>
-                  Task: {item.taskTitle || "-"}
+                Task: {(tasks.find(t => t.id === esc.taskId)?.title) || esc.taskId}
               </div>
                 <div style={{ fontSize: "11px", color: "#777" }}>
-                    Source: {item.type === "DOCUMENT" ? "DOCUMENT" : (item.sourceType || "TASK")}
+                  Source: {esc.sourceType || "TASK"}
                 </div>
                 <div style={{ fontSize: "11px", color: "#777" }}>
-                    Category: {item.type === "DOCUMENT" ? "DOCUMENT" : (item.classification || "—")}
+                  Category: {esc.classification || "—"}
                 </div>
                 <div style={{ fontSize: "11px", color: "#777" }}>
-                    Date: {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}
+                  Date: {esc.createdAt ? new Date(esc.createdAt).toLocaleDateString() : "—"}
                 </div>
             </div>
             );
