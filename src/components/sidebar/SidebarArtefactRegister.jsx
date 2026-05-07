@@ -37,7 +37,7 @@ export default function SidebarArtefactRegister({ artefacts = [] }) {
   return (
     <div style={{ marginTop: "12px" }}>
       <div style={{ fontWeight: "600", marginBottom: "6px" }}>
-        Artefacts (Read-Only)
+          Documents (Read-Only)
       </div>
 
       {documents.length > 0 && (

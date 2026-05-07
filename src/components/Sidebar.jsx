@@ -183,7 +183,7 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                     style={{ cursor: "pointer", textDecoration: "underline" }}
                     onClick={() => emitRegisterReveal("artefacts")}
                   >
-                    Artefacts
+                      Documents
                   </div>
                 </div>
               </div>

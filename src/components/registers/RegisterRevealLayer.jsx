@@ -155,7 +155,7 @@ export default function RegisterRevealLayer() {
     title: d.name || "Untitled Document",
     changeId: d.reference || "DOC",
     createdBy: d.addedBy || "—",
-    createdOn: d.createdAt || "—",
+      createdOn: d.addedAt || "—",
     originatingTaskName: d.taskId || "—",
     taskId: d.taskId || "—",
     closed: false,
@@ -237,7 +237,7 @@ export default function RegisterRevealLayer() {
     risks: "Risk Ledger",
     issues: "Issue Ledger",
     qc: "Quality Control Ledger",
-    artefacts: "Artefact Ledger",
+      artefacts: "Document Register",
   };
 
   const headerLabel =
@@ -377,7 +377,7 @@ export default function RegisterRevealLayer() {
             justifyContent: "space-between",
           }}
         >
-          <strong>{headerLabel} — Governance (Read-Only)</strong>
+            <strong>{headerLabel}</strong>
           <button
             style={{ background: "none", border: "none", color: "#fff" }}
             onClick={() =>
@@ -440,12 +440,9 @@ export default function RegisterRevealLayer() {
             <thead>
               <tr>
                 <th style={thStyle}>Record</th>
-                <th style={thStyle}>Originating Task</th>
-                <th style={thStyle}>Category</th>
                 <th style={thStyle}>Reference</th>
                 <th style={thStyle}>By</th>
                 <th style={thStyle}>Date</th>
-                <th style={thStyle}></th>
               </tr>
             </thead>
 
@@ -456,7 +453,7 @@ export default function RegisterRevealLayer() {
                   : null;
 
                 return (
-                  <tr key={i} style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); }}>
+                  <tr key={i} style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { if (r.category === "DOCUMENT" && r.url) { window.open(r.url.startsWith("http") ? r.url : `https://${r.url}`, "_blank"); } else { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); } }}>
                     <td style={tdStyle} title={r.title}>
                       {isGovernanceLedger && lifecycleClass && (
                         <span
@@ -472,20 +469,10 @@ export default function RegisterRevealLayer() {
                       {r.title}
                     </td>
 
-                      <td
-                        style={tdStyle}
-                        title={r.originatingTaskName}
-                      >
-                        {r.originatingTaskName}
-                      </td>
-                    <td style={tdStyle} title={r.category || ""}>
-                      {r.category}
-                    </td>
 
                     <td style={tdStyle} title={r.changeId}>
                       <span style={idStyle}>{r.changeId}</span>
                     </td>
-                      <td style={tdStyle}>{r.closed ? "CLOSED" : "OPEN"}</td>
 
                     <td style={tdStyle} title={r.createdBy}>
                       {r.createdBy}
@@ -495,7 +482,6 @@ export default function RegisterRevealLayer() {
                       {r.createdOn}
                     </td>
 
-                    <td style={tdStyle}></td>
                   </tr>
                 );
               })}
