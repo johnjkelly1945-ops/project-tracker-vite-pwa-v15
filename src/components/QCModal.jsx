@@ -86,7 +86,9 @@ if (!event) return null;
       name: docName,
       url: docUrl,
       reference: docRef,
+        taskId,
       eventId: event?.eventId,
+        taskTitle,
       addedBy: actor?.displayName || actor?.id || "system"
     });
 

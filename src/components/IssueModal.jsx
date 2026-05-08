@@ -162,7 +162,9 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
           name: docName,
           url: docUrl,
           reference: docRef,
+          taskId,
         eventId: event?.eventId,
+          taskTitle,
         addedBy: actor?.displayName || actor?.id || "system",
       });
         if (onAddNote) {

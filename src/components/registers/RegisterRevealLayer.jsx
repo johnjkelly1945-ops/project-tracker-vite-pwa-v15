@@ -156,7 +156,7 @@ export default function RegisterRevealLayer() {
     changeId: d.reference || "DOC",
     createdBy: d.addedBy || "—",
       createdOn: d.addedAt || "—",
-    originatingTaskName: d.taskId || "—",
+    originatingTaskName: d.taskTitle || d.taskId || "—",
     taskId: d.taskId || "—",
     closed: false,
     state: "DOCUMENT",
@@ -440,6 +440,7 @@ export default function RegisterRevealLayer() {
             <thead>
               <tr>
                 <th style={thStyle}>Record</th>
+                  <th style={thStyle}>Origin</th>
                 <th style={thStyle}>Reference</th>
                 <th style={thStyle}>By</th>
                 <th style={thStyle}>Date</th>
@@ -453,7 +454,7 @@ export default function RegisterRevealLayer() {
                   : null;
 
                 return (
-                  <tr key={i} style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { if (r.category === "DOCUMENT" && r.url) { window.open(r.url.startsWith("http") ? r.url : `https://${r.url}`, "_blank"); } else { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); } }}>
+                  <tr key={i} style={{ cursor: r.category === "DOCUMENT" ? "default" : "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { if (r.category !== "DOCUMENT") { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); } }}>
                     <td style={tdStyle} title={r.title}>
                       {isGovernanceLedger && lifecycleClass && (
                         <span
@@ -469,6 +470,9 @@ export default function RegisterRevealLayer() {
                       {r.title}
                     </td>
 
+                      <td style={tdStyle} title={r.originatingTaskName}>
+                        {r.originatingTaskName}
+                      </td>
 
                     <td style={tdStyle} title={r.changeId}>
                       <span style={idStyle}>{r.changeId}</span>

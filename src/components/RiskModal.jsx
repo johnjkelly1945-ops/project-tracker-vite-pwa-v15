@@ -90,7 +90,9 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
       name: docName,
       url: docUrl,
       reference: docRef,
+        taskId,
       eventId: event?.eventId,
+        taskTitle,
       addedBy: actor?.displayName || actor?.id || "system"
     });
     onAddNote && onAddNote(

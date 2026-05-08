@@ -144,7 +144,9 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
         name,
         url,
         reference,
+          taskId,
         eventId,
+          taskTitle,
         addedBy: "PM",
       });
 
@@ -167,22 +169,6 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   /* ================= Render ================= */
 
     return (
-      <>
-        <DocumentEntryModal
-          open={docModalOpen}
-          onClose={() => setDocModalOpen(false)}
-          onConfirm={({ name, location }) => {
-            createDocument({
-              eventId,
-              name,
-              url: location,
-              reference: location,
-              addedBy: actor?.displayName || actor?.id || "system",
-            });
-            setRefreshTick((t) => t + 1);
-            setDocModalOpen(false);
-          }}
-        />
         <GovernanceSurfaceContainer>
       <div
         style={{
@@ -309,16 +295,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                         ) : (
                           documents.map((d) => (
                             <div key={d.id}>
-                              {d.url ? (
-                                <span
-                                  style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
-                                  onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}
-                                >
-                                  {d.name}
-                                </span>
-                              ) : (
-                                <span>{d.name}</span>
-                              )}
+                                {(typeof d.url === "string" && d.url.trim() !== "") ? (<span title={d.url} style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); try { const raw = d.url.trim(); const finalUrl = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`; new URL(finalUrl); window.open(finalUrl, "_blank", "noopener,noreferrer"); } catch (err) { console.warn("Blocked invalid URL:", d.url); } }}>{d.name}</span>) : (<span title={d.reference || ""}>{d.name}</span>)}
                             </div>
                           ))
                         )}
@@ -376,8 +353,25 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
             onClose={() => setParticipantModalOpen(false)}
           />
         )}
+
+          <DocumentEntryModal
+            open={docModalOpen}
+            onClose={() => setDocModalOpen(false)}
+            onConfirm={({ name, location }) => {
+              createDocument({
+                eventId,
+                taskId,
+                name,
+                url: location,
+                taskTitle,
+                reference: location,
+                addedBy: actor?.displayName || actor?.id || "system",
+              });
+              setRefreshTick((t) => t + 1);
+              setDocModalOpen(false);
+            }}
+          />
       </div>
     </GovernanceSurfaceContainer>
-      </>
   );
 }

@@ -38,15 +38,10 @@ function now() {
    VALIDATION
 ============================================================ */
 
-function validateContext({ taskId, eventId, artefactId }) {
-  const count =
-    (taskId ? 1 : 0) +
-    (eventId ? 1 : 0) +
-    (artefactId ? 1 : 0);
-
-  if (count !== 1) {
+function validateContext({ taskId }) {
+  if (!taskId) {
     throw new Error(
-      "Document must have exactly one context: taskId OR eventId OR artefactId"
+      "Document requires taskId operational authority"
     );
   }
 }
@@ -62,6 +57,7 @@ export function createDocument({
     taskId = null,
     eventId = null,
     artefactId = null,
+      taskTitle = "",
     addedBy = "system",
 }) {
     if (!name || (!url && !reference)) {
@@ -79,6 +75,7 @@ export function createDocument({
       reference,
 
     taskId,
+      taskTitle,
     eventId,
     artefactId,
 
