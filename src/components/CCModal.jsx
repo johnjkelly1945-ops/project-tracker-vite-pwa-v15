@@ -212,7 +212,6 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
               >
                 {artefact?.reference + (artefact?.title ? " — " + artefact.title : "")}
               </div>
-              <div><strong>Event ID:</strong> {" "} <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setDescriptionOpen(true)}>{event.eventId}</span></div>
               <div><strong>Task:</strong> {taskTitle}</div>
               <div><strong>Status:</strong> {event.status}</div>
               <div>
