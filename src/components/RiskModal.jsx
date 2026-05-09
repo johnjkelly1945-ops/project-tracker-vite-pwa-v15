@@ -300,7 +300,7 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
                   ) : (
                       documents.map((d) => (
                         <div key={d.id}>
-                          {(typeof d.url === "string" && d.url.trim() !== "") ? (<span title={d.url} style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); try { const raw = d.url.trim(); const finalUrl = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`; new URL(finalUrl); window.open(finalUrl, "_blank", "noopener,noreferrer"); } catch (err) { console.warn("Blocked invalid URL:", d.url); } }}>{d.name}</span>) : (<span title={d.reference || ""}>{d.name}</span>)}
+                          {(typeof d.url === "string" && d.url.trim() !== "" && !d.url.startsWith("/") && !d.url.startsWith("'/") && (d.url.includes(".") || d.url.startsWith("http://") || d.url.startsWith("https://"))) ? (<span title={d.url} style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); try { const raw = d.url.trim(); const finalUrl = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`; new URL(finalUrl); window.open(finalUrl, "_blank", "noopener,noreferrer"); } catch (err) { console.warn("Blocked invalid URL:", d.url); } }}>{d.name}</span>) : (<span title={d.reference || ""}>{d.name}</span>)}
                         </div>
                       ))
                   )}
@@ -361,6 +361,8 @@ export default function RiskModal({ taskId, taskTitle, eventId, onClose, onAddNo
           createDocument({
             eventId,
             name,
+            taskId,
+            taskTitle,
             url: location,
             reference: location,
             addedBy: actor?.displayName || actor?.id || "system",

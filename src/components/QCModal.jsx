@@ -173,6 +173,8 @@ if (!event) return null;
           onConfirm={({ name, location }) => {
             createDocument({
               eventId,
+                taskId,
+                taskTitle,
               name,
               url: location,
               reference: location,
@@ -307,16 +309,7 @@ if (!event) return null;
                   ) : (
                     documents.map((d) => (
                       <div key={d.id}>
-                        {d.url ? (
-                          <span
-                            style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
-                            onClick={() => window.open(d.url.startsWith("http") ? d.url : `https://${d.url}`, "_blank")}
-                          >
-                            {d.name}
-                          </span>
-                        ) : (
-                          <span>{d.name}</span>
-                        )}
+                          {(typeof d.url === "string" && d.url.trim() !== "" && !d.url.startsWith("/") && !d.url.startsWith("'/") && (d.url.includes(".") || d.url.startsWith("http://") || d.url.startsWith("https://"))) ? (<span title={d.url} style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); try { const raw = d.url.trim(); const finalUrl = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`; new URL(finalUrl); window.open(finalUrl, "_blank", "noopener,noreferrer"); } catch (err) { console.warn("Blocked invalid URL:", d.url); } }}>{d.name}</span>) : (<span title={d.reference || ""}>{d.name}</span>)}
                       </div>
                     ))
                   )}
