@@ -26,6 +26,6 @@ import "./index.css";   // ← RESTORED GLOBAL STYLES
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
-    <RegisterRevealLayer />
+      <RegisterRevealLayer />
   </React.StrictMode>
 );

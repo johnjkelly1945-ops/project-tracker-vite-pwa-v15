@@ -801,6 +801,8 @@ export default function App() {
           onClose={() => setGlobalEscalationLedgerOpen(false)}
         />
       )}
+
+
       {activeRegisterItem && (
         <RegisterItemView
           item={activeRegisterItem}

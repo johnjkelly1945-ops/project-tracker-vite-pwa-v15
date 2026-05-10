@@ -156,7 +156,7 @@ export default function RegisterRevealLayer() {
     changeId: d.reference || "DOC",
     createdBy: d.addedBy || "—",
       createdOn: d.addedAt || "—",
-    originatingTaskName: d.taskTitle || d.taskId || "—",
+      originatingTaskName: d.taskTitle || d.taskId || "—",
     taskId: d.taskId || "—",
     closed: false,
     state: "DOCUMENT",
@@ -467,7 +467,7 @@ export default function RegisterRevealLayer() {
                           }}
                         ></span>
                       )}
-                      {r.title}
+                        {(r.category === "DOCUMENT" && typeof r.url === "string" && r.url.trim() !== "" && !r.url.startsWith("/") && !r.url.startsWith("'/") && (r.url.includes(".") || r.url.startsWith("http://") || r.url.startsWith("https://"))) ? (<span title={r.url} style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); try { const raw = r.url.trim(); const finalUrl = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`; new URL(finalUrl); window.open(finalUrl, "_blank", "noopener,noreferrer"); } catch (err) { console.warn("Blocked invalid URL:", r.url); } }}>{r.title}</span>) : (r.title)}
                     </td>
 
                       <td style={tdStyle} title={r.originatingTaskName}>

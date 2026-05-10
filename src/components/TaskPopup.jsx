@@ -31,6 +31,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { attemptAction } from "../domain/authority/ActionExecutor.js";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import TaskDescriptionModal from "./TaskDescriptionModal";
+import TaskDocumentsModal from "./TaskDocumentsModal";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
@@ -90,6 +91,7 @@ export default function TaskPopup({
   hasMutationAuthority,
   workspaceMode,
   onArchiveSegment,
+  actingUser,
   currentUserRole = "PM",
   readOnly = false,
 }) {
@@ -185,6 +187,8 @@ export default function TaskPopup({
 
   const [inlineDraftText, setInlineDraftText] = useState("");
   const inlineRef = useRef(null);
+  const [documentsOpen, setDocumentsOpen] = useState(false);
+
 
   const [linkDocOpen, setLinkDocOpen] = useState(false);
   const [docTitle, setDocTitle] = useState("");
@@ -737,7 +741,7 @@ export default function TaskPopup({
     </>
   );
 })()}
-              {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
+                {isPM && (<><span>{" / "}</span><span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span></>)}
           </div>
 
           <div
@@ -775,7 +779,7 @@ export default function TaskPopup({
                   <button onClick={confirmSummaryEdit}>Confirm</button>
                 </>
               )}
-              <button onClick={() => setLinkDocOpen(true)}>Link document</button>
+                <button onClick={() => setDocumentsOpen(true)}>Documents</button>
             </div>
 
             <div style={{ minWidth: "140px", textAlign: "right" }}>
@@ -899,6 +903,17 @@ export default function TaskPopup({
           taskTitle={task.title}
           />
       )}
+
+      {documentsOpen && (
+        <TaskDocumentsModal
+            open={documentsOpen}
+          task={task}
+          onClose={() => setDocumentsOpen(false)}
+          onAddNote={onAddNote}
+            actor={actingUser}
+        />
+      )}
+
 
       {riskRegisterOpen && (
         <RiskRegisterModal
