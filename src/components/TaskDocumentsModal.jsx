@@ -226,6 +226,33 @@ export default function TaskDocumentsModal({
                       {d.name}
                     </span>
                   )}
+
+                    <span
+                      title="Copy reference"
+                      onClick={() => {
+                        const value = d.url || d.reference || "";
+
+                        if (!value) return;
+
+                        navigator.clipboard.writeText(value);
+
+                        console.log(
+                          "[Stage 475B] Copied document reference:",
+                          value
+                        );
+                      }}
+                      style={{
+                        marginLeft: "10px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        opacity: 0.75,
+                        userSelect: "none",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      📋
+                    </span>
+
                 </div>
 
                 {d.reference && (
