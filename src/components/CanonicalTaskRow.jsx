@@ -13,6 +13,8 @@ Stage 230   — Inline Task Status Indicator (Canonical Dot Projection)
 */
 
 import { useState } from "react";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getEscalationsByTask } from "../domain/escalation/EscalationStore";
 
 export default function CanonicalTaskRow({
   task,
@@ -28,6 +30,15 @@ export default function CanonicalTaskRow({
 
   const [isEditing, setIsEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(task.title || "");
+
+  const hasActiveGovernance = getGovernanceEventsByTask(task.id)
+    .some((e) => e.status !== "CLOSED");
+
+  const hasEscalation =
+    getEscalationsByTask(task.id).length > 0;
+
+  const showAttentionFlag =
+    hasActiveGovernance || hasEscalation;
 
   /* ===============================================================
      Canonical executionState → dot colour mapping (UX projection only)
@@ -51,6 +62,7 @@ export default function CanonicalTaskRow({
     alignItems: "center",
     gap: "8px",
     padding: "8px 12px",
+    justifyContent: "space-between",
     borderBottom: "1px solid #e5e7eb",
     color: task.taskState === "archived" ? "#6b7280" : "#111827",
     opacity: task.taskState === "archived" ? 0.5 : 1,
@@ -65,6 +77,13 @@ export default function CanonicalTaskRow({
     backgroundColor: getStatusDotColor(task.executionState),
     flexShrink: 0,
     pointerEvents: "none", // CRITICAL: prevent focus / click interception
+  };
+
+  const attentionFlagStyle = {
+    color: "#dc2626",
+    fontSize: "12px",
+    flexShrink: 0,
+    pointerEvents: "none",
   };
 
   const titleStyle = {
@@ -93,32 +112,38 @@ export default function CanonicalTaskRow({
         if (!isEditing && onOpenTask) onOpenTask(task);
       }}
     >
-      <span style={statusDotStyle} />
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexGrow: 1 }}>
+          <span style={statusDotStyle} />
 
-      {isEditing ? (
-        <input
-          value={draftTitle}
-          onChange={(e) => setDraftTitle(e.target.value)}
-          onBlur={commitTitle}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commitTitle();
-            if (e.key === "Escape") setIsEditing(false);
-          }}
-          autoFocus
-          style={inputStyle}
-          onClick={(e) => e.stopPropagation()}
-        />
-      ) : (
-        <span
-          style={titleStyle}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (allowEdit) setIsEditing(true);
-          }}
-        >
-          {task.title || "Untitled Task"}
-        </span>
-      )}
-    </div>
-  );
-}
+          {isEditing ? (
+            <input
+              value={draftTitle}
+              onChange={(e) => setDraftTitle(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitTitle();
+                if (e.key === "Escape") setIsEditing(false);
+              }}
+              autoFocus
+              style={inputStyle}
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <span
+              style={titleStyle}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (allowEdit) setIsEditing(true);
+              }}
+            >
+              {task.title || "Untitled Task"}
+            </span>
+          )}
+        </div>
+
+        {showAttentionFlag && (
+          <span style={attentionFlagStyle}>🚩</span>
+        )}
+      </div>
+    );
+  }

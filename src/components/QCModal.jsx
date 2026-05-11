@@ -23,6 +23,7 @@ import {
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
 import { getGovernanceEvent } from "../governance/governanceStore";
+import { closeGovernanceEvent } from "../governance/governanceEngine";
 import { getQCArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
@@ -140,6 +141,12 @@ if (!event) return null;
 
   /* ================= Inline Commit ================= */
 
+
+  function handleCloseItem() {
+    closeGovernanceEvent({ eventId });
+    const fresh = getGovernanceEvent(eventId);
+    if (fresh) setEvent({ ...fresh });
+  }
   function handleCommitInlineAdvisory() {
     const summary = advisoryText.trim();
     if (!summary) return;
@@ -337,7 +344,8 @@ if (!event) return null;
                 fontStyle: "italic",
               }}
             >
-              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+                {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
+                {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
@@ -350,7 +358,6 @@ if (!event) return null;
               {isPM && <button onClick={() => setParticipantModalOpen(true)}>
                 Confirm Participant
               </button>}
-
               <button onClick={onClose}>Close</button>
             </div>
           </div>
