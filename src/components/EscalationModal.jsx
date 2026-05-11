@@ -15,6 +15,8 @@ import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
 import { appendEscalationAdvisory } from "../domain/escalation/EscalationStore";
 import { getActingUser } from "../domain/actor/ActingUser";
+import { createDocument, resolveDocuments } from "../domain/documents/DocumentStore";
+import DocumentEntryModal from "./DocumentEntryModal";
 function nowStamp() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");
@@ -40,6 +42,13 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionEntries, setDescriptionEntries] = useState([]);
   const [classification, setClassification] = useState("");
+  const [docModalOpen, setDocModalOpen] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const documents = resolveDocuments({
+    reference: escalation?.reference
+  });
+
 
   const participantNames = escalation.participants
     ? escalation.participants.split(",")
@@ -114,15 +123,6 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
               Escalation — {escalation.reference || "001"} — {escalation.title || "Untitled"}
             </div>
 
-            <div>
-              <strong>ESC ID:</strong>{" "}
-              <span
-                style={{ cursor: "pointer", textDecoration: "underline" }}
-                onClick={() => setDescriptionOpen(true)}
-              >
-                {escalation.escalationId}
-              </span>
-            </div>
 
             <div><strong>Task:</strong> {taskTitle || taskId}</div>
 
@@ -220,6 +220,62 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
                     Commit advisory
                   </button>
                 </div>
+                  {/* Documents Section (Stage 475C) */}
+                  <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}>
+                      <span>📎 Documents</span>
+                      <span
+                        style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }}
+                        onClick={() => setDocModalOpen(true)}
+                      >
+                        Add
+                      </span>
+                    </div>
+
+                    <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                      <div style={{ fontSize: "13px", color: "#555" }}>
+                        {documents.length === 0 ? (
+                          "(no documents yet)"
+                        ) : (
+                          documents.map((d) => (
+                            <div key={d.id}>
+                              {(typeof d.url === "string" && d.url.trim() !== "" && !d.url.startsWith("/") && !d.url.startsWith("'/") && (d.url.includes(".") || d.url.startsWith("http://") || d.url.startsWith("https://"))) ? (
+                                <span
+                                  title={d.url}
+                                  style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+
+                                    try {
+                                      const raw = d.url.trim();
+
+                                      const finalUrl =
+                                        raw.startsWith("http://") ||
+                                        raw.startsWith("https://")
+                                          ? raw
+                                          : `https://${raw}`;
+
+                                      new URL(finalUrl);
+
+                                      window.open(finalUrl, "_blank", "noopener,noreferrer");
+                                    } catch (err) {
+                                      console.warn("Blocked invalid URL:", d.url);
+                                    }
+                                  }}
+                                >
+                                  {d.name}
+                                </span>
+                              ) : (
+                                <span title={d.reference || ""}>
+                                  {d.name}
+                                </span>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
               </div>
             )}
@@ -267,6 +323,23 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
             onClose={() => setParticipantModalOpen(false)}
           />
         )}
+        <DocumentEntryModal
+          open={docModalOpen}
+          onClose={() => setDocModalOpen(false)}
+          onConfirm={({ name, location }) => {
+            createDocument({
+              name,
+              taskId,
+              url: location,
+              reference: escalation?.reference,
+              addedBy: getActingUser(),
+            });
+
+            setRefreshTick((v) => v + 1);
+
+            setDocModalOpen(false);
+          }}
+        />
 
       </div>
 

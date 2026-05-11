@@ -105,6 +105,7 @@ export function resolveDocuments({
   taskId = null,
   eventId = null,
   artefactId = null,
+  reference = null,
 }) {
   const list = load();
 
@@ -112,6 +113,7 @@ export function resolveDocuments({
     return (
       (taskId && d.taskId === taskId) ||
       (eventId && d.eventId === eventId) ||
+        (reference && d.reference === reference) ||
       (artefactId && d.artefactId === artefactId)
     );
   });

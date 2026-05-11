@@ -27,6 +27,9 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import { personnel } from "../data/personnel";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { createDocument, resolveDocuments } from "../domain/documents/DocumentStore";
+import { getActingUser } from "../domain/actor/ActingUser";
+import DocumentEntryModal from "./DocumentEntryModal";
 
 /* ===================== Time Helper ===================== */
 
@@ -52,10 +55,16 @@ export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAdd
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
+  const [docModalOpen, setDocModalOpen] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const actor = getActingUser();
 
   const [event, setEvent] = useState(() =>
     getGovernanceEvent(eventId)
   );
+  const documents = resolveDocuments({ eventId: event?.eventId });
+
 
   const participantIds = event?.participation
     ? [...new Set(event.participation.map((p) => p.reviewerId))]
@@ -223,6 +232,62 @@ export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAdd
                   Commit advisory
                 </button>
               </div>
+                {/* Documents Section (Stage 475C) */}
+                <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}>
+                    <span>📎 Documents</span>
+                    <span
+                      style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }}
+                      onClick={() => setDocModalOpen(true)}
+                    >
+                      Add
+                    </span>
+                  </div>
+
+                  <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                    <div style={{ fontSize: "13px", color: "#555" }}>
+                      {documents.length === 0 ? (
+                        "(no documents yet)"
+                      ) : (
+                        documents.map((d) => (
+                          <div key={d.id}>
+                            {(typeof d.url === "string" && d.url.trim() !== "") ? (
+                              <span
+                                title={d.url}
+                                style={{ color: "#0b3a66", textDecoration: "underline", cursor: "pointer" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  try {
+                                    const raw = d.url.trim();
+
+                                    const finalUrl =
+                                      raw.startsWith("http://") ||
+                                      raw.startsWith("https://")
+                                        ? raw
+                                        : `https://${raw}`;
+
+                                    new URL(finalUrl);
+
+                                    window.open(finalUrl, "_blank", "noopener,noreferrer");
+                                  } catch (err) {
+                                    console.warn("Blocked invalid URL:", d.url);
+                                  }
+                                }}
+                              >
+                                {d.name}
+                              </span>
+                            ) : (
+                              <span title={d.reference || ""}>
+                                {d.name}
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
 
@@ -263,6 +328,30 @@ export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAdd
             onClose={() => setParticipantModalOpen(false)}
           />
         )}
+        <DocumentEntryModal
+          open={docModalOpen}
+          onClose={() => setDocModalOpen(false)}
+          onConfirm={({ name, location }) => {
+            createDocument({
+              name,
+                taskId,
+              url: location,
+              eventId: event?.eventId,
+              addedBy: actor,
+            });
+
+            setRefreshTick((v) => v + 1);
+
+            if (onAddNote) {
+              onAddNote(
+                taskId,
+                `[System] Document attached by ${actor}: ${name} — ${nowStamp()}`
+              );
+            }
+
+            setDocModalOpen(false);
+          }}
+        />
       </div>
     </GovernanceSurfaceContainer>
   );
