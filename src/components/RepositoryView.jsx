@@ -1,7 +1,4 @@
 /* ======================================================================
-import { getGovernanceEventsByTask } from "../governance/governanceStore";
-import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
-import { getActingUser } from "../domain/actor/ActingUser";
    METRA – RepositoryView.jsx
    Stage 354 – APPLY Commit Model (Bundles → Summaries Reveal)
    Stage 354A — Summary Checkbox Selection (UI ONLY)
@@ -28,6 +25,9 @@ import { getActingUser } from "../domain/actor/ActingUser";
 import React, { useEffect, useMemo, useState } from "react";
 import "../Styles/RepositoryView.css";
 import { REPO_BUNDLES, REPO_SUMMARIES, REPO_TASKS } from "../domain/repository/RepositoryData";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 /* ----------------------------------------------------------------------
    Placeholder repository data (Stage 354 scaffolding only)
