@@ -23,6 +23,7 @@ import {
   bridgeSubmitAdvisory,
 } from "../governance/governanceBridge";
 import { getGovernanceEvent } from "../governance/governanceStore";
+import { closeGovernanceEvent } from "../governance/governanceEngine";
 import { getChangeArtefactById } from "../domain/governance/GovernanceStore";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
@@ -129,6 +130,12 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
     setAdvisoryText("");
 
     if (inlineRef.current) inlineRef.current.focus();
+  }
+
+  function handleCloseItem() {
+    closeGovernanceEvent({ eventId });
+    const fresh = getGovernanceEvent(eventId);
+    if (fresh) setEvent({ ...fresh });
   }
 
   function handleAddDocument() {
@@ -323,7 +330,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 color: "#333",
               }}
             >
-              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+              {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
