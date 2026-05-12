@@ -442,6 +442,7 @@ export default function RegisterRevealLayer() {
                 <th style={thStyle}>Record</th>
                   <th style={thStyle}>Origin</th>
                 <th style={thStyle}>Reference</th>
+                  <th style={thStyle}>Status</th>
                 <th style={thStyle}>By</th>
                 <th style={thStyle}>Date</th>
               </tr>
@@ -477,6 +478,7 @@ export default function RegisterRevealLayer() {
                     <td style={tdStyle} title={r.changeId}>
                       <span style={idStyle}>{r.changeId}</span>
                     </td>
+                      <td style={tdStyle} title={r.state}>{r.state || "—"}</td>
 
                     <td style={tdStyle} title={r.createdBy}>
                       {r.createdBy}
