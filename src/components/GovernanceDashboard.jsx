@@ -37,7 +37,10 @@ Advisory explains.
 =====================================================================
 */
 
+import { resolveOpenGovernanceCounts } from "../domain/governance/dashboardResolvers";
+
 export default function GovernanceDashboard({ onClose }) {
+  const openCounts = resolveOpenGovernanceCounts();
   return (
     <div
       style={{
@@ -152,7 +155,7 @@ export default function GovernanceDashboard({ onClose }) {
               background: "#fafafa",
             }}
           >
-            Future observability projections will appear here.
+              OPEN — Issue: {openCounts.ISSUE} · Risk: {openCounts.RISK} · QC: {openCounts.QC} · CC: {openCounts.CC} · Escalation: {openCounts.ESCALATION}
           </div>
         </div>
       </div>
