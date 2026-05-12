@@ -80,6 +80,10 @@ export function repoGetByTask(taskId) {
   );
 }
 
+export function repoGetAll() {
+  return Object.values(events);
+}
+
 export function repoUpdate(eventId, updatedEvent) {
   if (!events[eventId]) return null;
 
