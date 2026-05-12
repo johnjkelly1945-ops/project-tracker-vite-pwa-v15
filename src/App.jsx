@@ -22,6 +22,7 @@ import { saveWorkspace } from "./storage/workspaceRepository";
 import RegisterItemView from "./components/RegisterItemView";
 import DocumentModal from "./components/DocumentModal";
 import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModal";
+import GovernanceDashboard from "./components/GovernanceDashboard";
 
 /*
 =====================================================================
@@ -111,6 +112,7 @@ export default function App() {
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [governanceDashboardOpen, setGovernanceDashboardOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [documentItem, setDocumentItem] = useState(null);
@@ -231,7 +233,12 @@ export default function App() {
         setGlobalEscalationLedgerOpen(true);
         return;
       }
-        if (intent.type === "OPEN_REGISTER_ITEM_VIEW") {
+
+      if (intent.type === "OPEN_GOVERNANCE_DASHBOARD") {
+        setGovernanceDashboardOpen(true);
+        return;
+      }
+      if (intent.type === "OPEN_REGISTER_ITEM_VIEW") {
           console.log("INTENT RECEIVED FULL:", JSON.stringify(intent.payload, null, 2));
           const payload = intent.payload;
 
@@ -801,6 +808,12 @@ export default function App() {
           onClose={() => setGlobalEscalationLedgerOpen(false)}
         />
       )}
+
+        {governanceDashboardOpen && (
+          <GovernanceDashboard
+            onClose={() => setGovernanceDashboardOpen(false)}
+          />
+        )}
 
 
       {activeRegisterItem && (

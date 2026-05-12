@@ -178,6 +178,12 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                     >
                       Escalation
                     </div>
+                    <div
+                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                      onClick={() => emitModuleIntent("OPEN_GOVERNANCE_DASHBOARD")}
+                    >
+                      Governance Dashboard
+                    </div>
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
