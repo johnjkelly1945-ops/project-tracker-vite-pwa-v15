@@ -155,7 +155,7 @@ export default function GovernanceDashboard({ onClose }) {
               background: "#fafafa",
             }}
           >
-              <>OPEN<br />Issue: {openCounts.ISSUE}<br />Risk: {openCounts.RISK}<br />QC: {openCounts.QC}<br />CC: {openCounts.CC}<br />Escalation: {openCounts.ESCALATION}</>
+              <>Status<br /><br /><strong>Operational</strong><br />Issue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.ISSUE}<br />Risk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.RISK}<br /><br /><strong>Control</strong><br />QC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.QC}<br />CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.CC}<br /><br /><strong>Escalation</strong><br />Escalation {openCounts.ESCALATION}</>
           </div>
         </div>
       </div>
