@@ -23,6 +23,8 @@ import RegisterItemView from "./components/RegisterItemView";
 import DocumentModal from "./components/DocumentModal";
 import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModal";
 import GovernanceDashboard from "./components/GovernanceDashboard";
+import { getGovernanceEventsByTask } from "./governance/governanceStore";
+import { getEscalationsByTask } from "./domain/escalation/EscalationStore";
 
 /*
 =====================================================================
@@ -95,6 +97,10 @@ export default function App() {
   const [mgmtSummaries, setMgmtSummaries] = useState([]);
   const [mgmtTasks, setMgmtTasks] = useState([]);
   const [mgmtSummaryOrder, setMgmtSummaryOrder] = useState([]);
+
+    /* ===================== STAGE 480 — OPERATIONAL VISIBILITY FILTERS ===================== */
+    const [activeMgmtFilter, setActiveMgmtFilter] = useState("all");
+    const [activeDevFilter, setActiveDevFilter] = useState("all");
 
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
@@ -600,6 +606,46 @@ export default function App() {
   const activeTask =
     activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
 
+
+  /* ===================== STAGE 480 — OPERATIONAL VISIBILITY HELPERS ===================== */
+
+  function isFlaggedTask(task) {
+    if (!task) return false;
+
+    const hasActiveGovernance =
+      getGovernanceEventsByTask(task.id)
+        .some((e) => e.status !== "CLOSED");
+
+    const hasEscalation =
+      getEscalationsByTask(task.id).length > 0;
+
+    return hasActiveGovernance || hasEscalation;
+  }
+
+  function matchesOperationalFilter(task, filterId) {
+    if (!task) return false;
+
+    switch (filterId) {
+      case "notstarted":
+        return task.executionState === "NOT_STARTED";
+
+      case "started":
+        return task.executionState === "IN_PROGRESS";
+
+      case "submitted":
+        return task.executionState === "SUBMITTED";
+
+      case "completed":
+        return task.executionState === "COMPLETED";
+
+      case "flagged":
+        return isFlaggedTask(task);
+
+      case "all":
+      default:
+        return true;
+    }
+  }
   /* ===================== SURFACES ===================== */
 
 
@@ -618,10 +664,20 @@ export default function App() {
       if (workspaceMode === "dual") return true;
       return actor && hasContext(actor, t);
     });
+
+    const filteredMgmtTasks =
+      visibleMgmtTasks.filter((t) =>
+        matchesOperationalFilter(t, activeMgmtFilter)
+      );
+
+    const filteredDevTasks =
+      visibleDevTasks.filter((t) =>
+        matchesOperationalFilter(t, activeDevFilter)
+      );
   const mgmtBody = (
     <PreProject
       summaries={visibleMgmtSummaries}
-      tasks={visibleMgmtTasks}
+      tasks={filteredMgmtTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={hasMutationAuthority}
@@ -639,7 +695,7 @@ export default function App() {
   const devBody = (
     <PreProject
       summaries={visibleDevSummaries}
-      tasks={visibleDevTasks}
+      tasks={filteredDevTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
       canCreateTask={hasMutationAuthority}
@@ -714,7 +770,26 @@ export default function App() {
           />
         )}
 
-      <ModuleHeader />
+        <ModuleHeader
+          activeFilter={
+            workspaceMode === "single"
+              ? (
+                  focusedPane === "management"
+                    ? activeMgmtFilter
+                    : activeDevFilter
+                )
+              : null
+          }
+          onChangeFilter={(filterId) => {
+            if (workspaceMode !== "single") return;
+
+            if (focusedPane === "management") {
+              setActiveMgmtFilter(filterId);
+            } else {
+              setActiveDevFilter(filterId);
+            }
+          }}
+        />
 
       <div style={{ padding: "8px 16px", borderBottom: "1px solid #eee" }}>
         <label style={{ marginRight: 8 }}>Segment:</label>
@@ -738,6 +813,69 @@ export default function App() {
           + New
         </button>
       </div>
+
+        {workspaceMode === "single" && (
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              padding: "8px 16px",
+              borderBottom: "1px solid #eee",
+              background: "#fafafa",
+              fontSize: "11px",
+              fontWeight: 500,
+            }}
+          >
+            {[
+              ["all", "ALL"],
+              ["notstarted", "NOT STARTED"],
+              ["started", "STARTED"],
+              ["submitted", "SUBMITTED"],
+              ["completed", "COMPLETED"],
+              ["flagged", "FLAGGED"],
+            ].map(([id, label]) => {
+              const activeFilter =
+                focusedPane === "management"
+                  ? activeMgmtFilter
+                  : activeDevFilter;
+
+              return (
+                <span
+                  key={id}
+                  onClick={() => {
+                    if (id === activeFilter) return;
+
+                    if (focusedPane === "management") {
+                      setActiveMgmtFilter(id);
+                    } else {
+                      setActiveDevFilter(id);
+                    }
+                  }}
+                  style={{
+                    padding: "2px 6px",
+                    border:
+                      id === activeFilter
+                        ? "1px solid rgba(0,0,0,0.25)"
+                        : "1px solid transparent",
+                    borderRadius: "4px",
+                    cursor:
+                      id === activeFilter
+                        ? "default"
+                        : "pointer",
+                    opacity:
+                      id === activeFilter
+                        ? 1
+                        : 0.82,
+                    userSelect: "none",
+                  }}
+                >
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
