@@ -17,6 +17,8 @@ export default function DualPane({
   focusedPane = null,            // "management" | "development" | null
   onFocusPane,                   // function(pane)
   onReturnToDual,                // function()
+    activeFilter,
+    onChangeFilter,
   summaryPresenceLabel = "",     // read-only display
   managementBody,
   developmentBody,
@@ -62,6 +64,56 @@ export default function DualPane({
                 </span>
               )}
             </div>
+
+              {!isDual && activeFilter && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    marginLeft: "24px",
+                    flex: 1,
+                  }}
+                >
+                  {[
+                    ["all", "ALL"],
+                    ["notstarted", "NOT STARTED"],
+                    ["started", "STARTED"],
+                    ["submitted", "SUBMITTED"],
+                    ["completed", "COMPLETED"],
+                    ["flagged", "FLAGGED"],
+                  ].map(([id, label]) => (
+                    <span
+                      key={id}
+                      onClick={() => {
+                        if (id === activeFilter) return;
+                        onChangeFilter?.(id);
+                      }}
+                      style={{
+                        padding: "2px 6px",
+                        border:
+                          id === activeFilter
+                            ? "1px solid rgba(0,0,0,0.25)"
+                            : "1px solid transparent",
+                        borderRadius: "4px",
+                        cursor:
+                          id === activeFilter
+                            ? "default"
+                            : "pointer",
+                        opacity:
+                          id === activeFilter
+                            ? 1
+                            : 0.82,
+                        userSelect: "none",
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
 
             {isDual ? (
               <button type="button" onClick={() => onFocusPane("management")}>

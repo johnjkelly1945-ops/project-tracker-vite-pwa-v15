@@ -814,68 +814,6 @@ export default function App() {
         </button>
       </div>
 
-        {workspaceMode === "single" && (
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-              padding: "8px 16px",
-              borderBottom: "1px solid #eee",
-              background: "#fafafa",
-              fontSize: "11px",
-              fontWeight: 500,
-            }}
-          >
-            {[
-              ["all", "ALL"],
-              ["notstarted", "NOT STARTED"],
-              ["started", "STARTED"],
-              ["submitted", "SUBMITTED"],
-              ["completed", "COMPLETED"],
-              ["flagged", "FLAGGED"],
-            ].map(([id, label]) => {
-              const activeFilter =
-                focusedPane === "management"
-                  ? activeMgmtFilter
-                  : activeDevFilter;
-
-              return (
-                <span
-                  key={id}
-                  onClick={() => {
-                    if (id === activeFilter) return;
-
-                    if (focusedPane === "management") {
-                      setActiveMgmtFilter(id);
-                    } else {
-                      setActiveDevFilter(id);
-                    }
-                  }}
-                  style={{
-                    padding: "2px 6px",
-                    border:
-                      id === activeFilter
-                        ? "1px solid rgba(0,0,0,0.25)"
-                        : "1px solid transparent",
-                    borderRadius: "4px",
-                    cursor:
-                      id === activeFilter
-                        ? "default"
-                        : "pointer",
-                    opacity:
-                      id === activeFilter
-                        ? 1
-                        : 0.82,
-                    userSelect: "none",
-                  }}
-                >
-                  {label}
-                </span>
-              );
-            })}
-          </div>
-        )}
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar
@@ -888,6 +826,18 @@ export default function App() {
           focusedPane={focusedPane}
           onFocusPane={handleFocusPane}
           onReturnToDual={returnToDual}
+            activeFilter={
+              focusedPane === "management"
+                ? activeMgmtFilter
+                : activeDevFilter
+            }
+            onChangeFilter={(filterId) => {
+              if (focusedPane === "management") {
+                setActiveMgmtFilter(filterId);
+              } else {
+                setActiveDevFilter(filterId);
+              }
+            }}
           managementBody={mgmtBody}
           developmentBody={devBody}
         />
