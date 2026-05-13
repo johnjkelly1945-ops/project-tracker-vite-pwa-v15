@@ -155,7 +155,141 @@ export default function GovernanceDashboard({ onClose }) {
               background: "#fafafa",
             }}
           >
-              <>Status<br /><br /><strong>Operational</strong><br />Issue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.ISSUE}<br />Risk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.RISK}<br /><br /><strong>Control</strong><br />QC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.QC}<br />CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{openCounts.CC}<br /><br /><strong>Escalation</strong><br />Escalation {openCounts.ESCALATION}</>
+              <>
+                <div
+                  style={{
+                    fontWeight: "700",
+                    marginBottom: "18px",
+                    color: "#444",
+                    letterSpacing: "0.3px",
+                  }}
+                >
+                  Status
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "16px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: "1 1 220px",
+                      border: "1px solid #e3dccf",
+                      borderTop: "3px solid #b8aa8c",
+                      borderRadius: "10px",
+                      background: "#fcfbf8",
+                      padding: "14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        marginBottom: "12px",
+                        color: "#5e5545",
+                      }}
+                    >
+                      Operational
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <span>Issue</span>
+                      <span>{openCounts.ISSUE}</span>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>Risk</span>
+                      <span>{openCounts.RISK}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      flex: "1 1 220px",
+                      border: "1px solid #d9e1e8",
+                      borderTop: "3px solid #8ea3b5",
+                      borderRadius: "10px",
+                      background: "#fafbfd",
+                      padding: "14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        marginBottom: "12px",
+                        color: "#4f6272",
+                      }}
+                    >
+                      Control
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <span>QC</span>
+                      <span>{openCounts.QC}</span>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>CC</span>
+                      <span>{openCounts.CC}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      flex: "1 1 220px",
+                      border: "1px solid #e4dce2",
+                      borderTop: "3px solid #a48a99",
+                      borderRadius: "10px",
+                      background: "#fcfafb",
+                      padding: "14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        marginBottom: "12px",
+                        color: "#6b5964",
+                      }}
+                    >
+                      Escalation
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>Escalation</span>
+                      <span>{openCounts.ESCALATION}</span>
+                    </div>
+                  </div>
+                </div>
+              </>
           </div>
         </div>
       </div>
