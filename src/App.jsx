@@ -121,6 +121,7 @@ export default function App() {
   const [governanceDashboardOpen, setGovernanceDashboardOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
+  const [segmentTitleDraft, setSegmentTitleDraft] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [documentItem, setDocumentItem] = useState(null);
   const [documentOpen, setDocumentOpen] = useState(false);
@@ -654,6 +655,10 @@ export default function App() {
   const effectiveSegmentId = activeSegmentId ?? activeWorkspaceSegments[0]?.segmentId ?? null;
   const activeSegment =
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
+
+  useEffect(() => {
+    setSegmentTitleDraft(activeSegment?.segmentTitle || "");
+  }, [activeSegment]);
   /* ===================== Stage 359C — Segment Render Filtering ===================== */
   const visibleDevSummaries = orderedDevSummaries.filter(s => (s.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
   const visibleDevTasks = devTasks.filter(t => (t.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
@@ -733,6 +738,21 @@ export default function App() {
   }
 
 
+
+  function handleSaveSegmentTitle() {
+    if (activeSegment === null) return;
+
+    setSegments(prev =>
+      prev.map(s =>
+        s.segmentId === activeSegment.segmentId
+          ? {
+              ...s,
+              segmentTitle: segmentTitleDraft.trim() || "Untitled Segment",
+            }
+          : s
+      )
+    );
+  }
   /* ===================== Stage 360 — Segment Archive Handler ===================== */
   function handleArchiveSegment(segmentId) {
   setActiveSegmentId(null);
@@ -796,10 +816,20 @@ export default function App() {
               <strong>Segment Context</strong>
 
               <div style={{ marginTop: "16px" }}>
-                <div>
-                  <strong>Segment Title:</strong>{" "}
-                  {activeSegment?.segmentTitle || "—"}
-                </div>
+                  <div>
+                    <strong>Segment Title:</strong>
+
+                    <input
+                      style={{
+                        width: "100%",
+                        marginTop: "6px",
+                        padding: "6px",
+                        boxSizing: "border-box",
+                      }}
+                      value={segmentTitleDraft}
+                      onChange={(e) => setSegmentTitleDraft(e.target.value)}
+                    />
+                  </div>
 
                 <div style={{ marginTop: "8px" }}>
                   <strong>Segment ID:</strong>{" "}
@@ -814,6 +844,9 @@ export default function App() {
                 </div>
               </div>
               <div style={{ marginTop: "16px" }}>
+                  <button onClick={handleSaveSegmentTitle}>
+                    Save
+                  </button>
                 <button onClick={() => setSegmentContextOpen(false)}>
                   Close
                 </button>
