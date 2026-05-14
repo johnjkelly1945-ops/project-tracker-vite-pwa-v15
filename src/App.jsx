@@ -120,6 +120,7 @@ export default function App() {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [governanceDashboardOpen, setGovernanceDashboardOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
+  const [segmentContextOpen, setSegmentContextOpen] = useState(false);
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [documentItem, setDocumentItem] = useState(null);
   const [documentOpen, setDocumentOpen] = useState(false);
@@ -651,6 +652,8 @@ export default function App() {
 
   const activeWorkspaceSegments = segments.filter(s => !s.archived);
   const effectiveSegmentId = activeSegmentId ?? activeWorkspaceSegments[0]?.segmentId ?? null;
+  const activeSegment =
+    activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
   /* ===================== Stage 359C — Segment Render Filtering ===================== */
   const visibleDevSummaries = orderedDevSummaries.filter(s => (s.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
   const visibleDevTasks = devTasks.filter(t => (t.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
@@ -770,6 +773,54 @@ export default function App() {
           />
         )}
 
+        {segmentContextOpen && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 999999,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: "20px",
+                width: "420px",
+                borderRadius: "8px",
+              }}
+            >
+              <strong>Segment Context</strong>
+
+              <div style={{ marginTop: "16px" }}>
+                <div>
+                  <strong>Segment Title:</strong>{" "}
+                  {activeSegment?.segmentTitle || "—"}
+                </div>
+
+                <div style={{ marginTop: "8px" }}>
+                  <strong>Segment ID:</strong>{" "}
+                  {activeSegment?.segmentId || "—"}
+                </div>
+
+                <div style={{ marginTop: "8px" }}>
+                  <strong>Created:</strong>{" "}
+                  {activeSegment?.createdAt
+                    ? new Date(activeSegment.createdAt).toLocaleString()
+                    : "—"}
+                </div>
+              </div>
+              <div style={{ marginTop: "16px" }}>
+                <button onClick={() => setSegmentContextOpen(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <ModuleHeader
           activeFilter={
             workspaceMode === "single"
@@ -805,6 +856,12 @@ export default function App() {
               </option>
             ))}
         </select>
+          <button
+            style={{ marginLeft: 8 }}
+            onClick={() => setSegmentContextOpen(true)}
+          >
+            Context
+          </button>
         <button
           style={{ marginLeft: 8 }}
           onClick={handleCreateSegment}
