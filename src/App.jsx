@@ -122,6 +122,7 @@ export default function App() {
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
   const [segmentTitleDraft, setSegmentTitleDraft] = useState("");
+  const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [documentItem, setDocumentItem] = useState(null);
   const [documentOpen, setDocumentOpen] = useState(false);
@@ -134,6 +135,7 @@ export default function App() {
     const defaultSegment = {
       segmentId: `segment-${Date.now()}`,
       segmentTitle: "Untitled Segment",
+      segmentType: "PROJECT",
       archived: false,
       createdAt: Date.now(),
     };
@@ -658,6 +660,7 @@ export default function App() {
 
   useEffect(() => {
     setSegmentTitleDraft(activeSegment?.segmentTitle || "");
+    setSegmentTypeDraft(activeSegment?.segmentType || "PROJECT");
   }, [activeSegment]);
   /* ===================== Stage 359C — Segment Render Filtering ===================== */
   const visibleDevSummaries = orderedDevSummaries.filter(s => (s.segmentId ?? activeWorkspaceSegments[0]?.segmentId) === effectiveSegmentId);
@@ -728,6 +731,7 @@ export default function App() {
     const newSegment = {
       segmentId: `segment-${Date.now()}`,
       segmentTitle: title,
+      segmentType: segmentTypeDraft,
       archived: false,
       createdAt: Date.now(),
       pmId: actor?.id
@@ -748,6 +752,7 @@ export default function App() {
           ? {
               ...s,
               segmentTitle: segmentTitleDraft.trim() || "Untitled Segment",
+              segmentType: segmentTypeDraft,
             }
           : s
       )
@@ -831,6 +836,24 @@ export default function App() {
                     />
                   </div>
 
+
+                    <div style={{ marginTop: "12px" }}>
+                      <strong>Segment Type:</strong>
+
+                      <select
+                        style={{
+                          width: "100%",
+                          marginTop: "6px",
+                          padding: "6px",
+                          boxSizing: "border-box",
+                        }}
+                        value={segmentTypeDraft}
+                        onChange={(e) => setSegmentTypeDraft(e.target.value)}
+                      >
+                        <option value="PROJECT">Project</option>
+                        <option value="PROGRAMME">Programme</option>
+                      </select>
+                    </div>
 
                   <div style={{ marginTop: "12px" }}>
                     <strong>Owner:</strong>{" "}
