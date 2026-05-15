@@ -837,6 +837,11 @@ export default function App() {
                     {activeSegment?.ownerName || "Not assigned"}
                   </div>
 
+                  <div style={{ marginTop: "8px" }}>
+                    <strong>PM:</strong>{" "}
+                    {activeSegment?.pmName || activeSegment?.ownerName || "Not assigned"}
+                  </div>
+
                 <div style={{ marginTop: "8px" }}>
                   <strong>Created:</strong>{" "}
                   {activeSegment?.createdAt
