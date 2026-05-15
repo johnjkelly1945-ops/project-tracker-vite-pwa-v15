@@ -831,10 +831,11 @@ export default function App() {
                     />
                   </div>
 
-                <div style={{ marginTop: "8px" }}>
-                  <strong>Segment ID:</strong>{" "}
-                  {activeSegment?.segmentId || "—"}
-                </div>
+
+                  <div style={{ marginTop: "12px" }}>
+                    <strong>Owner:</strong>{" "}
+                    {activeSegment?.ownerName || "Not assigned"}
+                  </div>
 
                 <div style={{ marginTop: "8px" }}>
                   <strong>Created:</strong>{" "}
