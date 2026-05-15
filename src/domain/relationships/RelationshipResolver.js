@@ -62,3 +62,30 @@ export function resolveRelationshipTopology() {
     relationshipType: r.relationshipType
   }));
 }
+
+export function resolveDashboardProjectionTopology(
+  segmentId,
+  projectionResolver
+) {
+  if (!segmentId) return [];
+
+  if (typeof projectionResolver !== "function") return [];
+
+  const relationships =
+    repoGetRelationshipsForSegment(segmentId);
+
+  return relationships.map((r) => {
+    const relatedSegmentId =
+      r.fromSegmentId === segmentId
+        ? r.toSegmentId
+        : r.fromSegmentId;
+
+    return {
+      relationshipId: r.relationshipId,
+      relationshipType: r.relationshipType,
+      relatedSegmentId,
+      projection:
+        projectionResolver(relatedSegmentId)
+    };
+  });
+}
