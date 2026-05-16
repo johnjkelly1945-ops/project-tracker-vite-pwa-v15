@@ -893,9 +893,10 @@ export default function App() {
                               ? r.toSegmentId
                               : r.fromSegmentId;
 
+                            const relatedSegment = activeWorkspaceSegments.find((s) => s.segmentId === relatedSegmentId) || null;
                           return (
                             <div key={r.relationshipId}>
-                              {r.relationshipType} → {relatedSegmentId}
+                              {r.relationshipType} → {relatedSegment?.segmentTitle || relatedSegmentId} ({relatedSegment?.segmentType || "SEGMENT"})
                             </div>
                           );
                         })
