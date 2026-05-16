@@ -25,6 +25,7 @@ import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModa
 import GovernanceDashboard from "./components/GovernanceDashboard";
 import { getGovernanceEventsByTask } from "./governance/governanceStore";
 import { getEscalationsByTask } from "./domain/escalation/EscalationStore";
+import { resolveRelationshipsForSegment } from "./domain/relationships/RelationshipResolver";
 
 /*
 =====================================================================
@@ -658,6 +659,11 @@ export default function App() {
   const activeSegment =
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
 
+    const segmentRelationships =
+      activeSegment?.segmentId
+        ? resolveRelationshipsForSegment(activeSegment.segmentId)
+        : [];
+
   useEffect(() => {
     setSegmentTitleDraft(activeSegment?.segmentTitle || "");
     setSegmentTypeDraft(activeSegment?.segmentType || "PROJECT");
@@ -871,6 +877,31 @@ export default function App() {
                     ? new Date(activeSegment.createdAt).toLocaleString()
                     : "—"}
                 </div>
+
+                  <div style={{ marginTop: "16px" }}>
+                    <strong>Relationships:</strong>
+
+                    <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                      {segmentRelationships.length === 0 ? (
+                        <div style={{ opacity: 0.6 }}>
+                          No relationships
+                        </div>
+                      ) : (
+                        segmentRelationships.map((r) => {
+                          const relatedSegmentId =
+                            r.fromSegmentId === activeSegment?.segmentId
+                              ? r.toSegmentId
+                              : r.fromSegmentId;
+
+                          return (
+                            <div key={r.relationshipId}>
+                              {r.relationshipType} → {relatedSegmentId}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
               </div>
               <div style={{ marginTop: "16px" }}>
                   <button onClick={handleSaveSegmentTitle}>
