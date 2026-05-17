@@ -146,6 +146,46 @@ export default function GovernanceDashboard({ onClose }) {
               The dashboard simplifies governance visibility but never replaces governance reality.
             </div>
           </div>
+            <div
+              style={{
+                padding: "18px",
+                border: "1px dashed #c8d2dc",
+                borderRadius: "10px",
+                background: "#f8fafc",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "700",
+                  marginBottom: "10px",
+                  color: "#44576b",
+                  letterSpacing: "0.3px",
+                }}
+              >
+                Observational Topology
+              </div>
+
+              <div
+                style={{
+                  lineHeight: 1.6,
+                  color: "#4f5f6f",
+                }}
+              >
+                Relationships expand contextual visibility without altering sovereign operational behaviour.<br />
+                Dashboard reveal remains observational, consultative, and non-authoritative.
+              </div>
+
+              <div
+                style={{
+                  marginTop: "14px",
+                  fontSize: "13px",
+                  color: "#6b7280",
+                }}
+              >
+                No observational relationships declared.
+              </div>
+            </div>
+
 
           <div
             style={{
