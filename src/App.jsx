@@ -124,6 +124,7 @@ export default function App() {
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
   const [segmentTitleDraft, setSegmentTitleDraft] = useState("");
   const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
+  const [coordinationTargetId, setCoordinationTargetId] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [documentItem, setDocumentItem] = useState(null);
   const [documentOpen, setDocumentOpen] = useState(false);
@@ -664,6 +665,21 @@ export default function App() {
         ? resolveRelationshipsForSegment(activeSegment.segmentId)
         : [];
 
+  function handleAddCoordination() {
+    if (!activeSegment?.segmentId) return;
+    if (!coordinationTargetId) return;
+
+    createRelationship({
+      fromSegmentId: activeSegment.segmentId,
+      toSegmentId: coordinationTargetId,
+      relationshipType: "COORDINATES",
+      createdBy: actor?.displayName || actor?.id || "system",
+    });
+
+    setCoordinationTargetId("");
+  }
+
+
   useEffect(() => {
     setSegmentTitleDraft(activeSegment?.segmentTitle || "");
     setSegmentTypeDraft(activeSegment?.segmentType || "PROJECT");
@@ -903,6 +919,39 @@ export default function App() {
                       )}
                     </div>
                   </div>
+
+                    <div style={{ marginTop: "12px" }}>
+                      <strong>Add Coordination:</strong>
+
+                      <select
+                        style={{
+                          width: "100%",
+                          marginTop: "6px",
+                          padding: "6px",
+                          boxSizing: "border-box",
+                        }}
+                        value={coordinationTargetId}
+                        onChange={(e) => setCoordinationTargetId(e.target.value)}
+                      >
+                        <option value="">Select segment</option>
+
+                        {activeWorkspaceSegments
+                          .filter((s) => s.segmentId !== activeSegment?.segmentId)
+                          .map((s) => (
+                            <option key={s.segmentId} value={s.segmentId}>
+                              {s.segmentTitle} ({s.segmentType})
+                            </option>
+                          ))}
+                      </select>
+
+                      <button
+                        style={{ marginTop: "8px" }}
+                        onClick={handleAddCoordination}
+                      >
+                        Add Coordination
+                      </button>
+                    </div>
+
               </div>
               <div style={{ marginTop: "16px" }}>
                   <button onClick={handleSaveSegmentTitle}>
