@@ -923,33 +923,55 @@ export default function App() {
                     <div style={{ marginTop: "12px" }}>
                       <strong>Add Coordination:</strong>
 
-                      <select
-                        style={{
-                          width: "100%",
-                          marginTop: "6px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                        }}
-                        value={coordinationTargetId}
-                        onChange={(e) => setCoordinationTargetId(e.target.value)}
-                      >
-                        <option value="">Select segment</option>
+                        {segmentTypeDraft === "PROGRAMME" ? (
+                          <>
+                            <select
+                              style={{
+                                width: "100%",
+                                marginTop: "6px",
+                                padding: "6px",
+                                boxSizing: "border-box",
+                              }}
+                              value={coordinationTargetId}
+                              onChange={(e) => setCoordinationTargetId(e.target.value)}
+                            >
+                              <option value="">Select segment</option>
 
-                        {activeWorkspaceSegments
-                          .filter((s) => s.segmentId !== activeSegment?.segmentId)
-                          .map((s) => (
-                            <option key={s.segmentId} value={s.segmentId}>
-                              {s.segmentTitle} ({s.segmentType})
-                            </option>
-                          ))}
-                      </select>
+                              {activeWorkspaceSegments
+                                .filter(
+                                  (s) =>
+                                    s.segmentId !== activeSegment?.segmentId &&
+                                    (
+                                      s.segmentType === "PROJECT" ||
+                                      s.segmentType === "PROGRAMME"
+                                    )
+                                )
+                                .map((s) => (
+                                  <option key={s.segmentId} value={s.segmentId}>
+                                    {s.segmentTitle} ({s.segmentType})
+                                  </option>
+                                ))}
+                            </select>
 
-                      <button
-                        style={{ marginTop: "8px" }}
-                        onClick={handleAddCoordination}
-                      >
-                        Add Coordination
-                      </button>
+                            <button
+                              style={{ marginTop: "8px" }}
+                              onClick={handleAddCoordination}
+                            >
+                              Add Coordination
+                            </button>
+                          </>
+                        ) : (
+                          <div
+                            style={{
+                              marginTop: "6px",
+                              fontSize: "13px",
+                              color: "#666",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            Projects participate observationally and may not author coordination topology.
+                          </div>
+                        )}
                     </div>
 
               </div>
