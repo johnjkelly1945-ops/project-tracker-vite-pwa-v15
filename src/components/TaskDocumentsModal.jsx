@@ -86,6 +86,7 @@ export default function TaskDocumentsModal({
       taskTitle: task.title,
       name,
       url: location,
+        segmentId: task.segmentId,
       reference: location,
       addedBy: actor?.displayName || actor?.id || "system",
     });

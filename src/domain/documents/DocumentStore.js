@@ -58,6 +58,7 @@ export function createDocument({
     eventId = null,
     artefactId = null,
       taskTitle = "",
+      segmentId = null,
     addedBy = "system",
 }) {
     if (!name || (!url && !reference)) {
@@ -75,6 +76,7 @@ export function createDocument({
       reference,
 
     taskId,
+      segmentId,
       taskTitle,
     eventId,
     artefactId,

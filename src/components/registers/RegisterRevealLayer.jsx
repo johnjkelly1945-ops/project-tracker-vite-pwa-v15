@@ -155,10 +155,15 @@ export default function RegisterRevealLayer() {
      STAGE 471 — DOCUMENT PROJECTION
      =============================== */
 
-  const documentRows = getAllDocuments().map((d) => ({
+  const documentRows = getAllDocuments()
+    .filter(d => d.segmentId === activeSegmentId)
+    .map((d) => ({
     title: d.name || "Untitled Document",
     changeId: d.reference || "DOC",
-    createdBy: d.addedBy || "—",
+    createdBy:
+      typeof d.addedBy === "object"
+        ? d.addedBy.displayName || d.addedBy.id || "—"
+        : d.addedBy || "—",
       createdOn: d.addedAt || "—",
       originatingTaskName: d.taskTitle || d.taskId || "—",
     taskId: d.taskId || "—",
