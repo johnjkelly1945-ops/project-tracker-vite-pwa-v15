@@ -106,6 +106,7 @@ export default function RegisterRevealLayer() {
   const [lifecycleFilter, setLifecycleFilter] = useState("ALL");
   const [activeRegister, setActiveRegister] = useState(null);
 
+  const [activeSegmentId, setActiveSegmentId] = useState(null);
   useEffect(() => {
     if (listenersAttached) return;
     listenersAttached = true;
@@ -113,6 +114,7 @@ export default function RegisterRevealLayer() {
     const onReveal = (e) => {
       if (!e?.detail?.register) return;
       setActiveRegister(e.detail.register);
+      setActiveSegmentId(e.detail.segmentId || null);
       setVisible(true);
       setFilterText("");
       setLifecycleFilter("ALL");
@@ -123,6 +125,7 @@ export default function RegisterRevealLayer() {
       setFilterText("");
       setLifecycleFilter("ALL");
       setActiveRegister(null);
+      setActiveSegmentId(null);
     };
 
     window.addEventListener("metra:register:reveal", onReveal);
@@ -146,6 +149,7 @@ export default function RegisterRevealLayer() {
   };
 
   console.log("ACTIVE REGISTER:", activeRegister);
+  console.log("ACTIVE SEGMENT:", activeSegmentId);
 
   /* ===============================
      STAGE 471 — DOCUMENT PROJECTION
@@ -168,7 +172,7 @@ export default function RegisterRevealLayer() {
   let source = [];
 
     if (activeRegister === "risks" || activeRegister === "risk") {
-      source = getRiskArtefacts().map(a => {
+      source = getRiskArtefacts().filter(a => a.segmentId === activeSegmentId).map(a => {
         const events = getGovernanceEventsByTask(a.taskId)
           .filter(e => e.artefactId === a.artefactId);
 
@@ -189,7 +193,7 @@ export default function RegisterRevealLayer() {
         };
       });
   } else if (activeRegister === "issues" || activeRegister === "issue") {
-    source = getIssueArtefacts().map(a => ({
+    source = getIssueArtefacts().filter(a => a.segmentId === activeSegmentId).map(a => ({
       title: a.title || "Untitled",
       changeId: a.reference,
       createdBy: a.createdBy || "—",
@@ -202,7 +206,7 @@ export default function RegisterRevealLayer() {
       category: "",
     }));
   } else if (activeRegister === "qc") {
-    source = getQCArtefacts().map(a => ({
+    source = getQCArtefacts().filter(a => a.segmentId === activeSegmentId).map(a => ({
       title: a.title || "Untitled",
       changeId: a.reference,
       createdBy: a.createdBy || "—",
@@ -215,7 +219,7 @@ export default function RegisterRevealLayer() {
       category: "",
     }));
   } else if (activeRegister === "change") {
-    source = getChangeArtefacts().map(a => ({
+    source = getChangeArtefacts().filter(a => a.segmentId === activeSegmentId).map(a => ({
       title: a.title || "Untitled",
       changeId: a.reference,
       createdBy: a.createdBy || "—",

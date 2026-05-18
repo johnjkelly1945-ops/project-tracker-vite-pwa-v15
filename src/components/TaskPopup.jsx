@@ -96,6 +96,7 @@ export default function TaskPopup({
   readOnly = false,
 }) {
   if (!task) return null;
+  console.log("TASK SEGMENT ID:", task?.segmentId);
 
   const isReadOnly = readOnly === true;
 
@@ -920,6 +921,7 @@ export default function TaskPopup({
         <RiskRegisterModal
           taskId={task.id}
           taskTitle={task.title}
+            segmentId={task.segmentId}
           onClose={() => setRiskRegisterOpen(false)}
           openRiskEvent={(eventId) => {
             setActiveRiskEventId(eventId);
@@ -934,6 +936,7 @@ export default function TaskPopup({
         <IssueRegisterModal
           taskId={task.id}
           taskTitle={task.title}
+            segmentId={task.segmentId}
           onClose={() => setIssueRegisterOpen(false)}
           openIssueEvent={(eventId) => {
             setActiveIssueEventId(eventId);
@@ -945,6 +948,7 @@ export default function TaskPopup({
         {qcRegisterOpen && (
           <QCRegisterModal
             taskId={task.id}
+              segmentId={task.segmentId}
               taskTitle={task.title}
             onClose={() => setQcRegisterOpen(false)}
             openQCEvent={(eventId) => {
@@ -958,6 +962,8 @@ export default function TaskPopup({
         {ccRegisterOpen && (
           <CCRegisterModal
             taskId={task.id}
+              segmentId={task.segmentId}
+            taskTitle={task.title}
             isPM={isPM}
             onClose={() => setCcRegisterOpen(false)}
             openCCEvent={(id) => {
@@ -1027,6 +1033,7 @@ export default function TaskPopup({
         <EscalationRegisterModal
           taskId={task.id}
           taskTitle={task.title}
+            segmentId={task.segmentId}
           sourceType={(escalationContext && escalationContext.sourceType) || "TASK"}
           sourceId={(escalationContext && escalationContext.sourceId) || task.id}
           onClose={() => setEscalationRegisterOpen(false)}

@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEvent }) {
+export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent }) {
 
   const [, refresh] = useState(0);
 
@@ -67,7 +67,7 @@ export default function QCRegisterModal({ taskId, taskTitle, onClose, openQCEven
 
     } else {
 
-      const r = createQCArtefact(null, taskId, taskTitle);
+      const r = createQCArtefact(segmentId, taskId, taskTitle);
 
       updateQCArtefact(r.artefactId, {
         title: form.title,

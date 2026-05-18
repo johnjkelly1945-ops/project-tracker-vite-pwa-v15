@@ -60,7 +60,8 @@ export function createEscalation({
   title,
   classification = null,
   sourceType,
-  sourceId
+  sourceId,
+  segmentId
 }) {
   if (!taskId) throw new Error("createEscalation requires taskId");
   if (!title) throw new Error("createEscalation requires title");
@@ -79,6 +80,7 @@ export function createEscalation({
     createdAt: now(),
 
     // NEW — Stage 426 (additive only)
+      segmentId,
     sourceType: resolvedSourceType,
     sourceId: resolvedSourceId,
 

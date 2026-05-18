@@ -1021,19 +1021,24 @@ export default function App() {
               </option>
             ))}
         </select>
-          <button
-            style={{ marginLeft: 8 }}
-            onClick={() => setSegmentContextOpen(true)}
-          >
-            Context
-          </button>
-        <button
-          style={{ marginLeft: 8 }}
-          onClick={handleCreateSegment}
-          disabled={!hasMutationAuthority}
-        >
-          + New
-        </button>
+          {workspaceMode === "single" && (
+            <>
+              <button
+                style={{ marginLeft: 8 }}
+                onClick={() => setSegmentContextOpen(true)}
+              >
+                Context
+              </button>
+
+              <button
+                style={{ marginLeft: 8 }}
+                onClick={handleCreateSegment}
+                disabled={!hasMutationAuthority}
+              >
+                + New
+              </button>
+            </>
+          )}
       </div>
 
 
@@ -1041,6 +1046,7 @@ export default function App() {
         <Sidebar
           expanded={sidebarExpanded}
           onToggle={() => setSidebarExpanded((v) => !v)}
+            effectiveSegmentId={effectiveSegmentId}
         />
 
         <DualPane
@@ -1115,6 +1121,7 @@ export default function App() {
       {globalEscalationLedgerOpen && (
         <GlobalEscalationLedgerModal
           tasks={[...devTasks, ...mgmtTasks]}
+            activeSegmentId={activeSegmentId}
           onClose={() => setGlobalEscalationLedgerOpen(false)}
         />
       )}

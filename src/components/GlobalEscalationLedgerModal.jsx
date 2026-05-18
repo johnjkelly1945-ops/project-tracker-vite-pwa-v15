@@ -10,12 +10,14 @@ import { useState } from "react";
 import EscalationModal from "./EscalationModal";
 import { getAllEscalations } from "../domain/escalation/EscalationStore";
 
-export default function GlobalEscalationLedgerModal({ onClose, tasks = [] }) {
+export default function GlobalEscalationLedgerModal({ onClose, tasks = [], activeSegmentId }) {
 
   const [activeEscalation, setActiveEscalation] = useState(null);
   const [query, setQuery] = useState("");
 
-  const escalations = getAllEscalations();
+  const escalations = getAllEscalations().filter(
+    esc => esc.segmentId === activeSegmentId
+  );
 
   const filteredEscalations = escalations.filter((esc) => {
     const q = query.toLowerCase();

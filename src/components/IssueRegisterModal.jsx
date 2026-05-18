@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIssueEvent }) {
+export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent }) {
 
   const [, refresh] = useState(0);
 
@@ -63,7 +63,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, onClose, openIss
 
     } else {
 
-      const r = createIssueArtefact(null, taskId, taskTitle);
+      const r = createIssueArtefact(segmentId, taskId, taskTitle);
       console.log("ISSUE AFTER UPDATE:", r);
 
       updateIssueArtefact(r.artefactId, {

@@ -18,7 +18,7 @@ import {
 } from "../domain/escalation/EscalationStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, onClose, sourceType, sourceId, onNavigate }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate }) {
 
   const actor = getActingUser();
   const isPM = actor?.id === "user-1"; // temporary restore of PM working behaviour
@@ -42,7 +42,8 @@ export default function EscalationRegisterModal({ taskId, taskTitle, onClose, so
       title: draftTitle.trim(),
       classification: null,
       sourceType,
-        sourceId: (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId) || sourceId
+        sourceId: (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId) || sourceId,
+        segmentId,
     });
 
     setDraftTitle("");

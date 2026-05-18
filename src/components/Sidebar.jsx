@@ -25,10 +25,10 @@ import SidebarArtefactRegister from "./sidebar/SidebarArtefactRegister";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { setActingUser } from "../domain/actor/ActingUser";
 
-function emitRegisterReveal(register) {
+function emitRegisterReveal(register, segmentId) {
   window.dispatchEvent(
     new CustomEvent("metra:register:reveal", {
-      detail: { register },
+        detail: { register, segmentId },
     })
   );
 }
@@ -41,7 +41,7 @@ function emitModuleIntent(type, payload) {
   );
 }
 
-export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
+export default function Sidebar({ expanded, onToggle, derivedArtefacts = [], effectiveSegmentId }) {
   return (
     <aside
       style={{
@@ -146,28 +146,28 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
                 >
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => emitRegisterReveal("change")}
+                      onClick={() => emitRegisterReveal("change", effectiveSegmentId)}
                   >
                     Change Control
                   </div>
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => emitRegisterReveal("risks")}
+                      onClick={() => emitRegisterReveal("risks", effectiveSegmentId)}
                   >
                     Risks
                   </div>
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => emitRegisterReveal("issues")}
+                      onClick={() => emitRegisterReveal("issues", effectiveSegmentId)}
                   >
                     Issues
                   </div>
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => emitRegisterReveal("qc")}
+                      onClick={() => emitRegisterReveal("qc", effectiveSegmentId)}
                   >
                     Quality Control
                   </div>
@@ -187,7 +187,7 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [] }) {
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => emitRegisterReveal("artefacts")}
+                      onClick={() => emitRegisterReveal("artefacts", effectiveSegmentId)}
                   >
                       Documents
                   </div>

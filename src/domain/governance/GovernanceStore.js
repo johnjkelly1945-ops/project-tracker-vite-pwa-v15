@@ -96,6 +96,7 @@ function reconcileRiskArtefactsFromEvents() {
 
 export function createRiskArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", createdBy = "system") {
 
+  console.log("CREATE RISK SEGMENT ID:", segmentId);
   let taskTitle = "";
   if (typeof taskTitleOrCreatedBy === "string" && taskTitleOrCreatedBy.startsWith("task-")) {
     // old call pattern: (segmentId, taskId, createdBy)
@@ -311,8 +312,13 @@ Stage 378 — Governance Artefact Generalisation
 export function createChangeArtefact(segmentId, taskId, taskTitleOrCreatedBy = "", createdBy = "system") {
   console.log("createChangeArtefact args:", segmentId, taskId, taskTitleOrCreatedBy);
 
-    const taskTitle = taskTitleOrCreatedBy || "";
-    const resolvedCreatedBy = createdBy;
+  let taskTitle = "";
+  let resolvedCreatedBy = createdBy;
+  if (typeof taskTitleOrCreatedBy === "string" && taskTitleOrCreatedBy.startsWith("task-")) {
+    resolvedCreatedBy = taskTitleOrCreatedBy;
+  } else {
+    taskTitle = taskTitleOrCreatedBy || "";
+  }
 
   const artefact = {
     artefactId: crypto.randomUUID(),
