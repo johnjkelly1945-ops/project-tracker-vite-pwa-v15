@@ -50,7 +50,7 @@ CREATE EVENT
 =====================================================================
 */
 
-export function createGovernanceEvent({ eventType, taskId, initiatedBy, artefactId = null }) {
+export function createGovernanceEvent({ eventType, taskId, initiatedBy, artefactId = null, segmentId = null }) {
 
   // 🔒 Enforce 1 artefact → 1 event
   const existing = repoGetByTask(taskId)
@@ -68,6 +68,7 @@ export function createGovernanceEvent({ eventType, taskId, initiatedBy, artefact
     eventType,
     taskId,
     artefactId,
+      segmentId,
     status: "OPEN",
     closedAt: null,
     closedBy: null,

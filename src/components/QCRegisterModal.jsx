@@ -237,7 +237,7 @@ export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose,
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                <button onClick={() => openQCEvent(createGovernanceEvent({ eventType: "QC", taskId, initiatedBy: "PM", artefactId: qc.artefactId }).eventId)}>
+                  <button onClick={() => openQCEvent(createGovernanceEvent({ eventType: "QC", taskId, initiatedBy: "PM", artefactId: qc.artefactId, segmentId }).eventId)}>
                   Advisory
                 </button>
               </div>

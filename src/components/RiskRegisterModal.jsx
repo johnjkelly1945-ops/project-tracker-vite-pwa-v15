@@ -238,7 +238,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                <button onClick={() => openRiskEvent(createGovernanceEvent({ eventType: "RISK", taskId, initiatedBy: "PM", artefactId: risk.artefactId }).eventId)}>
+                  <button onClick={() => openRiskEvent(createGovernanceEvent({ eventType: "RISK", taskId, initiatedBy: "PM", artefactId: risk.artefactId, segmentId }).eventId)}>
                   Advisory
                 </button>
               </div>

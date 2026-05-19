@@ -30,8 +30,10 @@ Dashboard visibility is:
 import { repoGetAll } from "./GovernanceRepository";
 
 
-export function resolveOpenGovernanceCounts() {
-  const events = repoGetAll();
+export function resolveOpenGovernanceCounts(segmentId) {
+  const events = repoGetAll().filter(
+    (event) => event.segmentId === segmentId
+  );
 
   const counts = {
     ISSUE: 0,

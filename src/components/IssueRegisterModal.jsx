@@ -226,7 +226,8 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
                           eventType: "ISSUE",
                           taskId,
                           initiatedBy: "PM",
-                          artefactId: issue.artefactId
+                            artefactId: issue.artefactId,
+                            segmentId
                         });
 
                   openIssueEvent(targetEvent.eventId);

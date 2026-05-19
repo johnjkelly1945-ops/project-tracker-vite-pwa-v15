@@ -245,7 +245,8 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
                         eventType: "CC",
                         taskId,
                         initiatedBy: "PM",
-                        artefactId: cc.artefactId
+                          artefactId: cc.artefactId,
+                          segmentId
                       }).eventId;
                   openCCEvent(eventIdToOpen);
                 }}>

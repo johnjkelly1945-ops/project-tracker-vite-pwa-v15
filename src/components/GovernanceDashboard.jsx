@@ -39,8 +39,8 @@ Advisory explains.
 
 import { resolveOpenGovernanceCounts } from "../domain/governance/dashboardResolvers";
 
-export default function GovernanceDashboard({ onClose }) {
-  const openCounts = resolveOpenGovernanceCounts();
+export default function GovernanceDashboard({ activeSegment, onClose }) {
+  const openCounts = resolveOpenGovernanceCounts(activeSegment?.segmentId);
   return (
     <div
       style={{
@@ -77,26 +77,37 @@ export default function GovernanceDashboard({ onClose }) {
             background: "#f7f7f7",
           }}
         >
-          <div>
-            <div
-              style={{
-                fontSize: "20px",
-                fontWeight: "700",
-              }}
-            >
-              Governance Dashboard
-            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "700",
+                }}
+              >
+                {(activeSegment?.segmentType || "SEGMENT") + " — " + (activeSegment?.segmentTitle || "Untitled Segment")}
+              </div>
 
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#666",
-                marginTop: "4px",
-              }}
-            >
-              Governance observability and awareness orientation surface
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#666",
+                  marginTop: "6px",
+                  lineHeight: 1.5,
+                }}
+              >
+                {activeSegment?.scope || "Operational governance and contextual awareness surface."}
+              </div>
+
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#7a7a7a",
+                  marginTop: "8px",
+                }}
+              >
+                Operational governance and contextual awareness surface
+              </div>
             </div>
-          </div>
 
           <button
             type="button"

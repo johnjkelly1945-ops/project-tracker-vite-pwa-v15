@@ -1128,6 +1128,7 @@ export default function App() {
 
         {governanceDashboardOpen && (
           <GovernanceDashboard
+            activeSegment={activeSegment}
             onClose={() => setGovernanceDashboardOpen(false)}
           />
         )}
