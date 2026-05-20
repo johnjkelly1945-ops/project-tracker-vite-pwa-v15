@@ -78,6 +78,7 @@ export function createEscalation({
     title,
     classification,
     createdAt: now(),
+    status: "OPEN",
 
     // NEW — Stage 426 (additive only)
       segmentId,
@@ -159,6 +160,25 @@ export function appendEscalationAdvisory({
 
   return advisory;
 }
+
+export function closeEscalation({ taskId, reference, closedBy = "PM" }) {
+  const escalation = getEscalation(taskId, reference);
+
+  if (!escalation) {
+    throw new Error("Escalation not found");
+  }
+
+  if (escalation.status !== "OPEN") {
+    return escalation;
+  }
+
+  escalation.status = "CLOSED";
+  escalation.closedAt = now();
+  escalation.closedBy = closedBy;
+
+  return escalation;
+}
+
 // ------------------------------------------------------------------
 // DEBUG
 // ------------------------------------------------------------------

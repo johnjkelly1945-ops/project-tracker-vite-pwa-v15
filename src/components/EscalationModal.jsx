@@ -13,7 +13,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
-import { appendEscalationAdvisory } from "../domain/escalation/EscalationStore";
+import { appendEscalationAdvisory, closeEscalation } from "../domain/escalation/EscalationStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { createDocument, resolveDocuments } from "../domain/documents/DocumentStore";
 import DocumentEntryModal from "./DocumentEntryModal";
@@ -44,6 +44,19 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
   const [classification, setClassification] = useState("");
   const [docModalOpen, setDocModalOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+
+  const actor = getActingUser();
+  const isPM = actor?.isPM === true;
+
+  function handleCloseItem() {
+    closeEscalation({
+      taskId,
+      reference: escalation.reference,
+      closedBy: actor?.displayName || actor?.id || "PM",
+    });
+
+    onClose();
+  }
 
   const documents = resolveDocuments({
     reference: escalation?.reference
@@ -124,6 +137,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
             </div>
 
 
+
             <div><strong>Task:</strong> {taskTitle || taskId}</div>
 
             <div>
@@ -172,7 +186,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
               ))}
             </div>
 
-            {!readOnly && (
+            {!readOnly && escalation?.status === "OPEN" && (
               <div
                 style={{
                   marginTop: "16px",
@@ -299,6 +313,12 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
                 Confirm Participant
               </button>
             )}
+
+              {isPM && escalation?.status === "OPEN" && (
+                <button onClick={handleCloseItem}>
+                  Close Item
+                </button>
+              )}
 
             <button onClick={onClose}>
               Close
