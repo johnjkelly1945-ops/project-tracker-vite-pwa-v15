@@ -18,7 +18,7 @@ import {
 } from "../domain/escalation/EscalationStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote }) {
 
   const actor = getActingUser();
   const isPM = actor?.id === "user-1"; // temporary restore of PM working behaviour
@@ -45,6 +45,12 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
         sourceId: (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId) || sourceId,
         segmentId,
     });
+      if (onAddNote) {
+        onAddNote(
+          taskId,
+          `[System] Escalation opened — Task: ${taskTitle} — Escalation visibility elevated`
+        );
+      }
 
     setDraftTitle("");
     setCreateMode(false);
@@ -197,6 +203,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
           taskTitle={taskTitle}
           escalation={activeEscalation}
           onClose={() => setActiveReference(null)}
+            onAddNote={onAddNote}
         />
       )}
 

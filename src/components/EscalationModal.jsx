@@ -33,7 +33,7 @@ function nowStamp() {
   );
 }
 
-export default function EscalationModal({ taskId, taskTitle, escalation, onClose, readOnly = false }) {
+export default function EscalationModal({ taskId, taskTitle, escalation, onClose, readOnly = false, onAddNote }) {
 
   const inlineRef = useRef(null);
 
