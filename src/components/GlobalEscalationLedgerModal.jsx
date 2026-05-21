@@ -116,6 +116,9 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [], activ
                 <div style={{ fontSize: "11px", color: "#777" }}>
                   Source: {esc.sourceType || "TASK"}
                 </div>
+                  <div style={{ fontSize: "11px", color: "#777" }}>
+                    Scope: {esc.visibilityScope || "INTERNAL"}
+                  </div>
                 <div style={{ fontSize: "11px", color: "#777" }}>
                   Category: {esc.classification || "—"}
                 </div>
@@ -144,7 +147,7 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [], activ
       {activeEscalation && (
         <EscalationModal
           taskId={activeEscalation.taskId}
-          taskTitle={activeEscalation.taskTitle}
+          taskTitle={(tasks.find(t => t.id === activeEscalation.taskId)?.title) || activeEscalation.taskId}
           escalation={activeEscalation}
           readOnly={true}
           onClose={() => setActiveEscalation(null)}

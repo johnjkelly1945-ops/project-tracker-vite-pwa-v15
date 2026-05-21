@@ -26,6 +26,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
 
   const [createMode, setCreateMode] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
+    const [visibilityScope, setVisibilityScope] = useState("INTERNAL");
 
   const [activeReference, setActiveReference] = useState(null);
 
@@ -42,6 +43,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
       sourceType,
         sourceId: (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId) || sourceId,
         segmentId,
+        visibilityScope,
     });
       if (onAddNote) {
         onAddNote(
@@ -51,7 +53,8 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
       }
 
     setDraftTitle("");
-    setCreateMode(false);
+      setVisibilityScope("INTERNAL");
+      setCreateMode(false);
 
     refresh(x => x + 1);
   }
@@ -69,7 +72,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
-      }}
+                  }}
     >
       <GovernanceSurfaceContainer>
 
@@ -151,13 +154,36 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
                   padding: "6px",
                   marginBottom: "10px",
                   border: "1px solid #ccc"
-                }}
-              />
+                  }}
+                />
 
-              <div>
-                <button
-                  onClick={commitCreateEscalation}
-                  disabled={!draftTitle.trim()}
+                <div style={{ marginBottom: "10px" }}>
+                  <div style={{ marginBottom: "6px", fontSize: "13px" }}>
+                    Visibility Scope
+                  </div>
+
+                  <label style={{ marginRight: "12px", fontSize: "13px" }}>
+                    <input
+                      type="radio"
+                      checked={visibilityScope === "INTERNAL"}
+                      onChange={() => setVisibilityScope("INTERNAL")}
+                    />{" "}
+                    INTERNAL
+                  </label>
+
+                  <label style={{ fontSize: "13px" }}>
+                    <input
+                      type="radio"
+                      checked={visibilityScope === "EXTERNAL"}
+                      onChange={() => setVisibilityScope("EXTERNAL")}
+                    />{" "}
+                    EXTERNAL
+                  </label>
+                </div>
+                <div>
+                  <button
+                    onClick={commitCreateEscalation}
+                    disabled={!draftTitle.trim()}
                 >
                   Create
                 </button>
@@ -166,7 +192,8 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
                   style={{ marginLeft: "8px" }}
                   onClick={() => {
                     setCreateMode(false);
-                    setDraftTitle("");
+                      setDraftTitle("");
+                      setVisibilityScope("INTERNAL");
                   }}
                 >
                   Cancel

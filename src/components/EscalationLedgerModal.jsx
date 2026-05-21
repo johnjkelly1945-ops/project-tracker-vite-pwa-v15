@@ -82,6 +82,10 @@ export default function EscalationLedgerModal({ taskId, taskTitle, onClose }) {
               <div style={{ fontSize: "12px", opacity: 0.7 }}>
                 Advisory count: {e.advisoryRecords.length}
               </div>
+
+                <div style={{ fontSize: "11px", opacity: 0.7 }}>
+                  Scope: {e.visibilityScope || "INTERNAL"}
+                </div>
             </div>
           ))}
 

@@ -61,8 +61,9 @@ export function createEscalation({
   classification = null,
   sourceType,
   sourceId,
-  segmentId
-}) {
+  segmentId,
+    visibilityScope = "INTERNAL"
+  }) {
   if (!taskId) throw new Error("createEscalation requires taskId");
   if (!title) throw new Error("createEscalation requires title");
 
@@ -84,6 +85,7 @@ export function createEscalation({
       segmentId,
     sourceType: resolvedSourceType,
     sourceId: resolvedSourceId,
+      visibilityScope,
 
     advisoryRecords: []
   };
