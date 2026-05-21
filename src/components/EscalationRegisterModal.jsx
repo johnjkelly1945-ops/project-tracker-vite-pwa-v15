@@ -10,7 +10,6 @@ import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
 import { getActingUser } from "../domain/actor/ActingUser";
-import EscalationLedgerModal from "./EscalationLedgerModal";
 import {
   createEscalation,
   getEscalationsByTask,
@@ -29,7 +28,6 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
   const [draftTitle, setDraftTitle] = useState("");
 
   const [activeReference, setActiveReference] = useState(null);
-  const [ledgerOpen, setLedgerOpen] = useState(false);
 
   const taskEscalations = getEscalationsByTask(taskId);
 
@@ -132,16 +130,6 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
                 </button>
               </div>
 
-              <div style={{ marginTop: "8px" }}>
-                <button onClick={() => {
-                  if (isPM || actor?.permissions?.ledgerAccess === true) {
-                    setLedgerOpen(true);
-                  }
-                }}>
-                  Ledger
-                </button>
-              </div>
-
             </>
           )}
 
@@ -204,14 +192,6 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
           escalation={activeEscalation}
           onClose={() => setActiveReference(null)}
             onAddNote={onAddNote}
-        />
-      )}
-
-      {ledgerOpen && (
-        <EscalationLedgerModal
-          taskId={taskId}
-          taskTitle={taskTitle}
-          onClose={() => setLedgerOpen(false)}
         />
       )}
 

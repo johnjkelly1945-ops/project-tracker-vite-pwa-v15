@@ -180,7 +180,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
                       color: "#777",
                     }}
                   >
-                    — {adv.submittedAt}
+                    — {new Date(adv.submittedAt).toLocaleString()}
                   </span>
                 </div>
               ))}
