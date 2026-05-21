@@ -163,6 +163,41 @@ export function appendEscalationAdvisory({
   return advisory;
 }
 
+// ------------------------------------------------------------------
+// UPDATE ESCALATION VISIBILITY SCOPE (STAGE 485E)
+// ------------------------------------------------------------------
+
+export function updateEscalationScope({
+  taskId,
+  reference,
+  visibilityScope,
+  actor
+}) {
+  const escalation = getEscalation(taskId, reference);
+
+  if (!escalation) {
+    throw new Error("Escalation not found");
+  }
+
+  const nextScope =
+    visibilityScope === "EXTERNAL"
+      ? "EXTERNAL"
+      : "INTERNAL";
+
+  const previousScope =
+    escalation.visibilityScope || "INTERNAL";
+
+  if (previousScope === nextScope) {
+    return escalation;
+  }
+
+  escalation.visibilityScope = nextScope;
+
+  updateEscalation(escalation);
+
+  return escalation;
+}
+
 export function closeEscalation({ taskId, reference, closedBy = "PM" }) {
   const escalation = getEscalation(taskId, reference);
 

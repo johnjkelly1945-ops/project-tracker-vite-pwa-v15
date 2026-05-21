@@ -102,7 +102,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
                   }}
                 >
 
-                  <div style={{ fontWeight: "bold", color: "#0b5ed7" }}>
+                  <div style={{ fontWeight: "bold", color: "#0b5ed7", cursor: "pointer" }} onClick={() => setActiveReference(e.reference)}>
                     ESC-{String(e.reference).padStart(3,"0")} — {e.title}
                   </div>
 

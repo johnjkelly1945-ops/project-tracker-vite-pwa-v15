@@ -13,7 +13,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
-import { appendEscalationAdvisory, closeEscalation } from "../domain/escalation/EscalationStore";
+import { appendEscalationAdvisory, closeEscalation, updateEscalationScope } from "../domain/escalation/EscalationStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { createDocument, resolveDocuments } from "../domain/documents/DocumentStore";
 import DocumentEntryModal from "./DocumentEntryModal";
@@ -146,6 +146,42 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
                 ? participantNames.join(", ")
                 : "None confirmed"}
             </div>
+
+            <div style={{ marginTop: "8px" }}>
+              <strong>Visibility Scope:</strong>{" "}
+
+              {readOnly || !isPM ? (
+                escalation.visibilityScope || "INTERNAL"
+              ) : (
+                <select
+                  value={escalation.visibilityScope || "INTERNAL"}
+                  onChange={(e) => {
+                    const previousScope =
+                      escalation.visibilityScope || "INTERNAL";
+
+                    updateEscalationScope({
+                      taskId,
+                      reference: escalation.reference,
+                      visibilityScope: e.target.value,
+                      actor
+                    });
+
+                    if (onAddNote) {
+                      onAddNote(
+                        taskId,
+                        `[System] Visibility scope changed: ${previousScope} → ${e.target.value} — ${nowStamp()}`
+                      );
+                    }
+
+                    escalation.visibilityScope = e.target.value;
+                  }}
+                >
+                  <option value="INTERNAL">INTERNAL</option>
+                  <option value="EXTERNAL">EXTERNAL</option>
+                </select>
+              )}
+            </div>
+
 
           </div>
 

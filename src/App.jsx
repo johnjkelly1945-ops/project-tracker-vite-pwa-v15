@@ -26,6 +26,7 @@ import GovernanceDashboard from "./components/GovernanceDashboard";
 import { getGovernanceEventsByTask } from "./governance/governanceStore";
 import { getEscalationsByTask } from "./domain/escalation/EscalationStore";
 import { resolveRelationshipsForSegment } from "./domain/relationships/RelationshipResolver";
+import { createRelationship } from "./domain/relationships/RelationshipStore";
 
 /*
 =====================================================================
