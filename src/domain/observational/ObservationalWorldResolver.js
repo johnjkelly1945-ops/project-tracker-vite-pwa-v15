@@ -1,0 +1,102 @@
+// @ts-nocheck
+
+/*
+======================================================================
+
+METRA — ObservationalWorldResolver.js
+Stage 485F.2 — Single-Hop Observational Composition
+
+PURPOSE
+----------------------------------------------------------------------
+Provide constitutional scaffolding for sovereign observational
+world composition.
+
+This resolver currently establishes:
+• sovereign-local awareness wrapping
+• direct observational adjacency composition
+• projection-safe observed world structure
+• recursion-ready composition boundaries
+
+This resolver does NOT:
+• recurse
+• aggregate enterprise state
+• mutate governance
+• flatten sovereignty
+• traverse operational execution
+• perform orchestration
+• interpret governance meaning
+
+CONSTITUTIONAL RULES
+----------------------------------------------------------------------
+• Worlds remain sovereign
+• Observation remains read-only
+• Federation remains non-authoritative
+• Awareness remains projection-only
+• Operational truth remains sovereign-local
+
+Resolvers compose awareness context only.
+
+======================================================================
+*/
+
+import { resolveOpenGovernanceCounts }
+  from "../governance/dashboardResolvers";
+
+import {
+  resolveRelatedSegmentIds
+} from "../relationships/RelationshipResolver";
+
+export function resolveObservationalWorld(
+  segment,
+  allSegments = []
+) {
+  if (!segment) return null;
+
+  const relatedSegmentIds =
+    resolveRelatedSegmentIds(segment.segmentId);
+
+  const observedWorlds =
+    relatedSegmentIds
+      .map((relatedId) =>
+        allSegments.find(
+          (s) => s.segmentId === relatedId
+        )
+      )
+      .filter(Boolean)
+      .map((relatedSegment) => ({
+        segmentId:
+          relatedSegment.segmentId || null,
+
+        segmentType:
+          relatedSegment.segmentType || "SEGMENT",
+
+        segmentTitle:
+          relatedSegment.segmentTitle ||
+          "Untitled Segment",
+
+        awareness:
+          resolveOpenGovernanceCounts(
+            relatedSegment.segmentId
+          ),
+
+        observedWorlds: [],
+      }));
+
+  return {
+    segmentId: segment.segmentId || null,
+
+    segmentType:
+      segment.segmentType || "SEGMENT",
+
+    segmentTitle:
+      segment.segmentTitle || "Untitled Segment",
+
+    awareness:
+      resolveOpenGovernanceCounts(
+        segment.segmentId
+      ),
+
+    observedWorlds,
+  };
+}
+

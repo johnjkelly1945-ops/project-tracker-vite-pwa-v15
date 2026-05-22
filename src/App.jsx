@@ -23,6 +23,7 @@ import RegisterItemView from "./components/RegisterItemView";
 import DocumentModal from "./components/DocumentModal";
 import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModal";
 import GovernanceDashboard from "./components/GovernanceDashboard";
+import { resolveObservationalWorld } from "./domain/observational/ObservationalWorldResolver";
 import { getGovernanceEventsByTask } from "./governance/governanceStore";
 import { getEscalationsByTask } from "./domain/escalation/EscalationStore";
 import { resolveRelationshipsForSegment } from "./domain/relationships/RelationshipResolver";
@@ -661,6 +662,12 @@ export default function App() {
   const activeSegment =
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
 
+    const observationalWorld =
+      resolveObservationalWorld(
+        activeSegment,
+        activeWorkspaceSegments
+      );
+
     const segmentRelationships =
       activeSegment?.segmentId
         ? resolveRelationshipsForSegment(activeSegment.segmentId)
@@ -1130,6 +1137,7 @@ export default function App() {
         {governanceDashboardOpen && (
           <GovernanceDashboard
             activeSegment={activeSegment}
+            observationalWorld={observationalWorld}
             onClose={() => setGovernanceDashboardOpen(false)}
           />
         )}
