@@ -46,9 +46,6 @@ export function resolveRelatedSegmentIds(segmentId) {
       ids.add(r.toSegmentId);
     }
 
-    if (r.toSegmentId === segmentId && r.fromSegmentId) {
-      ids.add(r.fromSegmentId);
-    }
   });
 
   return [...ids];

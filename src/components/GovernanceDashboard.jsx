@@ -228,7 +228,23 @@ export default function GovernanceDashboard({ activeSegment, observationalWorld,
                             lineHeight: 1.5,
                           }}
                         >
-                          Issue: {world.awareness?.ISSUE || 0}
+                            <span
+                              style={{
+                                cursor: "pointer",
+                              }}
+                              onClick={() =>
+                                window.dispatchEvent(
+                                  new CustomEvent("metra:register:reveal", {
+                                    detail: {
+                                      register: "issues",
+                                      segmentId: world.segmentId,
+                                    },
+                                  })
+                                )
+                              }
+                            >
+                              Issue: {world.awareness?.ISSUE || 0}
+                            </span>
                           {" · "}
                           Risk: {world.awareness?.RISK || 0}
                           {" · "}
