@@ -39,7 +39,7 @@ Advisory explains.
 
 import { resolveOpenGovernanceCounts } from "../domain/governance/dashboardResolvers";
 
-export default function GovernanceDashboard({ activeSegment, onClose }) {
+export default function GovernanceDashboard({ activeSegment, observationalWorld, onClose }) {
   const openCounts = resolveOpenGovernanceCounts(activeSegment?.segmentId);
   return (
     <div
@@ -193,7 +193,55 @@ export default function GovernanceDashboard({ activeSegment, onClose }) {
                   color: "#6b7280",
                 }}
               >
-                No observational relationships declared.
+                {observationalWorld?.observedWorlds?.length ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                    }}
+                  >
+                    {observationalWorld.observedWorlds.map((world) => (
+                      <div
+                        key={world.segmentId}
+                        style={{
+                          padding: "10px",
+                          border: "1px solid #d7dee7",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontWeight: "600",
+                            color: "#334155",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {world.segmentType} - {world.segmentTitle}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "#5b6572",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          Issue: {world.awareness?.ISSUE || 0}
+                          {" · "}
+                          Risk: {world.awareness?.RISK || 0}
+                          {" · "}
+                          QC: {world.awareness?.QC || 0}
+                          {" · "}
+                          Escalation: {world.awareness?.ESCALATION || 0}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  "No observational relationships declared."
+                )}
               </div>
             </div>
 
