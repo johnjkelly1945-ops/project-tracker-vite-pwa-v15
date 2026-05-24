@@ -7,7 +7,11 @@ Stage 420 — Visibility Layer (Corrected)
 */
 
 const SURFACES = {
-  TASK_NOTES: "TASK_NOTES"
+  TASK_NOTES: "TASK_NOTES",
+  SIDEBAR_GOVERNANCE: "SIDEBAR_GOVERNANCE",
+  SIDEBAR_ESCALATION: "SIDEBAR_ESCALATION",
+  SIDEBAR_DOCUMENTS: "SIDEBAR_DOCUMENTS",
+  SIDEBAR_DASHBOARD: "SIDEBAR_DASHBOARD"
 };
 
 export function canViewSurface({ actor, surface, context }) {
