@@ -32,6 +32,13 @@ export function canViewSurface({ actor, surface, context }) {
 
       return false;
     }
+      case SURFACES.SIDEBAR_GOVERNANCE:
+      case SURFACES.SIDEBAR_ESCALATION:
+      case SURFACES.SIDEBAR_DOCUMENTS:
+      case SURFACES.SIDEBAR_DASHBOARD: {
+        return actor.role === "PM";
+      }
+
 
     default:
       return false;
