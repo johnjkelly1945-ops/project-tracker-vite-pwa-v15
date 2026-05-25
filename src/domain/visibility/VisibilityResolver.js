@@ -6,6 +6,7 @@ Stage 420 — Visibility Layer (Corrected)
 =====================================================================
 */
 
+import { resolveRelatedSegmentIds } from "../relationships/RelationshipResolver";
 const SURFACES = {
   TASK_NOTES: "TASK_NOTES",
   SIDEBAR_GOVERNANCE: "SIDEBAR_GOVERNANCE",
@@ -13,8 +14,14 @@ const SURFACES = {
   SIDEBAR_DOCUMENTS: "SIDEBAR_DOCUMENTS",
   SIDEBAR_DASHBOARD: "SIDEBAR_DASHBOARD"
 };
+
 function canViewSidebarSurface(actor, context) {
   const { segmentId } = context || {};
+
+  const relatedSegmentIds =
+    segmentId
+      ? resolveRelatedSegmentIds(segmentId)
+      : [];
 
   return Boolean(actor);
 }
