@@ -13,7 +13,9 @@ const SURFACES = {
   SIDEBAR_DOCUMENTS: "SIDEBAR_DOCUMENTS",
   SIDEBAR_DASHBOARD: "SIDEBAR_DASHBOARD"
 };
-function canViewSidebarSurface(actor) {
+function canViewSidebarSurface(actor, context) {
+  const { segmentId } = context || {};
+
   return Boolean(actor);
 }
 
@@ -36,12 +38,11 @@ export function canViewSurface({ actor, surface, context }) {
 
       return false;
     }
-
       case SURFACES.SIDEBAR_GOVERNANCE:
       case SURFACES.SIDEBAR_ESCALATION:
       case SURFACES.SIDEBAR_DOCUMENTS:
       case SURFACES.SIDEBAR_DASHBOARD: {
-        return canViewSidebarSurface(actor);
+        return canViewSidebarSurface(actor, context);
       }
 
 
