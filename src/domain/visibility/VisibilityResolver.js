@@ -14,15 +14,23 @@ const SURFACES = {
   SIDEBAR_DOCUMENTS: "SIDEBAR_DOCUMENTS",
   SIDEBAR_DASHBOARD: "SIDEBAR_DASHBOARD"
 };
+function isActorPMForSegment(actor, segment) {
+  if (!actor || !segment) return false;
+
+  return actor.role === "PM";
+}
+
 
 function canViewSidebarSurface(actor, context) {
-  const { segmentId } = context || {};
+  const { segmentId, segment } = context || {};
 
   const relatedSegmentIds =
     segmentId
       ? resolveRelatedSegmentIds(segmentId)
       : [];
 
+  const actorGovernsSegment =
+    isActorPMForSegment(actor, segment);
   return Boolean(actor);
 }
 
