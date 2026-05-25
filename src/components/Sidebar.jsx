@@ -23,7 +23,7 @@ inspection-only reveal intent. Sidebar remains:
 
 import SidebarArtefactRegister from "./sidebar/SidebarArtefactRegister";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
-import { setActingUser } from "../domain/actor/ActingUser";
+import { setActingUser, getActingUser } from "../domain/actor/ActingUser";
 import { canViewSurface } from "../domain/visibility/VisibilityResolver";
 
 function emitRegisterReveal(register, segmentId) {
@@ -180,7 +180,7 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [], eff
                       Escalation
                     </div>
                       {canViewSurface({
-                        actor: JSON.parse(localStorage.getItem("metra_acting_user") || "null"),
+                          actor: getActingUser(),
                         surface: "SIDEBAR_DASHBOARD",
                         context: {}
                       }) && (
