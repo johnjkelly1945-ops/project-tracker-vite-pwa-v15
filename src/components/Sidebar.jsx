@@ -24,6 +24,7 @@ inspection-only reveal intent. Sidebar remains:
 import SidebarArtefactRegister from "./sidebar/SidebarArtefactRegister";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { setActingUser } from "../domain/actor/ActingUser";
+import { canViewSurface } from "../domain/visibility/VisibilityResolver";
 
 function emitRegisterReveal(register, segmentId) {
   window.dispatchEvent(
@@ -178,12 +179,18 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [], eff
                     >
                       Escalation
                     </div>
-                    <div
-                      style={{ cursor: "pointer", textDecoration: "underline" }}
-                      onClick={() => emitModuleIntent("OPEN_GOVERNANCE_DASHBOARD")}
-                    >
-                      Governance Dashboard
-                    </div>
+                      {canViewSurface({
+                        actor: JSON.parse(localStorage.getItem("metra_acting_user") || "null"),
+                        surface: "SIDEBAR_DASHBOARD",
+                        context: {}
+                      }) && (
+                        <div
+                          style={{ cursor: "pointer", textDecoration: "underline" }}
+                          onClick={() => emitModuleIntent("OPEN_GOVERNANCE_DASHBOARD")}
+                        >
+                          Governance Dashboard
+                        </div>
+                      )}
 
                   <div
                     style={{ cursor: "pointer", textDecoration: "underline" }}

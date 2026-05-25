@@ -36,7 +36,7 @@ export function canViewSurface({ actor, surface, context }) {
       case SURFACES.SIDEBAR_ESCALATION:
       case SURFACES.SIDEBAR_DOCUMENTS:
       case SURFACES.SIDEBAR_DASHBOARD: {
-        return actor.role === "PM";
+        return Boolean(actor);
       }
 
 
