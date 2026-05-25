@@ -11,6 +11,7 @@ import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import RepositoryView from "./components/RepositoryView";
 import TaskPopup from "./components/TaskPopup";
+import SubordinateSelectionModal from "./components/SubordinateSelectionModal";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
@@ -127,7 +128,8 @@ export default function App() {
   const [segmentTitleDraft, setSegmentTitleDraft] = useState("");
 const [ownerDraft, setOwnerDraft] = useState("");
 const [pmDraft, setPmDraft] = useState("");
-const [stewardshipModalOpen, setStewardshipModalOpen] = useState(false);
+const [ownerDraftId, setOwnerDraftId] = useState(null);
+const [pmDraftId, setPmDraftId] = useState(null);
 const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
   const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
   const [coordinationTargetId, setCoordinationTargetId] = useState("");
@@ -238,6 +240,7 @@ const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
     mgmtSummaries,
     mgmtTasks,
     mgmtSummaryOrder,
+      segments,
   ]);
 
 
@@ -696,6 +699,8 @@ const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
     setSegmentTitleDraft(activeSegment?.segmentTitle || "");
 setOwnerDraft(activeSegment?.ownerName || "");
 setPmDraft(activeSegment?.pmName || "");
+setOwnerDraftId(activeSegment?.ownerId || null);
+setPmDraftId(activeSegment?.pmId || null);
     setSegmentTypeDraft(activeSegment?.segmentType || "PROJECT");
   }, [activeSegment]);
   /* ===================== Stage 359C — Segment Render Filtering ===================== */
@@ -768,11 +773,11 @@ setPmDraft(activeSegment?.pmName || "");
       segmentId: `segment-${Date.now()}`,
       segmentTitle: title,
       segmentType: segmentTypeDraft,
-ownerName: actor?.displayName || "",
-pmName: actor?.displayName || "",
+  ownerName: "",
+  pmName: "",
       archived: false,
       createdAt: Date.now(),
-      pmId: actor?.id
+        pmId: null
     };
 
     setSegments(prev => [...prev, newSegment]);
@@ -792,12 +797,29 @@ pmName: actor?.displayName || "",
               segmentTitle: segmentTitleDraft.trim() || "Untitled Segment",
 ownerName: ownerDraft,
 pmName: pmDraft,
+  ownerId: ownerDraftId,
+  pmId: pmDraftId,
               segmentType: segmentTypeDraft,
             }
           : s
       )
     );
   }
+
+  function handleSelectSteward(person) {
+    if (activeStewardshipRole === "OWNER") {
+      setOwnerDraft(person.displayName);
+        setOwnerDraftId(person.id);
+    }
+
+    if (activeStewardshipRole === "PM") {
+        setPmDraftId(person.id);
+      setPmDraft(person.displayName);
+    }
+
+    setActiveStewardshipRole(null);
+  }
+
   /* ===================== Stage 360 — Segment Archive Handler ===================== */
   function handleArchiveSegment(segmentId) {
   setActiveSegmentId(null);
@@ -895,31 +917,35 @@ pmName: pmDraft,
                       </select>
                     </div>
 
-                  <div style={{ marginTop: "12px" }}>
-                    <strong>Owner:</strong>{" "}
-{ownerDraft || "Not assigned"}
-<button
-style={{ marginLeft: "8px" }}
-onClick={() => {
-setActiveStewardshipRole("OWNER");
-setStewardshipModalOpen(true);
-}}
->
-Assign </button>
-                  </div>
+                    <div style={{ marginTop: "12px" }}>
+                      <strong>Owner:</strong>{" "}
+                      {ownerDraft || "Not assigned"}
 
-                  <div style={{ marginTop: "8px" }}>
-<button
-style={{ marginLeft: "8px" }}
-onClick={() => {
-setActiveStewardshipRole("PM");
-setStewardshipModalOpen(true);
-}}
->
-Assign </button>
-                    <strong>PM:</strong>{" "}
-{pmDraft || "Not assigned"}
-                  </div>
+                      <button
+                        style={{ marginLeft: "8px" }}
+                        onClick={() => {
+                          setActiveStewardshipRole("OWNER");
+                        }}
+                      >
+                        Assign
+                      </button>
+                    </div>
+
+
+
+                    <div style={{ marginTop: "8px" }}>
+                      <strong>PM:</strong>{" "}
+                      {pmDraft || "Not assigned"}
+
+                      <button
+                        style={{ marginLeft: "8px" }}
+                        onClick={() => {
+                          setActiveStewardshipRole("PM");
+                        }}
+                      >
+                        Assign
+                      </button>
+                    </div>
 
                 <div style={{ marginTop: "8px" }}>
                   <strong>Created:</strong>{" "}
@@ -1009,6 +1035,8 @@ Assign </button>
                     </div>
 
               </div>
+
+
               <div style={{ marginTop: "16px" }}>
                   <button onClick={handleSaveSegmentTitle}>
                     Save
@@ -1020,6 +1048,8 @@ Assign </button>
             </div>
           </div>
         )}
+
+
         <ModuleHeader
           activeFilter={
             workspaceMode === "single"
@@ -1075,6 +1105,22 @@ Assign </button>
           )}
       </div>
 
+
+
+        {activeStewardshipRole && (
+          <SubordinateSelectionModal
+            title={
+              activeStewardshipRole === "OWNER"
+                ? "Assign Owner"
+                : "Assign PM"
+            }
+            items={getPersonnel()}
+            onSelect={handleSelectSteward}
+            onClose={() => {
+              setActiveStewardshipRole(null);
+            }}
+          />
+        )}
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         <Sidebar

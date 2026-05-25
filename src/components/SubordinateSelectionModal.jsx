@@ -101,7 +101,7 @@ export default function SubordinateSelectionModal({
         position: "fixed",
         inset: 0,
         background: "rgba(0,0,0,0.4)",
-        zIndex: 11000,
+          zIndex: 1000001,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
