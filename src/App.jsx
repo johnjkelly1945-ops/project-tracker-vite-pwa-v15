@@ -125,6 +125,10 @@ export default function App() {
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
   const [segmentTitleDraft, setSegmentTitleDraft] = useState("");
+const [ownerDraft, setOwnerDraft] = useState("");
+const [pmDraft, setPmDraft] = useState("");
+const [stewardshipModalOpen, setStewardshipModalOpen] = useState(false);
+const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
   const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
   const [coordinationTargetId, setCoordinationTargetId] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
@@ -690,6 +694,8 @@ export default function App() {
 
   useEffect(() => {
     setSegmentTitleDraft(activeSegment?.segmentTitle || "");
+setOwnerDraft(activeSegment?.ownerName || "");
+setPmDraft(activeSegment?.pmName || "");
     setSegmentTypeDraft(activeSegment?.segmentType || "PROJECT");
   }, [activeSegment]);
   /* ===================== Stage 359C — Segment Render Filtering ===================== */
@@ -762,6 +768,8 @@ export default function App() {
       segmentId: `segment-${Date.now()}`,
       segmentTitle: title,
       segmentType: segmentTypeDraft,
+ownerName: actor?.displayName || "",
+pmName: actor?.displayName || "",
       archived: false,
       createdAt: Date.now(),
       pmId: actor?.id
@@ -782,6 +790,8 @@ export default function App() {
           ? {
               ...s,
               segmentTitle: segmentTitleDraft.trim() || "Untitled Segment",
+ownerName: ownerDraft,
+pmName: pmDraft,
               segmentType: segmentTypeDraft,
             }
           : s
@@ -887,12 +897,28 @@ export default function App() {
 
                   <div style={{ marginTop: "12px" }}>
                     <strong>Owner:</strong>{" "}
-                    {activeSegment?.ownerName || "Not assigned"}
+{ownerDraft || "Not assigned"}
+<button
+style={{ marginLeft: "8px" }}
+onClick={() => {
+setActiveStewardshipRole("OWNER");
+setStewardshipModalOpen(true);
+}}
+>
+Assign </button>
                   </div>
 
                   <div style={{ marginTop: "8px" }}>
+<button
+style={{ marginLeft: "8px" }}
+onClick={() => {
+setActiveStewardshipRole("PM");
+setStewardshipModalOpen(true);
+}}
+>
+Assign </button>
                     <strong>PM:</strong>{" "}
-                    {activeSegment?.pmName || activeSegment?.ownerName || "Not assigned"}
+{pmDraft || "Not assigned"}
                   </div>
 
                 <div style={{ marginTop: "8px" }}>
