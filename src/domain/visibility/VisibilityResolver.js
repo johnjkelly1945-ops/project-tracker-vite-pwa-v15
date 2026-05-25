@@ -13,6 +13,10 @@ const SURFACES = {
   SIDEBAR_DOCUMENTS: "SIDEBAR_DOCUMENTS",
   SIDEBAR_DASHBOARD: "SIDEBAR_DASHBOARD"
 };
+function canViewSidebarSurface(actor) {
+  return Boolean(actor);
+}
+
 
 export function canViewSurface({ actor, surface, context }) {
   if (!actor) return false;
@@ -32,11 +36,12 @@ export function canViewSurface({ actor, surface, context }) {
 
       return false;
     }
+
       case SURFACES.SIDEBAR_GOVERNANCE:
       case SURFACES.SIDEBAR_ESCALATION:
       case SURFACES.SIDEBAR_DOCUMENTS:
       case SURFACES.SIDEBAR_DASHBOARD: {
-        return Boolean(actor);
+        return canViewSidebarSurface(actor);
       }
 
 
