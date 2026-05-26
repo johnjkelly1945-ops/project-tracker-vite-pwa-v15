@@ -131,6 +131,9 @@ const [pmDraft, setPmDraft] = useState("");
 const [ownerDraftId, setOwnerDraftId] = useState(null);
 const [pmDraftId, setPmDraftId] = useState(null);
 const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
+const [legitimacyStateDraft, setLegitimacyStateDraft] = useState("exploratory");
+const [authorisedByDraft, setAuthorisedByDraft] = useState("");
+const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
   const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
   const [coordinationTargetId, setCoordinationTargetId] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
@@ -698,6 +701,9 @@ const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
   useEffect(() => {
     setSegmentTitleDraft(activeSegment?.segmentTitle || "");
 setOwnerDraft(activeSegment?.ownerName || "");
+setLegitimacyStateDraft(activeSegment?.legitimacyState || "exploratory");
+setAuthorisedByDraft(activeSegment?.authorisedBy || "");
+setAuthorisedAtDraft(activeSegment?.authorisedAt || null);
 setPmDraft(activeSegment?.pmName || "");
 setOwnerDraftId(activeSegment?.ownerId || null);
 setPmDraftId(activeSegment?.pmId || null);
@@ -770,6 +776,9 @@ setPmDraftId(activeSegment?.pmId || null);
     const actor = getActingUser();
 
     const newSegment = {
+      legitimacyState: "exploratory",
+      authorisedBy: actor?.displayName || "",
+      authorisedAt: Date.now(),
       segmentId: `segment-${Date.now()}`,
       segmentTitle: title,
       segmentType: segmentTypeDraft,
@@ -800,6 +809,9 @@ pmName: pmDraft,
   ownerId: ownerDraftId,
   pmId: pmDraftId,
               segmentType: segmentTypeDraft,
+                legitimacyState: legitimacyStateDraft,
+                authorisedBy: authorisedByDraft,
+                authorisedAt: authorisedAtDraft,
             }
           : s
       )
@@ -945,6 +957,20 @@ pmName: pmDraft,
                       >
                         Assign
                       </button>
+                    </div>
+
+
+
+                    <div style={{ marginTop: "6px" }}>
+                      <strong>Authorised By:</strong>{" "}
+                      {authorisedByDraft || "Not recorded"}
+                    </div>
+
+                    <div style={{ marginTop: "6px" }}>
+                      <strong>Authorised At:</strong>{" "}
+                      {authorisedAtDraft
+                        ? new Date(authorisedAtDraft).toLocaleString()
+                        : "Not recorded"}
                     </div>
 
                 <div style={{ marginTop: "8px" }}>
