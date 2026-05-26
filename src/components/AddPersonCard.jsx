@@ -29,6 +29,10 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
   const [isPM, setIsPM] = useState(initialData?.isPM || false);
   const [isAdmin, setIsAdmin] = useState(initialData?.isAdmin || false);
 
+const [authorityLevel, setAuthorityLevel] = useState(
+  initialData?.authorityLevel || "NONE"
+);
+
   function handleSave() {
     if (!displayName.trim()) return;
 
@@ -51,6 +55,8 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
       /* ================= Stage 433 — Persist Authority ================= */
       isPM,
       isAdmin
+        ,
+        authorityLevel
     };
 
     onSave(person);
@@ -159,6 +165,28 @@ export default function AddPersonCard({ onSave, onCancel, initialData }) {
           />
           Segment Admin
         </label>
+
+          <div style={{ marginTop: "10px" }}>
+            <strong>Authority Level</strong><br />
+
+            <select
+              value={authorityLevel}
+              onChange={(e) => setAuthorityLevel(e.target.value)}
+              style={{
+                marginTop: "4px",
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                width: "100%"
+              }}
+            >
+              <option value="NONE">None</option>
+              <option value="FEASIBILITY">Feasibility</option>
+              <option value="PROJECT">Project</option>
+              <option value="PROGRAMME">Programme</option>
+              <option value="FEDERATED_PROGRAMME">Federated Programme</option>
+            </select>
+          </div>
       </div>
 
       <div style={{ display: "flex", gap: "8px" }}>
