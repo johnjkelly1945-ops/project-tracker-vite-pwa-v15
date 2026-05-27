@@ -24,7 +24,7 @@ import RegisterItemView from "./components/RegisterItemView";
 import DocumentModal from "./components/DocumentModal";
 import GlobalEscalationLedgerModal from "./components/GlobalEscalationLedgerModal";
 import GovernanceDashboard from "./components/GovernanceDashboard";
-import { resolveObservationalWorld } from "./domain/observational/ObservationalWorldResolver";
+import { resolveObservationalWorld, resolveCoordinationProjectionWorld } from "./domain/observational/ObservationalWorldResolver";
 import { getGovernanceEventsByTask } from "./governance/governanceStore";
 import { getEscalationsByTask } from "./domain/escalation/EscalationStore";
 import { resolveRelationshipsForSegment } from "./domain/relationships/RelationshipResolver";
@@ -700,9 +700,26 @@ const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
               ? ["FEASIBILITY"]
               : [];
 
-  function handleAddCoordination() {
-    if (!activeSegment?.segmentId) return;
-    if (!coordinationTargetId) return;
+    const coordinationProjection =
+      resolveCoordinationProjectionWorld(
+        activeSegment,
+        activeWorkspaceSegments,
+        segmentTypeDraft || activeSegment?.segmentType || null,
+        segmentRelationships
+      );
+
+    const effectiveSegmentType =
+      segmentTypeDraft ||
+      activeSegment?.segmentType ||
+      null;
+
+    const canCoordinate =
+      effectiveSegmentType === "PROJECT" ||
+      effectiveSegmentType === "PROGRAMME";
+
+    function handleAddCoordination() {
+      if (!activeSegment?.segmentId) return;
+      if (!coordinationTargetId) return;
 
     createRelationship({
       fromSegmentId: activeSegment.segmentId,
@@ -1048,7 +1065,7 @@ pmName: pmDraft,
                     <div style={{ marginTop: "12px" }}>
                       <strong>Add Coordination:</strong>
 
-                        {segmentTypeDraft === "PROGRAMME" ? (
+                          {canCoordinate ? (
                           <>
                             <select
                               style={{
@@ -1062,20 +1079,12 @@ pmName: pmDraft,
                             >
                               <option value="">Select segment</option>
 
-                              {activeWorkspaceSegments
-                                .filter(
-                                  (s) =>
-                                    s.segmentId !== activeSegment?.segmentId &&
-                                    (
-                                      s.segmentType === "PROJECT" ||
-                                      s.segmentType === "PROGRAMME"
-                                    )
-                                )
-                                .map((s) => (
-                                  <option key={s.segmentId} value={s.segmentId}>
-                                    {s.segmentTitle} ({s.segmentType})
-                                  </option>
-                                ))}
+                                {coordinationProjection
+                                  .map((s) => (
+                                    <option key={s.segmentId} value={s.segmentId}>
+                                      {s.segmentTitle} ({s.segmentType})
+                                    </option>
+                                  ))}
                             </select>
 
                             <button

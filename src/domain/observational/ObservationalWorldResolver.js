@@ -100,3 +100,74 @@ export function resolveObservationalWorld(
   };
 }
 
+
+export function resolveCoordinationProjectionWorld(
+  segment,
+  allSegments = [],
+  authorityLevel = null,
+  relationships = []
+) {
+  if (!segment) return [];
+
+  const coordinatedIds = new Set();
+
+  relationships.forEach((r) => {
+    if (r.relationshipType !== "COORDINATES") return;
+
+    coordinatedIds.add(r.fromSegmentId);
+    coordinatedIds.add(r.toSegmentId);
+  });
+
+  const isOrphaned = (candidate) => {
+    if (!candidate?.segmentId) return false;
+
+    return !coordinatedIds.has(candidate.segmentId);
+  };
+
+
+  const visibilityType =
+    authorityLevel || segment.segmentType;
+  return allSegments.filter((candidate) => {
+    if (!candidate) return false;
+
+    if (candidate.archived) return false;
+
+    if (candidate.segmentId === segment.segmentId) {
+      return false;
+    }
+
+      if (
+        visibilityType === "FEASIBILITY"
+      ) {
+        return false;
+      }
+
+      if (
+        visibilityType === "PROJECT"
+      ) {
+        return (
+          candidate.segmentType === "FEASIBILITY" &&
+          isOrphaned(candidate)
+        );
+      }
+
+      if (
+        visibilityType === "PROGRAMME"
+      ) {
+        return (
+          (
+            candidate.segmentType === "FEASIBILITY" &&
+            isOrphaned(candidate)
+          ) ||
+          (
+            candidate.segmentType === "PROJECT" &&
+            isOrphaned(candidate)
+          ) ||
+          candidate.segmentType === "PROGRAMME"
+        );
+      }
+
+      return false;
+
+  });
+}
