@@ -86,6 +86,9 @@ export default function EscalationLedgerModal({ taskId, taskTitle, onClose }) {
                 <div style={{ fontSize: "11px", opacity: 0.7 }}>
                   Scope: {e.visibilityScope || "INTERNAL"}
                 </div>
+                  <div style={{ fontSize: "11px", opacity: 0.7 }}>
+                    Status: {e.status || "OPEN"}
+                  </div>
             </div>
           ))}
 

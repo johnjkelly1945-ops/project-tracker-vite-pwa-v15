@@ -182,7 +182,9 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [], eff
                       {canViewSurface({
                           actor: getActingUser(),
                         surface: "SIDEBAR_DASHBOARD",
-                        context: {}
+                          context: {
+                            segmentId: effectiveSegmentId
+                          }
                       }) && (
                         <div
                           style={{ cursor: "pointer", textDecoration: "underline" }}

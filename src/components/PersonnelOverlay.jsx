@@ -11,18 +11,12 @@
 
 import React from "react";
 import "../Styles/PreProject.css";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 export default function PersonnelOverlay({ onSelect, onClose }) {
-
-  /* -------------------------------------------------------------------
-     Personnel list (placeholder for now; easily upgradable later)
-     ------------------------------------------------------------------- */
-  const people = [
-    { id: "pers-alice", name: "Alice Robertson" },
-    { id: "pers-bob", name: "Bob McKenzie" },
-    { id: "pers-charlie", name: "Charlie Singh" },
-    { id: "pers-diana", name: "Diana Moreland" }
-  ];
+  const people = Array.isArray(getPersonnel())
+    ? getPersonnel()
+    : [];
 
   return (
     <div className="pp-person-overlay">

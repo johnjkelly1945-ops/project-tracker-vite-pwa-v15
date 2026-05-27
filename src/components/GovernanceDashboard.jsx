@@ -37,9 +37,27 @@ Advisory explains.
 =====================================================================
 */
 
+import { useEffect, useState } from "react";
 import { resolveOpenGovernanceCounts } from "../domain/governance/dashboardResolvers";
-
 export default function GovernanceDashboard({ activeSegment, observationalWorld, onClose }) {
+  const [, refresh] = useState(0);
+
+  useEffect(() => {
+    const rerender = () => refresh(x => x + 1);
+
+    window.addEventListener(
+      "metra:dashboard:refresh",
+      rerender
+    );
+
+    return () => {
+      window.removeEventListener(
+        "metra:dashboard:refresh",
+        rerender
+      );
+    };
+  }, []);
+
   const openCounts = resolveOpenGovernanceCounts(activeSegment?.segmentId);
   return (
     <div
@@ -236,21 +254,15 @@ export default function GovernanceDashboard({ activeSegment, observationalWorld,
                                 window.dispatchEvent(
                                   new CustomEvent("metra:register:reveal", {
                                     detail: {
-                                      register: "issues",
+                                      register: "escalations",
                                       segmentId: world.segmentId,
                                     },
                                   })
                                 )
                               }
                             >
-                              Issue: {world.awareness?.ISSUE || 0}
+                              External Escalations: {world.awareness?.EXTERNAL_ESCALATION || 0}
                             </span>
-                          {" · "}
-                          Risk: {world.awareness?.RISK || 0}
-                          {" · "}
-                          QC: {world.awareness?.QC || 0}
-                          {" · "}
-                          Escalation: {world.awareness?.ESCALATION || 0}
                         </div>
                       </div>
                     ))}
@@ -393,15 +405,26 @@ export default function GovernanceDashboard({ activeSegment, observationalWorld,
                       Escalation
                     </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span>Escalation</span>
-                      <span>{openCounts.ESCALATION}</span>
-                    </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <span>Internal Escalation</span>
+                        <span>{openCounts.INTERNAL_ESCALATION}</span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span>External Escalation</span>
+                        <span>{openCounts.EXTERNAL_ESCALATION}</span>
+                      </div>
                   </div>
                 </div>
               </>

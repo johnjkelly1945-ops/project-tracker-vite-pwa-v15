@@ -119,13 +119,13 @@ export default function GlobalEscalationLedgerModal({ onClose, tasks = [], activ
                   <div style={{ fontSize: "11px", color: "#777" }}>
                     Scope: {esc.visibilityScope || "INTERNAL"}
                   </div>
-                <div style={{ fontSize: "11px", color: "#777" }}>
-                  Category: {esc.classification || "—"}
-                </div>
-                <div style={{ fontSize: "11px", color: "#777" }}>
-                  Date: {esc.createdAt ? new Date(esc.createdAt).toLocaleDateString() : "—"}
-                </div>
-            </div>
+                  <div style={{ fontSize: "11px", color: "#777" }}>
+                    Status: {esc.status || "OPEN"}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#777" }}>
+                    Date: {esc.createdAt ? new Date(esc.createdAt).toLocaleDateString() : "—"}
+                  </div>
+              </div>
             );
           })}
 

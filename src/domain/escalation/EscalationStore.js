@@ -195,6 +195,10 @@ export function updateEscalationScope({
 
   updateEscalation(escalation);
 
+  window.dispatchEvent(
+    new CustomEvent("metra:dashboard:refresh")
+  );
+
   return escalation;
 }
 
