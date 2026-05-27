@@ -683,6 +683,23 @@ const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
         ? resolveRelationshipsForSegment(activeSegment.segmentId)
         : [];
 
+    const authorisedPerson =
+      getPersonnel().find(
+        (p) => p.displayName === authorisedByDraft
+      ) || null;
+
+
+    const permittedSegmentTypes =
+      authorisedPerson?.authorityLevel === "FEDERATED_PROGRAMME"
+        ? ["FEASIBILITY", "PROJECT", "PROGRAMME"]
+        : authorisedPerson?.authorityLevel === "PROGRAMME"
+          ? ["FEASIBILITY", "PROJECT", "PROGRAMME"]
+          : authorisedPerson?.authorityLevel === "PROJECT"
+            ? ["FEASIBILITY", "PROJECT"]
+            : authorisedPerson?.authorityLevel === "FEASIBILITY"
+              ? ["FEASIBILITY"]
+              : [];
+
   function handleAddCoordination() {
     if (!activeSegment?.segmentId) return;
     if (!coordinationTargetId) return;
@@ -777,8 +794,8 @@ setPmDraftId(activeSegment?.pmId || null);
 
     const newSegment = {
       legitimacyState: "exploratory",
-      authorisedBy: actor?.displayName || "",
-      authorisedAt: Date.now(),
+      authorisedBy: "",
+      authorisedAt: null,
       segmentId: `segment-${Date.now()}`,
       segmentTitle: title,
       segmentType: segmentTypeDraft,
@@ -828,6 +845,11 @@ pmName: pmDraft,
         setPmDraftId(person.id);
       setPmDraft(person.displayName);
     }
+
+      if (activeStewardshipRole === "AUTHORISED_BY") {
+          setAuthorisedByDraft(person.displayName);
+        setAuthorisedAtDraft(Date.now());
+      }
 
     setActiveStewardshipRole(null);
   }
@@ -911,23 +933,31 @@ pmName: pmDraft,
                   </div>
 
 
-                    <div style={{ marginTop: "12px" }}>
-                      <strong>Segment Type:</strong>
+                      <div style={{ marginTop: "12px" }}>
+                        <strong>Segment Type:</strong>
 
-                      <select
-                        style={{
-                          width: "100%",
-                          marginTop: "6px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                        }}
-                        value={segmentTypeDraft}
-                        onChange={(e) => setSegmentTypeDraft(e.target.value)}
-                      >
-                        <option value="PROJECT">Project</option>
-                        <option value="PROGRAMME">Programme</option>
-                      </select>
-                    </div>
+                        <select
+                          style={{
+                            width: "100%",
+                            marginTop: "6px",
+                            padding: "6px",
+                            boxSizing: "border-box",
+                          }}
+                          value={segmentTypeDraft}
+                          onChange={(e) => setSegmentTypeDraft(e.target.value)}
+                        >
+                            <option value="">Select type</option>
+                            {permittedSegmentTypes.includes("FEASIBILITY") && (
+                              <option value="FEASIBILITY">Feasibility</option>
+                            )}
+                            {permittedSegmentTypes.includes("PROJECT") && (
+                              <option value="PROJECT">Project</option>
+                            )}
+                            {permittedSegmentTypes.includes("PROGRAMME") && (
+                              <option value="PROGRAMME">Programme</option>
+                            )}
+                        </select>
+                      </div>
 
                     <div style={{ marginTop: "12px" }}>
                       <strong>Owner:</strong>{" "}
@@ -964,6 +994,15 @@ pmName: pmDraft,
                     <div style={{ marginTop: "6px" }}>
                       <strong>Authorised By:</strong>{" "}
                       {authorisedByDraft || "Not recorded"}
+
+                        <button
+                          style={{ marginLeft: "8px" }}
+                          onClick={() => {
+                            setActiveStewardshipRole("AUTHORISED_BY");
+                          }}
+                        >
+                          Assign
+                        </button>
                     </div>
 
                     <div style={{ marginTop: "6px" }}>
