@@ -691,13 +691,13 @@ const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
 
     const permittedSegmentTypes =
       authorisedPerson?.authorityLevel === "FEDERATED_PROGRAMME"
-        ? ["FEASIBILITY", "PROJECT", "PROGRAMME"]
+          ? ["SEED", "FEASIBILITY", "PROJECT", "PROGRAMME"]
         : authorisedPerson?.authorityLevel === "PROGRAMME"
-          ? ["FEASIBILITY", "PROJECT", "PROGRAMME"]
+            ? ["SEED", "FEASIBILITY", "PROJECT", "PROGRAMME"]
           : authorisedPerson?.authorityLevel === "PROJECT"
-            ? ["FEASIBILITY", "PROJECT"]
+              ? ["SEED", "FEASIBILITY", "PROJECT"]
             : authorisedPerson?.authorityLevel === "FEASIBILITY"
-              ? ["FEASIBILITY"]
+                ? ["SEED", "FEASIBILITY"]
               : [];
 
     const coordinationProjection =
@@ -964,6 +964,9 @@ pmName: pmDraft,
                           onChange={(e) => setSegmentTypeDraft(e.target.value)}
                         >
                             <option value="">Select type</option>
+                              {permittedSegmentTypes.includes("SEED") && (
+                                <option value="SEED">Seed</option>
+                              )}
                             {permittedSegmentTypes.includes("FEASIBILITY") && (
                               <option value="FEASIBILITY">Feasibility</option>
                             )}
