@@ -93,11 +93,11 @@ export default function TaskPopup({
   onArchiveSegment,
   actingUser,
   currentUserRole = "PM",
+  isSeedSegment = false,
   readOnly = false,
 }) {
   if (!task) return null;
-  console.log("TASK SEGMENT ID:", task?.segmentId);
-
+  console.log("TASK OBJECT:", task);
   const isReadOnly = readOnly === true;
 
   /* ================= Stage 429 — Navigation Handler (Routing) ================= */
@@ -646,7 +646,7 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-            {isPM && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
+              {isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
             {executionState === "SUBMITTED" && isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
@@ -742,7 +742,7 @@ export default function TaskPopup({
     </>
   );
 })()}
-                {isPM && (<><span>{" / "}</span><span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span></>)}
+                  {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
           <div
@@ -759,12 +759,12 @@ export default function TaskPopup({
                   {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
               )}
-              {!isCompleted && isPM && !summaryEditing && (
+                {!isCompleted && isPM && !summaryEditing && !isSeedSegment && (
                 <button onClick={() => setSummaryEditing(true)}>
                   Link summary
-                </button>
+                  </button>
               )}
-              {!isCompleted && summaryEditing && (
+                {!isCompleted && summaryEditing && !isSeedSegment && (
                 <>
                   <select
                     value={selectedSummaryId}
@@ -783,12 +783,12 @@ export default function TaskPopup({
                 <button onClick={() => setDocumentsOpen(true)}>Documents</button>
             </div>
 
-            <div style={{ minWidth: "140px", textAlign: "right" }}>
-              {showStart && <button onClick={handleStartWork}>Start</button>}
-              {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
-              {showComplete && (
-                <button onClick={handleCompleteWork}>Complete</button>
-              )}
+              <div style={{ minWidth: "140px", textAlign: "right" }}>
+                {showStart && <button onClick={handleStartWork}>Start</button>}
+                {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+                {showComplete && (
+                  <button onClick={handleCompleteWork}>Complete</button>
+                )}
               {task.systemAction === "ARCHIVE_SEGMENT" &&
                hasMutationAuthority &&
                workspaceMode === "single" && (

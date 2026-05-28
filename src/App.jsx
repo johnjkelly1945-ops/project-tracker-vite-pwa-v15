@@ -1200,11 +1200,13 @@ pmName: pmDraft,
         )}
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
-        <Sidebar
-          expanded={sidebarExpanded}
-          onToggle={() => setSidebarExpanded((v) => !v)}
+        {activeSegment?.segmentType !== "SEED" && (
+          <Sidebar
+            expanded={sidebarExpanded}
+            onToggle={() => setSidebarExpanded((v) => !v)}
             effectiveSegmentId={effectiveSegmentId}
-        />
+          />
+        )}
 
         <DualPane
           mode={workspaceMode}
@@ -1270,6 +1272,7 @@ pmName: pmDraft,
             onSubmitExecution={onSubmitExecution}
             onCompleteExecution={onCompleteExecution}
             onChangeTaskSummary={onChangeTaskSummary}
+            isSeedSegment={activeSegment?.segmentType === "SEED"}
             onArchiveTask={onArchiveTask}
           />
         )}
