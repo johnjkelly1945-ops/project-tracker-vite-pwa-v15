@@ -719,6 +719,9 @@ const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
       effectiveSegmentType === "PROJECT" ||
       effectiveSegmentType === "PROGRAMME";
 
+    const showRelationships =
+      effectiveSegmentType !== "SEED";
+
     function handleAddCoordination() {
       if (!activeSegment?.segmentId) return;
       if (!coordinationTargetId) return;
@@ -1043,6 +1046,7 @@ pmName: pmDraft,
                     : "—"}
                 </div>
 
+                  {showRelationships && (
                   <div style={{ marginTop: "16px" }}>
                     <strong>Relationships:</strong>
 
@@ -1068,7 +1072,9 @@ pmName: pmDraft,
                       )}
                     </div>
                   </div>
+                  )}
 
+                  {showRelationships && (
                     <div style={{ marginTop: "12px" }}>
                       <strong>Add Coordination:</strong>
 
@@ -1114,6 +1120,7 @@ pmName: pmDraft,
                           </div>
                         )}
                     </div>
+                  )}
 
               </div>
 
