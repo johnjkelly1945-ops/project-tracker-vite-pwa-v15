@@ -181,6 +181,7 @@ const [authorityLevel, setAuthorityLevel] = useState(
               }}
             >
               <option value="NONE">None</option>
+              <option value="SEED">Seed</option>
               <option value="FEASIBILITY">Feasibility</option>
               <option value="PROJECT">Project</option>
               <option value="PROGRAMME">Programme</option>

@@ -696,7 +696,9 @@ const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
             ? ["SEED", "FEASIBILITY", "PROJECT", "PROGRAMME"]
           : authorisedPerson?.authorityLevel === "PROJECT"
               ? ["SEED", "FEASIBILITY", "PROJECT"]
-            : authorisedPerson?.authorityLevel === "FEASIBILITY"
+              : authorisedPerson?.authorityLevel === "SEED"
+                  ? ["SEED"]
+                : authorisedPerson?.authorityLevel === "FEASIBILITY"
                 ? ["SEED", "FEASIBILITY"]
               : [];
 
@@ -929,6 +931,8 @@ pmName: pmDraft,
                 padding: "20px",
                 width: "420px",
                 borderRadius: "8px",
+                maxHeight: "80vh",
+                overflowY: "auto",
               }}
             >
               <strong>Segment Context</strong>
