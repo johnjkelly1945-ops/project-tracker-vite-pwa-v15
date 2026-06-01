@@ -134,6 +134,7 @@ const [activeStewardshipRole, setActiveStewardshipRole] = useState(null);
 const [legitimacyStateDraft, setLegitimacyStateDraft] = useState("exploratory");
 const [authorisedByDraft, setAuthorisedByDraft] = useState("");
 const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
+const [descriptionDraft, setDescriptionDraft] = useState("");
   const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
   const [coordinationTargetId, setCoordinationTargetId] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
@@ -743,6 +744,7 @@ setOwnerDraft(activeSegment?.ownerName || "");
 setLegitimacyStateDraft(activeSegment?.legitimacyState || "exploratory");
 setAuthorisedByDraft(activeSegment?.authorisedBy || "");
 setAuthorisedAtDraft(activeSegment?.authorisedAt || null);
+  setDescriptionDraft(activeSegment?.description || "");
 setPmDraft(activeSegment?.pmName || "");
 setOwnerDraftId(activeSegment?.ownerId || null);
 setPmDraftId(activeSegment?.pmId || null);
@@ -851,6 +853,7 @@ pmName: pmDraft,
                 legitimacyState: legitimacyStateDraft,
                 authorisedBy: authorisedByDraft,
                 authorisedAt: authorisedAtDraft,
+                description: descriptionDraft.trim(),
             }
           : s
       )
@@ -1045,6 +1048,21 @@ pmName: pmDraft,
                     ? new Date(activeSegment.createdAt).toLocaleString()
                     : "—"}
                 </div>
+
+                  <div style={{ marginTop: "12px" }}>
+                    <strong>Description:</strong>
+                    <div style={{ marginTop: "6px" }}>
+                      <textarea
+                          value={descriptionDraft}
+                          onChange={(e) =>
+                            setDescriptionDraft(e.target.value)
+                          }
+                          rows={3}
+                          style={{ width: "100%" }}
+                          placeholder="Enter description (max 50 words)"
+                      />
+                    </div>
+                  </div>
 
                   {showRelationships && (
                   <div style={{ marginTop: "16px" }}>
