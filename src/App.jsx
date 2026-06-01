@@ -135,6 +135,7 @@ const [legitimacyStateDraft, setLegitimacyStateDraft] = useState("exploratory");
 const [authorisedByDraft, setAuthorisedByDraft] = useState("");
 const [authorisedAtDraft, setAuthorisedAtDraft] = useState(null);
 const [descriptionDraft, setDescriptionDraft] = useState("");
+const [outcomeDraft, setOutcomeDraft] = useState("");
   const [segmentTypeDraft, setSegmentTypeDraft] = useState("PROJECT");
   const [coordinationTargetId, setCoordinationTargetId] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
@@ -745,6 +746,7 @@ setLegitimacyStateDraft(activeSegment?.legitimacyState || "exploratory");
 setAuthorisedByDraft(activeSegment?.authorisedBy || "");
 setAuthorisedAtDraft(activeSegment?.authorisedAt || null);
   setDescriptionDraft(activeSegment?.description || "");
+  setOutcomeDraft(activeSegment?.outcome || "");
 setPmDraft(activeSegment?.pmName || "");
 setOwnerDraftId(activeSegment?.ownerId || null);
 setPmDraftId(activeSegment?.pmId || null);
@@ -854,6 +856,7 @@ pmName: pmDraft,
                 authorisedBy: authorisedByDraft,
                 authorisedAt: authorisedAtDraft,
                 description: descriptionDraft.trim(),
+                outcome: outcomeDraft,
             }
           : s
       )
@@ -1049,6 +1052,9 @@ pmName: pmDraft,
                     : "—"}
                 </div>
 
+
+                    {effectiveSegmentType === "SEED" && (
+                      <>
                   <div style={{ marginTop: "12px" }}>
                     <strong>Description:</strong>
                     <div style={{ marginTop: "6px" }}>
@@ -1063,6 +1069,38 @@ pmName: pmDraft,
                       />
                     </div>
                   </div>
+
+                    <div style={{ marginTop: "12px" }}>
+                      <strong>Outcome:</strong>
+
+                      <div style={{ marginTop: "6px" }}>
+                        <label>
+                          <input
+                            type="radio"
+                            name="seedOutcome"
+                            value="DEFERRED"
+                            checked={outcomeDraft === "DEFERRED"}
+                            onChange={(e) => setOutcomeDraft(e.target.value)}
+                          />
+                          {" "}Deferred
+                        </label>
+                      </div>
+
+                      <div style={{ marginTop: "4px" }}>
+                        <label>
+                          <input
+                            type="radio"
+                            name="seedOutcome"
+                            value="APPROVED_TO_PROGRESS"
+                            checked={outcomeDraft === "APPROVED_TO_PROGRESS"}
+                            onChange={(e) => setOutcomeDraft(e.target.value)}
+                          />
+                          {" "}Approved to Progress
+                        </label>
+                      </div>
+                    </div>
+                        </>
+                      )}
 
                   {showRelationships && (
                   <div style={{ marginTop: "16px" }}>
