@@ -1003,7 +1003,7 @@ pmName: pmDraft,
 
 
                     <div style={{ marginTop: "8px" }}>
-                      <strong>PM:</strong>{" "}
+                      <strong>{effectiveSegmentType === "SEED" ? "Originator:" : "PM:"}</strong>{" "}
                       {pmDraft || "Not assigned"}
 
                       <button
