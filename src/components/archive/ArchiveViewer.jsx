@@ -145,13 +145,68 @@ export default function ArchiveViewer({
         />
       </div>
 
-      <div style={{ padding: "0 12px 12px", fontSize: "13px" }}>
-        <div><strong>{segment.segmentTitle}</strong></div>
-        <div>Segment ID: {segment.segmentId}</div>
-        <div>Archived: {segment.archived ? "true" : "false"}</div>
-        <div>Archived At: {fmtDateTime(segment.archivedAt)}</div>
-        <div>Created At: {fmtDateTime(segment.createdAt)}</div>
-      </div>
+        <div style={{ padding: "0 12px 12px", fontSize: "13px" }}>
+
+          <div>
+            <strong>Segment Title:</strong> {segment.segmentTitle || "—"}
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            <strong>Segment Type:</strong> {segment.segmentType || "—"}
+          </div>
+
+          <div style={{ marginTop: "12px" }}>
+            <strong>Owner:</strong> {segment.ownerName || "Not assigned"}
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            <strong>
+              {segment.segmentType === "SEED" ? "Originator:" : "PM:"}
+            </strong>{" "}
+            {segment.pmName || "Not assigned"}
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            <strong>Authorised By:</strong>{" "}
+            {segment.authorisedBy || "Not recorded"}
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            <strong>Authorised At:</strong>{" "}
+            {fmtDateTime(segment.authorisedAt)}
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            <strong>Created:</strong>{" "}
+            {fmtDateTime(segment.createdAt)}
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            <strong>Archived:</strong>{" "}
+            {fmtDateTime(segment.archivedAt)}
+          </div>
+
+          {segment.segmentType === "SEED" && (
+            <>
+              <div style={{ marginTop: "12px" }}>
+                <strong>Description:</strong>
+              </div>
+
+              <div style={{ marginTop: "4px" }}>
+                {segment.description || "—"}
+              </div>
+
+              <div style={{ marginTop: "12px" }}>
+                <strong>Outcome:</strong>
+              </div>
+
+              <div style={{ marginTop: "4px" }}>
+                {segment.outcome || "—"}
+              </div>
+            </>
+          )}
+
+        </div>
 
       <div style={{ flex: 1, height: "calc(100% - 140px)" }}>
 

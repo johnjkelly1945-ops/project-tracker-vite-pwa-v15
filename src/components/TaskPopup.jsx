@@ -800,7 +800,7 @@ export default function TaskPopup({
                  </button>
                )}
 
-              {isPM && (<button onClick={() => setArchiveConfirmOpen(true)}>Delete</button>)}
+                {isPM && (<button onClick={() => setSegmentArchiveConfirmOpen(true)}>Archive</button>)}
             </div>
           </div>
         </div>

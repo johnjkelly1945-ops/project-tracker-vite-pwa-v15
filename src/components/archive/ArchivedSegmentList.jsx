@@ -53,7 +53,7 @@ export default function ArchivedSegmentList({
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         {recentSegments.map((s) => {
           const isSelected = s.segmentId === selectedSegmentId;
-          const line = `${s.segmentTitle} — ${fmtDate(s.archivedAt)} — ${s.segmentId}`;
+          const line = `${s.segmentType || "SEGMENT"} — ${s.segmentTitle}`;
 
           return (
             <div
