@@ -21,8 +21,6 @@ Inspect archived segment structure.
 =====================================================================
 */
 
-import DualPane from "../DualPane";
-import TaskPopup from "../TaskPopup";
 
 function fmtDateTime(ts) {
   if (!ts) return "—";
@@ -33,90 +31,11 @@ function fmtDateTime(ts) {
   }
 }
 
-function PaneRenderer({ discipline, segment, summaries, tasks, onTaskSelect, searchTerm }) {
-
-  const paneSummaries =
-    summaries.filter(
-      s =>
-        (s.segmentId ?? segment.segmentId) === segment.segmentId &&
-        (s.discipline ?? discipline) === discipline
-    );
-
-  const paneTasks =
-    tasks.filter(t => {
-      const matchesSegment =
-        ((t.segmentId ?? segment.segmentId) === segment.segmentId);
-
-      const matchesDiscipline =
-        ((t.discipline ?? discipline) === discipline);
-
-      const matchesSearch =
-        !searchTerm ||
-        searchTerm.length < 2 ||
-        (t.title &&
-         t.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      return matchesSegment && matchesDiscipline && matchesSearch;
-    });
-
-  return (
-    <div>
-
-      {paneSummaries.map(summary => {
-
-        const summaryTasks =
-          paneTasks.filter(t => t.summaryId === summary.id);
-
-        return (
-          <div key={summary.id} style={{ marginBottom: "12px" }}>
-
-            <div style={{ fontWeight: "600", fontSize: "13px" }}>
-              {summary.title}
-            </div>
-
-            <div style={{ marginLeft: "12px", marginTop: "4px" }}>
-
-              {summaryTasks.map(task => (
-                <div key={task.id} style={{ fontSize: "12px" }}>
-                  • <span
-                      style={{ cursor: "pointer" }}
-                      onClick={() => onTaskSelect(task)}
-                    >
-                      {task.title}
-                    </span>
-                </div>
-              ))}
-
-            </div>
-          </div>
-        );
-      })}
-
-      {paneTasks
-        .filter(t => !t.summaryId)
-        .map(task => (
-          <div key={task.id} style={{ fontSize: "12px" }}>
-            • <span
-                style={{ cursor: "pointer" }}
-                onClick={() => onTaskSelect(task)}
-              >
-                {task.title}
-              </span>
-          </div>
-        ))}
-
-    </div>
-  );
-}
 
 export default function ArchiveViewer({
-  segment,
-  summaries = [],
-  tasks = []
+  segment
 }) {
 
-  const [selectedArchivedTask, setSelectedArchivedTask] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
   if (!segment) {
     return (
@@ -135,15 +54,6 @@ export default function ArchiveViewer({
         Archive Viewer
       </div>
 
-      <div style={{ padding: "0 12px 12px" }}>
-        <input
-          type="text"
-          placeholder="Search archived tasks..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: "100%", padding: "6px" }}
-        />
-      </div>
 
         <div style={{ padding: "0 12px 12px", fontSize: "13px" }}>
 
@@ -208,42 +118,19 @@ export default function ArchiveViewer({
 
         </div>
 
-      <div style={{ flex: 1, height: "calc(100% - 140px)" }}>
-
-        <DualPane
-          mode="dual"
-          managementBody={
-            <PaneRenderer
-              discipline="management"
-              segment={segment}
-              summaries={summaries}
-              tasks={tasks}
-              onTaskSelect={setSelectedArchivedTask}
-              searchTerm={searchTerm}
-            />
-          }
-          developmentBody={
-            <PaneRenderer
-              discipline="development"
-              segment={segment}
-              summaries={summaries}
-              tasks={tasks}
-              onTaskSelect={setSelectedArchivedTask}
-              searchTerm={searchTerm}
-            />
-          }
-        />
-
-      </div>
-
-      {selectedArchivedTask && (
-        <TaskPopup
-          task={selectedArchivedTask}
-          summaries={summaries}
-          readOnly={true}
-          onClose={() => setSelectedArchivedTask(null)}
-        />
-      )}
+        <div
+          style={{
+            margin: "0 12px 12px",
+            padding: "10px",
+            border: "1px solid #e5e5e5",
+            borderRadius: "6px",
+            fontSize: "13px",
+            opacity: 0.8,
+          }}
+        >
+          Archived operational history is available through Inspect.
+          Archive provides contextual information only.
+        </div>
 
     </div>
   );

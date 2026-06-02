@@ -31,6 +31,8 @@ export default function ArchivedSegmentList({
   archivedSegments = [],
   selectedSegmentId = null,
   onSelect = () => {},
+  onInspect = () => {},
+  canInspect = false,
 }) {
 
   const recentSegments = archivedSegments
@@ -58,9 +60,11 @@ export default function ArchivedSegmentList({
           return (
             <div
               key={s.segmentId}
-              onClick={() => onSelect(s.segmentId)}
               style={{
-                cursor: "pointer",
+                display: "grid",
+                gridTemplateColumns: "90px 1fr auto",
+                gap: "8px",
+                alignItems: "center",
                 padding: "8px 10px",
                 borderRadius: "6px",
                 border: "1px solid #e5e5e5",
@@ -70,7 +74,44 @@ export default function ArchivedSegmentList({
               }}
               title={line}
             >
-              {line}
+              <span style={{ fontWeight: "700", opacity: 0.75 }}>
+                {s.segmentType || "SEGMENT"}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => onSelect(s.segmentId)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  padding: 0,
+                  textAlign: "left",
+                  cursor: "pointer",
+                  font: "inherit",
+                }}
+              >
+                {s.segmentTitle}
+              </button>
+
+              {canInspect && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onInspect(s.segmentId);
+                  }}
+                  style={{
+                    border: "1px solid #ddd",
+                    background: "#fff",
+                    borderRadius: "6px",
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  Inspect
+                </button>
+              )}
             </div>
           );
         })}

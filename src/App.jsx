@@ -122,6 +122,7 @@ export default function App() {
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
   const [governanceDashboardOpen, setGovernanceDashboardOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
@@ -1310,6 +1311,10 @@ pmName: pmDraft,
             summaries={[...devSummaries, ...mgmtSummaries]}
             tasks={[...devTasks, ...mgmtTasks]}
             onClose={() => setArchiveOpen(false)}
+            onInspectSegment={(segmentId) => {
+              setArchiveInspectSegmentId(segmentId);
+              setArchiveOpen(false);
+            }}
           />
         )}
 

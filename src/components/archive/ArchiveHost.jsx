@@ -26,7 +26,9 @@ export default function ArchiveHost({
   segments = [],
   summaries = [],
   tasks = [],
-  onClose = () => {}
+  onClose = () => {},
+  onInspectSegment = () => {},
+  canInspect = true
 }) {
 
   const archivedSegments = useMemo(
@@ -101,6 +103,8 @@ export default function ArchiveHost({
             archivedSegments={archivedSegments}
             selectedSegmentId={selectedSegmentId}
             onSelect={(id) => setSelectedSegmentId(id)}
+            onInspect={onInspectSegment}
+            canInspect={canInspect}
           />
 
           <ArchiveViewer
