@@ -675,6 +675,14 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   const activeSegment =
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
 
+  const archivedSegment =
+    segments.find(
+      s =>
+        s.archived &&
+        s.segmentId === archiveInspectSegmentId
+    ) || null;
+
+
     const observationalWorld =
       resolveObservationalWorld(
         activeSegment,
@@ -1267,6 +1275,34 @@ pmName: pmDraft,
           />
         )}
 
+
+        {archivedSegment && (
+          <div style={{ padding: "24px" }}>
+            <h2>ARCHIVED WORKSPACE</h2>
+
+            <div>
+              <strong>Segment Title:</strong>{" "}
+              {archivedSegment.segmentTitle}
+            </div>
+
+            <div style={{ marginTop: "8px" }}>
+              <strong>Segment Type:</strong>{" "}
+              {archivedSegment.segmentType}
+            </div>
+
+            <button
+              style={{ marginTop: "16px" }}
+              onClick={() => {
+                setArchiveInspectSegmentId(null);
+                setArchiveOpen(true);
+              }}
+            >
+              Back To Archive
+            </button>
+          </div>
+        )}
+
+        {!archivedSegment && (
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         {activeSegment?.segmentType !== "SEED" && (
           <Sidebar
@@ -1349,6 +1385,9 @@ pmName: pmDraft,
           />
         )}
       </div>
+
+        )}
+
 
       {globalEscalationLedgerOpen && (
         <GlobalEscalationLedgerModal
