@@ -1276,31 +1276,46 @@ pmName: pmDraft,
         )}
 
 
-        {archivedSegment && (
-          <div style={{ padding: "24px" }}>
-            <h2>ARCHIVED WORKSPACE</h2>
+          {archivedSegment && (
+            <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
 
-            <div>
-              <strong>Segment Title:</strong>{" "}
-              {archivedSegment.segmentTitle}
+              <Sidebar
+                expanded={sidebarExpanded}
+                onToggle={() => setSidebarExpanded((v) => !v)}
+                effectiveSegmentId={archivedSegment.segmentId}
+              />
+
+              <div style={{ padding: "24px", flex: 1 }}>
+                <h2>ARCHIVED WORKSPACE</h2>
+
+                <div>
+                  <strong>Segment Title:</strong>{" "}
+                  {archivedSegment.segmentTitle}
+                </div>
+
+                <div style={{ marginTop: "8px" }}>
+                  <strong>Segment Type:</strong>{" "}
+                  {archivedSegment.segmentType}
+                </div>
+
+                <button
+                  style={{ marginTop: "16px" }}
+                  onClick={() => {
+                    setArchiveInspectSegmentId(null);
+                    setArchiveOpen(true);
+                  }}
+                >
+                  Back To Archive
+                </button>
+
+                <div style={{ marginTop: "24px", opacity: 0.7 }}>
+                  Historical workspace projection will be introduced
+                  in Stage 493C-B Phase 2.
+                </div>
+              </div>
+
             </div>
-
-            <div style={{ marginTop: "8px" }}>
-              <strong>Segment Type:</strong>{" "}
-              {archivedSegment.segmentType}
-            </div>
-
-            <button
-              style={{ marginTop: "16px" }}
-              onClick={() => {
-                setArchiveInspectSegmentId(null);
-                setArchiveOpen(true);
-              }}
-            >
-              Back To Archive
-            </button>
-          </div>
-        )}
+          )}
 
         {!archivedSegment && (
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
