@@ -123,6 +123,8 @@ export default function App() {
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
+    const [archiveWorkspaceMode, setArchiveWorkspaceMode] = useState("dual");
+    const [archiveFocusedPane, setArchiveFocusedPane] = useState(null);
   const [governanceDashboardOpen, setGovernanceDashboardOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
@@ -390,6 +392,20 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     setActiveSummaryId(null);
   }
 
+    function handleArchiveFocusPane(pane) {
+      setArchiveWorkspaceMode("single");
+      setArchiveFocusedPane(pane);
+      setActiveTaskId(null);
+      setActiveSummaryId(null);
+    }
+
+    function returnToArchiveDual() {
+      setArchiveWorkspaceMode("dual");
+      setArchiveFocusedPane(null);
+      setActiveTaskId(null);
+      setActiveSummaryId(null);
+    }
+
   /* ===================== HELPERS ===================== */
 
   function deriveOrderedSummaries(summaries, order) {
@@ -453,6 +469,10 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     setActiveSummaryId(summaryId);
   }
 
+  function openArchivedSummary(summaryId) {
+    setActiveSummaryId(summaryId);
+  }
+
   function moveSummary(summaryId, direction) {
     if (isReadOnly) return;
 
@@ -502,6 +522,10 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
 
   function onOpenTask(task) {
     if (isReadOnly) return;
+    setActiveTaskId(task.id);
+  }
+
+  function onOpenArchivedTask(task) {
     setActiveTaskId(task.id);
   }
 
@@ -784,6 +808,45 @@ setPmDraftId(activeSegment?.pmId || null);
       visibleDevTasks.filter((t) =>
         matchesOperationalFilter(t, activeDevFilter)
       );
+
+/* ===================== STAGE 493C-C — ARCHIVE REVEAL PROJECTIONS ===================== */
+
+const archivedDevSummaries =
+  archivedSegment
+    ? orderedDevSummaries.filter(
+        s => s.segmentId === archivedSegment.segmentId
+      )
+    : [];
+
+const archivedDevTasks =
+  archivedSegment
+    ? devTasks.filter(
+        t => t.segmentId === archivedSegment.segmentId
+      )
+    : [];
+
+const archivedMgmtSummaries =
+  archivedSegment
+    ? orderedMgmtSummaries.filter(
+        s => s.segmentId === archivedSegment.segmentId
+      )
+    : [];
+
+const archivedMgmtTasks =
+  archivedSegment
+    ? mgmtTasks.filter(
+        t => t.segmentId === archivedSegment.segmentId
+      )
+    : [];
+
+  const archiveActiveTask =
+    activeTaskId
+      ? [...archivedDevTasks, ...archivedMgmtTasks]
+          .find((t) => t.id === activeTaskId)
+      : null;
+
+  const effectiveActiveTask =
+    activeTask || archiveActiveTask;
   const mgmtBody = (
     <PreProject
       summaries={visibleMgmtSummaries}
@@ -819,6 +882,30 @@ setPmDraftId(activeSegment?.pmId || null);
       }}
     />
   );
+
+const archivedMgmtBody = (
+  <PreProject
+    summaries={archivedMgmtSummaries}
+    tasks={archivedMgmtTasks}
+      onOpenTask={onOpenArchivedTask}
+      onOpenSummary={openArchivedSummary}
+    canCreateTask={false}
+    canCreateSummary={false}
+    canOpenRepository={false}
+  />
+);
+
+const archivedDevBody = (
+  <PreProject
+    summaries={archivedDevSummaries}
+    tasks={archivedDevTasks}
+      onOpenTask={onOpenArchivedTask}
+      onOpenSummary={openArchivedSummary}
+    canCreateTask={false}
+    canCreateSummary={false}
+    canOpenRepository={false}
+  />
+);
 
 
   function handleCreateSegment() {
@@ -1285,34 +1372,47 @@ pmName: pmDraft,
                 effectiveSegmentId={archivedSegment.segmentId}
               />
 
-              <div style={{ padding: "24px", flex: 1 }}>
-                <h2>ARCHIVED WORKSPACE</h2>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                  <div
+                    style={{
+                      padding: "12px 24px",
+                      borderBottom: "1px solid #ddd",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div>
+                      <strong>Archive Inspection:</strong>{" "}
+                      {archivedSegment.segmentTitle}
+                    </div>
 
-                <div>
-                  <strong>Segment Title:</strong>{" "}
-                  {archivedSegment.segmentTitle}
+                    <button
+                      onClick={() => {
+                        setArchiveInspectSegmentId(null);
+                          setArchiveWorkspaceMode("dual");
+                          setArchiveFocusedPane(null);
+                        setArchiveOpen(true);
+                      }}
+                    >
+                      Back To Archive
+                    </button>
+                  </div>
+
+                  <div style={{ flex: 1, minHeight: 0 }}>
+                    <DualPane
+                        mode={archiveWorkspaceMode}
+                        focusedPane={archiveFocusedPane}
+                        onFocusPane={handleArchiveFocusPane}
+                        onReturnToDual={returnToArchiveDual}
+                      activeFilter={null}
+                      onChangeFilter={() => {}}
+                      managementBody={archivedMgmtBody}
+                      developmentBody={archivedDevBody}
+                    />
+                  </div>
                 </div>
-
-                <div style={{ marginTop: "8px" }}>
-                  <strong>Segment Type:</strong>{" "}
-                  {archivedSegment.segmentType}
-                </div>
-
-                <button
-                  style={{ marginTop: "16px" }}
-                  onClick={() => {
-                    setArchiveInspectSegmentId(null);
-                    setArchiveOpen(true);
-                  }}
-                >
-                  Back To Archive
-                </button>
-
-                <div style={{ marginTop: "24px", opacity: 0.7 }}>
-                  Historical workspace projection will be introduced
-                  in Stage 493C-B Phase 2.
-                </div>
-              </div>
 
             </div>
           )}
@@ -1379,12 +1479,12 @@ pmName: pmDraft,
           />
         )}
 
-        {activeTask && (
+        {effectiveActiveTask && (
           <TaskPopup
             hasMutationAuthority={hasMutationAuthority}
             workspaceMode={workspaceMode}
             onArchiveSegment={handleArchiveSegment}
-            task={activeTask}
+            task={effectiveActiveTask}
             actingUser={actingUser}
             summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
             onClose={() => setActiveTaskId(null)}
