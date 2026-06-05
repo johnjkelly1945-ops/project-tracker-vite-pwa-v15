@@ -846,7 +846,7 @@ const archivedMgmtTasks =
       : null;
 
   const effectiveActiveTask =
-    activeTask || archiveActiveTask;
+      activeTask || archiveActiveTask; if (activeTaskId) console.log("TASK RESOLUTION", { activeTaskId, activeTask: activeTask?.id, archiveActiveTask: archiveActiveTask?.id, effectiveActiveTask: (activeTask || archiveActiveTask)?.id });
   const mgmtBody = (
     <PreProject
       summaries={visibleMgmtSummaries}
@@ -1478,30 +1478,31 @@ pmName: pmDraft,
             onClose={() => setActiveSummaryId(null)}
           />
         )}
-
-        {effectiveActiveTask && (
-          <TaskPopup
-            hasMutationAuthority={hasMutationAuthority}
-            workspaceMode={workspaceMode}
-            onArchiveSegment={handleArchiveSegment}
-            task={effectiveActiveTask}
-            actingUser={actingUser}
-            summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
-            onClose={() => setActiveTaskId(null)}
-            onAddNote={onAddNote}
-            onAddDescription={onAddDescription}
-            onAssignTask={onAssignTask}
-            onStartExecution={onStartExecution}
-            onSubmitExecution={onSubmitExecution}
-            onCompleteExecution={onCompleteExecution}
-            onChangeTaskSummary={onChangeTaskSummary}
-            isSeedSegment={activeSegment?.segmentType === "SEED"}
-            onArchiveTask={onArchiveTask}
-          />
-        )}
       </div>
 
         )}
+          {effectiveActiveTask && console.log("POPUP BRANCH", effectiveActiveTask.id)}
+
+          {effectiveActiveTask && (
+            <TaskPopup
+              hasMutationAuthority={hasMutationAuthority}
+              workspaceMode={workspaceMode}
+              onArchiveSegment={handleArchiveSegment}
+              task={effectiveActiveTask}
+              actingUser={actingUser}
+              summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
+              onClose={() => setActiveTaskId(null)}
+              onAddNote={onAddNote}
+              onAddDescription={onAddDescription}
+              onAssignTask={onAssignTask}
+              onStartExecution={onStartExecution}
+              onSubmitExecution={onSubmitExecution}
+              onCompleteExecution={onCompleteExecution}
+              onChangeTaskSummary={onChangeTaskSummary}
+              isSeedSegment={activeSegment?.segmentType === "SEED"}
+              onArchiveTask={onArchiveTask}
+            />
+          )}
 
 
       {globalEscalationLedgerOpen && (
