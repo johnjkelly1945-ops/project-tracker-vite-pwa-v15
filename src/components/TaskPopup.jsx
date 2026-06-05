@@ -99,6 +99,9 @@ export default function TaskPopup({
   if (!task) return null;
   console.log("TASK OBJECT:", task);
   const isReadOnly = readOnly === true;
+  const canMutate =
+    hasMutationAuthority &&
+    !isReadOnly;
 
   /* ================= Stage 429 — Navigation Handler (Routing) ================= */
   function handleNavigateToEscalationSource(e) {
@@ -272,7 +275,7 @@ export default function TaskPopup({
   // STAGE 420 — SURFACE SELECTION (CANONICAL)
 
   const isOperational = isPM || isAssignee || isAdvisor;
-
+    console.log("OPERATIONAL CHECK", { isPM, isAssignee, isAdvisor, isOperational, actor });
   if (!isOperational) {
     return (
       <div style={{ padding: "20px" }}>
@@ -646,8 +649,10 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-              {isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
-            {executionState === "SUBMITTED" && isPM && (
+                {canMutate && isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
+              {canMutate &&
+               executionState === "SUBMITTED" &&
+               isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
 {isAdvisor && (() => {
@@ -742,7 +747,7 @@ export default function TaskPopup({
     </>
   );
 })()}
-                  {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
+                    {canMutate && isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
           <div
@@ -754,17 +759,17 @@ export default function TaskPopup({
             }}
           >
             <div>
-              {!isCompleted && isPM && (
+                {canMutate && !isCompleted && isPM && (
                 <button onClick={() => setAssignmentModalOpen(true)}>
                   {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
               )}
-                {!isCompleted && isPM && !summaryEditing && !isSeedSegment && (
+                  {canMutate && !isCompleted && isPM && !summaryEditing && !isSeedSegment && (
                 <button onClick={() => setSummaryEditing(true)}>
                   Link summary
                   </button>
               )}
-                {!isCompleted && summaryEditing && !isSeedSegment && (
+                  {canMutate && !isCompleted && summaryEditing && !isSeedSegment && (
                 <>
                   <select
                     value={selectedSummaryId}
@@ -784,13 +789,13 @@ export default function TaskPopup({
             </div>
 
               <div style={{ minWidth: "140px", textAlign: "right" }}>
-                {showStart && <button onClick={handleStartWork}>Start</button>}
-                {showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
-                {showComplete && (
+                  {canMutate && showStart && <button onClick={handleStartWork}>Start</button>}
+                  {canMutate && showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+                  {canMutate && showComplete && (
                   <button onClick={handleCompleteWork}>Complete</button>
                 )}
-              {task.systemAction === "ARCHIVE_SEGMENT" &&
-               hasMutationAuthority &&
+                {canMutate &&
+                 task.systemAction === "ARCHIVE_SEGMENT" &&
                workspaceMode === "single" && (
                  <button
                    style={{ marginRight: "8px" }}
@@ -800,7 +805,7 @@ export default function TaskPopup({
                  </button>
                )}
 
-                {isPM && (<button onClick={() => setSegmentArchiveConfirmOpen(true)}>Archive</button>)}
+                  {canMutate && isPM && (<button onClick={() => setSegmentArchiveConfirmOpen(true)}>Archive</button>)}
             </div>
           </div>
         </div>

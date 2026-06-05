@@ -1485,7 +1485,8 @@ pmName: pmDraft,
 
           {effectiveActiveTask && (
             <TaskPopup
-              hasMutationAuthority={hasMutationAuthority}
+                hasMutationAuthority={hasMutationAuthority}
+                readOnly={Boolean(archivedSegment)}
               workspaceMode={workspaceMode}
               onArchiveSegment={handleArchiveSegment}
               task={effectiveActiveTask}
