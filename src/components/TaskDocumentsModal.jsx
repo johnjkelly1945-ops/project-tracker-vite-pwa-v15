@@ -48,6 +48,7 @@ export default function TaskDocumentsModal({
   task,
   onAddNote,
   actor,
+  readOnly = false,
 }) {
   const [docEntryOpen, setDocEntryOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
@@ -81,6 +82,7 @@ export default function TaskDocumentsModal({
   }
 
   function handleAddDocument({ name, location }) {
+    if (readOnly) return;
     createDocument({
       taskId: task.id,
       taskTitle: task.title,
@@ -166,7 +168,7 @@ export default function TaskDocumentsModal({
               alignItems: "center",
             }}
           >
-            <button onClick={() => setDocEntryOpen(true)}>
+            <button disabled={readOnly} onClick={() => { if (!readOnly) setDocEntryOpen(true); }}>
               Add
             </button>
 

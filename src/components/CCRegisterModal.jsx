@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose, openCCEvent, isPM }) {
+export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose, openCCEvent, isPM, readOnly = false }) {
 
   const [, refresh] = useState(0);
 
@@ -175,7 +175,7 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
 
               <div style={{ marginTop: "8px" }}>
 
-                <button onClick={saveEntry}>
+                <button disabled={readOnly} onClick={saveEntry}>
                   {editingCC ? "Update CC" : "Create CC"}
                 </button>
 
@@ -260,7 +260,7 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
           </div>
 
           <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)} disabled={!isPM}>
+            <button onClick={() => setCreating(true)} disabled={!isPM || readOnly}>
               New CC
             </button>
           </div>

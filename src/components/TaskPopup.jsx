@@ -480,7 +480,7 @@ export default function TaskPopup({
   /* ================= Inline Commit ================= */
 
   function handleCommitInlineNote() {
-    if (isArchived) return;
+    if (!canMutate) return;
     const text = inlineDraftText.trim();
     if (!text) return;
 
@@ -628,11 +628,11 @@ export default function TaskPopup({
               }}
               placeholder="Enter note..."
               value={inlineDraftText}
-              onChange={(e) => setInlineDraftText(e.target.value)}
+              onChange={(e) => { if (!canMutate) return; setInlineDraftText(e.target.value); }}
             />
 
             <div style={{ textAlign: "right", marginTop: "6px" }}>
-              <button onClick={handleCommitInlineNote}>Commit note</button>
+              <button disabled={!canMutate} onClick={handleCommitInlineNote}>Commit note</button>
             </div>
           </div>
         </div>
@@ -649,9 +649,8 @@ export default function TaskPopup({
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-                {canMutate && isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
-              {canMutate &&
-               executionState === "SUBMITTED" &&
+                {isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
+              {executionState === "SUBMITTED" &&
                isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
@@ -747,7 +746,7 @@ export default function TaskPopup({
     </>
   );
 })()}
-                    {canMutate && isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
+                    {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
           <div
@@ -918,6 +917,7 @@ export default function TaskPopup({
           onClose={() => setDocumentsOpen(false)}
           onAddNote={onAddNote}
             actor={actingUser}
+            readOnly={isReadOnly}
         />
       )}
 
@@ -970,6 +970,7 @@ export default function TaskPopup({
               segmentId={task.segmentId}
             taskTitle={task.title}
             isPM={isPM}
+            readOnly={isReadOnly}
             onClose={() => setCcRegisterOpen(false)}
             openCCEvent={(id) => {
               setActiveCcEventId(id);
@@ -1026,6 +1027,7 @@ export default function TaskPopup({
         <CCModal
           taskId={task.id}
           isPM={isPM}
+          readOnly={isReadOnly}
           taskTitle={task.title}
           eventId={activeCcEventId}
           onClose={() => setCcModalOpen(false)}

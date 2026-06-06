@@ -55,7 +55,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, isPM }) {
+export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, isPM, readOnly = false }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -287,13 +287,13 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
               />
 
               <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button onClick={handleCommitInlineAdvisory}>
+                <button disabled={readOnly} onClick={handleCommitInlineAdvisory}>
                   Commit advisory
                 </button>
               </div>
                   {/* Documents Section (Stage 469) */}
                   <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span><span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span></div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span>{!readOnly && (<span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span>)}</div>
                     <div style={{ marginTop: "6px", fontSize: "13px" }}>
                       <div style={{ fontSize: "13px", color: "#555" }}>
                         {documents.length === 0 ? (
@@ -341,7 +341,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
               }}
             >
               {isPM && (
-                <button onClick={() => setParticipantModalOpen(true)}>
+                <button disabled={readOnly} onClick={() => setParticipantModalOpen(true)}>
                   Confirm Participant
                 </button>
               )}
