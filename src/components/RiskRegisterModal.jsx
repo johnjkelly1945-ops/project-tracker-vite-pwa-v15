@@ -12,7 +12,7 @@ import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../dom
 import { createGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClose, openRiskEvent }) {
+export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClose, openRiskEvent, readOnly = false }) {
 
   console.log("RISK MODAL SEGMENT ID:", segmentId);
   const [, refresh] = useState(0);
@@ -178,7 +178,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
 
               <div style={{ marginTop: "8px" }}>
 
-                <button onClick={saveEntry}>
+                <button disabled={readOnly} onClick={saveEntry}>
                   {editingRisk ? "Update Risk" : "Create Risk"}
                 </button>
 
@@ -215,7 +215,6 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
                   textDecoration: "underline"
                 }}
                 onClick={() => {
-
                   setEditingRisk(risk);
                   setCreating(false);
 
@@ -249,7 +248,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
           </div>
 
           <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)}>
+            <button disabled={readOnly} onClick={() => setCreating(true)}>
               New Risk
             </button>
           </div>

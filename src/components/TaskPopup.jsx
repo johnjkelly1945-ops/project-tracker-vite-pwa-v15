@@ -934,6 +934,7 @@ export default function TaskPopup({
             setRiskModalOpen(true);
           }}
           isPM={isPM}
+        readOnly={isReadOnly}
         />
       )}
 
@@ -997,6 +998,7 @@ export default function TaskPopup({
                 }
                 : undefined
             }
+            readOnly={isReadOnly}
           />
         )}
 
