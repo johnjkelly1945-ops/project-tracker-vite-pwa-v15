@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent }) {
+export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent, readOnly = false }) {
 
   const [, refresh] = useState(0);
 
@@ -153,7 +153,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
 
               <div style={{ marginTop: "8px" }}>
 
-                <button onClick={saveEntry}>
+                  <button disabled={readOnly} onClick={saveEntry}>
                   {editingIssue ? "Update Issue" : "Create Issue"}
                 </button>
 
@@ -241,7 +241,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
           ))}
 
           <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)}>
+              <button disabled={readOnly} onClick={() => setCreating(true)}>
               New Issue
             </button>
           </div>

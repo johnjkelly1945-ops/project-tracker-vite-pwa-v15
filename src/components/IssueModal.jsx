@@ -54,7 +54,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate }) {
+export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, readOnly = false }) {
   const inlineRef = useRef(null);
   const actor = getActingUser();
   const isPM = actor?.isPM === true;
@@ -303,14 +303,14 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
               />
 
               <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button onClick={handleCommitInlineAdvisory}>
+                  <button disabled={readOnly} onClick={handleCommitInlineAdvisory}>
                   Commit advisory
                 </button>
               </div>
 
                 {/* Documents Section (Stage 466) */}
                 <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span><span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span></div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span>{!readOnly && (<span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span>)}</div>
                       <div style={{ fontSize: "13px", color: "#555" }}>
                       {documents.length === 0 ? (
                         "(no documents yet)"
@@ -346,7 +346,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 color: "#333",
               }}
             >
-              {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
+                {isPM && event?.status === "OPEN" && (<button disabled={readOnly} onClick={handleCloseItem}>Close Item</button>)}
               {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
@@ -357,7 +357,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 alignItems: "center",
               }}
             >
-              {isPM && <button onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
+                {isPM && <button disabled={readOnly} onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
 
               <button onClick={onClose}>Close</button>
             </div>
