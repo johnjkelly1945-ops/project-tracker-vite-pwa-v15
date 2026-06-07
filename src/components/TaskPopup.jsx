@@ -957,6 +957,7 @@ export default function TaskPopup({
               segmentId={task.segmentId}
               taskTitle={task.title}
             onClose={() => setQcRegisterOpen(false)}
+              readOnly={isReadOnly}
             openQCEvent={(eventId) => {
               setActiveQcEventId(eventId);
               setQcRegisterOpen(false);
@@ -1021,6 +1022,7 @@ export default function TaskPopup({
           eventId={activeQcEventId}
           onClose={() => setQcModalOpen(false)}
           onAddNote={onAddNote}
+            readOnly={isReadOnly}
           onEscalate={handleEscalateQC}
         />
       )}

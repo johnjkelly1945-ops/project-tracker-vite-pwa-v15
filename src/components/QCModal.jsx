@@ -54,7 +54,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate }) {
+export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, readOnly = false }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -301,15 +301,17 @@ if (!event) return null;
                 onChange={(e) => setAdvisoryText(e.target.value)}
               />
 
-              <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button onClick={handleCommitInlineAdvisory}>
-                  Commit advisory
-                </button>
-              </div>
+                {!readOnly && (
+                  <div style={{ textAlign: "right", marginTop: "6px" }}>
+                    <button onClick={handleCommitInlineAdvisory}>
+                      Commit advisory
+                    </button>
+                  </div>
+                )}
 
               {/* Documents Section (Stage 469) */}
               <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span><span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span></div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}><span>📎 Documents</span>{!readOnly && (<span style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }} onClick={() => setDocModalOpen(true)}>Add</span>)}</div>
                 <div style={{ fontSize: "13px", color: "#555" }}>
                   {documents.length === 0 ? (
                     "(no documents yet)"
@@ -344,7 +346,7 @@ if (!event) return null;
                 fontStyle: "italic",
               }}
             >
-                {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
+                  {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
                 {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
@@ -355,9 +357,9 @@ if (!event) return null;
                 alignItems: "center",
               }}
             >
-              {isPM && <button onClick={() => setParticipantModalOpen(true)}>
-                Confirm Participant
-              </button>}
+                {!readOnly && isPM && <button onClick={() => setParticipantModalOpen(true)}>
+                  Confirm Participant
+                </button>}
               <button onClick={onClose}>Close</button>
             </div>
           </div>

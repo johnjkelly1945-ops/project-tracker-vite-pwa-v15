@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent }) {
+export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent, readOnly = false }) {
 
   const [, refresh] = useState(0);
 
@@ -176,7 +176,7 @@ export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose,
 
               <div style={{ marginTop: "8px" }}>
 
-                <button onClick={saveEntry}>
+                  <button disabled={readOnly} onClick={saveEntry}>
                   {editingQC ? "Update QC" : "Create QC"}
                 </button>
 
@@ -247,11 +247,13 @@ export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose,
           ))}
           </div>
 
-          <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)}>
-              New QC
-            </button>
-          </div>
+            {!readOnly && (
+              <div style={{ marginTop: "16px" }}>
+                <button onClick={() => setCreating(true)}>
+                  New QC
+                </button>
+              </div>
+            )}
 
           <div style={{ marginTop: "10px" }}>
             <button onClick={onClose}>Close</button>
