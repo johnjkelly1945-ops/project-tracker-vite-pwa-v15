@@ -1051,6 +1051,7 @@ export default function TaskPopup({
           onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
           onNavigate={handleNavigateToEscalationSource}
+            readOnly={isReadOnly}
         />
       )}
     </div>

@@ -17,7 +17,7 @@ import {
 } from "../domain/escalation/EscalationStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote, readOnly = false }) {
 
   const actor = getActingUser();
   const isPM = actor?.id === "user-1"; // temporary restore of PM working behaviour
@@ -127,11 +127,13 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
 
               ))}
 
-              <div style={{ marginTop: "12px" }}>
-                <button onClick={() => setCreateMode(true)}>
-                  New Escalation
-                </button>
-              </div>
+                {!readOnly && (
+                  <div style={{ marginTop: "12px" }}>
+                    <button onClick={() => setCreateMode(true)}>
+                      New Escalation
+                    </button>
+                  </div>
+                )}
 
             </>
           )}
@@ -219,6 +221,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
           escalation={activeEscalation}
           onClose={() => setActiveReference(null)}
             onAddNote={onAddNote}
+          readOnly={readOnly}
         />
       )}
 
