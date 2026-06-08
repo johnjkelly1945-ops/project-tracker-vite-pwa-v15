@@ -330,7 +330,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 color: "#333",
               }}
             >
-              {isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+              {isPM && event?.status === "OPEN" && (<button disabled={readOnly} onClick={handleCloseItem}>Close Item</button>)}              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
             <div
