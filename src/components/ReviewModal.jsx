@@ -51,7 +51,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAddNote }) {
+export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAddNote, readOnly = false }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -227,21 +227,25 @@ export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAdd
                 onChange={(e) => setAdvisoryText(e.target.value)}
               />
 
-              <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button onClick={handleCommitInlineAdvisory}>
-                  Commit advisory
-                </button>
-              </div>
+                {!readOnly && (
+                  <div style={{ textAlign: "right", marginTop: "6px" }}>
+                    <button onClick={handleCommitInlineAdvisory}>
+                      Commit advisory
+                    </button>
+                  </div>
+                )}
                 {/* Documents Section (Stage 475C) */}
                 <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", marginBottom: "4px" }}>
                     <span>📎 Documents</span>
-                    <span
-                      style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }}
-                      onClick={() => setDocModalOpen(true)}
-                    >
-                      Add
-                    </span>
+                      {!readOnly && (
+                        <span
+                          style={{ fontWeight: "600", fontSize: "13px", cursor: "pointer", color: "#1976d2" }}
+                          onClick={() => setDocModalOpen(true)}
+                        >
+                          Add
+                        </span>
+                      )}
                   </div>
 
                   <div style={{ marginTop: "6px", fontSize: "13px" }}>
@@ -311,9 +315,11 @@ export default function ReviewModal({ taskId, eventId, taskTitle, onClose, onAdd
                 alignItems: "center",
               }}
             >
-              <button onClick={() => setParticipantModalOpen(true)}>
-                Confirm Participant
-              </button>
+                {!readOnly && (
+                  <button onClick={() => setParticipantModalOpen(true)}>
+                    Confirm Participant
+                  </button>
+                )}
 
               <button onClick={onClose}>Close</button>
             </div>

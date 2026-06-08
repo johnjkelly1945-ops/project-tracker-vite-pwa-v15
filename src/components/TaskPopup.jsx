@@ -907,6 +907,7 @@ export default function TaskPopup({
           eventId={activeReviewEventId}
           taskTitle={task.title}
             onClose={() => setReviewModalOpen(false)}
+            readOnly={isReadOnly}
           />
       )}
 
