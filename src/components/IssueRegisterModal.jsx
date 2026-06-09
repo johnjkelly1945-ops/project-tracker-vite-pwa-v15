@@ -126,6 +126,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
               <input
                 placeholder="Issue title"
                 value={form.title}
+                readOnly={readOnly}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -133,6 +134,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
               <textarea
                 placeholder="Description"
                 value={form.description}
+                readOnly={readOnly}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -140,6 +142,7 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
               <input
                 placeholder="Owner"
                 value={form.owner}
+                readOnly={readOnly}
                 onChange={e => setForm({ ...form, owner: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -147,15 +150,18 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
               <textarea
                 placeholder="Resolution"
                 value={form.resolution}
+                readOnly={readOnly}
                 onChange={e => setForm({ ...form, resolution: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <div style={{ marginTop: "8px" }}>
 
-                  <button disabled={readOnly} onClick={saveEntry}>
-                  {editingIssue ? "Update Issue" : "Create Issue"}
-                </button>
+                  {!readOnly && (
+                  <button onClick={saveEntry}>
+                    {editingIssue ? "Update Issue" : "Create Issue"}
+                  </button>
+                )}
 
                 <button
                   style={{ marginLeft: "8px" }}
@@ -240,11 +246,13 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
 
           ))}
 
-          <div style={{ marginTop: "16px" }}>
-              <button disabled={readOnly} onClick={() => setCreating(true)}>
-              New Issue
-            </button>
-          </div>
+          {!readOnly && (
+            <div style={{ marginTop: "16px" }}>
+              <button onClick={() => setCreating(true)}>
+                New Issue
+              </button>
+            </div>
+          )}
 
           <div style={{ marginTop: "10px" }}>
             <button onClick={onClose}>Close</button>

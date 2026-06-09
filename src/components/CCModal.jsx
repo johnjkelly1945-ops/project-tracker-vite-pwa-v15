@@ -287,9 +287,11 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
               />
 
               <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button disabled={readOnly} onClick={handleCommitInlineAdvisory}>
-                  Commit advisory
-                </button>
+                {!readOnly && (
+                    <button onClick={handleCommitInlineAdvisory}>
+                      Commit advisory
+                    </button>
+                  )}
               </div>
                   {/* Documents Section (Stage 469) */}
                   <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
@@ -330,7 +332,7 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 color: "#333",
               }}
             >
-              {isPM && event?.status === "OPEN" && (<button disabled={readOnly} onClick={handleCloseItem}>Close Item</button>)}              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+              {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}              {isPM && <button onClick={onEscalate}>Escalate</button>}
             </div>
 
             <div
@@ -340,11 +342,11 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
                 alignItems: "center",
               }}
             >
-              {isPM && (
-                <button disabled={readOnly} onClick={() => setParticipantModalOpen(true)}>
-                  Confirm Participant
-                </button>
-              )}
+              {!readOnly && isPM && (
+                  <button onClick={() => setParticipantModalOpen(true)}>
+                    Confirm Participant
+                  </button>
+                )}
 
               <button onClick={onClose}>Close</button>
             </div>

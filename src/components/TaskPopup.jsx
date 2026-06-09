@@ -950,6 +950,7 @@ export default function TaskPopup({
             setIssueRegisterOpen(false);
             setIssueModalOpen(true);
           }}
+            readOnly={isReadOnly}
         />
       )}
         {qcRegisterOpen && (

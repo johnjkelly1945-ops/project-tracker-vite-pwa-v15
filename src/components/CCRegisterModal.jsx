@@ -134,50 +134,58 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
               <input
                 placeholder="CC title"
                 value={form.title}
-                onChange={e => setForm({ ...form, title: e.target.value })}
+                  readOnly={readOnly}
+                  onChange={e => setForm({ ...form, title: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <textarea
                 placeholder="Description"
                 value={form.description}
-                onChange={e => setForm({ ...form, description: e.target.value })}
+                  readOnly={readOnly}
+                  onChange={e => setForm({ ...form, description: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <input
                 placeholder="Probability"
                 value={form.probability}
-                onChange={e => setForm({ ...form, probability: e.target.value })}
+                  readOnly={readOnly}
+                  onChange={e => setForm({ ...form, probability: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <input
                 placeholder="Impact"
                 value={form.impact}
-                onChange={e => setForm({ ...form, impact: e.target.value })}
+                  readOnly={readOnly}
+                  onChange={e => setForm({ ...form, impact: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <input
                 placeholder="Owner"
                 value={form.owner}
-                onChange={e => setForm({ ...form, owner: e.target.value })}
+                  readOnly={readOnly}
+                  onChange={e => setForm({ ...form, owner: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <textarea
                 placeholder="Mitigation"
                 value={form.mitigation}
-                onChange={e => setForm({ ...form, mitigation: e.target.value })}
+                  readOnly={readOnly}
+                  onChange={e => setForm({ ...form, mitigation: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <div style={{ marginTop: "8px" }}>
 
-                <button disabled={readOnly} onClick={saveEntry}>
-                  {editingCC ? "Update CC" : "Create CC"}
-                </button>
+                {!readOnly && (
+                  <button onClick={saveEntry}>
+                    {editingCC ? "Update CC" : "Create CC"}
+                  </button>
+                )}
 
                 <button
                   style={{ marginLeft: "8px" }}
@@ -259,11 +267,13 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
           ))}
           </div>
 
-          <div style={{ marginTop: "16px" }}>
-            <button onClick={() => setCreating(true)} disabled={!isPM || readOnly}>
-              New CC
-            </button>
-          </div>
+          {!readOnly && (
+            <div style={{ marginTop: "16px" }}>
+              <button onClick={() => setCreating(true)}>
+                New CC
+              </button>
+            </div>
+          )}
 
           <div style={{ marginTop: "10px" }}>
             <button onClick={onClose}>Close</button>

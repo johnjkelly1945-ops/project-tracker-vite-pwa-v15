@@ -303,9 +303,11 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
               />
 
               <div style={{ textAlign: "right", marginTop: "6px" }}>
-                  <button disabled={readOnly} onClick={handleCommitInlineAdvisory}>
-                  Commit advisory
-                </button>
+                  {!readOnly && (
+                    <button onClick={handleCommitInlineAdvisory}>
+                      Commit advisory
+                    </button>
+                  )}
               </div>
 
                 {/* Documents Section (Stage 466) */}
@@ -346,7 +348,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 color: "#333",
               }}
             >
-                {isPM && event?.status === "OPEN" && (<button disabled={readOnly} onClick={handleCloseItem}>Close Item</button>)}
+                {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
               {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
@@ -357,7 +359,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
                 alignItems: "center",
               }}
             >
-                {isPM && <button disabled={readOnly} onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
+                {!readOnly && isPM && <button onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
 
               <button onClick={onClose}>Close</button>
             </div>
