@@ -429,17 +429,25 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   function onCreateTask() {
     if (isReadOnly) return;
 
-    const title = window.prompt("Enter task title:");
-    if (!title || !title.trim()) return;
+    const title =
+      activeSegment?.segmentType === "SEED"
+        ? activeSegment?.segmentTitle || "Untitled Segment"
+        : window.prompt("Enter task title:");
 
+    if (!title || !title.trim()) return;
     const task = {
       id: `task-${Date.now()}`,
       title: title.trim(),
       notes: [],
+      descriptionEntries:
+        activeSegment?.segmentType === "SEED" &&
+        activeSegment?.description?.trim()
+          ? [activeSegment.description.trim()]
+          : [],
       summaryId: null,
       executionState: "NOT_STARTED",
       taskState: "active",
-            segmentId: activeSegmentIdRef.current,
+      segmentId: activeSegmentIdRef.current,
     };
 
     (isDev ? setDevTasks : setMgmtTasks)((c) => [...c, task]);
@@ -847,17 +855,34 @@ const archivedMgmtTasks =
 
   const effectiveActiveTask =
       activeTask || archiveActiveTask; if (activeTaskId) console.log("TASK RESOLUTION", { activeTaskId, activeTask: activeTask?.id, archiveActiveTask: archiveActiveTask?.id, effectiveActiveTask: (activeTask || archiveActiveTask)?.id });
+
+const isSeedSegment =
+  activeSegment?.segmentType === "SEED";
+
+const seedTaskCount =
+  [...devTasks, ...mgmtTasks].filter(
+    (t) => t.segmentId === activeSegment?.segmentId
+  ).length;
+
+const canCreateSeedTask =
+  !isSeedSegment || seedTaskCount === 0;
   const mgmtBody = (
     <PreProject
       summaries={visibleMgmtSummaries}
       tasks={filteredMgmtTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
-      canCreateTask={hasMutationAuthority}
+      canCreateTask={
+        hasMutationAuthority && canCreateSeedTask
+      }
       onCreateTask={onCreateTask}
-      canCreateSummary={hasMutationAuthority}
+      canCreateSummary={
+        hasMutationAuthority && !isSeedSegment
+      }
       onCreateSummary={onCreateSummary}
-      canOpenRepository={hasMutationAuthority}
+      canOpenRepository={
+        hasMutationAuthority && !isSeedSegment
+      }
       onOpenRepository={() => {
         setRepositoryPane("mgmt");
         setRepositoryOpen(true);
@@ -871,11 +896,17 @@ const archivedMgmtTasks =
       tasks={filteredDevTasks}
       onOpenTask={onOpenTask}
       onOpenSummary={openSummaryIfAuthorised}
-      canCreateTask={hasMutationAuthority}
+      canCreateTask={
+        hasMutationAuthority && canCreateSeedTask
+      }
       onCreateTask={onCreateTask}
-      canCreateSummary={hasMutationAuthority}
+      canCreateSummary={
+        hasMutationAuthority && !isSeedSegment
+      }
       onCreateSummary={onCreateSummary}
-      canOpenRepository={hasMutationAuthority}
+      canOpenRepository={
+        hasMutationAuthority && !isSeedSegment
+      }
       onOpenRepository={() => {
         setRepositoryPane("dev");
         setRepositoryOpen(true);
@@ -1149,8 +1180,6 @@ pmName: pmDraft,
                 </div>
 
 
-                    {effectiveSegmentType === "SEED" && (
-                      <>
                   <div style={{ marginTop: "12px" }}>
                     <strong>Description:</strong>
                     <div style={{ marginTop: "6px" }}>
@@ -1166,6 +1195,8 @@ pmName: pmDraft,
                     </div>
                   </div>
 
+                    {effectiveSegmentType === "SEED" && (
+                      <>
                     <div style={{ marginTop: "12px" }}>
                       <strong>Outcome:</strong>
 
@@ -1195,8 +1226,8 @@ pmName: pmDraft,
                         </label>
                       </div>
                     </div>
-                        </>
-                      )}
+                      </>
+                    )}
 
                   {showRelationships && (
                   <div style={{ marginTop: "16px" }}>
