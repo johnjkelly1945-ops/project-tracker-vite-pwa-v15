@@ -794,7 +794,7 @@ export default function TaskPopup({
                   <button onClick={handleCompleteWork}>Complete</button>
                 )}
                 {canMutate &&
-                 task.systemAction === "ARCHIVE_SEGMENT" &&
+                   isSeedSegment &&
                workspaceMode === "single" && (
                  <button
                    style={{ marginRight: "8px" }}
@@ -804,7 +804,12 @@ export default function TaskPopup({
                  </button>
                )}
 
-                  {canMutate && isPM && (<button onClick={() => setSegmentArchiveConfirmOpen(true)}>Archive</button>)}
+                {canMutate &&
+                   !isSeedSegment && (
+                   <button onClick={() => setArchiveConfirmOpen(true)}>
+                     Delete
+                   </button>
+                 )}
             </div>
           </div>
         </div>
