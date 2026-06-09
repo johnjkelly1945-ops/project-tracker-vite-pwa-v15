@@ -332,7 +332,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
               </button>
             )}
 
-              {isPM && escalation?.status === "OPEN" && (
+              {!readOnly && isPM && escalation?.status === "OPEN" && (
                 <button onClick={handleCloseItem}>
                   Close Item
                 </button>
