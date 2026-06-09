@@ -280,26 +280,30 @@ export default function RiskModal({
                 paddingTop: "12px",
               }}
             >
-              <textarea
-                ref={inlineRef}
-                rows={3}
-                style={{
-                  width: "100%",
-                  resize: "vertical",
-                  border: "none",
-                  outline: "none",
-                  fontSize: "14px",
-                }}
-                placeholder="Enter advisory..."
-                value={advisoryText}
-                onChange={(e) => setAdvisoryText(e.target.value)}
-              />
+              {!readOnly && (
+                <textarea
+                  ref={inlineRef}
+                  rows={3}
+                  style={{
+                    width: "100%",
+                    resize: "vertical",
+                    border: "none",
+                    outline: "none",
+                    fontSize: "14px",
+                  }}
+                  placeholder="Enter advisory..."
+                  value={advisoryText}
+                  onChange={(e) => setAdvisoryText(e.target.value)}
+                />
+              )}
 
-              <div style={{ textAlign: "right", marginTop: "6px" }}>
-                <button disabled={readOnly} onClick={handleCommitInlineAdvisory}>
-                  Commit advisory
-                </button>
-              </div>
+              {!readOnly && (
+                <div style={{ textAlign: "right", marginTop: "6px" }}>
+                  <button onClick={handleCommitInlineAdvisory}>
+                    Commit advisory
+                  </button>
+                </div>
+              )}
 
               {/* Documents Section (Stage 469) */}
               <div style={{ marginTop: "12px", width: "100%", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
@@ -338,7 +342,7 @@ export default function RiskModal({
                 color: "#333",
               }}
             >
-              {isPM && event?.status === "OPEN" && (<button disabled={readOnly} onClick={handleCloseItem}>Close Item</button>)}
+              {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
               {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
             </div>
 
@@ -349,7 +353,7 @@ export default function RiskModal({
                 alignItems: "center",
               }}
             >
-              {isPM && <button disabled={readOnly} onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
+              {!readOnly && isPM && <button onClick={() => setParticipantModalOpen(true)}>Confirm Participant</button>}
 
               <button onClick={onClose}>Close</button>
             </div>

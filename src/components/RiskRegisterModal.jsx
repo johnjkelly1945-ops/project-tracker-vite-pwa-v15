@@ -137,6 +137,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <input
                 placeholder="Risk title"
                 value={form.title}
+                  readOnly={readOnly}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -144,6 +145,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <textarea
                 placeholder="Description"
                 value={form.description}
+                  readOnly={readOnly}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -151,6 +153,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <input
                 placeholder="Probability"
                 value={form.probability}
+                  readOnly={readOnly}
                 onChange={e => setForm({ ...form, probability: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -158,6 +161,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <input
                 placeholder="Impact"
                 value={form.impact}
+                  readOnly={readOnly}
                 onChange={e => setForm({ ...form, impact: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -165,6 +169,7 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <input
                 placeholder="Owner"
                 value={form.owner}
+                  readOnly={readOnly}
                 onChange={e => setForm({ ...form, owner: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
@@ -172,17 +177,19 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <textarea
                 placeholder="Mitigation"
                 value={form.mitigation}
+                  readOnly={readOnly}
                 onChange={e => setForm({ ...form, mitigation: e.target.value })}
                 style={{ width: "100%", marginBottom: "6px" }}
               />
 
               <div style={{ marginTop: "8px" }}>
 
-                <button disabled={readOnly} onClick={saveEntry}>
+                 {!readOnly && (<button onClick={saveEntry}>
                   {editingRisk ? "Update Risk" : "Create Risk"}
                 </button>
+                )}
 
-                <button
+                  <button
                   style={{ marginLeft: "8px" }}
                   onClick={resetForm}
                 >
@@ -210,12 +217,12 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
               <div
                 style={{
                   fontWeight: "bold",
-                  cursor: "pointer",
+                  cursor: readOnly ? "default" : "pointer",
                   color: "#0b5ed7",
                   textDecoration: "underline"
                 }}
                 onClick={() => {
-                  setEditingRisk(risk);
+                    setEditingRisk(risk);
                   setCreating(false);
 
                   setForm({
@@ -247,11 +254,13 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
           ))}
           </div>
 
-          <div style={{ marginTop: "16px" }}>
-            <button disabled={readOnly} onClick={() => setCreating(true)}>
-              New Risk
-            </button>
-          </div>
+          {!readOnly && (
+              <div style={{ marginTop: "16px" }}>
+                <button onClick={() => setCreating(true)}>
+                  New Risk
+                </button>
+              </div>
+            )}
 
           <div style={{ marginTop: "10px" }}>
             <button onClick={onClose}>Close</button>
