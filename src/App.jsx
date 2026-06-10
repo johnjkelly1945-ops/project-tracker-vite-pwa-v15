@@ -27,7 +27,10 @@ import GovernanceDashboard from "./components/GovernanceDashboard";
 import { resolveObservationalWorld, resolveCoordinationProjectionWorld } from "./domain/observational/ObservationalWorldResolver";
 import { getGovernanceEventsByTask } from "./governance/governanceStore";
 import { getEscalationsByTask } from "./domain/escalation/EscalationStore";
-import { resolveRelationshipsForSegment } from "./domain/relationships/RelationshipResolver";
+import {
+  resolveRelationshipsForSegment,
+  resolveRelationshipTopology
+} from "./domain/relationships/RelationshipResolver";
 import { createRelationship } from "./domain/relationships/RelationshipStore";
 
 /*
@@ -726,6 +729,23 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
         ? resolveRelationshipsForSegment(activeSegment.segmentId)
         : [];
 
+
+      const relationshipTopology =
+        resolveRelationshipTopology();
+      const coordinatedByRelationships =
+        segmentRelationships.filter(
+          (r) =>
+            r.relationshipType === "COORDINATES" &&
+            r.toSegmentId === activeSegment?.segmentId
+        );
+
+      const coordinatingRelationships =
+        segmentRelationships.filter(
+          (r) =>
+            r.relationshipType === "COORDINATES" &&
+            r.fromSegmentId === activeSegment?.segmentId
+        );
+
     const authorisedPerson =
       getPersonnel().find(
         (p) => p.displayName === authorisedByDraft
@@ -750,7 +770,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
         activeSegment,
         activeWorkspaceSegments,
         segmentTypeDraft || activeSegment?.segmentType || null,
-        segmentRelationships
+          relationshipTopology
       );
 
     const effectiveSegmentType =
@@ -1229,33 +1249,61 @@ pmName: pmDraft,
                       </>
                     )}
 
-                  {showRelationships && (
-                  <div style={{ marginTop: "16px" }}>
-                    <strong>Relationships:</strong>
+                    {showRelationships && (
+                    <div style={{ marginTop: "16px" }}>
+                      <strong>COORDINATED BY</strong>
 
-                    <div style={{ marginTop: "6px", fontSize: "13px" }}>
-                      {segmentRelationships.length === 0 ? (
-                        <div style={{ opacity: 0.6 }}>
-                          No relationships
-                        </div>
-                      ) : (
-                        segmentRelationships.map((r) => {
-                          const relatedSegmentId =
-                            r.fromSegmentId === activeSegment?.segmentId
-                              ? r.toSegmentId
-                              : r.fromSegmentId;
+                      <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                        {coordinatedByRelationships.length === 0 ? (
+                          <div style={{ opacity: 0.6 }}>
+                            None
+                          </div>
+                        ) : (
+                          coordinatedByRelationships.map((r) => {
+                            const parentSegment =
+                              activeWorkspaceSegments.find(
+                                (s) => s.segmentId === r.fromSegmentId
+                              ) || null;
 
-                            const relatedSegment = activeWorkspaceSegments.find((s) => s.segmentId === relatedSegmentId) || null;
-                          return (
-                            <div key={r.relationshipId}>
-                              {r.relationshipType} → {relatedSegment?.segmentTitle || relatedSegmentId} ({relatedSegment?.segmentType || "SEGMENT"})
-                            </div>
-                          );
-                        })
-                      )}
+                            return (
+                              <div key={r.relationshipId}>
+                                {parentSegment?.segmentTitle || r.fromSegmentId}
+                                {" "}
+                                ({parentSegment?.segmentType || "SEGMENT"})
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      <div style={{ marginTop: "12px" }}>
+                        <strong>COORDINATING</strong>
+                      </div>
+
+                      <div style={{ marginTop: "6px", fontSize: "13px" }}>
+                        {coordinatingRelationships.length === 0 ? (
+                          <div style={{ opacity: 0.6 }}>
+                            None
+                          </div>
+                        ) : (
+                          coordinatingRelationships.map((r) => {
+                            const childSegment =
+                              activeWorkspaceSegments.find(
+                                (s) => s.segmentId === r.toSegmentId
+                              ) || null;
+
+                            return (
+                              <div key={r.relationshipId}>
+                                {childSegment?.segmentTitle || r.toSegmentId}
+                                {" "}
+                                ({childSegment?.segmentType || "SEGMENT"})
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  )}
+                    )}
 
                   {showRelationships && (
                     <div style={{ marginTop: "12px" }}>

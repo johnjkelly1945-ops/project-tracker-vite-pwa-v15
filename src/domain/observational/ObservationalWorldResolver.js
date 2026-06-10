@@ -114,7 +114,6 @@ export function resolveCoordinationProjectionWorld(
   relationships.forEach((r) => {
     if (r.relationshipType !== "COORDINATES") return;
 
-    coordinatedIds.add(r.fromSegmentId);
     coordinatedIds.add(r.toSegmentId);
   });
 
@@ -163,7 +162,10 @@ export function resolveCoordinationProjectionWorld(
             candidate.segmentType === "PROJECT" &&
             isOrphaned(candidate)
           ) ||
-          candidate.segmentType === "PROGRAMME"
+            (
+              candidate.segmentType === "PROGRAMME" &&
+              isOrphaned(candidate)
+            )
         );
       }
 
