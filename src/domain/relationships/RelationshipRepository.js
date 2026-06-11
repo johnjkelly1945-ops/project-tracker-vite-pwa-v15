@@ -68,6 +68,29 @@ export function repoCreateRelationship(relationship) {
       relationship.createdBy || "system"
   };
 
+  const duplicate = existing.find(
+    (r) =>
+      r.fromSegmentId === safeRelationship.fromSegmentId &&
+      r.toSegmentId === safeRelationship.toSegmentId &&
+      r.relationshipType === safeRelationship.relationshipType
+  );
+
+  if (duplicate) {
+    return duplicate;
+  }
+
+  if (safeRelationship.relationshipType === "COORDINATES") {
+    const existingCoordinator = existing.find(
+      (r) =>
+        r.relationshipType === "COORDINATES" &&
+        r.toSegmentId === safeRelationship.toSegmentId
+    );
+
+    if (existingCoordinator) {
+      return null;
+    }
+  }
+
   existing.push(safeRelationship);
 
   saveRelationships(existing);
