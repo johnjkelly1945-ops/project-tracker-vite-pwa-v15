@@ -572,6 +572,51 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
       c.map((t) => (t.id === taskId ? { ...t, summaryId } : t))
     );
   }
+  function onSaveReminder(
+    taskId,
+    reminderDate,
+    reminderContext,
+    actorName
+  ) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              reminderDate,
+              reminderContext,
+              reminderCreatedBy: actorName,
+              reminderCreatedAt: new Date().toISOString(),
+            }
+          : t
+      )
+    );
+  }
+
+  function onDeleteReminder(taskId) {
+    if (isReadOnly) return;
+
+    const setTasks = isDev ? setDevTasks : setMgmtTasks;
+
+    setTasks((c) =>
+      c.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              reminderDate: null,
+              reminderContext: null,
+              reminderCreatedBy: null,
+              reminderCreatedAt: null,
+            }
+          : t
+      )
+    );
+  }
+
 
   function onAddNote(taskId, note) {
     if (isReadOnly) return;
@@ -1575,6 +1620,8 @@ pmName: pmDraft,
               onAddNote={onAddNote}
               onAddDescription={onAddDescription}
               onAssignTask={onAssignTask}
+                onSaveReminder={onSaveReminder}
+                onDeleteReminder={onDeleteReminder}
               onStartExecution={onStartExecution}
               onSubmitExecution={onSubmitExecution}
               onCompleteExecution={onCompleteExecution}

@@ -83,6 +83,8 @@ export default function TaskPopup({
   onAddNote,
   onAddDescription,
   onAssignTask,
+  onSaveReminder,
+  onDeleteReminder,
   onStartExecution,
   onSubmitExecution,
   onCompleteExecution,
@@ -192,6 +194,13 @@ export default function TaskPopup({
   const [inlineDraftText, setInlineDraftText] = useState("");
   const inlineRef = useRef(null);
   const [documentsOpen, setDocumentsOpen] = useState(false);
+  const [reminderOpen, setReminderOpen] = useState(false);
+
+  const [reminderDate, setReminderDate] =
+    useState(task.reminderDate || "");
+
+  const [reminderContext, setReminderContext] =
+    useState(task.reminderContext || "");
 
 
   const [linkDocOpen, setLinkDocOpen] = useState(false);
@@ -245,6 +254,41 @@ export default function TaskPopup({
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
     setAssignmentModalOpen(false);
+  }
+  function handleSaveReminder() {
+    if (!reminderDate.trim()) return;
+    if (!reminderContext.trim()) return;
+
+    const actorName = actor?.displayName || "Unknown";
+
+    onSaveReminder(
+      task.id,
+      reminderDate,
+      reminderContext,
+      actorName
+    );
+
+    const line = systemLine(
+      `Reminder created for ${reminderDate} — ${reminderContext} — ${actorName}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    setReminderOpen(false);
+  }
+
+  function handleDeleteReminder() {
+    const actorName = actor?.displayName || "Unknown";
+
+    onDeleteReminder(task.id);
+
+    const line = systemLine(
+      `Reminder deleted — ${task.reminderContext} — ${actorName}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    setReminderOpen(false);
   }
 
   /* ================= Execution ================= */
@@ -594,7 +638,9 @@ export default function TaskPopup({
 
           <div style={{ marginTop: "12px" }}>
             {(displayNotes || []).map((line, idx) => {
-              const [text, ts] = line.split(" — ");
+                const parts = line.split(" — ");
+                const ts = parts.length > 1 ? parts.pop() : null;
+                const text = parts.join(" — ");
               return (
                 <div key={idx} style={{ marginBottom: "16px" }}>
                   <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>
@@ -785,6 +831,17 @@ export default function TaskPopup({
                 </>
               )}
                 <button onClick={() => setDocumentsOpen(true)}>Documents</button>
+                {canMutate && !task.reminderDate && (
+                  <button onClick={() => setReminderOpen(true)}>
+                    Reminder
+                  </button>
+                )}
+
+                {canMutate && task.reminderDate && (
+                  <button onClick={handleDeleteReminder}>
+                    Remove Reminder
+                  </button>
+                )}
             </div>
 
               <div style={{ minWidth: "140px", textAlign: "right" }}>
@@ -926,6 +983,62 @@ export default function TaskPopup({
             readOnly={isReadOnly}
         />
       )}
+        {reminderOpen && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 2500,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: "20px",
+                width: "420px",
+              }}
+            >
+              <strong>Task Reminder</strong>
+
+              <div style={{ marginTop: "12px" }}>
+                <input
+                  type="date"
+                  style={{ width: "100%" }}
+                  value={reminderDate}
+                  onChange={(e) => setReminderDate(e.target.value)}
+                />
+              </div>
+
+              <div style={{ marginTop: "12px" }}>
+                <textarea
+                  style={{ width: "100%", minHeight: "100px" }}
+                  value={reminderContext}
+                  onChange={(e) => setReminderContext(e.target.value)}
+                  placeholder="Reminder context"
+                />
+              </div>
+
+              <div
+                style={{
+                  marginTop: "12px",
+                  textAlign: "right",
+                }}
+              >
+                <button onClick={handleSaveReminder}>
+                  Save
+                </button>
+
+                <button onClick={() => setReminderOpen(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
 
       {riskRegisterOpen && (
