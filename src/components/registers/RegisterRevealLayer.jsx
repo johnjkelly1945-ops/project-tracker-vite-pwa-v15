@@ -20,6 +20,8 @@ import { useEffect, useState } from "react";
 import { getRiskArtefacts, getIssueArtefacts, getQCArtefacts, getChangeArtefacts } from "../../domain/governance/GovernanceStore";
 import { createPortal } from "react-dom";
 import { getAllDocuments } from "../../domain/documents/DocumentStore";
+import { loadWorkspace } from "../../storage/workspaceRepository";
+
 
 let listenersAttached = false;
 
@@ -174,6 +176,37 @@ export default function RegisterRevealLayer() {
     url: d.url || null,
   }));
 
+  const workspace = loadWorkspace() || {};
+
+  const reminderRows = [
+    ...(workspace.dev?.tasks || []),
+    ...(workspace.mgmt?.tasks || []),
+  ]
+    .filter(
+      (t) =>
+        t.segmentId === activeSegmentId &&
+        t.reminderDate
+    )
+    .sort(
+      (a, b) =>
+        String(a.reminderDate).localeCompare(
+          String(b.reminderDate)
+        )
+    )
+    .map((t) => ({
+      title: t.reminderContext || "Reminder",
+      changeId: t.reminderDate,
+      createdBy: t.reminderCreatedBy || "—",
+      createdOn: t.reminderCreatedAt || "—",
+      originatingTaskName: t.title || "Untitled Task",
+      taskId: t.id,
+      closed: false,
+      state: "REMINDER",
+      severity: "",
+      category: "REMINDER",
+    }));
+
+
   let source = [];
 
     if (activeRegister === "risks" || activeRegister === "risk") {
@@ -238,6 +271,8 @@ export default function RegisterRevealLayer() {
       }));
     } else if (activeRegister === "artefacts") {
       source = documentRows;
+      } else if (activeRegister === "reminders") {
+        source = reminderRows;
     } else {
       source = ledgerSourceMap[activeRegister] || [];
     }
@@ -246,6 +281,7 @@ export default function RegisterRevealLayer() {
     risks: "Risk Ledger",
     issues: "Issue Ledger",
     qc: "Quality Control Ledger",
+      reminders: "Reminder Register",
       artefacts: "Document Register",
   };
 
@@ -464,7 +500,48 @@ export default function RegisterRevealLayer() {
                   : null;
 
                 return (
-                  <tr key={i} style={{ cursor: r.category === "DOCUMENT" ? "default" : "pointer", opacity: r.closed ? 0.5 : 1 }} onClick={() => { if (r.category !== "DOCUMENT") { window.dispatchEvent(new CustomEvent("METRA_INTENT", { detail: { type: "OPEN_REGISTER_ITEM_VIEW", payload: r } })); } }}>
+                    <tr
+                      key={i}
+                      style={{
+                        cursor:
+                          r.category === "DOCUMENT"
+                            ? "default"
+                            : "pointer",
+                        opacity: r.closed ? 0.5 : 1,
+                      }}
+                      onClick={() => {
+                        if (r.category === "REMINDER") {
+
+                          window.dispatchEvent(
+                            new CustomEvent("metra:register:close")
+                          );
+
+                          window.dispatchEvent(
+                            new CustomEvent("METRA_INTENT", {
+                              detail: {
+                                type: "OPEN_TASK_FROM_REMINDER_REGISTER",
+                                payload: {
+                                  taskId: r.taskId,
+                                },
+                              },
+                            })
+                          );
+
+                          return;
+                        }
+
+                        if (r.category !== "DOCUMENT") {
+                          window.dispatchEvent(
+                            new CustomEvent("METRA_INTENT", {
+                              detail: {
+                                type: "OPEN_REGISTER_ITEM_VIEW",
+                                payload: r,
+                              },
+                            })
+                          );
+                        }
+                      }}
+                      >
                     <td style={tdStyle} title={r.title}>
                       {isGovernanceLedger && lifecycleClass && (
                         <span

@@ -284,6 +284,14 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
           return;
         }
 
+        if (intent.type === "OPEN_TASK_FROM_REMINDER_REGISTER") {
+          if (intent.payload?.taskId) {
+            setActiveTaskId(intent.payload.taskId);
+          }
+          return;
+        }
+
+
       if (intent.type === "OPEN_ARCHIVE_INTENT") {
         setArchiveOpen(true);
         return;
@@ -705,8 +713,10 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   }
 
   const activeTask =
-    activeTaskId ? tasks.find((t) => t.id === activeTaskId) : null;
-
+    activeTaskId
+      ? [...devTasks, ...mgmtTasks]
+          .find((t) => t.id === activeTaskId)
+      : null;
 
   /* ===================== STAGE 480 — OPERATIONAL VISIBILITY HELPERS ===================== */
 

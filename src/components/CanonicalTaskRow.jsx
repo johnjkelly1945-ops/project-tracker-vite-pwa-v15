@@ -115,6 +115,7 @@ export default function CanonicalTaskRow({
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexGrow: 1 }}>
           <span style={statusDotStyle} />
 
+
           {isEditing ? (
             <input
               value={draftTitle}
@@ -141,6 +142,13 @@ export default function CanonicalTaskRow({
           )}
         </div>
 
+            {task.reminderDate && (
+              <span style={attentionFlagStyle}>
+                {task.reminderDate <= new Date().toISOString().slice(0, 10)
+                  ? "🔔"
+                  : "🕒"}
+              </span>
+            )}
         {showAttentionFlag && (
           <span style={attentionFlagStyle}>🚩</span>
         )}
