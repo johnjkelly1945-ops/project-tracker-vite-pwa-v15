@@ -998,43 +998,77 @@ export default function TaskPopup({
             <div
               style={{
                 background: "#fff",
-                padding: "20px",
-                width: "420px",
+                width: "460px",
+                borderRadius: "14px",
+                overflow: "hidden",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
               }}
             >
-              <strong>Task Reminder</strong>
+              <div
+                style={{
+                  background: "#0b3a66",
+                  color: "#fff",
+                  padding: "14px 18px",
+                  fontWeight: 700,
+                  fontSize: "16px",
+                }}
+              >
+                Task Reminder
+              </div>
 
-              <div style={{ marginTop: "12px" }}>
+              <div style={{ padding: "18px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    marginBottom: "6px",
+                  }}
+                >
+                  DUE DATE
+                </div>
+
                 <input
                   type="date"
                   style={{ width: "100%" }}
                   value={reminderDate}
                   onChange={(e) => setReminderDate(e.target.value)}
                 />
-              </div>
 
-              <div style={{ marginTop: "12px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    marginTop: "16px",
+                    marginBottom: "6px",
+                  }}
+                >
+                  REMINDER CONTEXT
+                </div>
+
                 <textarea
                   style={{ width: "100%", minHeight: "100px" }}
                   value={reminderContext}
                   onChange={(e) => setReminderContext(e.target.value)}
-                  placeholder="Reminder context"
+                  placeholder="Enter reminder details..."
                 />
-              </div>
 
-              <div
-                style={{
-                  marginTop: "12px",
-                  textAlign: "right",
-                }}
-              >
-                <button onClick={handleSaveReminder}>
-                  Save
-                </button>
+                <div
+                  style={{
+                    marginTop: "16px",
+                    textAlign: "right",
+                  }}
+                >
+                  <button
+                    style={{ marginRight: "8px" }}
+                    onClick={handleSaveReminder}
+                  >
+                    Save
+                  </button>
 
-                <button onClick={() => setReminderOpen(false)}>
-                  Cancel
-                </button>
+                  <button onClick={() => setReminderOpen(false)}>
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
