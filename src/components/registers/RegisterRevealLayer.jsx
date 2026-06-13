@@ -376,6 +376,21 @@ export default function RegisterRevealLayer() {
     verticalAlign: "middle",
   };
 
+  const formatReminderDate = (value) => {
+    if (!value || value === "—") return "—";
+
+    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return value;
+
+    const [, year, month, day] = match;
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+
+    return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
+  };
+
   const idStyle = {
     fontFamily: "monospace",
     fontSize: "12px",
@@ -457,7 +472,7 @@ export default function RegisterRevealLayer() {
 
           <input
             type="text"
-            placeholder="Filter by title, task, actor, reference, date…"
+            placeholder={activeRegister === "reminders" ? "Filter by reminder, task, creator or date…" : "Filter by title, task, actor, reference, date…"}
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             style={{ flex: 1, padding: "8px" }}
@@ -465,6 +480,78 @@ export default function RegisterRevealLayer() {
         </div>
 
         <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
+          {activeRegister === "reminders" ? (
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                tableLayout: "fixed",
+              }}
+            >
+              <colgroup>
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "27%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "15%" }} />
+              </colgroup>
+
+              <thead>
+                <tr>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Reminder Date</th>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Reminder</th>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Task</th>
+                  <th style={thStyle}>Created By</th>
+                  <th style={thStyle}>Created</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr
+                    key={i}
+                    style={{ cursor: "pointer", opacity: r.closed ? 0.5 : 1 }}
+                    onClick={() => {
+                      window.dispatchEvent(
+                        new CustomEvent("metra:register:close")
+                      );
+
+                      window.dispatchEvent(
+                        new CustomEvent("METRA_INTENT", {
+                          detail: {
+                            type: "OPEN_TASK_FROM_REMINDER_REGISTER",
+                            payload: {
+                              taskId: r.taskId,
+                            },
+                          },
+                        })
+                      );
+                    }}
+                  >
+                    <td style={tdStyle} title={r.changeId}>
+                      {formatReminderDate(r.changeId)}
+                    </td>
+
+                    <td style={tdStyle} title={r.title}>
+                      {r.title}
+                    </td>
+
+                    <td style={tdStyle} title={r.originatingTaskName}>
+                      {r.originatingTaskName}
+                    </td>
+
+                    <td style={tdStyle} title={r.createdBy}>
+                      {r.createdBy}
+                    </td>
+
+                    <td style={tdStyle} title={r.createdOn}>
+                      {r.createdOn}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
           <table
             style={{
               width: "100%",
@@ -482,16 +569,31 @@ export default function RegisterRevealLayer() {
               <col />
             </colgroup>
 
-            <thead>
-              <tr>
-                <th style={thStyle}>Record</th>
-                  <th style={thStyle}>Origin</th>
-                <th style={thStyle}>Reference</th>
+              <thead>
+                <tr>
+                  <th style={thStyle}>
+                    {activeRegister === "reminders" ? "Reminder" : "Record"}
+                  </th>
+
+                  <th style={thStyle}>
+                    {activeRegister === "reminders" ? "Task" : "Origin"}
+                  </th>
+
+                  <th style={thStyle}>
+                    {activeRegister === "reminders" ? "Reminder Date" : "Reference"}
+                  </th>
+
                   <th style={thStyle}>Status</th>
-                <th style={thStyle}>By</th>
-                <th style={thStyle}>Date</th>
-              </tr>
-            </thead>
+
+                  <th style={thStyle}>
+                    {activeRegister === "reminders" ? "Created By" : "By"}
+                  </th>
+
+                  <th style={thStyle}>
+                    {activeRegister === "reminders" ? "Created" : "Date"}
+                  </th>
+                </tr>
+              </thead>
 
             <tbody>
               {rows.map((r, i) => {
@@ -579,6 +681,7 @@ export default function RegisterRevealLayer() {
               })}
             </tbody>
           </table>
+          )}
         </div>
       </div>
     </div>,
