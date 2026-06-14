@@ -206,6 +206,51 @@ export default function RegisterRevealLayer() {
       category: "REMINDER",
     }));
 
+  const segments = workspace.segments || [];
+
+  const archivedSegmentMap = new Map(
+    segments
+      .filter(s => s.archived)
+      .map(s => [
+        s.segmentId,
+        s.segmentTitle || "Untitled Segment"
+      ])
+  );
+
+  const archiveReminderRows = [
+    ...(workspace.dev?.tasks || []),
+    ...(workspace.mgmt?.tasks || []),
+  ]
+    .filter(
+      (t) =>
+        t.reminderDate &&
+        archivedSegmentMap.has(t.segmentId)
+    )
+    .sort(
+      (a, b) =>
+        String(a.reminderDate).localeCompare(
+          String(b.reminderDate)
+        )
+    )
+    .map((t) => ({
+        title:
+          "[" +
+          archivedSegmentMap.get(t.segmentId) +
+          "] " +
+          (t.reminderContext || "Reminder"),
+      changeId: t.reminderDate,
+      createdBy: t.reminderCreatedBy || "—",
+      createdOn: t.reminderCreatedAt || "—",
+      originatingTaskName:
+        t.title || "Untitled Task",
+      taskId: t.id,
+      closed: false,
+      state: "REMINDER",
+      severity: "",
+      category: "REMINDER",
+    }));
+
+
 
   let source = [];
 
@@ -273,6 +318,8 @@ export default function RegisterRevealLayer() {
       source = documentRows;
       } else if (activeRegister === "reminders") {
         source = reminderRows;
+      } else if (activeRegister === "archiveReminders") {
+        source = archiveReminderRows;
     } else {
       source = ledgerSourceMap[activeRegister] || [];
     }
@@ -282,6 +329,7 @@ export default function RegisterRevealLayer() {
     issues: "Issue Ledger",
     qc: "Quality Control Ledger",
       reminders: "Reminder Register",
+      archiveReminders: "Archive Reminder Register",
       artefacts: "Document Register",
   };
 
@@ -480,7 +528,7 @@ export default function RegisterRevealLayer() {
         </div>
 
         <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
-          {activeRegister === "reminders" ? (
+          {(activeRegister === "reminders" || activeRegister === "archiveReminders") ? (
             <table
               style={{
                 width: "100%",

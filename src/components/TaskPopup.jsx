@@ -105,6 +105,9 @@ export default function TaskPopup({
     hasMutationAuthority &&
     !isReadOnly;
 
+  const isArchiveTriggerTask =
+    task.systemAction === "ARCHIVE_SEGMENT";
+
   /* ================= Stage 429 — Navigation Handler (Routing) ================= */
   function handleNavigateToEscalationSource(e) {
     const personId = getPersonId(getCurrentUserFromStorage());
@@ -850,9 +853,11 @@ export default function TaskPopup({
                   {canMutate && showComplete && (
                   <button onClick={handleCompleteWork}>Complete</button>
                 )}
-                {canMutate &&
-                   isSeedSegment &&
-               workspaceMode === "single" && (
+                  {canMutate &&
+                     (
+                       (isSeedSegment && workspaceMode === "single") ||
+                       isArchiveTriggerTask
+                     ) && (
                  <button
                    style={{ marginRight: "8px" }}
                    onClick={() => setSegmentArchiveConfirmOpen(true)}

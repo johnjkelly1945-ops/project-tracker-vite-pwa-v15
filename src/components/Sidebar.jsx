@@ -207,6 +207,13 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [], eff
                     >
                       Reminders
                     </div>
+                    <div
+                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                      onClick={() => emitRegisterReveal("archiveReminders", effectiveSegmentId)}
+                    >
+                      Archive Reminders
+                    </div>
+
 
                 </div>
               </div>
