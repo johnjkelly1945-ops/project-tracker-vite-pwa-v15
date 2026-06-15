@@ -108,6 +108,22 @@ export default function RegisterRevealLayer() {
   const [lifecycleFilter, setLifecycleFilter] = useState("ALL");
   const [activeRegister, setActiveRegister] = useState(null);
 
+  const [confirmReminderRemoval, setConfirmReminderRemoval] =
+    useState(null);
+  const [archivedReminderDismissals, setArchivedReminderDismissals] =
+    useState(() => {
+      try {
+        return JSON.parse(
+          localStorage.getItem(
+            "metra-archived-reminder-dismissals"
+          ) || "[]"
+        );
+      } catch {
+        return [];
+      }
+    });
+
+
   const [activeSegmentId, setActiveSegmentId] = useState(null);
   useEffect(() => {
     if (listenersAttached) return;
@@ -221,11 +237,12 @@ export default function RegisterRevealLayer() {
     ...(workspace.dev?.tasks || []),
     ...(workspace.mgmt?.tasks || []),
   ]
-    .filter(
-      (t) =>
-        t.reminderDate &&
-        archivedSegmentMap.has(t.segmentId)
-    )
+      .filter(
+        (t) =>
+          t.reminderDate &&
+          archivedSegmentMap.has(t.segmentId) &&
+          !archivedReminderDismissals.includes(t.id)
+      )
     .sort(
       (a, b) =>
         String(a.reminderDate).localeCompare(
@@ -234,10 +251,12 @@ export default function RegisterRevealLayer() {
     )
     .map((t) => ({
         title:
-          "[" +
-          archivedSegmentMap.get(t.segmentId) +
-          "] " +
-          (t.reminderContext || "Reminder"),
+          t.reminderContext || "Reminder",
+
+        segmentTitle:
+          archivedSegmentMap.get(t.segmentId) ||
+          "Unknown Segment",
+        segmentId: t.segmentId,
       changeId: t.reminderDate,
       createdBy: t.reminderCreatedBy || "—",
       createdOn: t.reminderCreatedAt || "—",
@@ -404,6 +423,7 @@ export default function RegisterRevealLayer() {
     borderRadius: "50%",
     marginRight: "8px",
     verticalAlign: "middle",
+    fontSize: "14px",
   };
 
   const thStyle = {
@@ -422,6 +442,7 @@ export default function RegisterRevealLayer() {
     padding: "6px 10px",
     borderRight: "1px solid #d6d6d6",
     verticalAlign: "middle",
+    fontSize: "14px",
   };
 
   const formatReminderDate = (value) => {
@@ -550,7 +571,9 @@ export default function RegisterRevealLayer() {
                   <th style={{ ...thStyle, textAlign: "center" }}>Reminder</th>
                   <th style={{ ...thStyle, textAlign: "center" }}>Task</th>
                   <th style={thStyle}>Created By</th>
-                  <th style={thStyle}>Created</th>
+                    <th style={thStyle}>
+                      {activeRegister === "archiveReminders" ? "Remove" : "Created"}
+                    </th>
                 </tr>
               </thead>
 
@@ -570,6 +593,7 @@ export default function RegisterRevealLayer() {
                             type: "OPEN_TASK_FROM_REMINDER_REGISTER",
                             payload: {
                               taskId: r.taskId,
+                                segmentId: r.segmentId,
                             },
                           },
                         })
@@ -592,9 +616,34 @@ export default function RegisterRevealLayer() {
                       {r.createdBy}
                     </td>
 
-                    <td style={tdStyle} title={r.createdOn}>
-                      {r.createdOn}
-                    </td>
+                      <td style={tdStyle} title={activeRegister === "archiveReminders" ? "Remove archived reminder" : r.createdOn}>
+                        {activeRegister === "archiveReminders" ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmReminderRemoval({
+                                taskId: r.taskId,
+                                taskTitle: r.originatingTaskName,
+                                reminderText: r.title,
+                                segmentTitle: r.segmentTitle,
+                              });
+                            }}
+                            style={{
+                              padding: "4px 8px",
+                              borderRadius: "8px",
+                              border: "1px solid #b91c1c",
+                              background: "#fff5f5",
+                              color: "#7f1d1d",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                            }}
+                          >
+                            REMOVE
+                          </button>
+                        ) : (
+                          r.createdOn
+                        )}
+                      </td>
                   </tr>
                 ))}
               </tbody>
@@ -731,6 +780,83 @@ export default function RegisterRevealLayer() {
           </table>
           )}
         </div>
+          {confirmReminderRemoval && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 10001,
+              }}
+            >
+              <div
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "16px",
+                  padding: "20px",
+                  width: "480px",
+                  maxWidth: "90vw",
+                  boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
+                }}
+              >
+                <h3 style={{ marginTop: 0 }}>
+                  Remove Archived Reminder
+                </h3>
+
+                <p>
+                  <strong>Task:</strong>{" "}
+                  {confirmReminderRemoval.taskTitle}
+                </p>
+
+                <p>
+                  <strong>Reminder:</strong>{" "}
+                  {confirmReminderRemoval.reminderText}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "10px",
+                    marginTop: "20px",
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      setConfirmReminderRemoval(null)
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                      onClick={() => {
+                        const nextDismissals = [
+                          ...archivedReminderDismissals,
+                          confirmReminderRemoval.taskId,
+                        ];
+
+                        setArchivedReminderDismissals(
+                          nextDismissals
+                        );
+
+                        localStorage.setItem(
+                          "metra-archived-reminder-dismissals",
+                          JSON.stringify(nextDismissals)
+                        );
+
+                        setConfirmReminderRemoval(null);
+                      }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
       </div>
     </div>,
     host

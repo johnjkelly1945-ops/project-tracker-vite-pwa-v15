@@ -284,12 +284,20 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
           return;
         }
 
-        if (intent.type === "OPEN_TASK_FROM_REMINDER_REGISTER") {
-          if (intent.payload?.taskId) {
-            setActiveTaskId(intent.payload.taskId);
+          if (intent.type === "OPEN_TASK_FROM_REMINDER_REGISTER") {
+            if (intent.payload?.segmentId) {
+              setArchiveInspectSegmentId(
+                intent.payload.segmentId
+              );
+            }
+
+            if (intent.payload?.taskId) {
+              setActiveTaskId(intent.payload.taskId);
+            }
+
+            return;
           }
-          return;
-        }
+
 
 
       if (intent.type === "OPEN_ARCHIVE_INTENT") {
