@@ -128,6 +128,7 @@ export default function App() {
   const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
     const [archiveWorkspaceMode, setArchiveWorkspaceMode] = useState("dual");
     const [archiveFocusedPane, setArchiveFocusedPane] = useState(null);
+  const [archiveReturnTarget, setArchiveReturnTarget] = useState(null);
   const [governanceDashboardOpen, setGovernanceDashboardOpen] = useState(false);
   const [globalEscalationLedgerOpen, setGlobalEscalationLedgerOpen] = useState(false);
   const [segmentContextOpen, setSegmentContextOpen] = useState(false);
@@ -285,14 +286,12 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
         }
 
           if (intent.type === "OPEN_TASK_FROM_REMINDER_REGISTER") {
+            setArchiveReturnTarget("archiveReminders");
+
             if (intent.payload?.segmentId) {
               setArchiveInspectSegmentId(
                 intent.payload.segmentId
               );
-            }
-
-            if (intent.payload?.taskId) {
-              setActiveTaskId(intent.payload.taskId);
             }
 
             return;
@@ -1532,13 +1531,27 @@ pmName: pmDraft,
 
                     <button
                       onClick={() => {
+                        if (archiveReturnTarget === "archiveReminders") {
+                          window.dispatchEvent(
+                            new CustomEvent("metra:register:reveal", {
+                              detail: {
+                                register: "archiveReminders",
+                              },
+                            })
+                          );
+
+                          setArchiveReturnTarget(null);
+                        }
+
                         setArchiveInspectSegmentId(null);
-                          setArchiveWorkspaceMode("dual");
-                          setArchiveFocusedPane(null);
+                        setArchiveWorkspaceMode("dual");
+                        setArchiveFocusedPane(null);
                         setArchiveOpen(true);
                       }}
                     >
-                      Back To Archive
+                      {archiveReturnTarget === "archiveReminders"
+                        ? "Return To Reminders"
+                        : "Back To Archive"}
                     </button>
                   </div>
 
