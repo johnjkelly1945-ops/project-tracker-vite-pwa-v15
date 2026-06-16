@@ -63,11 +63,26 @@ export default function PersonnelRecordModal({ person, onClose }) {
 
         {!editing && (
           <div style={{ marginTop: "10px" }}>
-            <div><strong>Name:</strong> {resolvedPerson.displayName}</div>
-            {resolvedPerson.department && <div><strong>Department:</strong> {resolvedPerson.department}</div>}
-            {resolvedPerson.organisation && <div><strong>Organisation:</strong> {resolvedPerson.organisation}</div>}
-            {resolvedPerson.email && <div><strong>Email:</strong> {resolvedPerson.email}</div>}
-            {resolvedPerson.phone && <div><strong>Phone:</strong> {resolvedPerson.phone}</div>}
+              <div>
+                <strong>Identity</strong>
+              </div>
+
+              <div><strong>Name:</strong> {resolvedPerson.displayName}</div>
+              {resolvedPerson.department && <div><strong>Department:</strong> {resolvedPerson.department}</div>}
+              {resolvedPerson.organisation && <div><strong>Organisation:</strong> {resolvedPerson.organisation}</div>}
+              {resolvedPerson.email && <div><strong>Email:</strong> {resolvedPerson.email}</div>}
+              {resolvedPerson.phone && <div><strong>Phone:</strong> {resolvedPerson.phone}</div>}
+
+              <hr style={{ margin: "12px 0" }} />
+
+              <div>
+                <strong>Authority</strong>
+              </div>
+
+              <div>
+                <strong>Authority Level:</strong>{" "}
+                {resolvedPerson.authorityLevel || "NONE"}
+              </div>
           </div>
         )}
 
