@@ -83,6 +83,16 @@ export default function PersonnelRecordModal({ person, onClose }) {
                 <strong>Authority Level:</strong>{" "}
                 {resolvedPerson.authorityLevel || "NONE"}
               </div>
+
+                <hr style={{ margin: "12px 0" }} />
+
+                <div>
+                  <strong>Experience</strong>
+                </div>
+
+                <div>
+                  No experience recorded
+                </div>
           </div>
         )}
 
