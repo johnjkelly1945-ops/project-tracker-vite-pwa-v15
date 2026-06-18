@@ -7,18 +7,25 @@ Stage 405 — Stabilisation + Safe Registry Merge
 Stage 406A — Edit Mode Toggle (No Mutation)
 Stage 406B — Editable Surface (AddPersonCard Integration)
 Stage 407 — Authority Enforcement (Edit Visibility Control)
+Stage 500D — Personnel Hub Foundation
 =====================================================================
 */
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import AddPersonCard from "./AddPersonCard";
+import AppointmentsModal from "./AppointmentsModal";
+import ExperienceModal from "./ExperienceModal";
+import SkillsModal from "./SkillsModal";
 import { getPersonnel, setPersonnel } from "../domain/personnel/PersonnelRegistry";
 
 export default function PersonnelRecordModal({ person, onClose }) {
   if (!person) return null;
 
   const [editing, setEditing] = useState(false);
+  const [showAppointments, setShowAppointments] = useState(false);
+  const [showExperience, setShowExperience] = useState(false);
+  const [showSkills, setShowSkills] = useState(false);
 
   const registry = Array.isArray(getPersonnel()) ? getPersonnel() : [];
 
@@ -44,25 +51,26 @@ export default function PersonnelRecordModal({ person, onClose }) {
   }
 
   return createPortal(
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      background: "rgba(0,0,0,0.4)",
-      zIndex: 1000002,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}>
+    <>
       <div style={{
-        background: "#fff",
-        width: "420px",
-        padding: "20px",
-        borderRadius: "8px"
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.4)",
+        zIndex: 1000002,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}>
-        <strong>Personnel Record</strong>
+        <div style={{
+          background: "#fff",
+          width: "420px",
+          padding: "20px",
+          borderRadius: "8px"
+        }}>
+          <strong>Personnel Record</strong>
 
-        {!editing && (
-          <div style={{ marginTop: "10px" }}>
+          {!editing && (
+            <div style={{ marginTop: "10px" }}>
               <div>
                 <strong>Identity</strong>
               </div>
@@ -84,39 +92,105 @@ export default function PersonnelRecordModal({ person, onClose }) {
                 {resolvedPerson.authorityLevel || "NONE"}
               </div>
 
-                <hr style={{ margin: "12px 0" }} />
+              <hr style={{ margin: "12px 0" }} />
 
-                <div>
-                  <strong>Experience</strong>
-                </div>
+              <div>
+                <strong>Appointments</strong>
+              </div>
 
-                <div>
-                  No experience recorded
-                </div>
-          </div>
-        )}
+              <div style={{ marginTop: "6px" }}>
+                Current appointments will be shown in a subsequent phase.
+              </div>
 
-        {editing && (
-          <div style={{ marginTop: "10px" }}>
-            <AddPersonCard
-              initialData={resolvedPerson}
-              onSave={handleSave}
-              onCancel={() => setEditing(false)}
-            />
-          </div>
-        )}
+              <button
+                type="button"
+                onClick={() => setShowAppointments(true)}
+                style={{ marginTop: "8px" }}
+              >
+                Open
+              </button>
 
-        <div style={{ marginTop: "16px", textAlign: "right" }}>
-          {!editing && (
-            <button onClick={() => setEditing(true)}>Edit</button>
+              <hr style={{ margin: "12px 0" }} />
+
+              <div>
+                <strong>Experience</strong>
+              </div>
+
+              <div style={{ marginTop: "6px" }}>
+                No experience recorded
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowExperience(true)}
+                style={{ marginTop: "8px" }}
+              >
+                Open
+              </button>
+
+              <hr style={{ margin: "12px 0" }} />
+
+              <div>
+                <strong>Skills</strong>
+              </div>
+
+              <div style={{ marginTop: "6px" }}>
+                No skills recorded
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowSkills(true)}
+                style={{ marginTop: "8px" }}
+              >
+                Open
+              </button>
+            </div>
           )}
+
           {editing && (
-            <button onClick={() => setEditing(false)}>Cancel</button>
+            <div style={{ marginTop: "10px" }}>
+              <AddPersonCard
+                initialData={resolvedPerson}
+                onSave={handleSave}
+                onCancel={() => setEditing(false)}
+              />
+            </div>
           )}
-          <button onClick={onClose} style={{ marginLeft: "8px" }}>Close</button>
+
+          <div style={{ marginTop: "16px", textAlign: "right" }}>
+            {!editing && (
+              <button onClick={() => setEditing(true)}>Edit</button>
+            )}
+            {editing && (
+              <button onClick={() => setEditing(false)}>Cancel</button>
+            )}
+            <button onClick={onClose} style={{ marginLeft: "8px" }}>Close</button>
+          </div>
         </div>
       </div>
-    </div>,
+
+      {showAppointments && (
+        <AppointmentsModal
+          person={resolvedPerson}
+          onClose={() => setShowAppointments(false)}
+        />
+      )}
+
+      {showExperience && (
+        <ExperienceModal
+          person={resolvedPerson}
+          onClose={() => setShowExperience(false)}
+        />
+      )}
+
+      {showSkills && (
+        <SkillsModal
+          person={resolvedPerson}
+          onClose={() => setShowSkills(false)}
+        />
+      )}
+    </>,
     document.body
   );
 }
