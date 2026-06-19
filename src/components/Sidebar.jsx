@@ -222,7 +222,12 @@ export default function Sidebar({ expanded, onToggle, derivedArtefacts = [], eff
 
               <div>Template Repository</div>
               <div>Summary / Task Repository</div>
-              <div>Personnel</div>
+              <div
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => emitModuleIntent("OPEN_PERSONNEL_INTENT")}
+              >
+                Personnel
+              </div>
               <div
                 style={{ cursor: "pointer", textDecoration: "underline" }}
                 onClick={() => emitModuleIntent("OPEN_ARCHIVE_INTENT")}

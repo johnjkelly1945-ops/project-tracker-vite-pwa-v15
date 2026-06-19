@@ -124,6 +124,7 @@ export default function App() {
   }, [activeSegmentId]);
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
+  const [personnelOpen, setPersonnelOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
     const [archiveWorkspaceMode, setArchiveWorkspaceMode] = useState("dual");
@@ -298,6 +299,16 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
           }
 
 
+
+      if (intent.type === "OPEN_PERSONNEL_INTENT") {
+        setPersonnelOpen(true);
+        return;
+      }
+
+      if (intent.type === "CLOSE_PERSONNEL_INTENT") {
+        setPersonnelOpen(false);
+        return;
+      }
 
       if (intent.type === "OPEN_ARCHIVE_INTENT") {
         setArchiveOpen(true);
@@ -1606,6 +1617,15 @@ pmName: pmDraft,
         {false && <PersonnelPanel />}
         {false && <GovernanceModule />}
 
+
+        {personnelOpen && (
+          <SubordinateSelectionModal
+            title="Personnel"
+            items={getPersonnel()}
+            onSelect={() => {}}
+            onClose={() => setPersonnelOpen(false)}
+          />
+        )}
 
         {repositoryOpen && (
           <RepositoryView pane={repositoryPane} />
