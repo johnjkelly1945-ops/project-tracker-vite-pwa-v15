@@ -2,22 +2,24 @@
 ======================================================================
 
 METRA — SegmentPersonnelRepository.js
-Stage 500A — Segment Personnel Stewardship Foundation
+Stage 500D Phase 2B-B
 
 PURPOSE
 -------
-Provide inert, segment-local persistence for Admin stewardship
+Provide inert, segment-local persistence for Participation
 appointments.
 
 CONSTITUTIONAL RULES
 --------------------
 • Personnel remains identity only
 • Context remains authority only
-• Admin represents stewardship
-• Stewardship is segment-local
+• Participation is segment-local
+• Participation is assigned
+• Participation is historical
 • Repository stores facts only
 • Repository does NOT determine authority
 • Repository does NOT determine visibility
+• Repository does NOT determine experience
 • Repository does NOT mutate context
 • Records are never deleted
 
@@ -45,17 +47,25 @@ function saveAppointments(list) {
   );
 }
 
-export function repoGetAllAdminAppointments() {
+function getParticipationType(record) {
+  return record?.participationType || "ADMIN";
+}
+
+export function repoGetAllParticipation() {
   return loadAppointments();
 }
 
-export function repoAppointAdmin(appointment) {
+export function repoAssignParticipation(appointment) {
   const existing = loadAppointments();
+
+  const participationType =
+    appointment.participationType || "ADMIN";
 
   const activeAppointment = existing.find(
     (a) =>
       a.segmentId === appointment.segmentId &&
       a.personId === appointment.personId &&
+      getParticipationType(a) === participationType &&
       a.active === true
   );
 
@@ -66,16 +76,20 @@ export function repoAppointAdmin(appointment) {
   const safeAppointment = {
     appointmentId:
       appointment.appointmentId ||
-      `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      `part-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
 
     segmentId: appointment.segmentId || null,
 
     personId: appointment.personId || null,
 
-    appointedBy: appointment.appointedBy || "system",
+    participationType,
+
+    appointedBy:
+      appointment.appointedBy || "system",
 
     appointedOn:
-      appointment.appointedOn || new Date().toISOString(),
+      appointment.appointedOn ||
+      new Date().toISOString(),
 
     removedBy: null,
 
@@ -91,9 +105,10 @@ export function repoAppointAdmin(appointment) {
   return safeAppointment;
 }
 
-export function repoRemoveAdmin(
+export function repoRemoveParticipation(
   segmentId,
   personId,
+  participationType,
   removedBy = "system"
 ) {
   const existing = loadAppointments();
@@ -102,6 +117,7 @@ export function repoRemoveAdmin(
     (a) =>
       a.segmentId === segmentId &&
       a.personId === personId &&
+      getParticipationType(a) === participationType &&
       a.active === true
   );
 
@@ -118,7 +134,7 @@ export function repoRemoveAdmin(
   return appointment;
 }
 
-export function repoGetSegmentAdmins(segmentId) {
+export function repoGetSegmentParticipation(segmentId) {
   if (!segmentId) return [];
 
   return loadAppointments().filter(
@@ -128,13 +144,28 @@ export function repoGetSegmentAdmins(segmentId) {
   );
 }
 
-export function repoIsSegmentAdmin(segmentId, personId) {
-  if (!segmentId || !personId) return false;
+export function repoGetPersonParticipation(personId) {
+  if (!personId) return [];
 
-  return loadAppointments().some(
+  return loadAppointments().filter(
     (a) =>
-      a.segmentId === segmentId &&
       a.personId === personId &&
       a.active === true
+  );
+}
+
+export function repoGetActiveParticipation(
+  segmentId,
+  personId,
+  participationType
+) {
+  return (
+    loadAppointments().find(
+      (a) =>
+        a.segmentId === segmentId &&
+        a.personId === personId &&
+        getParticipationType(a) === participationType &&
+        a.active === true
+    ) || null
   );
 }
