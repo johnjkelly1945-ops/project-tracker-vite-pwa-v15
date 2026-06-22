@@ -12,12 +12,16 @@ import PreProject from "./components/PreProject";
 import RepositoryView from "./components/RepositoryView";
 import TaskPopup from "./components/TaskPopup";
 import SubordinateSelectionModal from "./components/SubordinateSelectionModal";
+import ParticipationTypeSelectionModal from "./components/ParticipationTypeSelectionModal";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
 import GovernanceModule from "./components/governance/GovernanceModule";
 import { localAssignees } from "./data/localAssignees";
 import { getPersonnel } from "./domain/personnel/PersonnelRegistry";
+import {
+  repoAssignParticipation
+} from "./domain/personnel/SegmentPersonnelRepository";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
 import RegisterItemView from "./components/RegisterItemView";
@@ -126,6 +130,13 @@ export default function App() {
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [personnelOpen, setPersonnelOpen] = useState(false);
   const [participationMode, setParticipationMode] = useState(false);
+
+  const [selectedParticipationPerson, setSelectedParticipationPerson] =
+    useState(null);
+
+  const [participationTypeOpen, setParticipationTypeOpen] =
+    useState(false);
+
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
     const [archiveWorkspaceMode, setArchiveWorkspaceMode] = useState("dual");
@@ -1644,8 +1655,9 @@ pmName: pmDraft,
                 person
               );
 
-              setParticipationMode(false);
-              setPersonnelOpen(false);
+                setSelectedParticipationPerson(person);
+                setPersonnelOpen(false);
+                setParticipationTypeOpen(true);
             }}
             onClose={() => {
               setParticipationMode(false);
@@ -1653,6 +1665,34 @@ pmName: pmDraft,
             }}
           />
         )}
+
+        {participationTypeOpen && (
+          <ParticipationTypeSelectionModal
+            onSelect={(participationType) => {
+              console.log(
+                "STAGE500D-3C PARTICIPATION TYPE",
+                participationType
+              );
+
+                repoAssignParticipation({
+                  segmentId: activeSegmentId,
+                  personId: selectedParticipationPerson?.id,
+                  participationType,
+                  appointedBy:
+                    getActingUser()?.displayName || "PM"
+                });
+
+
+              setParticipationTypeOpen(false);
+              setParticipationMode(false);
+                setSelectedParticipationPerson(null);
+            }}
+            onClose={() => {
+              setParticipationTypeOpen(false);
+            }}
+          />
+        )}
+
 
         {repositoryOpen && (
           <RepositoryView pane={repositoryPane} />
