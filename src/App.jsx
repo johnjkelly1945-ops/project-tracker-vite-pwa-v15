@@ -125,6 +125,7 @@ export default function App() {
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [personnelOpen, setPersonnelOpen] = useState(false);
+  const [participationMode, setParticipationMode] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
     const [archiveWorkspaceMode, setArchiveWorkspaceMode] = useState("dual");
@@ -974,11 +975,18 @@ const canCreateSeedTask =
       }
       onCreateSummary={onCreateSummary}
       canOpenRepository={
-        hasMutationAuthority && !isSeedSegment
-      }
+          hasMutationAuthority && !isSeedSegment
+        }
+        canOpenParticipation={
+          hasMutationAuthority && !isSeedSegment
+        }
       onOpenRepository={() => {
         setRepositoryPane("mgmt");
         setRepositoryOpen(true);
+      }}
+      onOpenParticipation={() => {
+        setParticipationMode(true);
+        setPersonnelOpen(true);
       }}
     />
   );
@@ -998,11 +1006,18 @@ const canCreateSeedTask =
       }
       onCreateSummary={onCreateSummary}
       canOpenRepository={
-        hasMutationAuthority && !isSeedSegment
-      }
+          hasMutationAuthority && !isSeedSegment
+        }
+        canOpenParticipation={
+          hasMutationAuthority && !isSeedSegment
+        }
       onOpenRepository={() => {
         setRepositoryPane("dev");
         setRepositoryOpen(true);
+      }}
+      onOpenParticipation={() => {
+        setParticipationMode(true);
+        setPersonnelOpen(true);
       }}
     />
   );

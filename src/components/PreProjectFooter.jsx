@@ -20,8 +20,15 @@ export default function PreProjectFooter({
   onCreateSummary,
   canOpenRepository = false,
   onOpenRepository,
+  canOpenParticipation = false,
+  onOpenParticipation,
 }) {
-  if (!canCreateTask && !canCreateSummary && !canOpenRepository) return null;
+  if (
+    !canCreateTask &&
+    !canCreateSummary &&
+    !canOpenRepository &&
+    !canOpenParticipation
+  ) return null;
 
   return (
     <div
@@ -64,21 +71,35 @@ export default function PreProjectFooter({
           Create Summary
         </button>
       )}
+        {canOpenRepository && (
+          <button
+            type="button"
+            onClick={onOpenRepository}
+            style={{
+              padding: "6px 14px",
+              fontSize: "14px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Repository
+          </button>
+        )}
 
-      {canOpenRepository && (
-        <button
-          type="button"
-          onClick={onOpenRepository}
-          style={{
-            padding: "6px 14px",
-            fontSize: "14px",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          Repository
-        </button>
-      )}
+        {canOpenParticipation && (
+          <button
+            type="button"
+            onClick={onOpenParticipation}
+            style={{
+              padding: "6px 14px",
+              fontSize: "14px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Participation
+          </button>
+        )}
     </div>
   );
 }

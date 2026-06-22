@@ -30,6 +30,8 @@ export default function PreProject({
   onCreateSummary,
   canOpenRepository = false,
   onOpenRepository,
+  canOpenParticipation = false,
+  onOpenParticipation,
 }) {
   return (
     <div
@@ -107,6 +109,8 @@ export default function PreProject({
           onCreateSummary={onCreateSummary}
           canOpenRepository={canOpenRepository}
           onOpenRepository={onOpenRepository}
+            canOpenParticipation={canOpenParticipation}
+            onOpenParticipation={onOpenParticipation}
         />
       </div>
     </div>
