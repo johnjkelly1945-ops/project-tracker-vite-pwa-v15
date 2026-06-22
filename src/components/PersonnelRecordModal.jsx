@@ -8,6 +8,7 @@ Stage 406A — Edit Mode Toggle (No Mutation)
 Stage 406B — Editable Surface (AddPersonCard Integration)
 Stage 407 — Authority Enforcement (Edit Visibility Control)
 Stage 500D — Personnel Hub Foundation
+Stage 500D-3B — Participation Candidate Selection Path
 =====================================================================
 */
 
@@ -17,9 +18,17 @@ import AddPersonCard from "./AddPersonCard";
 import AppointmentsModal from "./AppointmentsModal";
 import ExperienceModal from "./ExperienceModal";
 import SkillsModal from "./SkillsModal";
-import { getPersonnel, setPersonnel } from "../domain/personnel/PersonnelRegistry";
+import {
+  getPersonnel,
+  setPersonnel
+} from "../domain/personnel/PersonnelRegistry";
 
-export default function PersonnelRecordModal({ person, onClose }) {
+export default function PersonnelRecordModal({
+  person,
+  onClose,
+  participationMode = false,
+  onSelectPerson = null
+}) {
   if (!person) return null;
 
   const [editing, setEditing] = useState(false);
@@ -27,12 +36,17 @@ export default function PersonnelRecordModal({ person, onClose }) {
   const [showExperience, setShowExperience] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
 
-  const registry = Array.isArray(getPersonnel()) ? getPersonnel() : [];
+  const registry = Array.isArray(getPersonnel())
+    ? getPersonnel()
+    : [];
 
-  const registryPerson = registry.find(p =>
-    p.id === person?.id ||
-    (p.displayName && p.displayName === person?.displayName) ||
-    (p.email && p.email === person?.email)
+  const registryPerson = registry.find(
+    (p) =>
+      p.id === person?.id ||
+      (p.displayName &&
+        p.displayName === person?.displayName) ||
+      (p.email &&
+        p.email === person?.email)
   );
 
   const resolvedPerson = registryPerson
@@ -40,33 +54,47 @@ export default function PersonnelRecordModal({ person, onClose }) {
     : person;
 
   function handleSave(updatedPerson) {
-    const current = Array.isArray(getPersonnel()) ? getPersonnel() : [];
+    const current = Array.isArray(getPersonnel())
+      ? getPersonnel()
+      : [];
 
-    const updated = current.map(p =>
-      p.id === updatedPerson.id ? updatedPerson : p
+    const updated = current.map((p) =>
+      p.id === updatedPerson.id
+        ? updatedPerson
+        : p
     );
 
     setPersonnel(updated);
     setEditing(false);
   }
 
+  function handleSelectPerson() {
+    if (typeof onSelectPerson === "function") {
+      onSelectPerson(resolvedPerson);
+    }
+  }
+
   return createPortal(
     <>
-      <div style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        zIndex: 1000002,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-        <div style={{
-          background: "#fff",
-          width: "420px",
-          padding: "20px",
-          borderRadius: "8px"
-        }}>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.4)",
+          zIndex: 1000002,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            width: "420px",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
           <strong>Personnel Record</strong>
 
           {!editing && (
@@ -75,11 +103,38 @@ export default function PersonnelRecordModal({ person, onClose }) {
                 <strong>Identity</strong>
               </div>
 
-              <div><strong>Name:</strong> {resolvedPerson.displayName}</div>
-              {resolvedPerson.department && <div><strong>Department:</strong> {resolvedPerson.department}</div>}
-              {resolvedPerson.organisation && <div><strong>Organisation:</strong> {resolvedPerson.organisation}</div>}
-              {resolvedPerson.email && <div><strong>Email:</strong> {resolvedPerson.email}</div>}
-              {resolvedPerson.phone && <div><strong>Phone:</strong> {resolvedPerson.phone}</div>}
+              <div>
+                <strong>Name:</strong>{" "}
+                {resolvedPerson.displayName}
+              </div>
+
+              {resolvedPerson.department && (
+                <div>
+                  <strong>Department:</strong>{" "}
+                  {resolvedPerson.department}
+                </div>
+              )}
+
+              {resolvedPerson.organisation && (
+                <div>
+                  <strong>Organisation:</strong>{" "}
+                  {resolvedPerson.organisation}
+                </div>
+              )}
+
+              {resolvedPerson.email && (
+                <div>
+                  <strong>Email:</strong>{" "}
+                  {resolvedPerson.email}
+                </div>
+              )}
+
+              {resolvedPerson.phone && (
+                <div>
+                  <strong>Phone:</strong>{" "}
+                  {resolvedPerson.phone}
+                </div>
+              )}
 
               <hr style={{ margin: "12px 0" }} />
 
@@ -99,7 +154,8 @@ export default function PersonnelRecordModal({ person, onClose }) {
               </div>
 
               <div style={{ marginTop: "6px" }}>
-                Current appointments will be shown in a subsequent phase.
+                Current appointments will be shown
+                in a subsequent phase.
               </div>
 
               <button
@@ -107,7 +163,7 @@ export default function PersonnelRecordModal({ person, onClose }) {
                 onClick={() => setShowAppointments(true)}
                 style={{ marginTop: "8px" }}
               >
-                Open
+                View
               </button>
 
               <hr style={{ margin: "12px 0" }} />
@@ -158,14 +214,46 @@ export default function PersonnelRecordModal({ person, onClose }) {
             </div>
           )}
 
-          <div style={{ marginTop: "16px", textAlign: "right" }}>
-            {!editing && (
-              <button onClick={() => setEditing(true)}>Edit</button>
-            )}
-            {editing && (
-              <button onClick={() => setEditing(false)}>Cancel</button>
-            )}
-            <button onClick={onClose} style={{ marginLeft: "8px" }}>Close</button>
+          <div
+            style={{
+              marginTop: "16px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}
+          >
+            <div>
+              {participationMode && !editing && (
+                <button onClick={handleSelectPerson}>
+                  Select
+                </button>
+              )}
+            </div>
+
+            <div>
+              {!editing && (
+                <button
+                  onClick={() => setEditing(true)}
+                >
+                  Edit
+                </button>
+              )}
+
+              {editing && (
+                <button
+                  onClick={() => setEditing(false)}
+                >
+                  Cancel
+                </button>
+              )}
+
+              <button
+                onClick={onClose}
+                style={{ marginLeft: "8px" }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -173,21 +261,27 @@ export default function PersonnelRecordModal({ person, onClose }) {
       {showAppointments && (
         <AppointmentsModal
           person={resolvedPerson}
-          onClose={() => setShowAppointments(false)}
+          onClose={() =>
+            setShowAppointments(false)
+          }
         />
       )}
 
       {showExperience && (
         <ExperienceModal
           person={resolvedPerson}
-          onClose={() => setShowExperience(false)}
+          onClose={() =>
+            setShowExperience(false)
+          }
         />
       )}
 
       {showSkills && (
         <SkillsModal
           person={resolvedPerson}
-          onClose={() => setShowSkills(false)}
+          onClose={() =>
+            setShowSkills(false)
+          }
         />
       )}
     </>,

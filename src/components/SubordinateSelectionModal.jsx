@@ -4,6 +4,7 @@
 METRA — SubordinateSelectionModal.jsx
 Stage 398 — Modal-contained Personnel Interaction (Extension)
 Stage 405B — Personnel Record Inspection (Additive View Control)
+Stage 500D-3B — Participation Candidate Selection Path
 =====================================================================
 */
 
@@ -11,7 +12,10 @@ import React, { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import AddPersonCard from "./AddPersonCard";
 import PersonnelRecordModal from "./PersonnelRecordModal";
-import { getPersonnel, setPersonnel } from "../domain/personnel/PersonnelRegistry";
+import {
+  getPersonnel,
+  setPersonnel
+} from "../domain/personnel/PersonnelRegistry";
 
 function normalizeItem(item, index) {
   if (typeof item === "string") {
@@ -40,13 +44,22 @@ function normalizeItem(item, index) {
   return {
     ...item,
     id: item.id || `seed-${index}-${derivedName}`,
-    displayName: item.displayName || item.title || item.name || derivedName,
-    title: item.title || item.displayName || item.name || derivedName,
+    displayName:
+      item.displayName ||
+      item.title ||
+      item.name ||
+      derivedName,
+    title:
+      item.title ||
+      item.displayName ||
+      item.name ||
+      derivedName,
   };
 }
 
 function makePersonKey(item) {
   if (!item) return "unknown";
+
   return [
     item.id || "",
     item.displayName || "",
@@ -60,14 +73,24 @@ export default function SubordinateSelectionModal({
   items = [],
   onSelect,
   onClose,
+  participationMode = false,
 }) {
-  const [showAddPerson, setShowAddPerson] = useState(false);
-  const [refreshTick, setRefreshTick] = useState(0);
-  const [viewPerson, setViewPerson] = useState(null);
+  const [showAddPerson, setShowAddPerson] =
+    useState(false);
+
+  const [refreshTick, setRefreshTick] =
+    useState(0);
+
+  const [viewPerson, setViewPerson] =
+    useState(null);
 
   function handleAddPerson(person) {
-    const current = Array.isArray(getPersonnel()) ? getPersonnel() : [];
+    const current = Array.isArray(getPersonnel())
+      ? getPersonnel()
+      : [];
+
     const updated = [...current, person];
+
     setPersonnel(updated);
     setShowAddPerson(false);
     setRefreshTick((n) => n + 1);
@@ -77,19 +100,34 @@ export default function SubordinateSelectionModal({
     setViewPerson(person);
   }
 
+  function handleSelectFromRecord(person) {
+    setViewPerson(null);
+
+    if (typeof onSelect === "function") {
+      onSelect(person);
+    }
+  }
+
   const visibleItems = useMemo(() => {
-    const seeded = Array.isArray(items) ? items.map(normalizeItem) : [];
+    const seeded = Array.isArray(items)
+      ? items.map(normalizeItem)
+      : [];
+
     const registry = Array.isArray(getPersonnel())
       ? getPersonnel().map(normalizeItem)
       : [];
 
     const merged = [...seeded, ...registry];
+
     const seen = new Set();
 
     return merged.filter((item) => {
       const key = makePersonKey(item);
+
       if (seen.has(key)) return false;
+
       seen.add(key);
+
       return true;
     });
   }, [items, refreshTick]);
@@ -101,7 +139,7 @@ export default function SubordinateSelectionModal({
         position: "fixed",
         inset: 0,
         background: "rgba(0,0,0,0.4)",
-          zIndex: 1000001,
+        zIndex: 1000001,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -117,7 +155,8 @@ export default function SubordinateSelectionModal({
           maxHeight: "70vh",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
+          boxShadow:
+            "0 12px 32px rgba(0,0,0,0.25)",
         }}
       >
         <div
@@ -132,6 +171,7 @@ export default function SubordinateSelectionModal({
           }}
         >
           <span>{title}</span>
+
           <button
             type="button"
             onClick={onClose}
@@ -157,14 +197,19 @@ export default function SubordinateSelectionModal({
           {showAddPerson ? (
             <AddPersonCard
               onSave={handleAddPerson}
-              onCancel={() => setShowAddPerson(false)}
+              onCancel={() =>
+                setShowAddPerson(false)
+              }
             />
           ) : (
             <>
               {visibleItems.length === 0 && (
                 <div
                   className="subordinate-modal-empty"
-                  style={{ color: "#666", fontStyle: "italic" }}
+                  style={{
+                    color: "#666",
+                    fontStyle: "italic"
+                  }}
                 >
                   No items available
                 </div>
@@ -182,21 +227,45 @@ export default function SubordinateSelectionModal({
                     position: "relative",
                   }}
                 >
-                  <div style={{ fontWeight: 500 }}>
-                    {item.displayName || item.title || String(item)}
+                  <div
+                    style={{
+                      fontWeight: 500
+                    }}
+                  >
+                    {item.displayName ||
+                      item.title ||
+                      String(item)}
                   </div>
 
-                  {(item.department || item.organisationType) && (
-                    <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                      {[item.department, item.organisationType]
+                  {(item.department ||
+                    item.organisationType) && (
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#666",
+                        marginTop: "2px"
+                      }}
+                    >
+                      {[item.department,
+                        item.organisationType]
                         .filter(Boolean)
                         .join(" • ")}
                     </div>
                   )}
 
-                  {(item.email || item.phone) && (
-                    <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                      {[item.email, item.phone].filter(Boolean).join(" • ")}
+                  {(item.email ||
+                    item.phone) && (
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#666",
+                        marginTop: "2px"
+                      }}
+                    >
+                      {[item.email,
+                        item.phone]
+                        .filter(Boolean)
+                        .join(" • ")}
                     </div>
                   )}
 
@@ -220,7 +289,12 @@ export default function SubordinateSelectionModal({
               ))}
 
               <div style={{ marginTop: "12px" }}>
-                <button type="button" onClick={() => setShowAddPerson(true)}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowAddPerson(true)
+                  }
+                >
                   + Add Person
                 </button>
               </div>
@@ -232,6 +306,8 @@ export default function SubordinateSelectionModal({
       {viewPerson && (
         <PersonnelRecordModal
           person={viewPerson}
+          participationMode={participationMode}
+          onSelectPerson={handleSelectFromRecord}
           onClose={() => setViewPerson(null)}
         />
       )}

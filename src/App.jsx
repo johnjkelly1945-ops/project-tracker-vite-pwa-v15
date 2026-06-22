@@ -1637,8 +1637,20 @@ pmName: pmDraft,
           <SubordinateSelectionModal
             title="Personnel"
             items={getPersonnel()}
-            onSelect={() => {}}
-            onClose={() => setPersonnelOpen(false)}
+            participationMode={participationMode}
+            onSelect={(person) => {
+              console.log(
+                "STAGE500D-3B SELECTED PARTICIPATION PERSON",
+                person
+              );
+
+              setParticipationMode(false);
+              setPersonnelOpen(false);
+            }}
+            onClose={() => {
+              setParticipationMode(false);
+              setPersonnelOpen(false);
+            }}
           />
         )}
 
