@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 
 import { useState } from "react";
 
-
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { resolvePersonnelParticipation } from "../domain/personnel/PersonnelParticipationResolver";
 
@@ -27,7 +26,6 @@ export default function AppointmentsModal({
     : person;
 
   const participation = resolvePersonnelParticipation(resolvedPerson);
-
 
   return createPortal(
     <div
@@ -75,13 +73,19 @@ export default function AppointmentsModal({
                     borderBottom: "1px solid #eee",
                   }}
                 >
-                  {item.role} — {item.status}
+                  <div>
+                    <strong>{item.role}</strong>
+                  </div>
+
+                  <div>
+                    Started: {new Date(item.startedOn).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                  </div>
                 </div>
               ))
             )}
           </div>
+        </div>
 
-          </div>
         <div style={{ marginTop: "16px", textAlign: "right" }}>
           <button onClick={onClose}>Close</button>
         </div>

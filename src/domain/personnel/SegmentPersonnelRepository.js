@@ -134,6 +134,34 @@ export function repoRemoveParticipation(
   return appointment;
 }
 
+export function repoRemoveSegmentParticipation(
+  segmentId,
+  removedBy = "segment_archive"
+) {
+  if (!segmentId) return [];
+
+  const existing = loadAppointments();
+
+  const removed = [];
+
+  existing.forEach((appointment) => {
+    if (
+      appointment.segmentId === segmentId &&
+      appointment.active === true
+    ) {
+      appointment.active = false;
+      appointment.removedBy = removedBy;
+      appointment.removedOn = new Date().toISOString();
+
+      removed.push(appointment);
+    }
+  });
+
+  saveAppointments(existing);
+
+  return removed;
+}
+
 export function repoGetSegmentParticipation(segmentId) {
   if (!segmentId) return [];
 

@@ -20,7 +20,8 @@ import GovernanceModule from "./components/governance/GovernanceModule";
 import { localAssignees } from "./data/localAssignees";
 import { getPersonnel } from "./domain/personnel/PersonnelRegistry";
 import {
-  repoAssignParticipation
+  repoAssignParticipation,
+  repoRemoveSegmentParticipation
 } from "./domain/personnel/SegmentPersonnelRepository";
 import { loadWorkspace } from "./storage/workspaceRepository";
 import { saveWorkspace } from "./storage/workspaceRepository";
@@ -1130,6 +1131,7 @@ pmName: pmDraft,
 
   /* ===================== Stage 360 — Segment Archive Handler ===================== */
   function handleArchiveSegment(segmentId) {
+    repoRemoveSegmentParticipation(segmentId);
   setActiveSegmentId(null);
     setSegments(prev => {
       const updated = prev.map(s =>
