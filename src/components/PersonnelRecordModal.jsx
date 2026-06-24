@@ -16,6 +16,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import AddPersonCard from "./AddPersonCard";
 import AppointmentsModal from "./AppointmentsModal";
+import ManageParticipationModal from "./ManageParticipationModal";
 import ExperienceModal from "./ExperienceModal";
 import SkillsModal from "./SkillsModal";
 import {
@@ -34,6 +35,7 @@ export default function PersonnelRecordModal({
 
   const [editing, setEditing] = useState(false);
   const [showAppointments, setShowAppointments] = useState(false);
+  const [showManageParticipation, setShowManageParticipation] = useState(false);
   const [showExperience, setShowExperience] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
 
@@ -153,12 +155,6 @@ export default function PersonnelRecordModal({
               <div>
                 <strong>Appointments</strong>
               </div>
-
-              <div style={{ marginTop: "6px" }}>
-                Current appointments will be shown
-                in a subsequent phase.
-              </div>
-
               <button
                 type="button"
                 onClick={() => setShowAppointments(true)}
@@ -263,8 +259,22 @@ export default function PersonnelRecordModal({
         <AppointmentsModal
           person={resolvedPerson}
           segments={segments}
+          onManage={() =>
+            setShowManageParticipation(true)
+          }
           onClose={() =>
             setShowAppointments(false)
+          }
+        />
+      )}
+
+
+      {showManageParticipation && (
+        <ManageParticipationModal
+          person={resolvedPerson}
+          segments={segments}
+          onClose={() =>
+            setShowManageParticipation(false)
           }
         />
       )}

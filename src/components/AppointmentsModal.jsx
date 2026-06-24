@@ -9,6 +9,7 @@ import { resolvePersonnelParticipation } from "../domain/personnel/PersonnelPart
 export default function AppointmentsModal({
   person,
   segments = [],
+  onManage,
   onClose
 }) {
   if (!person) return null;
@@ -92,7 +93,8 @@ export default function AppointmentsModal({
         </div>
 
         <div style={{ marginTop: "16px", textAlign: "right" }}>
-          <button onClick={onClose}>Close</button>
+          <button onClick={onManage}>Manage</button>
+            <button onClick={onClose} style={{ marginLeft: "8px" }}>Close</button>
         </div>
       </div>
     </div>,
