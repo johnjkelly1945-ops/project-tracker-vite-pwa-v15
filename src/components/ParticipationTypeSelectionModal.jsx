@@ -1,5 +1,6 @@
 // @ts-nocheck
 
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import PARTICIPATION_TYPES from "../domain/personnel/PersonnelParticipationTypes";
 
@@ -16,6 +17,8 @@ export default function ParticipationTypeSelectionModal({
   onSelect,
   onClose
 }) {
+  const [selectedType, setSelectedType] = useState(null);
+
   return createPortal(
     <div
       style={{
@@ -42,13 +45,36 @@ export default function ParticipationTypeSelectionModal({
           {OPTIONS.map((type) => (
             <div key={type} style={{ marginBottom: "8px" }}>
               <button
-                onClick={() => onSelect(type)}
-                style={{ width: "100%" }}
+                onClick={() => setSelectedType(type)}
+                style={{
+                  width: "100%",
+                  background:
+                    selectedType === type
+                      ? "#dbeafe"
+                      : "#fff",
+                  border:
+                    selectedType === type
+                      ? "2px solid #2563eb"
+                      : "1px solid #ccc",
+                  fontWeight:
+                    selectedType === type
+                      ? "bold"
+                      : "normal"
+                }}
               >
                 {type}
               </button>
             </div>
           ))}
+        </div>
+
+        <div style={{ marginTop: "16px" }}>
+          <button
+            disabled={!selectedType}
+            onClick={() => onSelect(selectedType)}
+          >
+            Confirm
+          </button>
         </div>
 
         <div style={{ marginTop: "16px" }}>
