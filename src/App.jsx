@@ -1650,6 +1650,7 @@ pmName: pmDraft,
           <SubordinateSelectionModal
             title="Personnel"
             items={getPersonnel()}
+            segments={segments}
             participationMode={participationMode}
             onSelect={(person) => {
               console.log(

@@ -8,6 +8,7 @@ import { resolvePersonnelParticipation } from "../domain/personnel/PersonnelPart
 
 export default function AppointmentsModal({
   person,
+  segments = [],
   onClose
 }) {
   if (!person) return null;
@@ -25,7 +26,7 @@ export default function AppointmentsModal({
     ? { ...person, ...registryPerson }
     : person;
 
-  const participation = resolvePersonnelParticipation(resolvedPerson);
+  const participation = resolvePersonnelParticipation(resolvedPerson, segments);
 
   return createPortal(
     <div
@@ -73,6 +74,10 @@ export default function AppointmentsModal({
                     borderBottom: "1px solid #eee",
                   }}
                 >
+                  <div>
+                    <strong>{item.segmentTitle}</strong>
+                  </div>
+
                   <div>
                     <strong>{item.role}</strong>
                   </div>

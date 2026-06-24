@@ -25,6 +25,7 @@ import {
 
 export default function PersonnelRecordModal({
   person,
+  segments = [],
   onClose,
   participationMode = false,
   onSelectPerson = null
@@ -261,6 +262,7 @@ export default function PersonnelRecordModal({
       {showAppointments && (
         <AppointmentsModal
           person={resolvedPerson}
+          segments={segments}
           onClose={() =>
             setShowAppointments(false)
           }

@@ -5,22 +5,36 @@ import {
   repoGetAllParticipation
 } from "./SegmentPersonnelRepository";
 
-export function resolvePersonnelParticipation(person) {
+export function resolvePersonnelParticipation(person, segments = []) {
   if (!person?.id) return [];
 
   return repoGetPersonParticipation(person.id)
-    .map(record => ({
-      segmentId: record.segmentId,
-      personId: record.personId,
-      participationType:
-        record.participationType || "ADMIN",
+    .map(record => {
+      const segment = segments.find(
+        s => s.segmentId === record.segmentId
+      );
 
-      role:
-        record.participationType || "ADMIN",
+      return {
+        appointmentId: record.appointmentId,
 
-      startedOn:
-        record.appointedOn || "Unknown"
-    }));
+        segmentId: record.segmentId,
+
+        segmentTitle:
+          segment?.segmentTitle ||
+          "Unknown Segment",
+
+        personId: record.personId,
+
+        participationType:
+          record.participationType || "ADMIN",
+
+        role:
+          record.participationType || "ADMIN",
+
+        startedOn:
+          record.appointedOn || "Unknown"
+      };
+    });
 }
 
 export function resolvePersonnelExperience(person) {

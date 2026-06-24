@@ -71,6 +71,7 @@ function makePersonKey(item) {
 export default function SubordinateSelectionModal({
   title = "Select Item",
   items = [],
+  segments = [],
   onSelect,
   onClose,
   participationMode = false,
@@ -306,6 +307,7 @@ export default function SubordinateSelectionModal({
       {viewPerson && (
         <PersonnelRecordModal
           person={viewPerson}
+          segments={segments}
           participationMode={participationMode}
           onSelectPerson={handleSelectFromRecord}
           onClose={() => setViewPerson(null)}
