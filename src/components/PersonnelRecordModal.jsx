@@ -228,7 +228,7 @@ export default function PersonnelRecordModal({
             </div>
 
             <div>
-              {!editing && (
+                {participationMode && !editing && (
                 <button
                   onClick={() => setEditing(true)}
                 >
@@ -259,6 +259,7 @@ export default function PersonnelRecordModal({
         <AppointmentsModal
           person={resolvedPerson}
           segments={segments}
+          allowManage={participationMode}
           onManage={() =>
             setShowManageParticipation(true)
           }
