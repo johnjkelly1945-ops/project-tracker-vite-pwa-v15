@@ -9,8 +9,18 @@ Stage 420 — Visibility Layer (Corrected)
 import { resolveRelatedSegmentIds } from "../relationships/RelationshipResolver";
 const SURFACES = {
   TASK_NOTES: "TASK_NOTES",
+
+  // Aggregate governance surface
   SIDEBAR_GOVERNANCE: "SIDEBAR_GOVERNANCE",
+
+  // Governance domain surfaces
+  SIDEBAR_CHANGE: "SIDEBAR_CHANGE",
+  SIDEBAR_RISKS: "SIDEBAR_RISKS",
+  SIDEBAR_ISSUES: "SIDEBAR_ISSUES",
+  SIDEBAR_QC: "SIDEBAR_QC",
   SIDEBAR_ESCALATION: "SIDEBAR_ESCALATION",
+
+  // General observational surfaces
   SIDEBAR_DOCUMENTS: "SIDEBAR_DOCUMENTS",
   SIDEBAR_DASHBOARD: "SIDEBAR_DASHBOARD"
 };
