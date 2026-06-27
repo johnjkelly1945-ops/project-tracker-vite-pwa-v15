@@ -3,7 +3,7 @@
 ======================================================================
 
 METRA — EffectiveObservationResolver.js
-Stage 500D-3HA — Effective Observation Foundation
+Stage 500D-3HB — Effective Observation Foundation
 
 PURPOSE
 -------
@@ -24,8 +24,9 @@ CONSTITUTIONAL RULES
 ======================================================================
 */
 
-import { repoGetPersonParticipation }
-  from "../personnel/SegmentPersonnelRepository";
+import {
+  resolveConstitutionalEngagements
+} from "../constitutional/ConstitutionalEngagementResolver";
 
 import { PARTICIPATION_TYPES }
   from "../personnel/PersonnelParticipationTypes";
@@ -58,17 +59,16 @@ export function resolveEffectiveObservation({
     return observation;
   }
 
-
-  repoGetPersonParticipation(actor.id)
+  resolveConstitutionalEngagements(actor.id)
     .filter(
-      (p) =>
-        p.segmentId === segmentId &&
-        p.active === true
+      (e) =>
+        e.category === "PARTICIPATION" &&
+        e.segmentId === segmentId
     )
-    .forEach((p) => {
+    .forEach((e) => {
       const surface =
         PARTICIPATION_TO_OBSERVATION[
-          p.participationType
+          e.participationType
         ];
 
       if (surface) {
