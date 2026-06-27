@@ -51,6 +51,8 @@ import {
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { resolveSegmentAuthority } from "../domain/authority/resolveSegmentAuthority";
+import { resolveOperationalAuthority } from "../domain/operation/OperationalAuthorityResolver";
 
 /* ===================== Time helpers ===================== */
 
@@ -78,6 +80,7 @@ function systemLine(text) {
 
 export default function TaskPopup({
   task,
+  segment,
   summaries = [],
   onClose,
   onAddNote,
@@ -302,13 +305,14 @@ export default function TaskPopup({
   const isAssigned = Boolean(task && task.assigneeId);
   const isArchived = task.taskState === "archived";
 
-  const isAssignee =
-    actor &&
-    task &&
-    actor.id === task.assigneeId;
-
-  const person = getPersonnel().find(p => p.id === actor?.id);
-  const isPM = person?.isPM === true;
+  const {
+    isPM,
+    isAssignee
+  } = resolveOperationalAuthority({
+    actor,
+    segment,
+    task
+  });
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
   const events = getGovernanceEventsByTask(task.id) || [];

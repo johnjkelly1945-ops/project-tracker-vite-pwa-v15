@@ -1735,6 +1735,7 @@ pmName: pmDraft,
               workspaceMode={workspaceMode}
               onArchiveSegment={handleArchiveSegment}
               task={effectiveActiveTask}
+              segment={activeSegment}
               actingUser={actingUser}
               summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
               onClose={() => setActiveTaskId(null)}
