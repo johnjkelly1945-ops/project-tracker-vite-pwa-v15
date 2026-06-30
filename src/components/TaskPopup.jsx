@@ -1175,6 +1175,7 @@ export default function TaskPopup({
           onClose={() => setIssueModalOpen(false)}
           onAddNote={onAddNote}
           onEscalate={isPM ? handleEscalateIssue : undefined}
+            isPM={isPM}
             readOnly={isReadOnly}
         />
       )}
