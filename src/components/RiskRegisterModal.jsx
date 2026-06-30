@@ -12,9 +12,10 @@ import { createRiskArtefact, getRiskArtefacts, updateRiskArtefact } from "../dom
 import { createGovernanceEvent, getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClose, openRiskEvent, readOnly = false }) {
+export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClose, openRiskEvent, isPM = false, readOnly = false }) {
 
   console.log("RISK MODAL SEGMENT ID:", segmentId);
+  const actor = getActingUser();
   const [, refresh] = useState(0);
   console.log("TASK TITLE IN MODAL:", taskTitle);
 
@@ -30,8 +31,6 @@ export default function RiskRegisterModal({ taskId, taskTitle, segmentId, onClos
     mitigation: ""
   });
 
-  const actor = getActingUser();
-  const isPM = actor?.isPM === true;
 
   const advisoryRiskArtefactIds = new Set(
     getGovernanceEventsByTask(taskId)
