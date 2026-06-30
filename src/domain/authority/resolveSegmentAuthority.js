@@ -2,12 +2,23 @@
 /*
 =====================================================================
 METRA — resolveSegmentAuthority.js
-Stage 430E — Authority Resolution (Canonical)
+Stage 500E-1A — Constitutional Stewardship Evidence
 =====================================================================
-Purpose:
-• Determine controller and PM status within a segment
-• Provide deterministic authority resolution
-• No mutation — pure function
+
+PURPOSE
+-------
+Derive constitutional stewardship evidence for an actor within a
+segment.
+
+CONSTITUTIONAL RULES
+--------------------
+• Repository owns constitutional facts.
+• Context owns stewardship appointments.
+• Resolver derives stewardship evidence only.
+• Resolver performs no mutation.
+• Resolver performs no rendering.
+• Resolver has no UI knowledge.
+
 =====================================================================
 */
 
