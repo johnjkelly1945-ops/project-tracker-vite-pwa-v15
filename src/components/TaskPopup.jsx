@@ -1127,6 +1127,7 @@ export default function TaskPopup({
               setQcRegisterOpen(false);
               setQcModalOpen(true);
             }}
+              isPM={isPM}
           />
         )}
 

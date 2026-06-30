@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent, readOnly = false }) {
+export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent, isPM = false, readOnly = false }) {
 
   const [, refresh] = useState(0);
 
@@ -30,7 +30,6 @@ export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose,
   });
 
   const actor = getActingUser();
-  const isPM = actor?.isPM === true;
 
   const advisoryQCArtefactIds = new Set(
     getGovernanceEventsByTask(taskId)
