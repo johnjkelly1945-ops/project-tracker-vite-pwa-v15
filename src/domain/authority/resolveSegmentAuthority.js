@@ -2,7 +2,7 @@
 /*
 =====================================================================
 METRA — resolveSegmentAuthority.js
-Stage 500E-1A — Constitutional Stewardship Evidence
+Stage 500E-1B — Constitutional Stewardship Evidence
 =====================================================================
 
 PURPOSE
@@ -14,6 +14,7 @@ CONSTITUTIONAL RULES
 --------------------
 • Repository owns constitutional facts.
 • Context owns stewardship appointments.
+• Every persisted segment has a Segment Manager.
 • Resolver derives stewardship evidence only.
 • Resolver performs no mutation.
 • Resolver performs no rendering.
@@ -25,19 +26,14 @@ CONSTITUTIONAL RULES
 export function resolveSegmentAuthority(segment, actor) {
   if (!segment || !actor) {
     return {
-      isController: false,
       isPM: false
     };
   }
 
-  const isController = segment.createdBy === actor.id;
-
   const isPM =
-    segment.pmId === actor.id ||
-    (segment.pmId == null && isController);
+    segment.pmId === actor.id;
 
   return {
-    isController,
     isPM
   };
 }
