@@ -1111,6 +1111,7 @@ export default function TaskPopup({
             setIssueRegisterOpen(false);
             setIssueModalOpen(true);
           }}
+            isPM={isPM}
             readOnly={isReadOnly}
         />
       )}

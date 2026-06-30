@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent, readOnly = false }) {
+export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent, isPM = false, readOnly = false }) {
 
   const [, refresh] = useState(0);
 
@@ -28,7 +28,6 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
   });
 
   const actor = getActingUser();
-  const isPM = actor?.isPM === true;
 
   const advisoryIssueArtefactIds = new Set(
     getGovernanceEventsByTask(taskId)
