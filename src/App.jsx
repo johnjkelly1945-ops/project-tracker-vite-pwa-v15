@@ -1088,6 +1088,11 @@ const archivedDevBody = (
   function handleSaveSegmentTitle() {
     if (activeSegment === null) return;
 
+    if (!pmDraftId || !pmDraft?.trim()) {
+      alert("A Segment Manager must be appointed before a segment can be constituted.");
+      return;
+    }
+
     setSegments(prev =>
       prev.map(s =>
         s.segmentId === activeSegment.segmentId
