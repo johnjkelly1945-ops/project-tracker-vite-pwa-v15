@@ -9,7 +9,6 @@ Stage 421 — Escalation Register Canonical Store Integration
 import { useState } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
-import { getActingUser } from "../domain/actor/ActingUser";
 import {
   createEscalation,
   getEscalationsByTask,
@@ -19,8 +18,6 @@ import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
 export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote, readOnly = false }) {
 
-  const actor = getActingUser();
-  const isPM = actor?.id === "user-1"; // temporary restore of PM working behaviour
 
   const [, refresh] = useState(0);
 
