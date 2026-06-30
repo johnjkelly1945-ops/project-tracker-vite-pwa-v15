@@ -1152,7 +1152,7 @@ export default function TaskPopup({
             onClose={() => setRiskModalOpen(false)}
             onAddNote={onAddNote}
             onEscalate={
-              actor?.isPM === true
+              isPM
                 ? () => {
               setEscalationContext({
                 sourceType: "RISK",
