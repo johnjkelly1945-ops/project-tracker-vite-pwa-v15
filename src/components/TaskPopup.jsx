@@ -1162,6 +1162,7 @@ export default function TaskPopup({
                 }
                 : undefined
             }
+            isPM={isPM}
             readOnly={isReadOnly}
           />
         )}

@@ -61,11 +61,10 @@ export default function RiskModal({
   onClose,
   onAddNote,
   onEscalate,
+  isPM = false,
   readOnly = false
 }) {
   const inlineRef = useRef(null);
-  const actor = getActingUser();
-  const isPM = actor?.isPM === true;
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
   const [descriptionOpen, setDescriptionOpen] = useState(false);
