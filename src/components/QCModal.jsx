@@ -54,7 +54,7 @@ function nowStamp() {
 
 /* ===================== Component ===================== */
 
-export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, readOnly = false }) {
+export default function QCModal({ taskId, taskTitle, eventId, onClose, onAddNote, onEscalate, isPM = false, readOnly = false }) {
   const inlineRef = useRef(null);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
@@ -103,8 +103,6 @@ if (!event) return null;
     setDocRef("");
     setRefreshTick((t) => t + 1);
   }
-  const actor = getActingUser();
-  const isPM = actor?.isPM === true;
 
 
 

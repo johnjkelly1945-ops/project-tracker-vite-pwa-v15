@@ -1187,6 +1187,7 @@ export default function TaskPopup({
           eventId={activeQcEventId}
           onClose={() => setQcModalOpen(false)}
           onAddNote={onAddNote}
+            isPM={isPM}
             readOnly={isReadOnly}
           onEscalate={handleEscalateQC}
         />
