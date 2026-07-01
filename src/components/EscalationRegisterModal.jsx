@@ -6,7 +6,7 @@ Stage 421 — Escalation Register Canonical Store Integration
 =====================================================================
 */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import EscalationModal from "./EscalationModal";
 import {
@@ -15,8 +15,12 @@ import {
   getEscalation
 } from "../domain/escalation/EscalationStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import {
+  subscribeProjectionChanged,
+  unsubscribeProjectionChanged
+} from "../domain/projection/ProjectionEngine";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote, readOnly = false }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote, isPM = false, readOnly = false }) {
 
 
   const [, refresh] = useState(0);
@@ -28,6 +32,18 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
   const [activeReference, setActiveReference] = useState(null);
 
   const taskEscalations = getEscalationsByTask(taskId);
+
+  useEffect(() => {
+    function handleProjectionChanged() {
+      refresh(x => x + 1);
+    }
+
+    subscribeProjectionChanged(handleProjectionChanged);
+
+    return () => {
+      unsubscribeProjectionChanged(handleProjectionChanged);
+    };
+  }, []);
 
   function commitCreateEscalation() {
 
@@ -104,7 +120,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
                   </div>
 
                   <div style={{ fontSize: "12px", opacity: 0.7 }}>
-                    Status: Open
+                    Status: {e.status}
                   </div>
 
                   {/* NEW — STAGE 428 SOURCE LABEL (READ-ONLY) */}
@@ -218,6 +234,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
           escalation={activeEscalation}
           onClose={() => setActiveReference(null)}
             onAddNote={onAddNote}
+          isPM={isPM}
           readOnly={readOnly}
         />
       )}

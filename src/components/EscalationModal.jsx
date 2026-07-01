@@ -33,7 +33,7 @@ function nowStamp() {
   );
 }
 
-export default function EscalationModal({ taskId, taskTitle, escalation, onClose, readOnly = false, onAddNote }) {
+export default function EscalationModal({ taskId, taskTitle, escalation, onClose, isPM = false, readOnly = false, onAddNote }) {
 
   const inlineRef = useRef(null);
 
@@ -45,7 +45,6 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
   const [refreshTick, setRefreshTick] = useState(0);
 
   const actor = getActingUser();
-  const isPM = actor?.isPM === true;
 
   function handleCloseItem() {
     closeEscalation({
@@ -53,6 +52,8 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
       reference: escalation.reference,
       closedBy: actor?.displayName || actor?.id || "PM",
     });
+      console.log("ESCALATION AFTER CLOSE", escalation);
+      console.log("ESCALATION AFTER CLOSE", escalation);
 
     onClose();
   }

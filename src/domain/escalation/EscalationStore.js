@@ -12,6 +12,11 @@ import {
   updateEscalation
 } from "./EscalationRepository";
 
+import {
+  notifyProjectionChanged,
+  registerProjection
+} from "../projection/ProjectionEngine";
+
 
 const escalationStore = {
   byTask: {},
@@ -22,9 +27,9 @@ const escalationStore = {
 // INITIAL LOAD FROM REPOSITORY (Stage 464)
 // ------------------------------------------------------------------
 
-const persisted = loadEscalations();
+function rebuildEscalationStore() {
+  const persisted = loadEscalations();
 
-if (persisted.length > 0) {
   escalationStore.all = persisted;
 
   escalationStore.byTask = {};
@@ -33,9 +38,14 @@ if (persisted.length > 0) {
     if (!escalationStore.byTask[e.taskId]) {
       escalationStore.byTask[e.taskId] = [];
     }
+
     escalationStore.byTask[e.taskId].push(e);
   });
 }
+
+rebuildEscalationStore();
+
+registerProjection(rebuildEscalationStore);
 
 
 function now() {
@@ -195,9 +205,7 @@ export function updateEscalationScope({
 
   updateEscalation(escalation);
 
-  window.dispatchEvent(
-    new CustomEvent("metra:dashboard:refresh")
-  );
+  notifyProjectionChanged();
 
   return escalation;
 }
@@ -216,6 +224,10 @@ export function closeEscalation({ taskId, reference, closedBy = "PM" }) {
   escalation.status = "CLOSED";
   escalation.closedAt = now();
   escalation.closedBy = closedBy;
+
+  updateEscalation(escalation);
+
+  notifyProjectionChanged();
 
   return escalation;
 }
