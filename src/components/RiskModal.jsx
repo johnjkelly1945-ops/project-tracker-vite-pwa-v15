@@ -148,9 +148,12 @@ export default function RiskModal({
   function handleCloseItem() {
     if (readOnly) return;
 
-    closeGovernanceEvent({ eventId });
-    const fresh = getGovernanceEvent(eventId);
-    if (fresh) setEvent({ ...fresh });
+
+    closeGovernanceEvent({
+      eventId
+    });
+
+    onClose();
   }
   function handleCommitInlineAdvisory() {
     const summary = advisoryText.trim();

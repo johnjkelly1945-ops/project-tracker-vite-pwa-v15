@@ -38,7 +38,12 @@ import {
   getGovernanceEvent,
   updateGovernanceEvent,
 } from "./governanceStore";
-import { updateChangeArtefact } from "../domain/governance/GovernanceStore";
+import {
+  updateRiskArtefact,
+  updateIssueArtefact,
+  updateQCArtefact,
+  updateChangeArtefact
+} from "../domain/governance/GovernanceStore";
 
 /*
 =====================================================================
@@ -216,6 +221,25 @@ export function closeGovernanceEvent({ eventId }) {
     closedBy: actor?.displayName || actor?.id || "PM",
   };
 
-  return updateGovernanceEvent(eventId, updatedEvent);
+  const closedEvent = updateGovernanceEvent(eventId, updatedEvent);
+  switch (event.eventType) {
+    case "RISK":
+      updateRiskArtefact(event.artefactId, { status: "Closed" });
+      break;
+
+    case "ISSUE":
+      updateIssueArtefact(event.artefactId, { status: "Closed" });
+      break;
+
+    case "QC":
+      updateQCArtefact(event.artefactId, { status: "Closed" });
+      break;
+
+    case "CHANGE":
+      updateChangeArtefact(event.artefactId, { status: "Closed" });
+      break;
+  }
+
+  return closedEvent;
 }
 

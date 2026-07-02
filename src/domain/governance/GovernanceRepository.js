@@ -22,6 +22,10 @@ Does NOT:
 =====================================================================
 */
 
+import {
+  notifyProjectionChanged
+} from "../projection/ProjectionEngine";
+
 const STORAGE_KEY = "metra_governance_events";
 
 /*
@@ -67,6 +71,7 @@ CRUD OPERATIONS
 export function repoCreate(event) {
   events[event.eventId] = event;
   save(events);
+  notifyProjectionChanged();
   return event;
 }
 
@@ -105,9 +110,11 @@ export function repoUpdate(eventId, updatedEvent) {
 
   events[eventId] = safeEvent;
   save(events);
+  notifyProjectionChanged();
   return events[eventId];
 }
 export function repoReset() {
   events = {};
   save(events);
+  notifyProjectionChanged();
 }
