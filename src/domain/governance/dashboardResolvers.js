@@ -39,7 +39,9 @@ export function resolveOpenGovernanceCounts(segmentId) {
     getAllEscalations().filter(
       (e) =>
         e.segmentId === segmentId &&
-        e.status === "OPEN"
+        e.status === "OPEN" &&
+        Array.isArray(e.participation) &&
+        e.participation.length > 0
     );
 
   const counts = {

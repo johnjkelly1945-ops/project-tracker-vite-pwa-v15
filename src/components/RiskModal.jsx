@@ -113,7 +113,6 @@ export default function RiskModal({
 
   const taskRisks = getGovernanceEventsByTask(taskId)
     .filter((e) => e.eventType === "RISK");
-  const isEscalated = event?.escalated === true;
   const participantIds = Array.isArray(event?.participation) ? [...new Set(event.participation.map((p) => p.reviewerId))] : [];
 
   const participantNames = participantIds
@@ -345,7 +344,7 @@ export default function RiskModal({
               }}
             >
               {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
-              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+              {isPM && <button onClick={onEscalate}>Escalate</button>}
             </div>
 
             <div

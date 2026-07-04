@@ -91,7 +91,6 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
 
   const taskIssues = getGovernanceEventsByTask(taskId)
     .filter((e) => e.eventType === "ISSUE");
-  const isEscalated = event?.escalated === true;
   const participantIds = Array.isArray(event?.participation) ? [...new Set(event.participation.map((p) => p.reviewerId))] : [];
 
   const participantNames = participantIds
@@ -347,7 +346,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
               }}
             >
                 {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
-              {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+              {isPM && <button onClick={onEscalate}>Escalate</button>}
             </div>
 
             <div

@@ -103,10 +103,6 @@ if (!event) return null;
     setDocRef("");
     setRefreshTick((t) => t + 1);
   }
-
-
-
-  const isEscalated = event?.escalated === true;
   const participantIds = event?.participation
     ? [...new Set(event.participation.map((p) => p.reviewerId))]
     : [];
@@ -345,7 +341,7 @@ if (!event) return null;
               }}
             >
                   {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
-                {isPM && <button onClick={onEscalate} disabled={isEscalated}>Escalate</button>}
+                {isPM && <button onClick={onEscalate}>Escalate</button>}
             </div>
 
             <div

@@ -97,7 +97,9 @@ export function createEscalation({
     sourceId: resolvedSourceId,
       visibilityScope,
 
-    advisoryRecords: []
+    advisoryRecords: [],
+
+      participation: [],
   };
 
   if (!escalationStore.byTask[taskId]) {
@@ -118,6 +120,13 @@ export function createEscalation({
 export function getEscalationsByTask(taskId) {
   if (!taskId) return [];
   return escalationStore.byTask[taskId] || [];
+}
+
+export function hasOpenEscalations(taskId) {
+  return getEscalationsByTask(taskId)
+    .some(
+      escalation => escalation.status === "OPEN"
+    );
 }
 
 // ------------------------------------------------------------------
@@ -151,6 +160,12 @@ export function appendEscalationAdvisory({
 
   if (!escalation) {
     throw new Error("Escalation not found for advisory append");
+  }
+
+  if (!(escalation.participation || []).length) {
+    throw new Error(
+      "Participation must be recorded before advisory"
+    );
   }
 
   const actorName =
@@ -209,6 +224,45 @@ export function updateEscalationScope({
 
   return escalation;
 }
+
+export function recordEscalationParticipation({
+  taskId,
+  reference,
+  reviewerId,
+  participationType,
+  acceptedBy
+}) {
+  const escalation = getEscalation(taskId, reference);
+
+  if (!escalation) {
+    throw new Error("Escalation not found");
+  }
+
+  if (escalation.status !== "OPEN") {
+    throw new Error(
+      "Cannot record participation on closed escalation"
+    );
+  }
+
+  const participationRecord = {
+    reviewerId,
+    participationType,
+    acceptedAt: now(),
+    acceptedBy
+  };
+
+  escalation.participation = [
+    ...(escalation.participation || []),
+    participationRecord
+  ];
+
+  updateEscalation(escalation);
+
+  notifyProjectionChanged();
+
+  return escalation;
+}
+
 
 export function closeEscalation({ taskId, reference, closedBy = "PM" }) {
   const escalation = getEscalation(taskId, reference);

@@ -45,6 +45,18 @@ import {
   updateChangeArtefact
 } from "../domain/governance/GovernanceStore";
 
+import {
+  repoGetSegment
+} from "../storage/workspaceRepository";
+
+import {
+  resolveSegmentAuthority
+} from "../domain/authority/resolveSegmentAuthority";
+
+import {
+  hasOpenEscalations
+} from "../domain/escalation/EscalationStore";
+
 /*
 =====================================================================
 CREATE GOVERNANCE EVENT (TRIGGER)
@@ -206,8 +218,19 @@ export function closeGovernanceEvent({ eventId }) {
 
   const actor = getActingUser();
 
-  if (!actor?.isPM) {
+  const segment = repoGetSegment(event.segmentId);
+
+  const { isPM } =
+    resolveSegmentAuthority(segment, actor);
+
+  if (!isPM) {
     throw new Error("Only PM can close governance items");
+  }
+
+  if (hasOpenEscalations(event.taskId)) {
+    throw new Error(
+      "Cannot close governance event while escalations remain open"
+    );
   }
 
   if (event.status !== "OPEN") {
@@ -235,7 +258,7 @@ export function closeGovernanceEvent({ eventId }) {
       updateQCArtefact(event.artefactId, { status: "Closed" });
       break;
 
-    case "CHANGE":
+    case "CC":
       updateChangeArtefact(event.artefactId, { status: "Closed" });
       break;
   }

@@ -1,27 +1,30 @@
 import { getGovernanceEventsByTask } from "../../governance/governanceStore";
+import { repoGetSegment } from "../../storage/workspaceRepository";
+import { resolveSegmentAuthority } from "./resolveSegmentAuthority";
+
 export function hasContext(actor, task) {
-  if (!actor) return false;
+  if (!actor || !task) return false;
 
-  // PM / Admin override (only if present)
-  if (actor.isPM === true || actor.isAdmin === true) {
+  const segment = repoGetSegment(task.segmentId);
+  const { isPM } = resolveSegmentAuthority(segment, actor);
+
+  if (isPM) {
     return true;
   }
 
-  // Assignee-based context
-  if (task && task.assigneeId && actor.id === task.assigneeId) {
+  if (task.assigneeId && actor.id === task.assigneeId) {
     return true;
   }
 
-  // Advisory participation context
-  if (task && actor && actor.id) {
-    const events = getGovernanceEventsByTask(task.id) || [];
+  const events = getGovernanceEventsByTask(task.id) || [];
 
-    const isParticipant = events.some(e =>
-      Array.isArray(e.participation) &&
-      e.participation.some(p => p.reviewerId === actor.id)
-    );
+  const isParticipant = events.some(e =>
+    Array.isArray(e.participation) &&
+    e.participation.some(p => p.reviewerId === actor.id)
+  );
 
-    if (isParticipant) return true;
+  if (isParticipant) {
+    return true;
   }
 
   return false;

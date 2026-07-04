@@ -13,7 +13,7 @@ import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import TaskDescriptionModal from "./TaskDescriptionModal";
 import { personnel } from "../data/personnel";
-import { appendEscalationAdvisory, closeEscalation, updateEscalationScope } from "../domain/escalation/EscalationStore";
+import { appendEscalationAdvisory, closeEscalation, updateEscalationScope, recordEscalationParticipation } from "../domain/escalation/EscalationStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { createDocument, resolveDocuments } from "../domain/documents/DocumentStore";
 import DocumentEntryModal from "./DocumentEntryModal";
@@ -352,11 +352,15 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
             title="Confirm Escalation Participant"
             items={[]}
             onSelect={(person) => {
-              escalation.participants =
-                escalation.participants
-                  ? escalation.participants + "," + person.displayName
-                  : person.displayName;
+              recordEscalationParticipation({
+                taskId,
+                reference: escalation.reference,
+                reviewerId: person.id,
+                participationType: "internal",
+                acceptedBy: "PM"
+              });
 
+              setRefreshTick((v) => v + 1);
               setParticipantModalOpen(false);
             }}
             onClose={() => setParticipantModalOpen(false)}

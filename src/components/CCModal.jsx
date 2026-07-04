@@ -73,10 +73,6 @@ export default function CCModal({ taskId, taskTitle, eventId, onClose, onAddNote
   );
   const artefact = event?.artefactId ? getChangeArtefactById(event.artefactId) : null;
   const documents = resolveDocuments({ eventId: event?.eventId });
-
-
-
-  const isEscalated = event?.escalated === true;
   const participantIds = event?.participation
     ? [...new Set(event.participation.map((p) => p.reviewerId))]
     : [];

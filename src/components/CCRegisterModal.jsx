@@ -50,6 +50,13 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
 
   function saveEntry() {
 
+    console.log("Create CC saveEntry fired", {
+      editingCC,
+      segmentId,
+      taskId,
+      taskTitle,
+      form
+    });
     if (editingCC) {
 
       updateChangeArtefact(editingCC.artefactId, {
@@ -269,7 +276,7 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
 
           {!readOnly && (
             <div style={{ marginTop: "16px" }}>
-              <button onClick={() => setCreating(true)}>
+              <button onClick={() => { console.log("New CC clicked"); setCreating(true); }}>
                 New CC
               </button>
             </div>

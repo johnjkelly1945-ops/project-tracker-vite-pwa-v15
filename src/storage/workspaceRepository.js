@@ -21,6 +21,20 @@ export function loadWorkspace() {
   return loadFromLocalStorage();
 }
 
+export function repoGetSegment(segmentId) {
+  if (!segmentId) return null;
+
+  const workspace = loadWorkspace();
+  const segments = workspace?.segments || [];
+
+  return (
+    segments.find(
+      (segment) => segment.segmentId === segmentId
+    ) || null
+  );
+}
+
+
 export function saveWorkspace(workspaceData) {
   saveToLocalStorage(workspaceData);
 }
