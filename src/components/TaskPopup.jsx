@@ -53,6 +53,7 @@ import { getActingUser } from "../domain/actor/ActingUser";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { resolveSegmentAuthority } from "../domain/authority/resolveSegmentAuthority";
 import { resolveOperationalAuthority } from "../domain/operation/OperationalAuthorityResolver";
+import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
 
 /* ===================== Time helpers ===================== */
 
@@ -700,14 +701,14 @@ export default function TaskPopup({
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
 {isAdvisor && (() => {
+  const advisoryEvents = resolveAdvisoryNavigation({
+    actor,
+    taskId: task.id
+  });
+
   const advisoryTypes = [
     ...new Set(
-      (getGovernanceEventsByTask(task.id) || [])
-        .filter(e =>
-          Array.isArray(e.participation) &&
-          e.participation.some(p => p && p.reviewerId === actor.id)
-        )
-        .map(e => e.eventType)
+      advisoryEvents.map(e => e.eventType)
     )
   ];
 
