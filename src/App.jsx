@@ -791,7 +791,15 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   /* ===================== SURFACES ===================== */
 
 
-  const activeWorkspaceSegments = segments.filter(s => !s.archived);
+  // ------------------------------------------------------------------
+// CONSTITUTIONAL SEGMENT PROJECTION (STAGE 500H-7C)
+// Repository → My World → Visible Segments
+// ------------------------------------------------------------------
+const projectedSegments = segments.filter(
+  s => !s.archived
+);
+
+const activeWorkspaceSegments = projectedSegments;
   const effectiveSegmentId = activeSegmentId ?? activeWorkspaceSegments[0]?.segmentId ?? null;
   const activeSegment =
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
