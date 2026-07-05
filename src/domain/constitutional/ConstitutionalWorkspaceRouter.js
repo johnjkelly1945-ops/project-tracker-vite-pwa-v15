@@ -2,7 +2,7 @@
 /*
 ======================================================================
 
-METRA — ConstitutionalExperienceRouter.js
+METRA — ConstitutionalWorkspaceRouter.js
 Stage 500H-7D-A — Constitutional Experience Routing Foundation
 
 PURPOSE
@@ -24,19 +24,19 @@ CONSTITUTIONAL RULES
 ======================================================================
 */
 
-export const CONSTITUTIONAL_EXPERIENCE = Object.freeze({
+export const CONSTITUTIONAL_WORKSPACE = Object.freeze({
   OPERATIONAL: "OPERATIONAL"
 });
 
-export function resolveConstitutionalExperience({
+export function resolveConstitutionalWorkspace({
   actor,
   segment,
   task
 }) {
   return {
     destination:
-      CONSTITUTIONAL_EXPERIENCE.OPERATIONAL
+      CONSTITUTIONAL_WORKSPACE.OPERATIONAL
   };
 }
 
-export default resolveConstitutionalExperience;
+export default resolveConstitutionalWorkspace;
