@@ -28,6 +28,10 @@ import {
   resolveSegmentAuthority
 } from "../authority/resolveSegmentAuthority";
 
+import {
+  getGovernanceEventsByTask
+} from "../../governance/governanceStore";
+
 export function resolveOperationalAuthority({
   actor,
   segment,
@@ -43,12 +47,26 @@ export function resolveOperationalAuthority({
       task.assigneeId === actor.id
     );
 
-  const isAdvisor = false;
+  const events =
+    task
+      ? getGovernanceEventsByTask(task.id)
+      : [];
+
+  const isAdvisor =
+    !!(
+      actor &&
+      task &&
+      events.some(e =>
+        Array.isArray(e.participation) &&
+        e.participation.some(
+          p => p.reviewerId === actor.id
+        )
+      )
+    );
 
   const isOperational =
     isPM ||
-    isAssignee ||
-    isAdvisor;
+    isAssignee;
 
   return {
     isPM,

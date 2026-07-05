@@ -1,14 +1,18 @@
 import { getGovernanceEventsByTask } from "../../governance/governanceStore";
 import { repoGetSegment } from "../../storage/workspaceRepository";
-import { resolveSegmentAuthority } from "./resolveSegmentAuthority";
+import { resolveOperationalAuthority } from "../operation/OperationalAuthorityResolver";
 
 export function hasContext(actor, task) {
   if (!actor || !task) return false;
 
   const segment = repoGetSegment(task.segmentId);
-  const { isPM } = resolveSegmentAuthority(segment, actor);
+  const { isOperational } = resolveOperationalAuthority({
+    actor,
+    segment,
+    task
+  });
 
-  if (isPM) {
+  if (isOperational) {
     return true;
   }
 

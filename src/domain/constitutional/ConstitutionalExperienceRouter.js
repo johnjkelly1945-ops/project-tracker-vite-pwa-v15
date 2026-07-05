@@ -2,61 +2,41 @@
 /*
 ======================================================================
 
-METRA — ConstitutionalEngagementResolver.js
-Stage 500D-3HB — Constitutional Engagement Foundation
+METRA — ConstitutionalExperienceRouter.js
+Stage 500H-7D-A — Constitutional Experience Routing Foundation
 
 PURPOSE
 -------
-Bring together the constitutional engagements currently held by a
-person.
+Determine the constitutional experience entered following
+task selection.
 
 CONSTITUTIONAL RULES
 --------------------
 • Repository remains the single source of truth.
-• Resolver performs aggregation only.
-• Resolver performs no mutation.
-• Resolver performs no rendering.
-• Resolver performs no authority determination.
-• Resolver performs no visibility determination.
-• Resolver returns current constitutional engagements only.
-
-This resolver establishes the constitutional foundation for
-METRA World.
+• Constitutional Engagement Resolver owns engagement aggregation.
+• Constitutional Experience Router owns experience routing.
+• Router performs routing determination only.
+• Router performs no mutation.
+• Router performs no rendering.
+• Router performs no UI navigation.
+• Router returns constitutional destinations only.
 
 ======================================================================
 */
 
-import {
-  repoGetPersonParticipation
-} from "../personnel/SegmentPersonnelRepository";
+export const CONSTITUTIONAL_EXPERIENCE = Object.freeze({
+  OPERATIONAL: "OPERATIONAL"
+});
 
-export function resolveConstitutionalEngagements(personId) {
-  if (!personId) {
-    return [];
-  }
-
-  return repoGetPersonParticipation(personId).map(
-    (participation) => ({
-      category: "PARTICIPATION",
-
-      source: "SegmentPersonnelRepository",
-
-      segmentId: participation.segmentId,
-
-      active: participation.active,
-
-      participationType:
-        participation.participationType,
-
-      appointmentId:
-        participation.appointmentId,
-
-      appointedOn:
-        participation.appointedOn,
-
-      payload: participation
-    })
-  );
+export function resolveConstitutionalExperience({
+  actor,
+  segment,
+  task
+}) {
+  return {
+    destination:
+      CONSTITUTIONAL_EXPERIENCE.OPERATIONAL
+  };
 }
 
-export default resolveConstitutionalEngagements;
+export default resolveConstitutionalExperience;
