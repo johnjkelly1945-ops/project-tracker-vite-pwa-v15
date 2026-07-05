@@ -307,7 +307,9 @@ export default function TaskPopup({
 
   const {
     isPM,
-    isAssignee
+    isAssignee,
+    isAdvisor,
+    isOperational
   } = resolveOperationalAuthority({
     actor,
     segment,
@@ -315,22 +317,12 @@ export default function TaskPopup({
   });
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
-  const events = getGovernanceEventsByTask(task.id) || [];
-
-  const isAdvisor = events.some(e =>
-    Array.isArray(e.participation) &&
-    e.participation.some(p => p.reviewerId === actor.id)
-  );
-
 
   // STAGE 420 — SURFACE SELECTION (CANONICAL)
-
-  const isOperational = isPM || isAssignee || isAdvisor;
-    console.log("OPERATIONAL CHECK", { isPM, isAssignee, isAdvisor, isOperational, actor });
-  if (!isOperational) {
+  if (!isOperational && !isAdvisor) {
     return (
       <div style={{ padding: "20px" }}>
-        Advisory View (placeholder)
+        Participation View (placeholder)
       </div>
     );
   }
