@@ -10,7 +10,7 @@ import ModuleHeader from "./components/ModuleHeader";
 import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import RepositoryView from "./components/RepositoryView";
-import TaskPopup from "./components/TaskPopup";
+import TaskSelectionSurface from "./components/TaskSelectionSurface";
 import SubordinateSelectionModal from "./components/SubordinateSelectionModal";
 import ParticipationTypeSelectionModal from "./components/ParticipationTypeSelectionModal";
 import SummaryMoveModal from "./components/SummaryMoveModal";
@@ -1742,7 +1742,7 @@ pmName: pmDraft,
           {effectiveActiveTask && console.log("POPUP BRANCH", effectiveActiveTask.id)}
 
           {effectiveActiveTask && (
-            <TaskPopup
+            <TaskSelectionSurface
                 hasMutationAuthority={hasMutationAuthority}
                 readOnly={Boolean(archivedSegment)}
               workspaceMode={workspaceMode}
