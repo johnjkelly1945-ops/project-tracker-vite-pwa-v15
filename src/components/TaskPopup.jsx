@@ -319,14 +319,32 @@ export default function TaskPopup({
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
 
-  // STAGE 420 — SURFACE SELECTION (CANONICAL)
-  if (!isOperational && !isAdvisor) {
-    return (
-      <div style={{ padding: "20px" }}>
-        Participation View (placeholder)
-      </div>
-    );
-  }
+  /*
+==========================================================
+STAGE 500H-8G
+
+Constitutional workspace selection has migrated to:
+
+  ConstitutionalWorkspaceRouter
+  ↓
+  TaskSelectionSurface
+
+This Stage 420 routing is retained temporarily during
+migration until Advisory and Participation dispatch
+are fully integrated.
+
+TaskPopup is evolving into the Operational Workspace.
+==========================================================
+*/
+  /*
+if (!isOperational && !isAdvisor) {
+  return (
+    <div style={{ padding: "20px" }}>
+      Participation View (placeholder)
+    </div>
+  );
+}
+*/
 
 
   const showStart = executionState === "NOT_STARTED" && (isAssignee || isPMProxy);

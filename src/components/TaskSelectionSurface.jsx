@@ -28,6 +28,34 @@ CONSTITUTIONAL RULES
 
 import TaskPopup from "./TaskPopup";
 
+import {
+  resolveConstitutionalWorkspace,
+  CONSTITUTIONAL_WORKSPACE
+} from "../domain/constitutional/ConstitutionalWorkspaceRouter";
+
 export default function TaskSelectionSurface(props) {
-  return <TaskPopup {...props} />;
+  const workspace =
+    resolveConstitutionalWorkspace({
+      actor: props.actingUser,
+      segment: props.segment,
+      task: props.task
+    });
+
+  const isOperationalWorkspace =
+    workspace.destination ===
+    CONSTITUTIONAL_WORKSPACE.OPERATIONAL;
+
+  const isAdvisoryWorkspace =
+    workspace.destination ===
+    CONSTITUTIONAL_WORKSPACE.ADVISORY;
+
+  if (isOperationalWorkspace) {
+    return <TaskPopup {...props} />;
+  }
+
+  if (isAdvisoryWorkspace) {
+    return <TaskPopup {...props} />;
+  }
+
+  return null;
 }
