@@ -54,6 +54,23 @@ export function resolveConstitutionalWorkspace({
       taskId: task?.id
     });
 
+  const hasAdvisoryWorkspace =
+    advisoryNavigation.length > 0;
+
+  if (isOperational) {
+    return {
+      destination:
+        CONSTITUTIONAL_WORKSPACE.OPERATIONAL
+    };
+  }
+
+  if (hasAdvisoryWorkspace) {
+    return {
+      destination:
+        CONSTITUTIONAL_WORKSPACE.ADVISORY
+    };
+  }
+
   return {
     destination:
       CONSTITUTIONAL_WORKSPACE.OPERATIONAL
