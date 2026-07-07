@@ -135,30 +135,10 @@ export default function TaskPopup({
     if (isAdvisor && !isAssignee && advisoryTypes.length > 1) {
       return;
     }
-    switch (e.sourceType) {
-      case "RISK":
-        setActiveRiskEventId(e.sourceId);
-        setRiskModalOpen(true);
-        break;
-
-      case "ISSUE":
-        setActiveIssueEventId(e.sourceId);
-        setIssueModalOpen(true);
-        break;
-
-      case "QC":
-        setActiveQcEventId(e.sourceId);
-        setQcModalOpen(true);
-        break;
-
-      case "CC":
-        setActiveCcEventId(e.sourceId);
-        setCcModalOpen(true);
-        break;
-
-      default:
-        return;
-    }
+    openGovernanceSurface(
+      e.sourceType,
+      e.sourceId
+    );
   }
   /* ================= End Stage 429 ================= */
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
@@ -212,6 +192,55 @@ const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [ccModalOpen, setCcModalOpen] = useState(false);
   const [escalationRegisterOpen, setEscalationRegisterOpen] = useState(false);
   const [activeCcEventId, setActiveCcEventId] = useState(null);
+
+/*
+==========================================================
+
+STAGE 500H-8I
+
+CANONICAL GOVERNANCE SURFACE OPENING
+
+PURPOSE
+-------
+Provide a single implementation for opening a governance
+surface from any constitutional workspace.
+
+CONSTITUTIONAL RULES
+--------------------
+• ConstitutionalWorkspaceRouter selects the workspace.
+• This helper opens the governance surface.
+• No constitutional decision is made here.
+• No repository mutation occurs here.
+
+==========================================================
+*/
+
+function openGovernanceSurface(eventType, eventId) {
+  switch (eventType) {
+    case "RISK":
+      setActiveRiskEventId(eventId);
+      setRiskModalOpen(true);
+      break;
+
+    case "ISSUE":
+      setActiveIssueEventId(eventId);
+      setIssueModalOpen(true);
+      break;
+
+    case "QC":
+      setActiveQcEventId(eventId);
+      setQcModalOpen(true);
+      break;
+
+    case "CC":
+      setActiveCcEventId(eventId);
+      setCcModalOpen(true);
+      break;
+
+    default:
+      return;
+  }
+}
   /* ================= Stage 341 — Description State ================= */
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   /* ================= End Stage 341 State ================= */
@@ -1123,9 +1152,12 @@ if (!isOperational && !isAdvisor) {
             segmentId={task.segmentId}
           onClose={() => setRiskRegisterOpen(false)}
           openRiskEvent={(eventId) => {
-            setActiveRiskEventId(eventId);
             setRiskRegisterOpen(false);
-            setRiskModalOpen(true);
+
+            openGovernanceSurface(
+              "RISK",
+              eventId
+            );
           }}
           isPM={isPM}
         readOnly={isReadOnly}
@@ -1139,9 +1171,12 @@ if (!isOperational && !isAdvisor) {
             segmentId={task.segmentId}
           onClose={() => setIssueRegisterOpen(false)}
           openIssueEvent={(eventId) => {
-            setActiveIssueEventId(eventId);
             setIssueRegisterOpen(false);
-            setIssueModalOpen(true);
+
+            openGovernanceSurface(
+              "ISSUE",
+              eventId
+            );
           }}
             isPM={isPM}
             readOnly={isReadOnly}
@@ -1155,9 +1190,12 @@ if (!isOperational && !isAdvisor) {
             onClose={() => setQcRegisterOpen(false)}
               readOnly={isReadOnly}
             openQCEvent={(eventId) => {
-              setActiveQcEventId(eventId);
               setQcRegisterOpen(false);
-              setQcModalOpen(true);
+
+              openGovernanceSurface(
+                "QC",
+                eventId
+              );
             }}
               isPM={isPM}
           />
@@ -1172,8 +1210,10 @@ if (!isOperational && !isAdvisor) {
             readOnly={isReadOnly}
             onClose={() => setCcRegisterOpen(false)}
             openCCEvent={(id) => {
-              setActiveCcEventId(id);
-              setCcModalOpen(true);
+              openGovernanceSurface(
+              "CC",
+              id
+            );
             }}
           />
         )}
