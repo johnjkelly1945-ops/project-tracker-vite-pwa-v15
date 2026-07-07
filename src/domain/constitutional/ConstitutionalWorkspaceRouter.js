@@ -24,8 +24,16 @@ CONSTITUTIONAL RULES
 ======================================================================
 */
 
+import { resolveOperationalAuthority }
+  from "../operation/OperationalAuthorityResolver";
+
+import { resolveAdvisoryNavigation }
+  from "../governance/AdvisoryNavigationResolver";
+
 export const CONSTITUTIONAL_WORKSPACE = Object.freeze({
-  OPERATIONAL: "OPERATIONAL"
+  OPERATIONAL: "OPERATIONAL",
+  PARTICIPATION: "PARTICIPATION",
+  ADVISORY: "ADVISORY"
 });
 
 export function resolveConstitutionalWorkspace({
@@ -33,6 +41,19 @@ export function resolveConstitutionalWorkspace({
   segment,
   task
 }) {
+  const { isOperational } =
+    resolveOperationalAuthority({
+      actor,
+      segment,
+      task
+    });
+
+  const advisoryNavigation =
+    resolveAdvisoryNavigation({
+      actor,
+      taskId: task?.id
+    });
+
   return {
     destination:
       CONSTITUTIONAL_WORKSPACE.OPERATIONAL
