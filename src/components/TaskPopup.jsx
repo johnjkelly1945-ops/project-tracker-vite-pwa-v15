@@ -170,7 +170,28 @@ export default function TaskPopup({
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [activeReviewEventId, setActiveReviewEventId] = useState(null);
 
-  const [riskModalOpen, setRiskModalOpen] = useState(false);
+  /*
+==========================================================
+
+STAGE 500H-8H
+
+ADVISORY WORKSPACE PROVIDER
+
+This region owns the advisory workspace lifecycle.
+
+Responsibilities:
+
+• Advisory modal state.
+• Active governance event selection.
+• Advisory workspace rendering.
+
+This region will be extracted intact into the
+Advisory Workspace Provider.
+
+==========================================================
+*/
+
+const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
   const [activeRiskEventId, setActiveRiskEventId] = useState(null);
 
