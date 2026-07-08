@@ -27,6 +27,8 @@ CONSTITUTIONAL RULES
 */
 
 import TaskPopup from "./TaskPopup";
+import AdvisoryWorkspace from "./AdvisoryWorkspace";
+import { getActingUser } from "../domain/actor/ActingUser";
 
 import {
   resolveConstitutionalWorkspace,
@@ -34,9 +36,11 @@ import {
 } from "../domain/constitutional/ConstitutionalWorkspaceRouter";
 
 export default function TaskSelectionSurface(props) {
+  const actor = getActingUser();
+
   const workspace =
     resolveConstitutionalWorkspace({
-      actor: props.actingUser,
+      actor,
       segment: props.segment,
       task: props.task
     });
@@ -54,7 +58,7 @@ export default function TaskSelectionSurface(props) {
   }
 
   if (isAdvisoryWorkspace) {
-    return <TaskPopup {...props} />;
+    return <AdvisoryWorkspace {...props} />;
   }
 
   return null;
