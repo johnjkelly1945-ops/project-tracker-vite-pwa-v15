@@ -48,9 +48,26 @@ export default function AdvisoryWorkspaceProvider(props) {
   ==========================================================
   */
 
+  /*
+  ==========================================================
+
+  CONSTITUTIONAL ADVISORY ENTRY
+
+  The provider is the constitutional owner of advisory entry.
+
+  Subsequent stages will progressively assemble the advisory
+  context here before delegating behavioural responsibility.
+
+  ==========================================================
+  */
+
+  const advisoryContext = {
+    ...props
+  };
+
   return (
   <TaskPopup
-    {...props}
+    {...advisoryContext}
     advisoryEntry={true}
   />
 );
