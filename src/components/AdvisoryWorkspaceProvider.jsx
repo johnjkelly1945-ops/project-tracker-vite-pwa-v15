@@ -29,6 +29,8 @@ No constitutional behaviour changes occur in this stage.
 */
 
 import TaskPopup from "./TaskPopup";
+import { getActingUser } from "../domain/actor/ActingUser";
+import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
 
 export default function AdvisoryWorkspaceProvider(props) {
 
@@ -64,6 +66,17 @@ export default function AdvisoryWorkspaceProvider(props) {
   const advisoryEngagement =
     props.activeAdvisory;
 
+  const advisoryNavigation =
+    resolveAdvisoryNavigation({
+      actor: getActingUser(),
+      taskId: props.task?.id
+    });
+
+  const resolvedAdvisoryEngagement =
+    advisoryEngagement ||
+    advisoryNavigation[0] ||
+    null;
+
   function openConstitutionalDestination() {
     /*
     ==========================================================
@@ -78,6 +91,10 @@ export default function AdvisoryWorkspaceProvider(props) {
 
     ==========================================================
     */
+    console.log(
+      "RESOLVED ADVISORY ENGAGEMENT",
+      resolvedAdvisoryEngagement
+    );
   }
 
   const advisoryContext = {
