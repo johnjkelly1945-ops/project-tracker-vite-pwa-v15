@@ -61,6 +61,8 @@ export default function AdvisoryWorkspaceProvider(props) {
   ==========================================================
   */
 
+  const advisoryEngagement =
+    props.activeAdvisory;
   const advisoryContext = {
     ...props
   };
