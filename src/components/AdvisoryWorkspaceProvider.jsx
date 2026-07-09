@@ -63,9 +63,29 @@ export default function AdvisoryWorkspaceProvider(props) {
 
   const advisoryEngagement =
     props.activeAdvisory;
+
+  function openConstitutionalDestination() {
+    /*
+    ==========================================================
+
+    CONSTITUTIONAL EXECUTION
+
+    Progressive destination execution will migrate into this
+    service from TaskPopup.
+
+    Stage 500K-6A establishes the constitutional execution
+    boundary only.
+
+    ==========================================================
+    */
+  }
+
   const advisoryContext = {
     ...props
   };
+
+
+  openConstitutionalDestination();
 
   return (
   <TaskPopup
