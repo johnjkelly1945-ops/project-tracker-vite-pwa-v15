@@ -575,6 +575,12 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     setActiveTaskId(task.id);
   }
 
+  function onOpenAdvisory(advisory) {
+    if (isReadOnly) return;
+
+    setActiveTaskId(advisory.task.id);
+  }
+
   function onOpenArchivedTask(task) {
     setActiveTaskId(task.id);
   }

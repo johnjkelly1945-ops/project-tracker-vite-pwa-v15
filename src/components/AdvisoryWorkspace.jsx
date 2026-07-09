@@ -19,8 +19,8 @@ from TaskPopup into this workspace.
 ======================================================================
 */
 
-import TaskPopup from "./TaskPopup";
+import AdvisoryWorkspaceProvider from "./AdvisoryWorkspaceProvider";
 
 export default function AdvisoryWorkspace(props) {
-  return <TaskPopup {...props} />;
+  return <AdvisoryWorkspaceProvider {...props} />;
 }

@@ -101,6 +101,7 @@ export default function TaskPopup({
   currentUserRole = "PM",
   isSeedSegment = false,
   readOnly = false,
+  advisoryEntry = false,
 }) {
   if (!task) return null;
   console.log("TASK OBJECT:", task);
@@ -471,7 +472,24 @@ if (!isOperational && !isAdvisor) {
   }
 
 
-  /* ================= Risk Activation ================= */
+    function handleOpenAdvisoryRisk() {
+    const list = getGovernanceEventsByTask(task.id)
+      .filter(e =>
+        e.eventType === "RISK" &&
+        Array.isArray(e.participation) &&
+        e.participation.some(p => p && p.reviewerId === actor.id)
+      );
+
+    if (!list.length) return;
+
+    if (list.length === 1) {
+      setActiveRiskEventId(list[0].eventId);
+      setRiskModalOpen(true);
+    } else {
+      setRiskRegisterOpen(true);
+    }
+  }
+/* ================= Risk Activation ================= */
 
   function handleInitiateRisk() {
     if (!isPM) return;
@@ -787,21 +805,7 @@ if (!isOperational && !isAdvisor) {
       <span>Advisory</span>
       {" - "}
       {advisoryTypes.includes("RISK") && (
-        <span style={{ cursor: "pointer" }} onClick={() => {
-          const list = getGovernanceEventsByTask(task.id)
-            .filter(e =>
-              e.eventType === "RISK" &&
-              Array.isArray(e.participation) &&
-              e.participation.some(p => p && p.reviewerId === actor.id)
-            );
-          if (!list.length) return;
-          if (list.length === 1) {
-            setActiveRiskEventId(list[0].eventId);
-            setRiskModalOpen(true);
-          } else {
-            setRiskRegisterOpen(true);
-          }
-        }}>
+        <span style={{ cursor: "pointer" }} onClick={handleOpenAdvisoryRisk}>
           Risk
         </span>
         )}
