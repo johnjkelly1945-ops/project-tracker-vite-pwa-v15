@@ -115,6 +115,7 @@ export default function App() {
     const [activeDevFilter, setActiveDevFilter] = useState("all");
 
   const [activeTaskId, setActiveTaskId] = useState(null);
+  const [activeAdvisory, setActiveAdvisory] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
   // Stage 359A — Segment structural foundation (no UI use yet)
@@ -578,6 +579,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   function onOpenAdvisory(advisory) {
     if (isReadOnly) return;
 
+    setActiveAdvisory(advisory);
     setActiveTaskId(advisory.task.id);
   }
 
