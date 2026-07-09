@@ -91,10 +91,14 @@ export default function AdvisoryWorkspaceProvider(props) {
 
     ==========================================================
     */
-    console.log(
-      "RESOLVED ADVISORY ENGAGEMENT",
-      resolvedAdvisoryEngagement
-    );
+    if (!resolvedAdvisoryEngagement) return;
+
+    const destination =
+      resolvedAdvisoryEngagement.eventType;
+
+    const destinationId =
+      resolvedAdvisoryEngagement.eventId;
+
   }
 
   const advisoryContext = {
