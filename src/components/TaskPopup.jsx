@@ -102,6 +102,8 @@ export default function TaskPopup({
   isSeedSegment = false,
   readOnly = false,
   advisoryEntry = false,
+  advisoryDestination = null,
+  advisoryDestinationId = null,
 }) {
   if (!task) return null;
   console.log("TASK OBJECT:", task);
@@ -240,8 +242,25 @@ function openGovernanceSurface(eventType, eventId) {
 
     default:
       return;
+
   }
 }
+
+  useEffect(() => {
+    if (!advisoryEntry) return;
+    if (!advisoryDestination) return;
+    if (!advisoryDestinationId) return;
+
+    openGovernanceSurface(
+      advisoryDestination,
+      advisoryDestinationId
+    );
+  }, [
+    advisoryEntry,
+    advisoryDestination,
+    advisoryDestinationId
+  ]);
+
   /* ================= Stage 341 — Description State ================= */
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   /* ================= End Stage 341 State ================= */

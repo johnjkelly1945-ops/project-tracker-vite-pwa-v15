@@ -102,7 +102,11 @@ export default function AdvisoryWorkspaceProvider(props) {
   }
 
   const advisoryContext = {
-    ...props
+    ...props,
+    advisoryDestination:
+      resolvedAdvisoryEngagement?.eventType || null,
+    advisoryDestinationId:
+      resolvedAdvisoryEngagement?.eventId || null
   };
 
 
