@@ -85,7 +85,7 @@ export function bridgeSubmitAdvisory(payload) {
       if (eventType === "RISK") artefactType = "risk";
       if (eventType === "ISSUE") artefactType = "issue";
       if (eventType === "QC") artefactType = "qc";
-      if (eventType === "CHANGE") artefactType = "change";
+      if (eventType === "CC") artefactType = "change";
 
 
     }
