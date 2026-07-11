@@ -3,7 +3,7 @@
 ======================================================================
 
 METRA — ConstitutionalChronologyResolver.js
-Stage 500L-2C — Constitutional Chronology Foundation
+Stage 500L-2D — Constitutional Chronology Population
 
 PURPOSE
 -------
@@ -40,8 +40,19 @@ No behavioural changes occur in this stage.
 ======================================================================
 */
 
+import {
+  repoGetPersonParticipation
+} from "../personnel/SegmentPersonnelRepository";
+
+
 export function resolveConstitutionalChronology(actor) {
-  return [];
+  const personId = actor?.id;
+
+  if (!personId) {
+    return [];
+  }
+
+  return repoGetPersonParticipation(personId);
 }
 
 export default resolveConstitutionalChronology;
