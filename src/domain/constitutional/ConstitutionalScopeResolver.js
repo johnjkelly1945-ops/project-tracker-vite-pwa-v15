@@ -3,7 +3,7 @@
 ======================================================================
 
 METRA — ConstitutionalScopeResolver.js
-Stage 500L-2A — Constitutional Scope Resolver Foundation
+Stage 500L-2B — Constitutional Scope Population
 
 PURPOSE
 -------
@@ -35,11 +35,16 @@ No behavioural changes occur in this stage.
 
 ======================================================================
 */
+import {
+  resolveConstitutionalEngagements
+} from "./ConstitutionalEngagementResolver";
+
 
 export function resolveConstitutionalScope(actor) {
   return {
     actor,
-    currentConstitutionalScope: [],
+    currentConstitutionalScope:
+      resolveConstitutionalEngagements(actor),
     constitutionalChanges: []
   };
 }
