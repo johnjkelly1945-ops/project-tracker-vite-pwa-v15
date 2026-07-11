@@ -3,18 +3,18 @@
 ======================================================================
 
 METRA — ConstitutionalWorkspaceRouter.js
-Stage 500H-7D-A — Constitutional Experience Routing Foundation
+Stage 500L-3A — Constitutional Router Semantic Alignment
 
 PURPOSE
 -------
-Determine the constitutional experience entered following
-task selection.
+Determine the constitutional destination following
+constitutional actor selection.
 
 CONSTITUTIONAL RULES
 --------------------
 • Repository remains the single source of truth.
 • Constitutional Engagement Resolver owns engagement aggregation.
-• Constitutional Experience Router owns experience routing.
+• Constitutional Router owns constitutional destination routing.
 • Router performs routing determination only.
 • Router performs no mutation.
 • Router performs no rendering.
