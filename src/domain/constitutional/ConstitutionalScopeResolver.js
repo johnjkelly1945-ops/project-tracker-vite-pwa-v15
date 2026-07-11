@@ -44,8 +44,7 @@ export function resolveConstitutionalScope(actor) {
   return {
     actor,
     currentConstitutionalScope:
-      resolveConstitutionalEngagements(actor),
-    constitutionalChanges: []
+      resolveConstitutionalEngagements(actor)
   };
 }
 
