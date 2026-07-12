@@ -11,6 +11,7 @@ import DualPane from "./components/DualPane";
 import PreProject from "./components/PreProject";
 import RepositoryView from "./components/RepositoryView";
 import TaskSelectionSurface from "./components/TaskSelectionSurface";
+import MyWorld from "./components/MyWorld";
 import SubordinateSelectionModal from "./components/SubordinateSelectionModal";
 import ParticipationTypeSelectionModal from "./components/ParticipationTypeSelectionModal";
 import SummaryMoveModal from "./components/SummaryMoveModal";
@@ -163,6 +164,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   const [activeRegisterItem, setActiveRegisterItem] = useState(null);
   const [documentItem, setDocumentItem] = useState(null);
   const [documentOpen, setDocumentOpen] = useState(false);
+  const [myWorldOpen, setMyWorldOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   // Stage 359A — Load workspace with migration
@@ -1177,6 +1179,10 @@ pmName: pmDraft,
 
   return (
     <>
+
+      <MyWorld
+        open={true}
+      />
 
       {activeRegisterItem && (
         <RegisterItemView
