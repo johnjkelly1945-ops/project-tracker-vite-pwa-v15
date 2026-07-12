@@ -18,23 +18,26 @@ No behavioural logic.
 ======================================================================
 */
 
-export default function MyWorld({ open }) {
 
+import ActingActorSelector from "./ActingActorSelector";
+import { getActingUser } from "../domain/actor/ActingUser";
+export default function MyWorld({ open, onClose }) {
+
+
+  const actor = getActingUser();
   if (!open) {
     return null;
   }
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "#ffffff",
-          overflow: "hidden",
-          overflow: "hidden",
-        overflowY: "auto",
-        zIndex: 1000000
-      }}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "#ffffff",
+          overflowY: "auto",
+          zIndex: 1000000
+        }}
     >
       <div
         style={{
@@ -61,6 +64,8 @@ export default function MyWorld({ open }) {
         </div>
 
         <div style={{ padding: "40px" }}>
+            <ActingActorSelector />
+
 
           <div
             style={{
@@ -68,7 +73,7 @@ export default function MyWorld({ open }) {
               marginBottom: "14px"
             }}
           >
-            Welcome John.
+            Welcome {actor?.displayName || "User"}.
           </div>
 
           <div

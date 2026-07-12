@@ -76,6 +76,7 @@ export default function App() {
     if (stored) {
       try {
         setActingUser(JSON.parse(stored));
+          setMyWorldOpen(true);
       } catch (e) {
         console.warn("Invalid stored actor");
       }
@@ -1180,9 +1181,10 @@ pmName: pmDraft,
   return (
     <>
 
-      <MyWorld
-        open={true}
-      />
+        <MyWorld
+          open={myWorldOpen}
+          onClose={() => setMyWorldOpen(false)}
+        />
 
       {activeRegisterItem && (
         <RegisterItemView
