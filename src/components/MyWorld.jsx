@@ -21,7 +21,11 @@ No behavioural logic.
 
 import ActingActorSelector from "./ActingActorSelector";
 import { getActingUser } from "../domain/actor/ActingUser";
-export default function MyWorld({ open, onClose }) {
+export default function MyWorld({
+  open,
+  onClose,
+  responsibilityProjection
+}) {
 
 
   const actor = getActingUser();
@@ -86,49 +90,27 @@ export default function MyWorld({ open, onClose }) {
             Today these are your responsibilities in METRA.
           </div>
 
-          <div style={{ marginBottom: "36px" }}>
+          {(responsibilityProjection || []).map((item, index) => (
+            <div key={index} style={{ marginBottom: "36px" }}>
+              <div style={{ fontWeight: "600", fontSize: "22px" }}>
+                {item.segmentName}
+              </div>
 
-            <div style={{ fontWeight: "600", fontSize: "22px" }}>
-              Project Alpha
+              <div style={{ marginTop: "6px" }}>
+                {item.responsibility}
+              </div>
+
+              <div
+                style={{
+                  marginTop: "8px",
+                  fontSize: "14px",
+                  color: "#777"
+                }}
+              >
+                {item.appointedAt}
+              </div>
             </div>
-
-            <div style={{ marginTop: "6px" }}>
-              Segment Steward
-            </div>
-
-            <div
-              style={{
-                marginTop: "8px",
-                fontSize: "14px",
-                color: "#777"
-              }}
-            >
-              12 July 2026
-            </div>
-
-          </div>
-
-          <div style={{ marginBottom: "36px" }}>
-
-            <div style={{ fontWeight: "600", fontSize: "22px" }}>
-              Programme Beta
-            </div>
-
-            <div style={{ marginTop: "6px" }}>
-              Risk Advisor
-            </div>
-
-            <div
-              style={{
-                marginTop: "8px",
-                fontSize: "14px",
-                color: "#777"
-              }}
-            >
-              8 July 2026
-            </div>
-
-          </div>
+          ))}
 
           <div style={{ marginTop: "56px" }}>
 
