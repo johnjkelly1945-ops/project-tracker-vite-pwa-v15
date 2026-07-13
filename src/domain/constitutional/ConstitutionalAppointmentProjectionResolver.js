@@ -3,46 +3,42 @@
 ======================================================================
 
 METRA — ConstitutionalAppointmentProjectionResolver.js
-Stage 500L-3B — Constitutional Appointment Projection Foundation
+Stage 500L-7A — Constitutional Appointment Projection Promotion
 
 PURPOSE
 -------
 
-Project constitutional appointment records into
-presentation-ready appointment projections.
+Constitutional entry point for actor appointment projection.
 
-Initially this resolver establishes the constitutional
-destination only.
+This stage promotes the existing Personnel Participation
+Resolver behind the constitutional interface.
 
-Subsequent bounded migrations will progressively introduce:
-
-• Segment projection
-• Appointment projection
-• Presentation projection
+No new projection logic is introduced.
 
 CONSTITUTIONAL RULES
 --------------------
 
 • Repository remains the single source of truth.
-• Resolver performs projection only.
+• Projection is delegated to the Personnel Participation Resolver.
 • Resolver performs no mutation.
 • Resolver performs no routing.
 • Resolver performs no rendering.
 • Resolver performs no authority determination.
 
-No behavioural changes occur in this stage.
-
 ======================================================================
 */
 
-export function resolveConstitutionalAppointmentProjection(
-  appointment
-) {
-  if (!appointment) {
-    return null;
-  }
+import { resolvePersonnelParticipation }
+  from "../personnel/PersonnelParticipationResolver";
 
-  return appointment;
+export function resolveConstitutionalAppointmentProjection(
+  person,
+  segments = []
+) {
+  return resolvePersonnelParticipation(
+    person,
+    segments
+  );
 }
 
 export default

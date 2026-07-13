@@ -38,6 +38,7 @@ import {
   resolveRelationshipTopology
 } from "./domain/relationships/RelationshipResolver";
 import { createRelationship } from "./domain/relationships/RelationshipStore";
+import resolveConstitutionalAppointmentProjection from "./domain/constitutional/ConstitutionalAppointmentProjectionResolver";
 
 /*
 =====================================================================
@@ -815,6 +816,12 @@ const activeWorkspaceSegments = projectedSegments;
   const activeSegment =
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
 
+  const myWorldResponsibilityProjection =
+    resolveConstitutionalAppointmentProjection(
+      getActingUser(),
+      activeWorkspaceSegments
+    );
+
   const archivedSegment =
     segments.find(
       s =>
@@ -1184,6 +1191,7 @@ pmName: pmDraft,
         <MyWorld
           open={myWorldOpen}
           onClose={() => setMyWorldOpen(false)}
+          responsibilityProjection={myWorldResponsibilityProjection}
         />
 
       {activeRegisterItem && (
