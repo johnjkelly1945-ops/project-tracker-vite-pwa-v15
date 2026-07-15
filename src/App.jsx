@@ -432,6 +432,13 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     setActiveSummaryId(null);
   }
 
+  function handleSelectResponsibility(item) {
+    if (!item?.segmentId) return;
+
+    setActiveSegmentId(item.segmentId);
+    setMyWorldOpen(false);
+  }
+
   function returnToDual() {
     setWorkspaceMode("dual");
     setFocusedPane(null);
@@ -1192,6 +1199,7 @@ pmName: pmDraft,
           open={myWorldOpen}
           onClose={() => setMyWorldOpen(false)}
           responsibilityProjection={myWorldResponsibilityProjection}
+            onSelectResponsibility={handleSelectResponsibility}
         />
 
       {activeRegisterItem && (

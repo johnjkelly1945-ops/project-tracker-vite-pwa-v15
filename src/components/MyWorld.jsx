@@ -24,7 +24,8 @@ import { getActingUser } from "../domain/actor/ActingUser";
 export default function MyWorld({
   open,
   onClose,
-  responsibilityProjection
+  responsibilityProjection,
+  onSelectResponsibility
 }) {
 
 
@@ -91,7 +92,14 @@ export default function MyWorld({
           </div>
 
           {(responsibilityProjection || []).map((item, index) => (
-            <div key={index} style={{ marginBottom: "36px" }}>
+            <div
+              key={index}
+              onClick={() => onSelectResponsibility?.(item)}
+              style={{
+                marginBottom: "36px",
+                cursor: "pointer"
+              }}
+            >
               <div style={{ fontWeight: "600", fontSize: "22px" }}>
                 {item.segmentName}
               </div>

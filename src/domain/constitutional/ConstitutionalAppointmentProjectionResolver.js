@@ -3,27 +3,16 @@
 ======================================================================
 
 METRA — ConstitutionalAppointmentProjectionResolver.js
-Stage 500L-7A — Constitutional Appointment Projection Promotion
+Stage 500L-9B — Responsibility Contributor Aggregation
 
 PURPOSE
 -------
 
-Constitutional entry point for actor appointment projection.
+Constitutional entry point for actor responsibility projection.
 
-This stage promotes the existing Personnel Participation
-Resolver behind the constitutional interface.
+Contributors remain constitutionally sovereign.
 
-No new projection logic is introduced.
-
-CONSTITUTIONAL RULES
---------------------
-
-• Repository remains the single source of truth.
-• Projection is delegated to the Personnel Participation Resolver.
-• Resolver performs no mutation.
-• Resolver performs no routing.
-• Resolver performs no rendering.
-• Resolver performs no authority determination.
+This resolver aggregates their projections.
 
 ======================================================================
 */
@@ -31,14 +20,28 @@ CONSTITUTIONAL RULES
 import { resolvePersonnelParticipation }
   from "../personnel/PersonnelParticipationResolver";
 
+import { resolvePmResponsibilities }
+  from "./PmResponsibilityResolver";
+
 export function resolveConstitutionalAppointmentProjection(
   person,
   segments = []
 ) {
-  return resolvePersonnelParticipation(
-    person,
-    segments
-  );
+
+  return [
+
+    ...resolvePmResponsibilities(
+      person,
+      segments
+    ),
+
+    ...resolvePersonnelParticipation(
+      person,
+      segments
+    )
+
+  ];
+
 }
 
 export default

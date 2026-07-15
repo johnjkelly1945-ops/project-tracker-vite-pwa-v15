@@ -19,19 +19,16 @@ export function resolvePersonnelParticipation(person, segments = []) {
 
         segmentId: record.segmentId,
 
-        segmentTitle:
+        segmentName:
           segment?.segmentTitle ||
           "Unknown Segment",
 
         personId: record.personId,
 
-        participationType:
+        responsibility:
           record.participationType || "ADMIN",
 
-        role:
-          record.participationType || "ADMIN",
-
-        startedOn:
+        appointedAt:
           record.appointedOn || "Unknown"
       };
     });
