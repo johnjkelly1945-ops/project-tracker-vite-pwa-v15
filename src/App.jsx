@@ -826,8 +826,10 @@ const activeWorkspaceSegments = projectedSegments;
   const myWorldResponsibilityProjection =
     resolveConstitutionalAppointmentProjection(
       getActingUser(),
-      activeWorkspaceSegments
+      activeWorkspaceSegments,
+      tasks
     );
+
 
   const archivedSegment =
     segments.find(

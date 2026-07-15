@@ -108,6 +108,15 @@ export default function MyWorld({
                 {item.responsibility}
               </div>
 
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontWeight: "600"
+                  }}
+                >
+                  {item.taskTitle}
+                </div>
+
               <div
                 style={{
                   marginTop: "8px",
