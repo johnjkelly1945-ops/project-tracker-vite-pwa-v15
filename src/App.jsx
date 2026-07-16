@@ -435,7 +435,13 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   function handleSelectResponsibility(item) {
     if (!item?.segmentId) return;
 
-    setActiveSegmentId(item.segmentId);
+    if (item.taskId) {
+        // Stage 500L-13A — constitutional task routing boundary.
+      }
+
+      setActiveTaskId(item.taskId);
+
+      setActiveSegmentId(item.segmentId);
     setMyWorldOpen(false);
   }
 
