@@ -37,6 +37,7 @@ export const CONSTITUTIONAL_WORKSPACE = Object.freeze({
 });
 
 export function resolveConstitutionalWorkspace({
+  constitutionalEngagement,
   actor,
   segment,
   task

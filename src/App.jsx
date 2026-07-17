@@ -1795,6 +1795,7 @@ pmName: pmDraft,
               task={effectiveActiveTask}
               segment={activeSegment}
               actingUser={actingUser}
+              constitutionalEngagement={activeEngagement}
               summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
               onClose={() => setActiveTaskId(null)}
               onAddNote={onAddNote}

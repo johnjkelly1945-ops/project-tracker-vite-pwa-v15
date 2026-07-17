@@ -40,6 +40,7 @@ export default function TaskSelectionSurface(props) {
 
   const workspace =
     resolveConstitutionalWorkspace({
+      constitutionalEngagement: props.constitutionalEngagement,
       actor,
       segment: props.segment,
       task: props.task

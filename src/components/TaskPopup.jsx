@@ -98,6 +98,7 @@ export default function TaskPopup({
   workspaceMode,
   onArchiveSegment,
   actingUser,
+  constitutionalEngagement,
   currentUserRole = "PM",
   isSeedSegment = false,
   readOnly = false,
@@ -382,10 +383,12 @@ function openGovernanceSurface(eventType, eventId) {
     isAdvisor,
     isOperational
   } = resolveOperationalAuthority({
+    engagement: constitutionalEngagement,
     actor,
     segment,
     task
   });
+
   const isPMProxy = isPM && isAssigned && !isAssignee;
 
 
