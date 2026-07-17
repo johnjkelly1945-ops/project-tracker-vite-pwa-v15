@@ -118,6 +118,9 @@ export default function App() {
     const [activeDevFilter, setActiveDevFilter] = useState("all");
 
   const [activeTaskId, setActiveTaskId] = useState(null);
+
+  // Stage 500M-5A — Constitutional Engagement activation foundation.
+  const [activeEngagement, setActiveEngagement] = useState(null);
   const [activeAdvisory, setActiveAdvisory] = useState(null);
   const [activeSummaryId, setActiveSummaryId] = useState(null);
 
@@ -438,6 +441,8 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     if (item.taskId) {
         // Stage 500L-13A — constitutional task routing boundary.
       }
+
+      setActiveEngagement(item);
 
       setActiveTaskId(item.taskId);
 

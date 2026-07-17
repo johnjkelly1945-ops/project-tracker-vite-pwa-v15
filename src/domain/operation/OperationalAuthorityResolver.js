@@ -33,10 +33,29 @@ import {
 } from "../../governance/governanceStore";
 
 export function resolveOperationalAuthority({
+  engagement = null,
   actor,
   segment,
   task = null
 }) {
+
+  /*
+  ==========================================================
+
+  STAGE 500M MIGRATION
+
+  Constitutional Engagement is accepted as the future
+  execution contract.
+
+  This stage preserves existing runtime behaviour.
+
+  The current implementation continues to derive
+  operational authority from the legacy inputs until
+  subsequent bounded migrations replace that derivation.
+
+  ==========================================================
+  */
+
   const { isPM } =
     resolveSegmentAuthority(segment, actor);
 
