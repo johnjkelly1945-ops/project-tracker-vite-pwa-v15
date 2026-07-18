@@ -72,6 +72,7 @@ export default function SubordinateSelectionModal({
   title = "Select Item",
   items = [],
   segments = [],
+  tasks = [],
   onSelect,
   onClose,
   participationMode = false,
@@ -308,6 +309,7 @@ export default function SubordinateSelectionModal({
         <PersonnelRecordModal
           person={viewPerson}
           segments={segments}
+            tasks={tasks}
           participationMode={participationMode}
           onSelectPerson={handleSelectFromRecord}
           onClose={() => setViewPerson(null)}

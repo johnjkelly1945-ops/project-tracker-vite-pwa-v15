@@ -4,11 +4,13 @@ import { createPortal } from "react-dom";
 import { useState } from "react";
 
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
-import { resolvePersonnelParticipation } from "../domain/personnel/PersonnelParticipationResolver";
+import resolveConstitutionalAppointmentProjection
+  from "../domain/constitutional/ConstitutionalAppointmentProjectionResolver";
 
 export default function AppointmentsModal({
   person,
   segments = [],
+  tasks = [],
   allowManage = false,
   onManage,
   onClose
@@ -28,7 +30,12 @@ export default function AppointmentsModal({
     ? { ...person, ...registryPerson }
     : person;
 
-  const participation = resolvePersonnelParticipation(resolvedPerson, segments);
+  const appointments =
+    resolveConstitutionalAppointmentProjection(
+      resolvedPerson,
+      segments,
+      tasks
+    );
 
   return createPortal(
     <div
@@ -52,7 +59,7 @@ export default function AppointmentsModal({
           borderRadius: "8px",
         }}
       >
-        <strong>Participation</strong>
+        <strong>Appointments</strong>
 
         <div style={{ marginTop: "12px" }}>
           <div>
@@ -61,14 +68,14 @@ export default function AppointmentsModal({
           </div>
 
           <div style={{ marginTop: "16px" }}>
-            <strong>Current Participation</strong>
+            <strong>Current Appointments</strong>
           </div>
 
           <div style={{ marginTop: "12px" }}>
-            {participation.length === 0 ? (
+            {appointments.length === 0 ? (
               <div>No participation records.</div>
             ) : (
-              participation.map((item, idx) => (
+              appointments.map((item, idx) => (
                 <div
                   key={idx}
                   style={{
@@ -77,15 +84,15 @@ export default function AppointmentsModal({
                   }}
                 >
                   <div>
-                    <strong>{item.segmentTitle}</strong>
+                    <strong>{item.segmentName}</strong>
                   </div>
 
                   <div>
-                    <strong>{item.role}</strong>
+                    <strong>{item.responsibility}</strong>
                   </div>
 
                   <div>
-                    Started: {new Date(item.startedOn).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                    Started: {new Date(item.appointedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                   </div>
                 </div>
               ))

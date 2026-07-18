@@ -1709,6 +1709,7 @@ pmName: pmDraft,
             title="Personnel"
             items={getPersonnel()}
             segments={segments}
+              tasks={tasks}
             participationMode={participationMode}
             onSelect={(person) => {
               console.log(

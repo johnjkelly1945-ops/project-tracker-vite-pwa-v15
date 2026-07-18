@@ -8,7 +8,10 @@ import {
 export function resolvePersonnelParticipation(person, segments = []) {
   if (!person?.id) return [];
 
-  return repoGetPersonParticipation(person.id)
+  const participation =
+    repoGetPersonParticipation(person.id);
+
+  return participation
     .map(record => {
       const segment = segments.find(
         s => s.segmentId === record.segmentId

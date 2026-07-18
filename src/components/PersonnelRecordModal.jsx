@@ -27,6 +27,7 @@ import {
 export default function PersonnelRecordModal({
   person,
   segments = [],
+  tasks = [],
   onClose,
   participationMode = false,
   onSelectPerson = null
@@ -259,6 +260,7 @@ export default function PersonnelRecordModal({
         <AppointmentsModal
           person={resolvedPerson}
           segments={segments}
+                tasks={tasks}
           allowManage={participationMode}
           onManage={() =>
             setShowManageParticipation(true)
