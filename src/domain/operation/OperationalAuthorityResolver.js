@@ -42,16 +42,19 @@ export function resolveOperationalAuthority({
   /*
   ==========================================================
 
-  STAGE 500M MIGRATION
+  STAGE 500P — CONSTITUTIONAL PARTICIPATION CONSUMPTION
 
-  Constitutional Engagement is accepted as the future
-  execution contract.
+  Constitutional Engagement is the constitutional execution
+  contract.
 
-  This stage preserves existing runtime behaviour.
+  Constitutional Engagement already carries repository-derived
+  participation.
 
-  The current implementation continues to derive
-  operational authority from the legacy inputs until
-  subsequent bounded migrations replace that derivation.
+  This resolver currently preserves legacy operational
+  derivation while subsequent bounded migrations progressively
+  consume engagement-derived participation.
+
+  No behavioural change occurs in this stage.
 
   ==========================================================
   */
