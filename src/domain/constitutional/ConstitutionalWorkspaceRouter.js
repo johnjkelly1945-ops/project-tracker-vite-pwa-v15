@@ -7,8 +7,11 @@ Stage 500L-3A — Constitutional Router Semantic Alignment
 
 PURPOSE
 -------
-Determine the constitutional destination following
-constitutional actor selection.
+Determine the Constitutional Workspace required to
+discharge a Constitutional Responsibility.
+
+The selected Constitutional Responsibility is the
+constitutional entry point for workspace routing.
 
 CONSTITUTIONAL RULES
 --------------------
@@ -42,8 +45,26 @@ export function resolveConstitutionalWorkspace({
   segment,
   task
 }) {
+  /*
+  ==========================================================
+
+  CONSTITUTIONAL ENGAGEMENT
+
+  Constitutional Engagement represents the Constitutional
+  Responsibility being discharged.
+
+  The router accepts Constitutional Engagement as its
+  constitutional routing input.
+
+  During Stage 500N the router progressively transitions
+  from repository-derived routing toward engagement-derived
+  routing while preserving constitutional behaviour.
+
+  ==========================================================
+  */
   const { isOperational } =
     resolveOperationalAuthority({
+        engagement: constitutionalEngagement,
       actor,
       segment,
       task

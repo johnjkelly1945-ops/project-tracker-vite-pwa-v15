@@ -626,6 +626,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
               assigneeLabel:
                 localAssignees.find((a) => a.id === assigneeId)?.displayName ??
                 assigneeId,
+                assignedAt: new Date().toISOString(),
             }
           : t
       )
