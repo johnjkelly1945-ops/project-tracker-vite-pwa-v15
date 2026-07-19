@@ -109,9 +109,6 @@ export default function TaskPopup({
   if (!task) return null;
   console.log("TASK OBJECT:", task);
   const isReadOnly = readOnly === true;
-  const canMutate =
-    hasMutationAuthority &&
-    !isReadOnly;
 
   const isArchiveTriggerTask =
     task.systemAction === "ARCHIVE_SEGMENT";
@@ -381,7 +378,8 @@ function openGovernanceSurface(eventType, eventId) {
     isPM,
     isAssignee,
     isAdvisor,
-    isOperational
+    isOperational,
+    canMutate: constitutionalCanMutate
   } = resolveOperationalAuthority({
     engagement: constitutionalEngagement,
     actor,
@@ -390,6 +388,10 @@ function openGovernanceSurface(eventType, eventId) {
   });
 
   const isPMProxy = isPM && isAssigned && !isAssignee;
+
+  const canMutate =
+    constitutionalCanMutate &&
+    !isReadOnly;
 
 
   /*

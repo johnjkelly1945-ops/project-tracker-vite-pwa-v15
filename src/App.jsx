@@ -4,6 +4,7 @@ import { setActingUser, getActingUser } from "./domain/actor/ActingUser";
 import { REPO_SUMMARIES, REPO_TASKS } from "./domain/repository/RepositoryData";
 
 import { hasContext } from "./domain/authority/hasContext";
+import { attemptAction } from "./domain/authority/ActionExecutor";
 import Sidebar from "./components/Sidebar";
 import ArchiveHost from "./components/archive/ArchiveHost";
 import ModuleHeader from "./components/ModuleHeader";
@@ -723,15 +724,33 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   function onStartExecution(taskId) {
     if (isReadOnly) return;
 
+    const tasks = isDev ? devTasks : mgmtTasks;
     const setTasks = isDev ? setDevTasks : setMgmtTasks;
 
-    setTasks((c) =>
-      c.map((t) =>
-        t.id === taskId && t.executionState === "NOT_STARTED"
-          ? { ...t, executionState: "IN_PROGRESS" }
-          : t
-      )
-    );
+    const task = tasks.find((t) => t.id === taskId);
+
+    return attemptAction({
+      actor: getActingUser(),
+      action: "START_TASK",
+      target: task,
+      context: {
+        segmentId: task?.segmentId,
+        segment: activeSegment
+      },
+      execute: () => {
+          return setTasks((c) =>
+          c.map((t) =>
+            t.id === taskId &&
+            t.executionState === "NOT_STARTED"
+              ? {
+                  ...t,
+                  executionState: "IN_PROGRESS"
+                }
+              : t
+          )
+        )
+        }
+    });
   }
 
   function onSubmitExecution(taskId) {

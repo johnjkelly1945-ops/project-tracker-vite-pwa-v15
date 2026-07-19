@@ -1,11 +1,8 @@
 // @ts-nocheck
 
-import {
-  getCurrentPM,
-  getActorRoleInSegment
-} from "../actor/SegmentRoleStore.js";
 
 import { getPersonnel } from "../personnel/PersonnelRegistry";
+import { resolveSegmentAuthority } from "./resolveSegmentAuthority";
 
 export function canPerformAction({ actor, action, target, context }) {
   if (!actor) return false;
@@ -22,7 +19,6 @@ export function canPerformAction({ actor, action, target, context }) {
   const people = getPersonnel() || [];
 
   let person = people.find(p => p.id === actor.id);
-
   // Stage 434 — controlled fallback (non-breaking)
   if (!person && actor.displayName) {
     person = people.find(p => p.displayName === actor.displayName);
@@ -37,12 +33,18 @@ export function canPerformAction({ actor, action, target, context }) {
     }
   }
 
-  const isPM = person?.isPM === true;
+  const authority =
+    resolveSegmentAuthority(
+      context?.segment,
+      actor
+    );
+
+  const isPM = authority.isPM;
   const isAdmin = person?.isAdmin === true;
 
-  if (!isPM) {
-    return false;
-  }
+  if (!authority.isPM) {
+      return false;
+    }
 
   if (context && target && context.segmentId && target.segmentId) {
     if (context.segmentId !== target.segmentId) {

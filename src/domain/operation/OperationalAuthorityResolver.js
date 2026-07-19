@@ -63,11 +63,7 @@ export function resolveOperationalAuthority({
     resolveSegmentAuthority(segment, actor);
 
   const isAssignee =
-    !!(
-      actor &&
-      task &&
-      task.assigneeId === actor.id
-    );
+    engagement?.responsibility === "Assignee";
 
   const events =
     task
@@ -90,11 +86,15 @@ export function resolveOperationalAuthority({
     isPM ||
     isAssignee;
 
+  const canMutate =
+    isOperational;
+
   return {
     isPM,
     isAssignee,
     isAdvisor,
-    isOperational
+    isOperational,
+    canMutate
   };
 }
 
