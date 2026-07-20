@@ -107,7 +107,6 @@ export default function TaskPopup({
   advisoryDestinationId = null,
 }) {
   if (!task) return null;
-  console.log("TASK OBJECT:", task);
   const isReadOnly = readOnly === true;
 
   const isArchiveTriggerTask =
@@ -634,6 +633,7 @@ if (!isOperational && !isAdvisor) {
   /* ================= Inline Commit ================= */
 
   function handleCommitInlineNote() {
+
     if (!canMutate) return;
     const text = inlineDraftText.trim();
     if (!text) return;

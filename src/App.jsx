@@ -440,8 +440,21 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     if (!item?.segmentId) return;
 
     if (item.taskId) {
-        // Stage 500L-13A — constitutional task routing boundary.
-      }
+      /*
+      ==========================================================
+      Stage 500R-1 — Constitutional Task Routing
+      ----------------------------------------------------------
+      Responsibility-driven task execution enters the
+      operational workspace before task selection.
+
+      Current routing policy:
+      • Task responsibilities → Management workspace
+      ==========================================================
+      */
+
+      setWorkspaceMode("single");
+      setFocusedPane("management");
+    }
 
       setActiveEngagement(item);
 
@@ -690,6 +703,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
 
 
   function onAddNote(taskId, note) {
+
     if (isReadOnly) return;
 
     const setTasks = isDev ? setDevTasks : setMgmtTasks;
@@ -1026,7 +1040,7 @@ const archivedMgmtTasks =
       : null;
 
   const effectiveActiveTask =
-      activeTask || archiveActiveTask; if (activeTaskId) console.log("TASK RESOLUTION", { activeTaskId, activeTask: activeTask?.id, archiveActiveTask: archiveActiveTask?.id, effectiveActiveTask: (activeTask || archiveActiveTask)?.id });
+      activeTask || archiveActiveTask;
 
 const isSeedSegment =
   activeSegment?.segmentType === "SEED";
@@ -1805,7 +1819,6 @@ pmName: pmDraft,
       </div>
 
         )}
-          {effectiveActiveTask && console.log("POPUP BRANCH", effectiveActiveTask.id)}
 
           {effectiveActiveTask && (
             <TaskSelectionSurface
