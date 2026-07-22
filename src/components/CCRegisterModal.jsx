@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose, openCCEvent, isPM, readOnly = false }) {
+export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose, openCCEvent, isPM, readOnly = false, constitutionalEngagement }) {
 
   const [, refresh] = useState(0);
 
@@ -44,8 +44,8 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
   const ccs =
     getChangeArtefacts()
       .filter(cc =>
-        cc.taskId === taskId &&
-        (isPM || advisoryCCArtefactIds.has(cc.artefactId))
+        cc.segmentId === segmentId &&
+        (isPM || constitutionalEngagement?.responsibility === "CC_INSPECTION" || advisoryCCArtefactIds.has(cc.artefactId))
       )
 
   function saveEntry() {

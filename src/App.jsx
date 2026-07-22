@@ -1231,6 +1231,12 @@ pmName: pmDraft,
     });
   }
 
+  console.log("STAGE500T APP SEGMENT STATE", {
+    activeSegment,
+    activeSegmentId,
+    activeEngagement
+  });
+
   /* ===================== RENDER ===================== */
 
   return (
@@ -1813,6 +1819,7 @@ pmName: pmDraft,
       </div>
 
         )}
+
 
           {(effectiveActiveTask || activeEngagement) && (
             <TaskSelectionSurface

@@ -42,6 +42,12 @@ export default function TaskSelectionSurface(props) {
 
   const actor = getActingUser();
 
+    console.log("STAGE500T TASK SURFACE PROPS", {
+      segment: props.segment,
+      task: props.task,
+      constitutionalEngagement: props.constitutionalEngagement
+    });
+
   const workspace =
     resolveConstitutionalWorkspace({
       constitutionalEngagement: props.constitutionalEngagement,
