@@ -62,6 +62,12 @@ export function resolveAdvisoryResponsibilities(
         taskId:
           task.id,
 
+        governanceEventId:
+          event.eventId,
+
+        governanceEventType:
+          event.eventType,
+
         taskTitle:
           task.title ||
           "Unknown Task",

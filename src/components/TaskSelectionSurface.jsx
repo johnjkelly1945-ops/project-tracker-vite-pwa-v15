@@ -28,6 +28,8 @@ CONSTITUTIONAL RULES
 
 import TaskPopup from "./TaskPopup";
 import AdvisoryWorkspace from "./AdvisoryWorkspace";
+import GovernanceWorkspace from "./GovernanceWorkspace";
+import CCWorkspace from "./CCWorkspace";
 import { getActingUser } from "../domain/actor/ActingUser";
 
 import {
@@ -36,6 +38,8 @@ import {
 } from "../domain/constitutional/ConstitutionalWorkspaceRouter";
 
 export default function TaskSelectionSurface(props) {
+  console.log("STAGE500T TASK SELECTION");
+
   const actor = getActingUser();
 
   const workspace =
@@ -46,20 +50,37 @@ export default function TaskSelectionSurface(props) {
       task: props.task
     });
 
-  const isOperationalWorkspace =
+  const isTaskWorkspace =
     workspace.destination ===
-    CONSTITUTIONAL_WORKSPACE.OPERATIONAL;
+    CONSTITUTIONAL_WORKSPACE.TASK;
 
   const isAdvisoryWorkspace =
     workspace.destination ===
     CONSTITUTIONAL_WORKSPACE.ADVISORY;
 
-  if (isOperationalWorkspace) {
+  const isGovernanceWorkspace =
+    workspace.destination ===
+    CONSTITUTIONAL_WORKSPACE.GOVERNANCE;
+
+    const isCCWorkspace =
+      workspace.destination ===
+      CONSTITUTIONAL_WORKSPACE.CC;
+
+  if (isTaskWorkspace) {
     return <TaskPopup {...props} />;
   }
 
   if (isAdvisoryWorkspace) {
     return <AdvisoryWorkspace {...props} />;
+  }
+
+  if (isGovernanceWorkspace) {
+    return <GovernanceWorkspace {...props} />;
+  }
+
+
+  if (isCCWorkspace) {
+    return <CCWorkspace {...props} />;
   }
 
   return null;

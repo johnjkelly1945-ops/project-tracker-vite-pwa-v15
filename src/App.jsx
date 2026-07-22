@@ -40,6 +40,7 @@ import {
 } from "./domain/relationships/RelationshipResolver";
 import { createRelationship } from "./domain/relationships/RelationshipStore";
 import resolveConstitutionalAppointmentProjection from "./domain/constitutional/ConstitutionalAppointmentProjectionResolver";
+import { resolveConstitutionalOperationalEntry } from "./domain/constitutional/ConstitutionalOperationalEntryResolver";
 
 /*
 =====================================================================
@@ -439,28 +440,21 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   function handleSelectResponsibility(item) {
     if (!item?.segmentId) return;
 
-    if (item.taskId) {
-      /*
-      ==========================================================
-      Stage 500R-1 — Constitutional Task Routing
-      ----------------------------------------------------------
-      Responsibility-driven task execution enters the
-      operational workspace before task selection.
+    /*
+    ==========================================================
+    Stage 500T-2 — Constitutional Responsibility Routing
+    ----------------------------------------------------------
+    Routing is determined by the constitutional contract,
+    not merely by the existence of a task.
+    ==========================================================
+    */
 
-      Current routing policy:
-      • Task responsibilities → Management workspace
-      ==========================================================
-      */
+    setActiveEngagement(item);
 
-      setWorkspaceMode("single");
-      setFocusedPane("management");
-    }
 
-      setActiveEngagement(item);
+    console.log("STAGE500T CONTRACT", item);
 
-      setActiveTaskId(item.taskId);
-
-      setActiveSegmentId(item.segmentId);
+    setActiveSegmentId(item.segmentId);
     setMyWorldOpen(false);
   }
 
@@ -1820,7 +1814,7 @@ pmName: pmDraft,
 
         )}
 
-          {effectiveActiveTask && (
+          {(effectiveActiveTask || activeEngagement) && (
             <TaskSelectionSurface
                 hasMutationAuthority={hasMutationAuthority}
                 readOnly={Boolean(archivedSegment)}

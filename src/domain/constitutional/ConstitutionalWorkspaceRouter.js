@@ -34,9 +34,13 @@ import { resolveAdvisoryNavigation }
   from "../governance/AdvisoryNavigationResolver";
 
 export const CONSTITUTIONAL_WORKSPACE = Object.freeze({
-  OPERATIONAL: "OPERATIONAL",
-  PARTICIPATION: "PARTICIPATION",
-  ADVISORY: "ADVISORY"
+  TASK: "TASK",
+  ADVISORY: "ADVISORY",
+  GOVERNANCE: "GOVERNANCE",
+    CC: "CC",
+  OWNERSHIP: "OWNERSHIP",
+  BOARD: "BOARD",
+  PARTICIPATION: "PARTICIPATION"
 });
 
 export function resolveConstitutionalWorkspace({
@@ -62,7 +66,14 @@ export function resolveConstitutionalWorkspace({
 
   ==========================================================
   */
-  const { isOperational } =
+  console.log("STAGE500T ROUTER INPUT", {
+  constitutionalEngagement,
+  actor,
+  segment: segment?.id,
+  task: task?.id
+});
+
+const { isOperational } =
     resolveOperationalAuthority({
         engagement: constitutionalEngagement,
       actor,
@@ -79,10 +90,35 @@ export function resolveConstitutionalWorkspace({
   const hasAdvisoryWorkspace =
     advisoryNavigation.length > 0;
 
+  console.log("STAGE500T ROUTER", {
+    constitutionalEngagement,
+    isOperational,
+    hasAdvisoryWorkspace,
+    taskId: task?.id
+  });
+
+
+  if (constitutionalEngagement?.responsibility === "CC_INSPECTION") {
+    console.log("STAGE500T ROUTER -> CC");
+    return {
+      destination:
+        CONSTITUTIONAL_WORKSPACE.CC
+    };
+  }
+
   if (isOperational) {
     return {
       destination:
-        CONSTITUTIONAL_WORKSPACE.OPERATIONAL
+        CONSTITUTIONAL_WORKSPACE.TASK
+    };
+  }
+
+
+  if (constitutionalEngagement?.responsibility === "CC_INSPECTION") {
+    console.log("STAGE500T ROUTER -> CC");
+    return {
+      destination:
+        CONSTITUTIONAL_WORKSPACE.CC
     };
   }
 
@@ -93,9 +129,25 @@ export function resolveConstitutionalWorkspace({
     };
   }
 
+
+
+  if (
+    [
+      "RISK_INSPECTION",
+      "ISSUE_INSPECTION",
+      "QC_INSPECTION",
+    ].includes(constitutionalEngagement?.responsibility)
+  ) {
+    console.log("STAGE500T ROUTER -> GOVERNANCE");
+      return {
+        destination:
+          CONSTITUTIONAL_WORKSPACE.GOVERNANCE
+    };
+  }
+
   return {
     destination:
-      CONSTITUTIONAL_WORKSPACE.OPERATIONAL
+      CONSTITUTIONAL_WORKSPACE.TASK
   };
 }
 
