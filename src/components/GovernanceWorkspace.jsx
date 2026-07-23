@@ -25,7 +25,12 @@ No constitutional behaviour changes occur in this stage.
 */
 
 import TaskPopup from "./TaskPopup";
+import GovernanceWorkspaceProvider from "./GovernanceWorkspaceProvider";
 
 export default function GovernanceWorkspace(props) {
-  return <TaskPopup {...props} />;
+  return (
+    <GovernanceWorkspaceProvider>
+      <TaskPopup {...props} />
+    </GovernanceWorkspaceProvider>
+  );
 }
