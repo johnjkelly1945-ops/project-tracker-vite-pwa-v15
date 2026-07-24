@@ -72,9 +72,9 @@ export default function ManageParticipationModal({
             participation.map((item, idx) => (
               <div
                 key={idx}
-                onClick={() =>
-                  setSelected(item)
-                }
+                  onClick={() =>
+                    setSelected(item)
+                  }
                 style={{
                   padding: "8px",
                   marginTop: "6px",
@@ -88,18 +88,18 @@ export default function ManageParticipationModal({
               >
                 <div>
                   <strong>
-                    {item.segmentTitle}
+                    {item.segmentName}
                   </strong>
                 </div>
 
                 <div>
-                  {item.role}
+                  {item.responsibility}
                 </div>
 
                 <div>
                   Started:{" "}
                   {new Date(
-                    item.startedOn
+                    item.appointedAt
                   ).toLocaleDateString(
                     "en-GB",
                     {

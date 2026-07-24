@@ -170,9 +170,6 @@ export default function PersonnelRecordModal({
                 <strong>Experience</strong>
               </div>
 
-              <div style={{ marginTop: "6px" }}>
-                No experience recorded
-              </div>
 
               <button
                 type="button"
@@ -188,9 +185,6 @@ export default function PersonnelRecordModal({
                 <strong>Skills</strong>
               </div>
 
-              <div style={{ marginTop: "6px" }}>
-                No skills recorded
-              </div>
 
               <button
                 type="button"

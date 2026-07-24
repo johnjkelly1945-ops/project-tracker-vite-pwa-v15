@@ -28,6 +28,9 @@ export function resolvePersonnelParticipation(person, segments = []) {
 
         personId: record.personId,
 
+          participationType:
+            record.participationType || "ADMIN",
+
         responsibility:
           record.participationType || "ADMIN",
 
