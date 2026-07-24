@@ -30,6 +30,8 @@ import TaskPopup from "./TaskPopup";
 import AdvisoryWorkspace from "./AdvisoryWorkspace";
 import GovernanceWorkspace from "./GovernanceWorkspace";
 import CCWorkspace from "./CCWorkspace";
+import RiskWorkspace from "./RiskWorkspace";
+import IssueWorkspace from "./IssueWorkspace";
 import { getActingUser } from "../domain/actor/ActingUser";
 
 import {
@@ -72,6 +74,13 @@ export default function TaskSelectionSurface(props) {
       workspace.destination ===
       CONSTITUTIONAL_WORKSPACE.CC;
 
+    const isRiskWorkspace =
+      workspace.destination ===
+      CONSTITUTIONAL_WORKSPACE.RISK;
+    const isIssueWorkspace =
+      workspace.destination ===
+      CONSTITUTIONAL_WORKSPACE.ISSUE;
+
   if (isTaskWorkspace) {
     return <TaskPopup {...props} />;
   }
@@ -88,6 +97,14 @@ export default function TaskSelectionSurface(props) {
   if (isCCWorkspace) {
     return <CCWorkspace {...props} />;
   }
+
+  if (isRiskWorkspace) {
+    return <RiskWorkspace {...props} />;
+  }
+  if (isIssueWorkspace) {
+    return <IssueWorkspace {...props} />;
+  }
+
 
   return null;
 }

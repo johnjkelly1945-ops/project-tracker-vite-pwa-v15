@@ -39,7 +39,7 @@ import {
   resolveRelationshipTopology
 } from "./domain/relationships/RelationshipResolver";
 import { createRelationship } from "./domain/relationships/RelationshipStore";
-import resolveConstitutionalAppointmentProjection from "./domain/constitutional/ConstitutionalAppointmentProjectionResolver";
+import resolveMyWorldResponsibilityProjection from "./domain/constitutional/MyWorldResponsibilityProjectionResolver";
 import { resolveConstitutionalOperationalEntry } from "./domain/constitutional/ConstitutionalOperationalEntryResolver";
 
 /*
@@ -458,6 +458,12 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     setMyWorldOpen(false);
   }
 
+
+  function openParticipation() {
+    setParticipationMode(true);
+    setPersonnelOpen(true);
+  }
+
   function returnToDual() {
     setWorkspaceMode("dual");
     setFocusedPane(null);
@@ -863,7 +869,7 @@ const activeWorkspaceSegments = projectedSegments;
     activeWorkspaceSegments.find(s => s.segmentId === effectiveSegmentId) || null;
 
   const myWorldResponsibilityProjection =
-    resolveConstitutionalAppointmentProjection(
+    resolveMyWorldResponsibilityProjection(
       getActingUser(),
       activeWorkspaceSegments,
       tasks
@@ -1070,10 +1076,7 @@ const canCreateSeedTask =
         setRepositoryPane("mgmt");
         setRepositoryOpen(true);
       }}
-      onOpenParticipation={() => {
-        setParticipationMode(true);
-        setPersonnelOpen(true);
-      }}
+        onOpenParticipation={openParticipation}
     />
   );
 
@@ -1101,15 +1104,12 @@ const canCreateSeedTask =
         setRepositoryPane("dev");
         setRepositoryOpen(true);
       }}
-      onOpenParticipation={() => {
-        setParticipationMode(true);
-        setPersonnelOpen(true);
-      }}
-    />
-  );
+        onOpenParticipation={openParticipation}
+      />
+    );
 
-const archivedMgmtBody = (
-  <PreProject
+  const archivedMgmtBody = (
+    <PreProject
     summaries={archivedMgmtSummaries}
     tasks={archivedMgmtTasks}
       onOpenTask={onOpenArchivedTask}
@@ -1627,6 +1627,8 @@ pmName: pmDraft,
                 : "Assign PM"
             }
             items={getPersonnel()}
+              segments={segments}
+              tasks={tasks}
             onSelect={handleSelectSteward}
             onClose={() => {
               setActiveStewardshipRole(null);
@@ -1828,6 +1830,8 @@ pmName: pmDraft,
               workspaceMode={workspaceMode}
               onArchiveSegment={handleArchiveSegment}
               task={effectiveActiveTask}
+                segments={segments}
+                tasks={tasks}
               segment={activeSegment}
               actingUser={actingUser}
               constitutionalEngagement={activeEngagement}
@@ -1836,6 +1840,7 @@ pmName: pmDraft,
               onAddNote={onAddNote}
               onAddDescription={onAddDescription}
               onAssignTask={onAssignTask}
+              onOpenParticipation={openParticipation}
                 onSaveReminder={onSaveReminder}
                 onDeleteReminder={onDeleteReminder}
               onStartExecution={onStartExecution}

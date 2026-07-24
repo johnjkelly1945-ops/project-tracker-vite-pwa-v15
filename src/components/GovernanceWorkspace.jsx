@@ -29,7 +29,7 @@ import GovernanceWorkspaceProvider from "./GovernanceWorkspaceProvider";
 
 export default function GovernanceWorkspace(props) {
   return (
-    <GovernanceWorkspaceProvider>
+    <GovernanceWorkspaceProvider {...props}>
       <TaskPopup {...props} />
     </GovernanceWorkspaceProvider>
   );

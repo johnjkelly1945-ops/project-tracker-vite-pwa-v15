@@ -21,6 +21,6 @@ No constitutional behaviour changes occur in this stage.
 ======================================================================
 */
 
-export default function GovernanceWorkspaceProvider({ children }) {
-  return children;
+export default function GovernanceWorkspaceProvider(props) {
+  return props.children;
 }

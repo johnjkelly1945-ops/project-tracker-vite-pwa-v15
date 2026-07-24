@@ -23,11 +23,7 @@ import { resolvePersonnelParticipation }
 import { resolvePmResponsibilities }
   from "./PmResponsibilityResolver";
 
-import { resolveAssigneeResponsibilities }
-  from "./AssigneeResponsibilityResolver";
 
-import { resolveAdvisoryResponsibilities }
-  from "./AdvisoryResponsibilityResolver";
 
 export function resolveConstitutionalAppointmentProjection(
   person,
@@ -46,18 +42,6 @@ export function resolveConstitutionalAppointmentProjection(
         person,
         segments
       ),
-
-      ...resolveAssigneeResponsibilities(
-        person,
-        tasks,
-        segments
-        ),
-
-        ...resolveAdvisoryResponsibilities(
-          person,
-          tasks,
-          segments
-        )
 
   ];
 

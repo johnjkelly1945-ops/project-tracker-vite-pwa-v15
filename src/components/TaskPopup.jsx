@@ -82,11 +82,14 @@ function systemLine(text) {
 export default function TaskPopup({
   task,
   segment,
+  segments = [],
+  tasks = [],
   summaries = [],
   onClose,
   onAddNote,
   onAddDescription,
   onAssignTask,
+  onOpenParticipation,
   onSaveReminder,
   onDeleteReminder,
   onStartExecution,
@@ -905,6 +908,11 @@ if (!isOperational && !isAdvisor) {
                   {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
               )}
+                  {canMutate && !isSeedSegment && (
+                    <button onClick={onOpenParticipation}>
+                      Participation
+                    </button>
+                  )}
                   {canMutate && !isCompleted && isPM && !summaryEditing && !isSeedSegment && (
                 <button onClick={() => setSummaryEditing(true)}>
                   Link summary
@@ -974,6 +982,8 @@ if (!isOperational && !isAdvisor) {
         <SubordinateSelectionModal
           title={localAssigneeId ? "Reassign Task" : "Assign Task"}
           items={personnel}
+            segments={segments}
+            tasks={tasks}
           onSelect={handleSelectAssignee}
           onClose={() => setAssignmentModalOpen(false)}
         />
