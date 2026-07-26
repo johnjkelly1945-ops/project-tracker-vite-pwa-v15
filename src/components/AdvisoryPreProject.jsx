@@ -30,8 +30,6 @@ export default function AdvisoryPreProject({
   onCreateSummary,
   canOpenRepository = false,
   onOpenRepository,
-  canOpenParticipation = false,
-  onOpenParticipation,
 }) {
   return (
     <div
@@ -109,8 +107,6 @@ export default function AdvisoryPreProject({
           onCreateSummary={onCreateSummary}
           canOpenRepository={canOpenRepository}
           onOpenRepository={onOpenRepository}
-            canOpenParticipation={canOpenParticipation}
-            onOpenParticipation={onOpenParticipation}
         />
       </div>
     </div>

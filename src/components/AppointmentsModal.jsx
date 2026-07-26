@@ -6,15 +6,14 @@ import { useState } from "react";
 import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import resolveConstitutionalAppointmentProjection
   from "../domain/constitutional/ConstitutionalAppointmentProjectionResolver";
-import { resolvePersonnelParticipation } from "../domain/personnel/PersonnelParticipationResolver";
 
 export default function AppointmentsModal({
   person,
   segments = [],
   tasks = [],
-  allowManage = false,
   onManage,
-  onClose
+  onClose,
+  onAdd
 }) {
   if (!person) return null;
 
@@ -37,13 +36,6 @@ export default function AppointmentsModal({
       segments,
       tasks
     );
-
-  const participation =
-    resolvePersonnelParticipation(
-      resolvedPerson,
-      segments
-    );
-
   return createPortal(
     <div
       style={{
@@ -80,7 +72,7 @@ export default function AppointmentsModal({
 
           <div style={{ marginTop: "12px" }}>
             {appointments.length === 0 ? (
-              <div>No participation records.</div>
+              <div>No appointment records.</div>
             ) : (
               appointments.map((item, idx) => (
                 <div
@@ -106,39 +98,15 @@ export default function AppointmentsModal({
             )}
           </div>
         </div>
-        <div style={{ marginTop: "16px" }}>
-          <strong>Current Participation</strong>
-        </div>
-
-        <div style={{ marginTop: "12px" }}>
-          {participation.length === 0 ? (
-            <div>No participation records.</div>
-          ) : (
-            participation.map((item, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: "6px 0",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
-                <div>
-                  <strong>{item.segmentName}</strong>
-                </div>
-
-                <div>
-                  <strong>{item.responsibility}</strong>
-                </div>
-
-                <div>
-                  Started: {new Date(item.appointedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
         <div style={{ marginTop: "16px", textAlign: "right" }}>
+          {typeof onAdd === "function" && (
+            <button
+              onClick={onAdd}
+            >
+              Add
+            </button>
+          )}
+
           <button onClick={onManage}>
             Manage
           </button>

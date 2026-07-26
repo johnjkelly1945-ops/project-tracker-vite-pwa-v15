@@ -14,7 +14,6 @@ import RepositoryView from "./components/RepositoryView";
 import TaskSelectionSurface from "./components/TaskSelectionSurface";
 import MyWorld from "./components/MyWorld";
 import SubordinateSelectionModal from "./components/SubordinateSelectionModal";
-import ParticipationTypeSelectionModal from "./components/ParticipationTypeSelectionModal";
 import SummaryMoveModal from "./components/SummaryMoveModal";
 import PersonnelPanel from "./components/PersonnelPanel";
 import ProjectRegistersHost from "./components/registers/ProjectRegistersHost";
@@ -139,14 +138,6 @@ export default function App() {
   /* ===================== REPOSITORY OVERLAY (UI ONLY) ===================== */
   const [repositoryOpen, setRepositoryOpen] = useState(false);
   const [personnelOpen, setPersonnelOpen] = useState(false);
-  const [participationMode, setParticipationMode] = useState(false);
-
-  const [selectedParticipationPerson, setSelectedParticipationPerson] =
-    useState(null);
-
-  const [participationTypeOpen, setParticipationTypeOpen] =
-    useState(false);
-
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveInspectSegmentId, setArchiveInspectSegmentId] = useState(null);
     const [archiveWorkspaceMode, setArchiveWorkspaceMode] = useState("dual");
@@ -459,10 +450,6 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
   }
 
 
-  function openParticipation() {
-    setParticipationMode(true);
-    setPersonnelOpen(true);
-  }
 
   function returnToDual() {
     setWorkspaceMode("dual");
@@ -1069,14 +1056,10 @@ const canCreateSeedTask =
       canOpenRepository={
           hasMutationAuthority && !isSeedSegment
         }
-        canOpenParticipation={
-          hasMutationAuthority && !isSeedSegment
-        }
       onOpenRepository={() => {
         setRepositoryPane("mgmt");
         setRepositoryOpen(true);
       }}
-        onOpenParticipation={openParticipation}
     />
   );
 
@@ -1097,14 +1080,10 @@ const canCreateSeedTask =
       canOpenRepository={
           hasMutationAuthority && !isSeedSegment
         }
-        canOpenParticipation={
-          hasMutationAuthority && !isSeedSegment
-        }
       onOpenRepository={() => {
         setRepositoryPane("dev");
         setRepositoryOpen(true);
       }}
-        onOpenParticipation={openParticipation}
       />
     );
 
@@ -1746,50 +1725,16 @@ pmName: pmDraft,
             items={getPersonnel()}
             segments={segments}
               tasks={tasks}
-            participationMode={participationMode}
-            onSelect={(person) => {
-              console.log(
-                "STAGE500D-3B SELECTED PARTICIPATION PERSON",
-                person
-              );
-
-                setSelectedParticipationPerson(person);
+              actingUser={actingUser}
+              onSelect={() => {
                 setPersonnelOpen(false);
-                setParticipationTypeOpen(true);
-            }}
+              }}
             onClose={() => {
-              setParticipationMode(false);
               setPersonnelOpen(false);
             }}
           />
         )}
 
-        {participationTypeOpen && (
-          <ParticipationTypeSelectionModal
-            onSelect={(participationType) => {
-              console.log(
-                "STAGE500D-3C PARTICIPATION TYPE",
-                participationType
-              );
-
-                repoAssignParticipation({
-                  segmentId: activeSegmentId,
-                  personId: selectedParticipationPerson?.id,
-                  participationType,
-                  appointedBy:
-                    getActingUser()?.displayName || "PM"
-                });
-
-
-              setParticipationTypeOpen(false);
-              setParticipationMode(false);
-                setSelectedParticipationPerson(null);
-            }}
-            onClose={() => {
-              setParticipationTypeOpen(false);
-            }}
-          />
-        )}
 
 
         {repositoryOpen && (
@@ -1840,7 +1785,6 @@ pmName: pmDraft,
               onAddNote={onAddNote}
               onAddDescription={onAddDescription}
               onAssignTask={onAssignTask}
-              onOpenParticipation={openParticipation}
                 onSaveReminder={onSaveReminder}
                 onDeleteReminder={onDeleteReminder}
               onStartExecution={onStartExecution}

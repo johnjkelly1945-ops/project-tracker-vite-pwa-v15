@@ -89,7 +89,6 @@ export default function TaskPopup({
   onAddNote,
   onAddDescription,
   onAssignTask,
-  onOpenParticipation,
   onSaveReminder,
   onDeleteReminder,
   onStartExecution,
@@ -908,11 +907,6 @@ if (!isOperational && !isAdvisor) {
                   {localAssigneeId ? "Reassign" : "Assign"}
                 </button>
               )}
-                  {canMutate && !isSeedSegment && (
-                    <button onClick={onOpenParticipation}>
-                      Participation
-                    </button>
-                  )}
                   {canMutate && !isCompleted && isPM && !summaryEditing && !isSeedSegment && (
                 <button onClick={() => setSummaryEditing(true)}>
                   Link summary

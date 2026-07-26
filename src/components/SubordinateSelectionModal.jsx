@@ -73,9 +73,10 @@ export default function SubordinateSelectionModal({
   items = [],
   segments = [],
   tasks = [],
+  activeSegmentId,
+    actingUser,
   onSelect,
   onClose,
-  participationMode = false,
 }) {
   const [showAddPerson, setShowAddPerson] =
     useState(false);
@@ -101,15 +102,6 @@ export default function SubordinateSelectionModal({
   function handleViewPerson(person) {
     setViewPerson(person);
   }
-
-  function handleSelectFromRecord(person) {
-    setViewPerson(null);
-
-    if (typeof onSelect === "function") {
-      onSelect(person);
-    }
-  }
-
   const visibleItems = useMemo(() => {
     const seeded = Array.isArray(items)
       ? items.map(normalizeItem)
@@ -310,8 +302,8 @@ export default function SubordinateSelectionModal({
           person={viewPerson}
           segments={segments}
             tasks={tasks}
-          participationMode={participationMode}
-          onSelectPerson={handleSelectFromRecord}
+            activeSegmentId={activeSegmentId}
+            actingUser={actingUser}
           onClose={() => setViewPerson(null)}
         />
       )}

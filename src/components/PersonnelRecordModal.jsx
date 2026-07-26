@@ -17,26 +17,29 @@ import { createPortal } from "react-dom";
 import AddPersonCard from "./AddPersonCard";
 import AppointmentsModal from "./AppointmentsModal";
 import ManageParticipationModal from "./ManageParticipationModal";
+import ParticipationTypeSelectionModal from "./ParticipationTypeSelectionModal";
 import ExperienceModal from "./ExperienceModal";
 import SkillsModal from "./SkillsModal";
 import {
   getPersonnel,
   setPersonnel
 } from "../domain/personnel/PersonnelRegistry";
+import { repoAssignParticipation } from "../domain/personnel/SegmentPersonnelRepository";
 
 export default function PersonnelRecordModal({
   person,
   segments = [],
   tasks = [],
+  activeSegmentId,
+  actingUser,
   onClose,
-  participationMode = false,
-  onSelectPerson = null
 }) {
   if (!person) return null;
 
   const [editing, setEditing] = useState(false);
   const [showAppointments, setShowAppointments] = useState(false);
   const [showManageParticipation, setShowManageParticipation] = useState(false);
+  const [participationTypeOpen, setParticipationTypeOpen] = useState(false);
   const [showExperience, setShowExperience] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
 
@@ -71,13 +74,6 @@ export default function PersonnelRecordModal({
     setPersonnel(updated);
     setEditing(false);
   }
-
-  function handleSelectPerson() {
-    if (typeof onSelectPerson === "function") {
-      onSelectPerson(resolvedPerson);
-    }
-  }
-
   return createPortal(
     <>
       <div
@@ -215,15 +211,10 @@ export default function PersonnelRecordModal({
             }}
           >
             <div>
-              {participationMode && !editing && (
-                <button onClick={handleSelectPerson}>
-                  Select
-                </button>
-              )}
             </div>
 
             <div>
-                {participationMode && !editing && (
+                {!editing && (
                 <button
                   onClick={() => setEditing(true)}
                 >
@@ -255,10 +246,10 @@ export default function PersonnelRecordModal({
           person={resolvedPerson}
           segments={segments}
                 tasks={tasks}
-          allowManage={participationMode}
           onManage={() =>
             setShowManageParticipation(true)
           }
+          onAdd={() => setParticipationTypeOpen(true)}
           onClose={() =>
             setShowAppointments(false)
           }
@@ -275,6 +266,25 @@ export default function PersonnelRecordModal({
           }
         />
       )}
+
+        {participationTypeOpen && (
+          <ParticipationTypeSelectionModal
+            onSelect={(participationType) => {
+              repoAssignParticipation({
+                segmentId: activeSegmentId,
+                personId: resolvedPerson.id,
+                participationType,
+                appointedBy:
+                  actingUser?.displayName || "PM"
+              });
+
+              setParticipationTypeOpen(false);
+            }}
+            onClose={() =>
+              setParticipationTypeOpen(false)
+            }
+          />
+        )}
 
       {showExperience && (
         <ExperienceModal
