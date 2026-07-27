@@ -978,6 +978,8 @@ if (!isOperational && !isAdvisor) {
           items={personnel}
             segments={segments}
             tasks={tasks}
+            activeSegmentId={segment?.segmentId}
+            actingUser={actingUser}
           onSelect={handleSelectAssignee}
           onClose={() => setAssignmentModalOpen(false)}
         />
