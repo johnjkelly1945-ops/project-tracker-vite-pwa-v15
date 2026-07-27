@@ -441,6 +441,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     */
 
     setActiveEngagement(item);
+    setActiveTaskId(item.taskId);
 
 
     console.log("STAGE500T CONTRACT", item);
@@ -1028,6 +1029,15 @@ const archivedMgmtTasks =
 
   const effectiveActiveTask =
       activeTask || archiveActiveTask;
+
+  console.log("STAGE500U ACTIVE TASK STATE", {
+    activeTaskId,
+    activeTask: activeTask?.id,
+    archiveActiveTask: archiveActiveTask?.id,
+    effectiveActiveTask: effectiveActiveTask?.id,
+    engagementTaskId: activeEngagement?.taskId,
+    engagementResponsibility: activeEngagement?.responsibility
+  });
 
 const isSeedSegment =
   activeSegment?.segmentType === "SEED";

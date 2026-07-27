@@ -270,6 +270,64 @@ export default function PersonnelRecordModal({
         {participationTypeOpen && (
           <ParticipationTypeSelectionModal
             onSelect={(participationType) => {
+              /*
+
+              ==============================================================
+
+              Stage 500U-X — Constitutional Participation Ownership Guard
+
+              
+
+              PURPOSE
+
+              -------
+
+              
+
+              A constitutional responsibility may only be created when it
+
+              possesses a valid constitutional owner.
+
+              
+
+              Prevent orphan constitutional responsibilities from entering
+
+              the constitutional model.
+
+              
+
+              ==============================================================
+
+              */
+
+
+              const constitutionalSegment =
+
+                segments.find(
+
+                  (segment) =>
+
+                    segment.id === activeSegmentId
+
+                );
+
+
+              if (!constitutionalSegment) {
+
+                console.warn(
+
+                  "Stage500U: Participation appointment rejected - constitutional segment not found."
+
+                );
+
+
+                setParticipationTypeOpen(false);
+
+                return;
+
+              }
+
+
               repoAssignParticipation({
                 segmentId: activeSegmentId,
                 personId: resolvedPerson.id,
