@@ -4,47 +4,22 @@
 ======================================================================
 
 METRA — CCWorkspace.jsx
-Stage 500T — Constitutional CC Workspace Foundation
+Stage 500V — Constitutional CC Workspace Boundary
 
 PURPOSE
 -------
-
 Constitutional destination for CC lifecycle.
 
-Initially delegates to the existing CC capability.
-
-No constitutional behaviour changes occur in this stage.
+CCWorkspace delegates lifecycle ownership to
+CCWorkspaceProvider.
 
 ======================================================================
 */
 
-import CCRegisterModal from "./CCRegisterModal";
+import CCWorkspaceProvider from "./CCWorkspaceProvider";
 
 export default function CCWorkspace(props) {
-
-  const constitutionalReadOnly =
-    props.constitutionalEngagement?.responsibility === "CC_INSPECTION";
-  console.log("CCWorkspace callback", {
-
-    openCCEvent: props.openCCEvent,
-
-    type: typeof props.openCCEvent,
-
-    constitutionalEngagement: props.constitutionalEngagement
-
-  });
-
-
   return (
-    <CCRegisterModal
-      taskId={props.task?.id}
-      taskTitle={props.task?.title}
-      segmentId={props.segment?.segmentId || props.segment?.id}
-      isPM={props.isPM}
-      readOnly={props.readOnly || constitutionalReadOnly}
-      onClose={props.onClose}
-        constitutionalEngagement={props.constitutionalEngagement}
-      onOpenAdvisory={props.openCCEvent}
-    />
+    <CCWorkspaceProvider {...props} />
   );
 }

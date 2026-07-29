@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 
-export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose, onOpenAdvisory, isPM, readOnly = false, constitutionalEngagement }) {
+export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose, onOpenCCEvent, isPM, readOnly = false, constitutionalEngagement }) {
 
   const [, refresh] = useState(0);
 
@@ -263,7 +263,7 @@ export default function CCRegisterModal({ taskId, taskTitle, segmentId, onClose,
                           artefactId: cc.artefactId,
                           segmentId
                       }).eventId;
-                  onOpenAdvisory(eventIdToOpen);
+                  onOpenCCEvent(eventIdToOpen);
                 }}>
                   Advisory
                 </button>

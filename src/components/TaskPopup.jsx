@@ -35,11 +35,10 @@ import TaskDocumentsModal from "./TaskDocumentsModal";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
-import RiskModal from "./RiskModal";
-import RiskRegisterModal from "./RiskRegisterModal";
 import IssueRegisterModal from "./IssueRegisterModal";
 import QCRegisterModal from "./QCRegisterModal";
 import CCWorkspace from "./CCWorkspace";
+import RiskWorkspace from "./RiskWorkspace";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
@@ -173,9 +172,7 @@ Advisory Workspace Provider.
 ==========================================================
 */
 
-const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
-  const [activeRiskEventId, setActiveRiskEventId] = useState(null);
 
   /* ================= Stage 333 — Issue State ================= */
   const [issueModalOpen, setIssueModalOpen] = useState(false);
@@ -219,10 +216,6 @@ CONSTITUTIONAL RULES
 
 function openGovernanceSurface(eventType, eventId) {
   switch (eventType) {
-    case "RISK":
-      setActiveRiskEventId(eventId);
-      setRiskModalOpen(true);
-      break;
 
     case "ISSUE":
       setActiveIssueEventId(eventId);
@@ -507,13 +500,8 @@ if (!isOperational && !isAdvisor) {
 
     if (!list.length) return;
 
-    if (list.length === 1) {
-      setActiveRiskEventId(list[0].eventId);
-      setRiskModalOpen(true);
-    } else {
       setRiskRegisterOpen(true);
     }
-  }
 /* ================= Risk Activation ================= */
 
   function handleInitiateRisk() {
@@ -553,14 +541,21 @@ if (!isOperational && !isAdvisor) {
   }
   /* ================= QC Activation ================= */
 
-  function handleEscalateRisk() {
-    if (!activeRiskEventId) return;
+  function handleEscalateRisk(eventId) {
+    if (!eventId) return;
 
     const line = systemLine("Risk escalated by PM");
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
 
-    bridgeEscalateGovernanceEvent({ eventId: activeRiskEventId });
+    setEscalationContext({
+      sourceType: "RISK",
+      sourceId: eventId
+    });
+
+    setEscalationRegisterOpen(true);
+
+    bridgeEscalateGovernanceEvent({ eventId });
   }
 
   function handleEscalateQC() {
@@ -1177,24 +1172,17 @@ if (!isOperational && !isAdvisor) {
         )}
 
 
-      {riskRegisterOpen && (
-        <RiskRegisterModal
-          taskId={task.id}
-          taskTitle={task.title}
-            segmentId={task.segmentId}
-          onClose={() => setRiskRegisterOpen(false)}
-          openRiskEvent={(eventId) => {
-            setRiskRegisterOpen(false);
-
-            openGovernanceSurface(
-              "RISK",
-              eventId
-            );
-          }}
-          isPM={isPM}
-        readOnly={isReadOnly}
-        />
-      )}
+        {riskRegisterOpen && (
+          <RiskWorkspace
+            task={task}
+            segment={segment}
+            isPM={isPM}
+            readOnly={isReadOnly}
+            onClose={() => setRiskRegisterOpen(false)}
+            constitutionalEngagement={constitutionalEngagement}
+            onEscalateRisk={handleEscalateRisk}
+          />
+        )}
 
       {issueRegisterOpen && (
         <IssueRegisterModal
@@ -1250,28 +1238,6 @@ if (!isOperational && !isAdvisor) {
             />
         )}
 
-        {riskModalOpen && (
-          <RiskModal
-            taskTitle={task.title}
-            taskId={task.id}
-            eventId={activeRiskEventId}
-            onClose={() => setRiskModalOpen(false)}
-            onAddNote={onAddNote}
-            onEscalate={
-              isPM
-                ? () => {
-              setEscalationContext({
-                sourceType: "RISK",
-                sourceId: activeRiskEventId
-              });
-              setEscalationRegisterOpen(true);
-                }
-                : undefined
-            }
-            isPM={isPM}
-            readOnly={isReadOnly}
-          />
-        )}
 
       {issueModalOpen && activeIssueEventId && (
         <IssueModal
