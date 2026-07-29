@@ -28,7 +28,7 @@ No constitutional behaviour changes occur in this stage.
 ======================================================================
 */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TaskPopup from "./TaskPopup";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
@@ -50,6 +50,71 @@ export default function AdvisoryWorkspaceProvider(props) {
 
   ==========================================================
   */
+  const [riskModalOpen, setRiskModalOpen] = useState(false);
+  const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
+  const [activeRiskEventId, setActiveRiskEventId] = useState(null);
+
+  /* ================= Stage 333 — Issue State ================= */
+  const [issueModalOpen, setIssueModalOpen] = useState(false);
+  const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
+  const [activeIssueEventId, setActiveIssueEventId] = useState(null);
+  /* ================= End Stage 333 State ================= */
+
+  /* ================= Stage 334 — QC State ================= */
+  const [qcModalOpen, setQcModalOpen] = useState(false);
+  const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
+  const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
+  const [activeQcEventId, setActiveQcEventId] = useState(null);
+  /* ================= End Stage 334 State ================= */
+
+  /* ================= Stage 335 — CC State ================= */
+  const [ccModalOpen, setCcModalOpen] = useState(false);
+  const [escalationRegisterOpen, setEscalationRegisterOpen] = useState(false);
+  const [activeCcEventId, setActiveCcEventId] = useState(null);
+
+  function openGovernanceSurface(eventType, eventId) {
+    switch (eventType) {
+      case "RISK":
+        setActiveRiskEventId(eventId);
+        setRiskModalOpen(true);
+        break;
+
+      case "ISSUE":
+        setActiveIssueEventId(eventId);
+        setIssueModalOpen(true);
+        break;
+
+      case "QC":
+        setActiveQcEventId(eventId);
+        setQcModalOpen(true);
+        break;
+
+      case "CC":
+        setActiveCcEventId(eventId);
+        setCcModalOpen(true);
+        break;
+
+      default:
+        return;
+
+    }
+  }
+  useEffect(() => {
+    if (!advisoryEntry) return;
+    if (!advisoryDestination) return;
+    if (!advisoryDestinationId) return;
+
+    openGovernanceSurface(
+      advisoryDestination,
+      advisoryDestinationId
+    );
+  }, [
+    advisoryEntry,
+    advisoryDestination,
+    advisoryDestinationId
+  ]);
+
+
 
   /*
   ==========================================================
@@ -92,14 +157,13 @@ export default function AdvisoryWorkspaceProvider(props) {
 
     ==========================================================
     */
+
     if (!resolvedAdvisoryEngagement) return;
 
-    const destination =
-      resolvedAdvisoryEngagement.eventType;
-
-    const destinationId =
-      resolvedAdvisoryEngagement.eventId;
-
+    openGovernanceSurface(
+      resolvedAdvisoryEngagement.eventType,
+      resolvedAdvisoryEngagement.eventId
+    );
   }
 
   const advisoryContext = {

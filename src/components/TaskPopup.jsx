@@ -39,7 +39,7 @@ import RiskModal from "./RiskModal";
 import RiskRegisterModal from "./RiskRegisterModal";
 import IssueRegisterModal from "./IssueRegisterModal";
 import QCRegisterModal from "./QCRegisterModal";
-import CCRegisterModal from "./CCRegisterModal";
+import CCWorkspace from "./CCWorkspace";
 import IssueModal from "./IssueModal";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
@@ -970,9 +970,7 @@ if (!isOperational && !isAdvisor) {
             </div>
           </div>
         </div>
-      </div>
-
-      {assignmentModalOpen && (
+      </div>      {assignmentModalOpen && (
         <SubordinateSelectionModal
           title={localAssigneeId ? "Reassign Task" : "Assign Task"}
           items={personnel}
@@ -1236,20 +1234,20 @@ if (!isOperational && !isAdvisor) {
         )}
 
         {ccRegisterOpen && (
-          <CCRegisterModal
-            taskId={task.id}
-              segmentId={task.segmentId}
-            taskTitle={task.title}
-            isPM={isPM}
-            readOnly={isReadOnly}
-            onClose={() => setCcRegisterOpen(false)}
-            openCCEvent={(id) => {
-              openGovernanceSurface(
-              "CC",
-              id
-            );
-            }}
-          />
+          <CCWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setCcRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              openCCEvent={(id) => {
+                openGovernanceSurface(
+                  "CC",
+                  id
+                );
+              }}
+            />
         )}
 
         {riskModalOpen && (

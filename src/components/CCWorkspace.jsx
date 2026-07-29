@@ -24,6 +24,17 @@ export default function CCWorkspace(props) {
 
   const constitutionalReadOnly =
     props.constitutionalEngagement?.responsibility === "CC_INSPECTION";
+  console.log("CCWorkspace callback", {
+
+    openCCEvent: props.openCCEvent,
+
+    type: typeof props.openCCEvent,
+
+    constitutionalEngagement: props.constitutionalEngagement
+
+  });
+
+
   return (
     <CCRegisterModal
       taskId={props.task?.id}
@@ -33,7 +44,7 @@ export default function CCWorkspace(props) {
       readOnly={props.readOnly || constitutionalReadOnly}
       onClose={props.onClose}
         constitutionalEngagement={props.constitutionalEngagement}
-      openCCEvent={props.openCCEvent}
+      onOpenAdvisory={props.openCCEvent}
     />
   );
 }

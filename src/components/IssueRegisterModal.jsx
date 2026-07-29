@@ -29,6 +29,11 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
 
   const actor = getActingUser();
 
+  console.log("ISSUE MODAL TASK", {
+    taskId,
+    actorId: actor?.id
+  });
+
   const advisoryIssueArtefactIds = new Set(
     getGovernanceEventsByTask(taskId)
       .filter(e =>
@@ -39,6 +44,13 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
       .map(e => e.artefactId)
       .filter(Boolean)
   );
+  console.log("ISSUE EVENTS", {
+    taskId,
+    events: getGovernanceEventsByTask(taskId)
+  });
+
+  console.log("ISSUE ARTEFACTS", getIssueArtefacts());
+
   const issues =
     getIssueArtefacts()
       .filter(issue =>

@@ -307,7 +307,7 @@ export default function PersonnelRecordModal({
 
                   (segment) =>
 
-                    segment.id === activeSegmentId
+                    segment.segmentId === activeSegmentId
 
                 );
 
@@ -327,6 +327,12 @@ export default function PersonnelRecordModal({
 
               }
 
+
+              console.log("APPOINTMENT", {
+                segmentId: activeSegmentId,
+                personId: resolvedPerson.id,
+                participationType
+              });
 
               repoAssignParticipation({
                 segmentId: activeSegmentId,
