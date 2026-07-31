@@ -36,11 +36,10 @@ import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import IssueRegisterModal from "./IssueRegisterModal";
-import QCRegisterModal from "./QCRegisterModal";
 import CCWorkspace from "./CCWorkspace";
 import RiskWorkspace from "./RiskWorkspace";
 import IssueWorkspace from "./IssueWorkspace";
-import QCModal from "./QCModal";
+import QCWorkspace from "./QCWorkspace";
 import CCModal from "./CCModal";
 import EscalationRegisterModal from "./EscalationRegisterModal";
 import {
@@ -181,10 +180,8 @@ Advisory Workspace Provider.
   /* ================= End Stage 333 State ================= */
 
   /* ================= Stage 334 — QC State ================= */
-  const [qcModalOpen, setQcModalOpen] = useState(false);
   const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
   const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
-  const [activeQcEventId, setActiveQcEventId] = useState(null);
   /* ================= End Stage 334 State ================= */
 
   /* ================= Stage 335 — CC State ================= */
@@ -218,10 +215,6 @@ function openGovernanceSurface(eventType, eventId) {
   switch (eventType) {
 
 
-    case "QC":
-      setActiveQcEventId(eventId);
-      setQcModalOpen(true);
-      break;
 
     case "CC":
       setActiveCcEventId(eventId);
@@ -554,8 +547,8 @@ if (!isOperational && !isAdvisor) {
     bridgeEscalateGovernanceEvent({ eventId });
   }
 
-  function handleEscalateQC() {
-    if (!activeQcEventId) return;
+  function handleEscalateQC(eventId) {
+    if (!eventId) return;
 
     const line = systemLine("QC escalated by PM");
     onAddNote(task.id, line);
@@ -563,10 +556,11 @@ if (!isOperational && !isAdvisor) {
 
     setEscalationContext({
       sourceType: "QC",
-      sourceId: activeQcEventId
+      sourceId: eventId
     });
 
-    bridgeEscalateGovernanceEvent({ eventId: activeQcEventId });
+    bridgeEscalateGovernanceEvent({ eventId });
+
 
     setEscalationRegisterOpen(true);
   }
@@ -842,27 +836,11 @@ if (!isOperational && !isAdvisor) {
               {" / "}Issue
             </span>
           )}
-          {advisoryTypes.includes("QC") && (
-            <span style={{ cursor: "pointer" }} onClick={() => {
-              const list = getGovernanceEventsByTask(task.id)
-                .filter(e =>
-                  e.eventType === "QC" &&
-                  Array.isArray(e.participation) &&
-                  e.participation.some(p => p && p.reviewerId === actor.id)
-                );
-
-              if (!list.length) return;
-
-              if (list.length === 1) {
-                setActiveQcEventId(list[0].eventId);
-                setQcModalOpen(true);
-              } else {
-                setQcRegisterOpen(true);
-              }
-            }}>
-              {" / "}QC
-            </span>
-          )}
+            {advisoryTypes.includes("QC") && (
+              <span style={{ cursor: "pointer" }} onClick={() => setQcRegisterOpen(true)}>
+                {" / "}QC
+              </span>
+            )}
       {advisoryTypes.includes("CC") && (
         <span style={{ cursor: "pointer" }} onClick={() => {
           const existing = getGovernanceEventsByTask(task.id)
@@ -1175,35 +1153,29 @@ if (!isOperational && !isAdvisor) {
           />
         )}
 
-        {issueRegisterOpen && (
-          <IssueWorkspace
-            task={task}
-            segment={segment}
-            isPM={isPM}
-            readOnly={isReadOnly}
-            onClose={() => setIssueRegisterOpen(false)}
-            constitutionalEngagement={constitutionalEngagement}
-            onEscalateIssue={handleEscalateIssue}
-          />
-        )}
-        {qcRegisterOpen && (
-          <QCRegisterModal
-            taskId={task.id}
-              segmentId={task.segmentId}
-              taskTitle={task.title}
-            onClose={() => setQcRegisterOpen(false)}
-              readOnly={isReadOnly}
-            openQCEvent={(eventId) => {
-              setQcRegisterOpen(false);
-
-              openGovernanceSurface(
-                "QC",
-                eventId
-              );
-            }}
+          {issueRegisterOpen && (
+            <IssueWorkspace
+              task={task}
+              segment={segment}
               isPM={isPM}
-          />
-        )}
+              readOnly={isReadOnly}
+              onClose={() => setIssueRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              onEscalateIssue={handleEscalateIssue}
+            />
+          )}
+
+          {qcRegisterOpen && (
+            <QCWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setQcRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              onEscalateQC={handleEscalateQC}
+            />
+          )}
 
         {ccRegisterOpen && (
           <CCWorkspace
@@ -1224,32 +1196,6 @@ if (!isOperational && !isAdvisor) {
 
 
 
-      {qcModalOpen && activeQcEventId && (
-        <QCModal
-          taskId={task.id}
-          taskTitle={task.title}
-          eventId={activeQcEventId}
-          onClose={() => setQcModalOpen(false)}
-          onAddNote={onAddNote}
-            isPM={isPM}
-            readOnly={isReadOnly}
-          onEscalate={handleEscalateQC}
-        />
-      )}
-
-
-      {ccModalOpen && activeCcEventId && (
-        <CCModal
-          taskId={task.id}
-          isPM={isPM}
-          readOnly={isReadOnly}
-          taskTitle={task.title}
-          eventId={activeCcEventId}
-          onClose={() => setCcModalOpen(false)}
-          onAddNote={onAddNote}
-                onEscalate={isPM ? handleEscalateCC : null}
-        />
-      )}
 
       {escalationRegisterOpen && (
         <EscalationRegisterModal

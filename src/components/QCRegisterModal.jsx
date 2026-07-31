@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent, isPM = false, readOnly = false }) {
+export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose, openQCEvent, isPM = false, readOnly = false, constitutionalEngagement }) {
 
   const [, refresh] = useState(0);
 
@@ -44,8 +44,12 @@ export default function QCRegisterModal({ taskId, taskTitle, segmentId, onClose,
   const qcs =
     getQCArtefacts()
       .filter(qc =>
-        qc.taskId === taskId &&
-        (isPM || advisoryQCArtefactIds.has(qc.artefactId))
+          qc.segmentId === segmentId &&
+          (
+            isPM ||
+            constitutionalEngagement?.responsibility === "QC_INSPECTION" ||
+            advisoryQCArtefactIds.has(qc.artefactId)
+          )
       )
 
   function saveEntry() {

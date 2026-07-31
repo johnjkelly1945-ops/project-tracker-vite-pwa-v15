@@ -40,6 +40,7 @@ export const CONSTITUTIONAL_WORKSPACE = Object.freeze({
     CC: "CC",
     RISK: "RISK",
     ISSUE: "ISSUE",
+    QC: "QC",
   OWNERSHIP: "OWNERSHIP",
   BOARD: "BOARD",
   PARTICIPATION: "PARTICIPATION"
@@ -140,6 +141,15 @@ const { isOperational } =
           CONSTITUTIONAL_WORKSPACE.RISK
     };
   }
+
+
+    if (constitutionalEngagement?.responsibility === "QC_INSPECTION") {
+      console.log("STAGE500T ROUTER -> QC");
+      return {
+        destination:
+          CONSTITUTIONAL_WORKSPACE.QC
+      };
+    }
 
     if (constitutionalEngagement?.responsibility === "ISSUE_INSPECTION") {
       console.log("STAGE500T ROUTER -> ISSUE");

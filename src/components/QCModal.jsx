@@ -341,7 +341,7 @@ if (!event) return null;
               }}
             >
                   {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
-                {isPM && <button onClick={onEscalate}>Escalate</button>}
+                {isPM && <button onClick={() => onEscalate(eventId)}>Escalate</button>}
             </div>
 
             <div
