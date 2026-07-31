@@ -1,0 +1,34 @@
+/*
+======================================================================
+
+METRA — IssueWorkspace.jsx
+Stage 500U — Constitutional Issue Register Surface
+
+PURPOSE
+-------
+Constitutional entry point for Issue register access.
+
+This workspace owns presentation routing only.
+Governance lifecycle ownership remains unchanged.
+
+======================================================================
+*/
+
+import IssueRegisterModal from "./IssueRegisterModal";
+
+export default function IssueWorkspace(props) {
+
+  const constitutionalReadOnly =
+    props.constitutionalEngagement?.responsibility === "ISSUE_INSPECTION";
+
+  return (
+    <IssueRegisterModal
+      taskId={props.task?.id}
+      taskTitle={props.task?.title}
+      segmentId={props.segment?.segmentId || props.segment?.id}
+      isPM={props.isPM}
+      readOnly={props.readOnly || constitutionalReadOnly}
+      onClose={props.onClose}
+    />
+  );
+}

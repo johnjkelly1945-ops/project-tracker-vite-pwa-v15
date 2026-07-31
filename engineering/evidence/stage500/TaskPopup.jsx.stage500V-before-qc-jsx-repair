@@ -1,0 +1,1254 @@
+import { corporateTemplates } from "../data/corporateTemplates";
+// @ts-nocheck
+/*
+=====================================================================
+METRA — TaskPopup.jsx
+Stage 239 — Task → Summary Association (Canonical Closure Fix)
+Stage 246 — Assignment Selection Modal (UI Only)
+Stage 249 — Governance Controls Restoration (UI Only)
+Stage 257 — Personnel Assignment Wiring
+Stage 257-B — Footer & Notes Visual Clarification (UI ONLY)
+Stage 257-C — Assign/Reassign Label + Timestamp Presentation (UI ONLY)
+Stage 260 — Archive Confirmation Gate (Mechanical Only)
+Stage 268 — Document Link as Immutable Task Event (CANONICAL)
+Stage 270 — Template Link as Immutable Task Event (CANONICAL)
+Stage 319 — Review Governance Activation (Controlled)
+Stage 323 — Review Initiation Reuse Policy (Canonical Fix)
+Stage 324A — Governance Line Canonicalisation (UI ONLY)
+Stage 325 — SEM-TS Identity Row Realisation (UI ONLY)
+Stage 325B — Inline Commit Surface Realisation (UI ONLY)
+---------------------------------------------------------------------
+• Notes modal removed
+• Embedded commit surface (borderless, transaction-surface)
+• Footer preserved verbatim (no drift)
+• Append-only preserved
+• No lifecycle mutation changes
+• No governance logic changes
+=====================================================================
+*/
+
+import { useState, useEffect, useMemo, useRef } from "react";
+import { attemptAction } from "../domain/authority/ActionExecutor.js";
+import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
+import TaskDescriptionModal from "./TaskDescriptionModal";
+import TaskDocumentsModal from "./TaskDocumentsModal";
+import SubordinateSelectionModal from "./SubordinateSelectionModal";
+import { personnel } from "../data/personnel";
+import ReviewModal from "./ReviewModal";
+import IssueRegisterModal from "./IssueRegisterModal";
+import QCRegisterModal from "./QCRegisterModal";
+import CCWorkspace from "./CCWorkspace";
+import RiskWorkspace from "./RiskWorkspace";
+import IssueWorkspace from "./IssueWorkspace";
+import QCWorkspace from "./QCWorkspace";
+import QCModal from "./QCModal";
+import CCModal from "./CCModal";
+import EscalationRegisterModal from "./EscalationRegisterModal";
+import {
+  bridgeTriggerGovernanceEvent,
+  bridgeEscalateGovernanceEvent,
+} from "../governance/governanceBridge";
+import { getGovernanceEventsByTask } from "../governance/governanceStore";
+import { getActingUser } from "../domain/actor/ActingUser";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
+import { resolveSegmentAuthority } from "../domain/authority/resolveSegmentAuthority";
+import { resolveOperationalAuthority } from "../domain/operation/OperationalAuthorityResolver";
+import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
+
+/* ===================== Time helpers ===================== */
+
+function nowStamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return (
+    d.getFullYear() +
+    "-" +
+    pad(d.getMonth() + 1) +
+    "-" +
+    pad(d.getDate()) +
+    " " +
+    pad(d.getHours()) +
+    ":" +
+    pad(d.getMinutes())
+  );
+}
+
+function systemLine(text) {
+  return `[System] ${text} — ${nowStamp()}`;
+}
+
+/* ===================== Component ===================== */
+
+export default function TaskPopup({
+  task,
+  segment,
+  segments = [],
+  tasks = [],
+  summaries = [],
+  onClose,
+  onAddNote,
+  onAddDescription,
+  onAssignTask,
+  onSaveReminder,
+  onDeleteReminder,
+  onStartExecution,
+  onSubmitExecution,
+  onCompleteExecution,
+  onChangeTaskSummary,
+  onArchiveTask,
+  hasMutationAuthority,
+  workspaceMode,
+  onArchiveSegment,
+  actingUser,
+  constitutionalEngagement,
+  currentUserRole = "PM",
+  isSeedSegment = false,
+  readOnly = false,
+  advisoryEntry = false,
+  advisoryDestination = null,
+  advisoryDestinationId = null,
+}) {
+  if (!task) return null;
+    console.log("TASKPOPUP TASK", task);
+
+  const isReadOnly = readOnly === true;
+
+  const isArchiveTriggerTask =
+    task.systemAction === "ARCHIVE_SEGMENT";
+
+  /* ================= Stage 429 — Navigation Handler (Routing) ================= */
+  function handleNavigateToEscalationSource(e) {
+    const personId = getPersonId(getCurrentUserFromStorage());
+    const actor = personId
+      ? getPersonnel().find(p => p.id === personId)
+      : null;
+
+    if (!actor) return;
+
+    const advisoryTypes = [
+      ...new Set(
+        events
+          .filter(e =>
+            Array.isArray(e.participation) &&
+            e.participation.some(p => p.reviewerId === actor.id)
+          )
+          .map(e => e.eventType)
+      )
+    ];
+
+    if (isAdvisor && !isAssignee && advisoryTypes.length > 1) {
+      return;
+    }
+    openGovernanceSurface(
+      e.sourceType,
+      e.sourceId
+    );
+  }
+  /* ================= End Stage 429 ================= */
+  const [displayNotes, setDisplayNotes] = useState(task.notes || []);
+
+  const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
+  const [segmentArchiveConfirmOpen, setSegmentArchiveConfirmOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [activeReviewEventId, setActiveReviewEventId] = useState(null);
+
+  /*
+==========================================================
+
+STAGE 500H-8H
+
+ADVISORY WORKSPACE PROVIDER
+
+This region owns the advisory workspace lifecycle.
+
+Responsibilities:
+
+• Advisory modal state.
+• Active governance event selection.
+• Advisory workspace rendering.
+
+This region will be extracted intact into the
+Advisory Workspace Provider.
+
+==========================================================
+*/
+
+  const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
+
+  /* ================= Stage 333 — Issue State ================= */
+  const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
+  /* ================= End Stage 333 State ================= */
+
+  /* ================= Stage 334 — QC State ================= */
+  const [qcModalOpen, setQcModalOpen] = useState(false);
+  const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
+  const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
+  const [activeQcEventId, setActiveQcEventId] = useState(null);
+  /* ================= End Stage 334 State ================= */
+
+  /* ================= Stage 335 — CC State ================= */
+  const [ccModalOpen, setCcModalOpen] = useState(false);
+  const [escalationRegisterOpen, setEscalationRegisterOpen] = useState(false);
+  const [activeCcEventId, setActiveCcEventId] = useState(null);
+
+/*
+==========================================================
+
+STAGE 500H-8I
+
+CANONICAL GOVERNANCE SURFACE OPENING
+
+PURPOSE
+-------
+Provide a single implementation for opening a governance
+surface from any constitutional workspace.
+
+CONSTITUTIONAL RULES
+--------------------
+• ConstitutionalWorkspaceRouter selects the workspace.
+• This helper opens the governance surface.
+• No constitutional decision is made here.
+• No repository mutation occurs here.
+
+==========================================================
+*/
+
+function openGovernanceSurface(eventType, eventId) {
+  switch (eventType) {
+
+
+    case "QC":
+      setActiveQcEventId(eventId);
+      setQcModalOpen(true);
+      break;
+
+    case "CC":
+      setActiveCcEventId(eventId);
+      setCcModalOpen(true);
+      break;
+
+    default:
+      return;
+
+  }
+}
+
+  useEffect(() => {
+    if (!advisoryEntry) return;
+    if (!advisoryDestination) return;
+    if (!advisoryDestinationId) return;
+
+    openGovernanceSurface(
+      advisoryDestination,
+      advisoryDestinationId
+    );
+  }, [
+    advisoryEntry,
+    advisoryDestination,
+    advisoryDestinationId
+  ]);
+
+  /* ================= Stage 341 — Description State ================= */
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  /* ================= End Stage 341 State ================= */
+  /* ================= End Stage 335 State ================= */
+
+
+
+  const [inlineDraftText, setInlineDraftText] = useState("");
+  const inlineRef = useRef(null);
+  const [documentsOpen, setDocumentsOpen] = useState(false);
+  const [reminderOpen, setReminderOpen] = useState(false);
+
+  const [reminderDate, setReminderDate] =
+    useState(task.reminderDate || "");
+
+  const [reminderContext, setReminderContext] =
+    useState(task.reminderContext || "");
+
+
+  const [linkDocOpen, setLinkDocOpen] = useState(false);
+  const [docTitle, setDocTitle] = useState("");
+  const [docRef, setDocRef] = useState("");
+
+  /* ================= Stage 351 — Available taskDescription templates (optional) ================= */
+  const availableTemplates = useMemo(() => {
+    return (corporateTemplates || []).filter(t =>
+      t && t.status === "active" && t.templateType === "taskDescription"
+    );
+  }, []);
+
+
+  const currentSummaryId = task.summaryId || "";
+  const [summaryEditing, setSummaryEditing] = useState(false);
+  const [selectedSummaryId, setSelectedSummaryId] = useState(currentSummaryId);
+
+  /* =====================================================
+     STAGE 427 — ESCALATION CONTEXT CARRIER (PHASE 1A)
+     Additive only — no behaviour change
+     ===================================================== */
+  const [escalationContext, setEscalationContext] = useState(null);
+
+
+  useEffect(() => {
+    setDisplayNotes(task.notes || []);
+    setLocalAssigneeId(task.assigneeId || "");
+  }, [task]);
+
+  /* ================= Identity Resolution (SEM-TS) ================= */
+
+  const executionState = task.executionState || "NOT_STARTED";
+  const summary = summaries.find((s) => s.id === task.summaryId);
+  const summaryTitle = summary ? summary.title : null;
+
+  /* ================= Assignment ================= */
+
+  function handleSelectAssignee(person) {
+    const isReassign = Boolean(localAssigneeId);
+
+    onAssignTask(task.id, person.id);
+    setLocalAssigneeId(person.id);
+
+    const line = systemLine(
+      isReassign
+        ? `Task reassigned to ${person.displayName}`
+        : `Task assigned to ${person.displayName}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    setAssignmentModalOpen(false);
+  }
+  function handleSaveReminder() {
+    if (!reminderDate.trim()) return;
+    if (!reminderContext.trim()) return;
+
+    const actorName = actor?.displayName || "Unknown";
+
+    onSaveReminder(
+      task.id,
+      reminderDate,
+      reminderContext,
+      actorName
+    );
+
+    const line = systemLine(
+      `Reminder created for ${reminderDate} — ${reminderContext} — ${actorName}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    setReminderOpen(false);
+  }
+
+  function handleDeleteReminder() {
+    const actorName = actor?.displayName || "Unknown";
+
+    onDeleteReminder(task.id);
+
+    const line = systemLine(
+      `Reminder deleted — ${task.reminderContext} — ${actorName}`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    setReminderOpen(false);
+  }
+
+  /* ================= Execution ================= */
+
+  const isCompleted = executionState === "COMPLETED";
+  const actor = getActingUser();
+
+  const isAssigned = Boolean(task && task.assigneeId);
+  const isArchived = task.taskState === "archived";
+
+  const {
+    isPM,
+    isAssignee,
+    isAdvisor,
+    isOperational,
+    canMutate: constitutionalCanMutate
+  } = resolveOperationalAuthority({
+    engagement: constitutionalEngagement,
+    actor,
+    segment,
+    task
+  });
+
+  const isPMProxy = isPM && isAssigned && !isAssignee;
+
+  const canMutate =
+    constitutionalCanMutate &&
+    !isReadOnly;
+
+
+  /*
+==========================================================
+STAGE 500H-8G
+
+Constitutional workspace selection has migrated to:
+
+  ConstitutionalWorkspaceRouter
+  ↓
+  TaskSelectionSurface
+
+This Stage 420 routing is retained temporarily during
+migration until Advisory and Participation dispatch
+are fully integrated.
+
+TaskPopup is evolving into the Operational Workspace.
+==========================================================
+*/
+  /*
+if (!isOperational && !isAdvisor) {
+  return (
+    <div style={{ padding: "20px" }}>
+      Participation View (placeholder)
+    </div>
+  );
+}
+*/
+
+
+  const showStart = executionState === "NOT_STARTED" && (isAssignee || isPMProxy);
+  const showSubmit = executionState === "IN_PROGRESS" && (isAssignee || isPMProxy);
+  const showComplete = executionState === "SUBMITTED" && isPM;
+
+  function handleStartWork() {
+    if (!showStart) return;
+
+    const actorName = actor?.displayName || "Unknown";
+
+    const line = systemLine(
+      isPMProxy
+        ? `${actorName} — Work started by PM (proxy)`
+        : `${actorName} — Work started`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    onStartExecution(task.id);
+  }
+
+  function handleSubmitWork() {
+    if (!showSubmit) return;
+
+    const actorName = actor?.displayName || "Unknown";
+
+    const line = systemLine(
+      isPMProxy
+        ? `${actorName} — Work submitted by PM (proxy)`
+        : `${actorName} — Work submitted`
+    );
+
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    onSubmitExecution(task.id);
+  }
+
+  function handleCompleteWork() {
+    if (!showComplete) return;
+    const line = systemLine("Task completed by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+    onCompleteExecution(task.id);
+  }
+
+  /* ================= Review Activation ================= */
+
+  function handleInitiateReview() {
+    if (!(executionState === "SUBMITTED" && isPM)) return;
+
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "review" && e.status === "OPEN"
+    );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "review",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("Review initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
+
+    setActiveReviewEventId(event.eventId);
+    setReviewModalOpen(true);
+  }
+
+
+    function handleOpenAdvisoryRisk() {
+    const list = getGovernanceEventsByTask(task.id)
+      .filter(e =>
+        e.eventType === "RISK" &&
+        Array.isArray(e.participation) &&
+        e.participation.some(p => p && p.reviewerId === actor.id)
+      );
+
+    if (!list.length) return;
+
+      setRiskRegisterOpen(true);
+    }
+/* ================= Risk Activation ================= */
+
+  function handleInitiateRisk() {
+    if (!isPM) return;
+
+    const risks = getGovernanceEventsByTask(task.id)
+      .filter(e => e.eventType === "RISK");
+
+    setRiskRegisterOpen(true);
+  }
+
+
+  /* ================= Issue Activation ================= */
+
+
+  /* ================= Issue Activation ================= */
+
+  function handleInitiateIssue() {
+    if (!isPM) return;
+    setIssueRegisterOpen(true);
+  }
+  function handleEscalateIssue(eventId) {
+    if (!eventId) return;
+
+    const line = systemLine("Issue escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setEscalationContext({
+      sourceType: "ISSUE",
+      sourceId: eventId
+    });
+
+    bridgeEscalateGovernanceEvent({ eventId });
+
+    setEscalationRegisterOpen(true);
+  }
+  /* ================= QC Activation ================= */
+
+  function handleEscalateRisk(eventId) {
+    if (!eventId) return;
+
+    const line = systemLine("Risk escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setEscalationContext({
+      sourceType: "RISK",
+      sourceId: eventId
+    });
+
+    setEscalationRegisterOpen(true);
+
+    bridgeEscalateGovernanceEvent({ eventId });
+  }
+
+  function handleEscalateQC() {
+    if (!activeQcEventId) return;
+
+    const line = systemLine("QC escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setEscalationContext({
+      sourceType: "QC",
+      sourceId: activeQcEventId
+    });
+
+    bridgeEscalateGovernanceEvent({ eventId: activeQcEventId });
+
+    setEscalationRegisterOpen(true);
+  }
+  function handleEscalateCC() {
+    if (!activeCcEventId) return;
+
+    const line = systemLine("CC escalated by PM");
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setEscalationContext({
+      sourceType: "CC",
+      sourceId: activeCcEventId
+    });
+
+    bridgeEscalateGovernanceEvent({ eventId: activeCcEventId });
+
+    setEscalationRegisterOpen(true);
+  }
+  function handleInitiateQC() {
+    if (!isPM) return;
+    setQcRegisterOpen(true);
+  }
+
+
+  /* ================= CC Activation ================= */
+
+  function handleInitiateCC() {
+    if (!isPM) return;
+
+    const existing = getGovernanceEventsByTask(task.id).find(
+      (e) => e.eventType === "cc" && e.status === "OPEN"
+    );
+
+    let event;
+
+    if (existing) {
+      event = existing;
+    } else {
+      event = bridgeTriggerGovernanceEvent({
+        eventType: "cc",
+        taskId: task.id,
+        initiatedBy: "PM",
+      });
+
+      const line = systemLine("CC initiated by PM");
+      onAddNote(task.id, line);
+      setDisplayNotes((p) => [...p, line]);
+    }
+
+    setActiveCcEventId(event.eventId);
+    setCcModalOpen(true);
+  }
+
+  /* ================= Inline Commit ================= */
+
+  /* ================= Inline Commit ================= */
+
+  function handleCommitInlineNote() {
+
+    if (!canMutate) return;
+    const text = inlineDraftText.trim();
+    if (!text) return;
+
+    const actorObj = getActingUser();
+    const actorName = actorObj?.displayName || "PM";
+
+    const stamped = `[${actorName}] ${text} — ${nowStamp()}`;
+
+    const target = {
+      id: task.id,
+      surface: "TASK",
+      segmentId: task.segmentId,
+      assigneeId: localAssigneeId
+    };
+
+    const context = {
+      segmentId: task.segmentId
+    };
+
+    onAddNote(task.id, stamped);
+
+    setDisplayNotes((p) => [...p, stamped]);
+    setInlineDraftText("");
+
+    if (inlineRef.current) inlineRef.current.focus();
+  }
+  function confirmSummaryEdit() {
+    if (selectedSummaryId !== currentSummaryId) {
+      onChangeTaskSummary(task.id, selectedSummaryId || null);
+      const line = systemLine("Summary association updated");
+      onAddNote(task.id, line);
+    }
+    onClose();
+  }
+
+
+  function confirmArchive() {
+    onArchiveTask(task.id);
+    setArchiveConfirmOpen(false);
+  }
+
+  function confirmSegmentArchive() {
+    if (!onArchiveSegment) return;
+    onArchiveSegment(task.segmentId);
+    setSegmentArchiveConfirmOpen(false);
+    onClose();
+  }
+
+  function confirmLinkDocument() {
+    const title = docTitle.trim();
+    const ref = docRef.trim();
+    if (!title || !ref) return;
+
+    const line = systemLine(`Document linked: "${title}"\n${ref}`);
+    onAddNote(task.id, line);
+    setDisplayNotes((p) => [...p, line]);
+
+    setDocTitle("");
+    setDocRef("");
+    setLinkDocOpen(false);
+
+  }
+
+
+  /* ================= Render ================= */
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.3)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          width: "90%",
+          height: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: "6px",
+        }}
+      >
+        <CanonicalTaskPopupHeader
+          task={task}
+          summaryTitle={summaryTitle}
+          executionState={executionState}
+          onClose={onClose}
+          onTitleClick={() => setDescriptionOpen(true)}
+        />
+
+        {descriptionOpen && (
+          <TaskDescriptionModal
+            taskId={task.id}
+          taskTitle={task.title}
+    
+            entries={task.descriptionEntries || []}
+            onAddDescription={onAddDescription}
+            onClose={() => setDescriptionOpen(false)}
+            currentUserRole={currentUserRole}
+            availableTemplates={availableTemplates}
+          />
+        )}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+          <strong>Notes</strong>
+
+          <div style={{ marginTop: "12px" }}>
+            {(displayNotes || []).map((line, idx) => {
+                const parts = line.split(" — ");
+                const ts = parts.length > 1 ? parts.pop() : null;
+                const text = parts.join(" — ");
+              return (
+                <div key={idx} style={{ marginBottom: "16px" }}>
+                  <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>
+                  {ts && (
+                    <span style={{ marginLeft: "6px", fontSize: "12px", color: "#777" }}>
+                      — {ts}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Embedded transaction input (borderless, not a boxed container) */}
+          <div
+            style={{
+              marginTop: "16px",
+              borderTop: "1px solid rgba(0,0,0,0.1)",
+              paddingTop: "12px",
+            }}
+          >
+            <textarea
+              ref={inlineRef}
+              rows={3}
+              style={{
+                width: "100%",
+                resize: "vertical",
+                border: "none",
+                outline: "none",
+                fontSize: "14px",
+              }}
+              placeholder="Enter note..."
+              value={inlineDraftText}
+              onChange={(e) => { if (!canMutate) return; setInlineDraftText(e.target.value); }}
+            />
+
+            <div style={{ textAlign: "right", marginTop: "6px" }}>
+              <button disabled={!canMutate} onClick={handleCommitInlineNote}>Commit note</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer preserved verbatim (baseline grammar) */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(11,58,102,0.25)",
+            background: "rgba(11,58,102,0.10)",
+            padding: "12px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
+                {isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
+              {executionState === "SUBMITTED" &&
+               isPM && (
+              <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
+            )}
+{isAdvisor && (() => {
+  const advisoryEvents = resolveAdvisoryNavigation({
+    actor,
+    taskId: task.id
+  });
+
+  const advisoryTypes = [
+    ...new Set(
+      advisoryEvents.map(e => e.eventType)
+    )
+  ];
+
+  if (advisoryTypes.length === 0) return null;
+
+  return (
+    <>
+      <span>Advisory</span>
+      {" - "}
+      {advisoryTypes.includes("RISK") && (
+        <span style={{ cursor: "pointer" }} onClick={handleOpenAdvisoryRisk}>
+          Risk
+        </span>
+        )}
+          {advisoryTypes.includes("ISSUE") && (
+            <span style={{ cursor: "pointer" }} onClick={() => {
+              const list = getGovernanceEventsByTask(task.id)
+                .filter(e =>
+                  e.eventType === "ISSUE" &&
+                  Array.isArray(e.participation) &&
+                  e.participation.some(p => p && p.reviewerId === actor.id)
+                );
+
+              if (!list.length) return;
+
+                setIssueRegisterOpen(true);
+            }}>
+              {" / "}Issue
+            </span>
+          )}
+          {advisoryTypes.includes("QC") && (
+            <span style={{ cursor: "pointer" }} onClick={() => {
+              const list = getGovernanceEventsByTask(task.id)
+                .filter(e =>
+                  e.eventType === "QC" &&
+                  Array.isArray(e.participation) &&
+                  e.participation.some(p => p && p.reviewerId === actor.id)
+                );
+
+              if (!list.length) return;
+
+              if (list.length === 1) {
+                setActiveQcEventId(list[0].eventId);
+                setQcModalOpen(true);
+              } else {
+                setQcRegisterOpen(true);
+              }
+            }}>
+              {" / "}QC
+            </span>
+          )}
+      {advisoryTypes.includes("CC") && (
+        <span style={{ cursor: "pointer" }} onClick={() => {
+          const existing = getGovernanceEventsByTask(task.id)
+              .filter(e => e.eventType === "CC");
+            if (!existing.length) return;
+              if (existing.length === 1) { setActiveCcEventId(existing[0].eventId); setCcModalOpen(true); } else if (existing.length > 1) setCcRegisterOpen(true);
+        }}>
+          {" / "}CC
+        </span>
+      )}
+    </>
+  );
+})()}
+                    {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <div>
+                {canMutate && !isCompleted && isPM && (
+                <button onClick={() => setAssignmentModalOpen(true)}>
+                  {localAssigneeId ? "Reassign" : "Assign"}
+                </button>
+              )}
+                  {canMutate && !isCompleted && isPM && !summaryEditing && !isSeedSegment && (
+                <button onClick={() => setSummaryEditing(true)}>
+                  Link summary
+                  </button>
+              )}
+                  {canMutate && !isCompleted && summaryEditing && !isSeedSegment && (
+                <>
+                  <select
+                    value={selectedSummaryId}
+                    onChange={(e) => setSelectedSummaryId(e.target.value)}
+                  >
+                    <option value="">No summary</option>
+                    {(summaries || []).map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title}
+                      </option>
+                    ))}
+                  </select>
+                  <button onClick={confirmSummaryEdit}>Confirm</button>
+                </>
+              )}
+                <button onClick={() => setDocumentsOpen(true)}>Documents</button>
+                {canMutate && !task.reminderDate && (
+                  <button onClick={() => setReminderOpen(true)}>
+                    Reminder
+                  </button>
+                )}
+
+                {canMutate && task.reminderDate && (
+                  <button onClick={handleDeleteReminder}>
+                    Remove Reminder
+                  </button>
+                )}
+            </div>
+
+              <div style={{ minWidth: "140px", textAlign: "right" }}>
+                  {canMutate && showStart && <button onClick={handleStartWork}>Start</button>}
+                  {canMutate && showSubmit && <button onClick={handleSubmitWork}>Submit</button>}
+                  {canMutate && showComplete && (
+                  <button onClick={handleCompleteWork}>Complete</button>
+                )}
+                  {canMutate &&
+                     (
+                       (isSeedSegment && workspaceMode === "single") ||
+                       isArchiveTriggerTask
+                     ) && (
+                 <button
+                   style={{ marginRight: "8px" }}
+                   onClick={() => setSegmentArchiveConfirmOpen(true)}
+                 >
+                   Archive Segment
+                 </button>
+               )}
+
+                {canMutate &&
+                   !isSeedSegment && (
+                   <button onClick={() => setArchiveConfirmOpen(true)}>
+                     Delete
+                   </button>
+                 )}
+            </div>
+          </div>
+        </div>
+      </div>      {assignmentModalOpen && (
+        <SubordinateSelectionModal
+          title={localAssigneeId ? "Reassign Task" : "Assign Task"}
+          items={personnel}
+            segments={segments}
+            tasks={tasks}
+            activeSegmentId={segment?.segmentId}
+            actingUser={actingUser}
+          onSelect={handleSelectAssignee}
+          onClose={() => setAssignmentModalOpen(false)}
+        />
+      )}
+
+      {linkDocOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2500,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px", width: "420px" }}>
+            <strong>Link document</strong>
+            <div style={{ marginTop: "10px" }}>
+              <input
+                style={{ width: "100%", marginBottom: "8px" }}
+                placeholder="Document title"
+                value={docTitle}
+                onChange={(e) => setDocTitle(e.target.value)}
+              />
+              <input
+                style={{ width: "100%" }}
+                placeholder="Document reference (URL / identifier)"
+                value={docRef}
+                onChange={(e) => setDocRef(e.target.value)}
+              />
+            </div>
+            <div style={{ marginTop: "12px", textAlign: "right" }}>
+              <button onClick={confirmLinkDocument}>Confirm</button>
+              <button onClick={() => setLinkDocOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {archiveConfirmOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 3000,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px" }}>
+            <button onClick={confirmArchive}>Confirm</button>
+            <button onClick={() => setArchiveConfirmOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {segmentArchiveConfirmOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2600,
+          }}
+        >
+          <div style={{ background: "#fff", padding: "20px", width: "420px" }}>
+            <strong>Archive this segment?</strong>
+            <p style={{ marginTop: "10px" }}>
+              This will move the segment to the sidebar and remove it from active view.
+            </p>
+            <div style={{ marginTop: "12px", textAlign: "right" }}>
+              <button onClick={confirmSegmentArchive}>Confirm</button>
+              <button onClick={() => setSegmentArchiveConfirmOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reviewModalOpen && (
+        <ReviewModal
+          onAddNote={onAddNote}
+          taskId={task.id}
+          eventId={activeReviewEventId}
+          taskTitle={task.title}
+            onClose={() => setReviewModalOpen(false)}
+            readOnly={isReadOnly}
+          />
+      )}
+
+      {documentsOpen && (
+        <TaskDocumentsModal
+            open={documentsOpen}
+          task={task}
+          onClose={() => setDocumentsOpen(false)}
+          onAddNote={onAddNote}
+            actor={actingUser}
+            readOnly={isReadOnly}
+        />
+      )}
+        {reminderOpen && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 2500,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                width: "460px",
+                borderRadius: "14px",
+                overflow: "hidden",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+              }}
+            >
+              <div
+                style={{
+                  background: "#0b3a66",
+                  color: "#fff",
+                  padding: "14px 18px",
+                  fontWeight: 700,
+                  fontSize: "16px",
+                }}
+              >
+                Task Reminder
+              </div>
+
+              <div style={{ padding: "18px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    marginBottom: "6px",
+                  }}
+                >
+                  DUE DATE
+                </div>
+
+                <input
+                  type="date"
+                  style={{ width: "100%" }}
+                  value={reminderDate}
+                  onChange={(e) => setReminderDate(e.target.value)}
+                />
+
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    marginTop: "16px",
+                    marginBottom: "6px",
+                  }}
+                >
+                  REMINDER CONTEXT
+                </div>
+
+                <textarea
+                  style={{ width: "100%", minHeight: "100px" }}
+                  value={reminderContext}
+                  onChange={(e) => setReminderContext(e.target.value)}
+                  placeholder="Enter reminder details..."
+                />
+
+                <div
+                  style={{
+                    marginTop: "16px",
+                    textAlign: "right",
+                  }}
+                >
+                  <button
+                    style={{ marginRight: "8px" }}
+                    onClick={handleSaveReminder}
+                  >
+                    Save
+                  </button>
+
+                  <button onClick={() => setReminderOpen(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {riskRegisterOpen && (
+          <RiskWorkspace
+            task={task}
+            segment={segment}
+            isPM={isPM}
+            readOnly={isReadOnly}
+            onClose={() => setRiskRegisterOpen(false)}
+            constitutionalEngagement={constitutionalEngagement}
+            onEscalateRisk={handleEscalateRisk}
+          />
+        )}
+
+        {issueRegisterOpen && (
+          <IssueWorkspace
+            task={task}
+            segment={segment}
+            isPM={isPM}
+            readOnly={isReadOnly}
+            onClose={() => setIssueRegisterOpen(false)}
+            constitutionalEngagement={constitutionalEngagement}
+            onEscalateIssue={handleEscalateIssue}
+          />
+          {qcRegisterOpen && (
+            <QCWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setQcRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              onEscalateQC={handleEscalateQC}
+            />
+          )}
+          />
+        )}
+
+        {ccRegisterOpen && (
+          <CCWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setCcRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              openCCEvent={(id) => {
+                openGovernanceSurface(
+                  "CC",
+                  id
+                );
+              }}
+            />
+        )}
+
+
+
+      {qcModalOpen && activeQcEventId && (
+        <QCModal
+          taskId={task.id}
+          taskTitle={task.title}
+          eventId={activeQcEventId}
+          isPM={isPM}
+          readOnly={isReadOnly}
+          taskTitle={task.title}
+          eventId={activeCcEventId}
+          onClose={() => setCcModalOpen(false)}
+          onAddNote={onAddNote}
+                onEscalate={isPM ? handleEscalateCC : null}
+        />
+      )}
+
+      {escalationRegisterOpen && (
+        <EscalationRegisterModal
+          taskId={task.id}
+          taskTitle={task.title}
+            segmentId={task.segmentId}
+          sourceType={(escalationContext && escalationContext.sourceType) || "TASK"}
+          sourceId={(escalationContext && escalationContext.sourceId) || task.id}
+          onClose={() => setEscalationRegisterOpen(false)}
+          onAddNote={onAddNote}
+          onNavigate={handleNavigateToEscalationSource}
+            isPM={isPM}
+            readOnly={isReadOnly}
+        />
+      )}
+    </div>
+  );
+}
+

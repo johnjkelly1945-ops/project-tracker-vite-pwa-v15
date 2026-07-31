@@ -1,0 +1,39 @@
+// @ts-nocheck
+
+/*
+======================================================================
+
+METRA — RiskWorkspace.jsx
+Stage 500U — Constitutional Risk Workspace Foundation
+
+PURPOSE
+-------
+
+Constitutional destination for Risk lifecycle.
+
+Initially delegates to the existing Risk capability.
+
+No constitutional behaviour changes occur in this stage.
+
+======================================================================
+*/
+
+import RiskRegisterModal from "./RiskRegisterModal";
+
+export default function RiskWorkspace(props) {
+
+  const constitutionalReadOnly =
+    props.constitutionalEngagement?.responsibility === "RISK_INSPECTION";
+  return (
+    <RiskRegisterModal
+      taskId={props.task?.id}
+      taskTitle={props.task?.title}
+      segmentId={props.segment?.segmentId || props.segment?.id}
+      isPM={props.isPM}
+      readOnly={props.readOnly || constitutionalReadOnly}
+      onClose={props.onClose}
+        constitutionalEngagement={props.constitutionalEngagement}
+      openRiskEvent={props.openRiskEvent}
+    />
+  );
+}
