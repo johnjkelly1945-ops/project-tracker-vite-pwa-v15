@@ -13,7 +13,7 @@ import { createGovernanceEvent } from "../governance/governanceStore";
 import { getGovernanceEventsByTask } from "../governance/governanceStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 
-export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent, isPM = false, readOnly = false }) {
+export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClose, openIssueEvent, isPM = false, readOnly = false, constitutionalEngagement }) {
 
   const [, refresh] = useState(0);
 
@@ -54,8 +54,8 @@ export default function IssueRegisterModal({ taskId, taskTitle, segmentId, onClo
   const issues =
     getIssueArtefacts()
       .filter(issue =>
-        issue.taskId === taskId &&
-        (isPM || advisoryIssueArtefactIds.has(issue.artefactId))
+          issue.segmentId === segmentId &&
+          (isPM || constitutionalEngagement?.responsibility === "ISSUE_INSPECTION" || advisoryIssueArtefactIds.has(issue.artefactId))
       );
 
   function saveEntry() {

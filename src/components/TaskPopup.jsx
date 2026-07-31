@@ -39,7 +39,7 @@ import IssueRegisterModal from "./IssueRegisterModal";
 import QCRegisterModal from "./QCRegisterModal";
 import CCWorkspace from "./CCWorkspace";
 import RiskWorkspace from "./RiskWorkspace";
-import IssueModal from "./IssueModal";
+import IssueWorkspace from "./IssueWorkspace";
 import QCModal from "./QCModal";
 import CCModal from "./CCModal";
 import EscalationRegisterModal from "./EscalationRegisterModal";
@@ -108,6 +108,8 @@ export default function TaskPopup({
   advisoryDestinationId = null,
 }) {
   if (!task) return null;
+    console.log("TASKPOPUP TASK", task);
+
   const isReadOnly = readOnly === true;
 
   const isArchiveTriggerTask =
@@ -175,9 +177,7 @@ Advisory Workspace Provider.
   const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
 
   /* ================= Stage 333 — Issue State ================= */
-  const [issueModalOpen, setIssueModalOpen] = useState(false);
   const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
-  const [activeIssueEventId, setActiveIssueEventId] = useState(null);
   /* ================= End Stage 333 State ================= */
 
   /* ================= Stage 334 — QC State ================= */
@@ -217,10 +217,6 @@ CONSTITUTIONAL RULES
 function openGovernanceSurface(eventType, eventId) {
   switch (eventType) {
 
-    case "ISSUE":
-      setActiveIssueEventId(eventId);
-      setIssueModalOpen(true);
-      break;
 
     case "QC":
       setActiveQcEventId(eventId);
@@ -523,8 +519,8 @@ if (!isOperational && !isAdvisor) {
     if (!isPM) return;
     setIssueRegisterOpen(true);
   }
-  function handleEscalateIssue() {
-    if (!activeIssueEventId) return;
+  function handleEscalateIssue(eventId) {
+    if (!eventId) return;
 
     const line = systemLine("Issue escalated by PM");
     onAddNote(task.id, line);
@@ -532,10 +528,10 @@ if (!isOperational && !isAdvisor) {
 
     setEscalationContext({
       sourceType: "ISSUE",
-      sourceId: activeIssueEventId
+      sourceId: eventId
     });
 
-    bridgeEscalateGovernanceEvent({ eventId: activeIssueEventId });
+    bridgeEscalateGovernanceEvent({ eventId });
 
     setEscalationRegisterOpen(true);
   }
@@ -841,12 +837,7 @@ if (!isOperational && !isAdvisor) {
 
               if (!list.length) return;
 
-              if (list.length === 1) {
-                setActiveIssueEventId(list[0].eventId);
-                setIssueModalOpen(true);
-              } else {
                 setIssueRegisterOpen(true);
-              }
             }}>
               {" / "}Issue
             </span>
@@ -1184,24 +1175,17 @@ if (!isOperational && !isAdvisor) {
           />
         )}
 
-      {issueRegisterOpen && (
-        <IssueRegisterModal
-          taskId={task.id}
-          taskTitle={task.title}
-            segmentId={task.segmentId}
-          onClose={() => setIssueRegisterOpen(false)}
-          openIssueEvent={(eventId) => {
-            setIssueRegisterOpen(false);
-
-            openGovernanceSurface(
-              "ISSUE",
-              eventId
-            );
-          }}
+        {issueRegisterOpen && (
+          <IssueWorkspace
+            task={task}
+            segment={segment}
             isPM={isPM}
             readOnly={isReadOnly}
-        />
-      )}
+            onClose={() => setIssueRegisterOpen(false)}
+            constitutionalEngagement={constitutionalEngagement}
+            onEscalateIssue={handleEscalateIssue}
+          />
+        )}
         {qcRegisterOpen && (
           <QCRegisterModal
             taskId={task.id}
@@ -1239,18 +1223,6 @@ if (!isOperational && !isAdvisor) {
         )}
 
 
-      {issueModalOpen && activeIssueEventId && (
-        <IssueModal
-          taskId={task.id}
-          eventId={activeIssueEventId}
-          taskTitle={task.title}
-          onClose={() => setIssueModalOpen(false)}
-          onAddNote={onAddNote}
-          onEscalate={isPM ? handleEscalateIssue : undefined}
-            isPM={isPM}
-            readOnly={isReadOnly}
-        />
-      )}
 
       {qcModalOpen && activeQcEventId && (
         <QCModal
