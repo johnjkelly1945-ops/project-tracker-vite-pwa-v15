@@ -30,8 +30,13 @@ No constitutional behaviour changes occur in this stage.
 
 import { useState, useEffect } from "react";
 import TaskPopup from "./TaskPopup";
+import RiskWorkspace from "./RiskWorkspace";
+import IssueWorkspace from "./IssueWorkspace";
+import QCWorkspace from "./QCWorkspace";
+import CCWorkspace from "./CCWorkspace";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
+import { resolveOperationalAuthority } from "../domain/operation/OperationalAuthorityResolver";
 
 export default function AdvisoryWorkspaceProvider(props) {
 
@@ -99,20 +104,6 @@ export default function AdvisoryWorkspaceProvider(props) {
 
     }
   }
-  useEffect(() => {
-    if (!advisoryEntry) return;
-    if (!advisoryDestination) return;
-    if (!advisoryDestinationId) return;
-
-    openGovernanceSurface(
-      advisoryDestination,
-      advisoryDestinationId
-    );
-  }, [
-    advisoryEntry,
-    advisoryDestination,
-    advisoryDestinationId
-  ]);
 
 
 
@@ -143,6 +134,30 @@ export default function AdvisoryWorkspaceProvider(props) {
     advisoryNavigation[0] ||
     null;
 
+  const advisoryTypes = [
+    ...new Set(
+      advisoryNavigation.map(e => e.eventType)
+    )
+  ];
+
+    const actor = getActingUser();
+
+    const {
+      isAdvisor
+    } = resolveOperationalAuthority({
+      engagement: props.constitutionalEngagement,
+      actor,
+      segment: props.segment,
+      task: props.task
+    });
+
+  console.log("STAGE500W PROVIDER", {
+    taskId: props.task?.id,
+    advisoryNavigation,
+    resolvedAdvisoryEngagement,
+    advisoryTypes
+  });
+
   function openConstitutionalDestination() {
     /*
     ==========================================================
@@ -166,21 +181,128 @@ export default function AdvisoryWorkspaceProvider(props) {
     );
   }
 
+    function handleAdvisorySelection(eventType) {
+      const engagement =
+        advisoryNavigation.find(
+          e => e.eventType === eventType
+        );
+
+      if (!engagement) return;
+
+      openGovernanceSurface(
+        engagement.eventType,
+        engagement.eventId
+      );
+    }
+
+  useEffect(() => {
+    openConstitutionalDestination();
+  }, [resolvedAdvisoryEngagement]);
+
+
   const advisoryContext = {
     ...props,
-    advisoryDestination:
-      resolvedAdvisoryEngagement?.eventType || null,
-    advisoryDestinationId:
-      resolvedAdvisoryEngagement?.eventId || null
   };
 
 
-  openConstitutionalDestination();
+
 
   return (
+  <>
+
+    {riskRegisterOpen && (
+      <RiskWorkspace
+        task={props.task}
+        segment={props.segment}
+        isPM={props.isPM}
+        readOnly={props.readOnly}
+        onClose={() => setRiskRegisterOpen(false)}
+        constitutionalEngagement={props.constitutionalEngagement}
+      />
+    )}
+
+    {issueRegisterOpen && (
+      <IssueWorkspace
+        task={props.task}
+        segment={props.segment}
+        isPM={props.isPM}
+        readOnly={props.readOnly}
+        onClose={() => setIssueRegisterOpen(false)}
+        constitutionalEngagement={props.constitutionalEngagement}
+      />
+    )}
+
+    {qcRegisterOpen && (
+      <QCWorkspace
+        task={props.task}
+        segment={props.segment}
+        isPM={props.isPM}
+        readOnly={props.readOnly}
+        onClose={() => setQcRegisterOpen(false)}
+        constitutionalEngagement={props.constitutionalEngagement}
+      />
+    )}
+
+    {ccRegisterOpen && (
+      <CCWorkspace
+        task={props.task}
+        segment={props.segment}
+        isPM={props.isPM}
+        readOnly={props.readOnly}
+        onClose={() => setCcRegisterOpen(false)}
+        constitutionalEngagement={props.constitutionalEngagement}
+        openCCEvent={(id) => {
+          openGovernanceSurface("CC", id);
+        }}
+      />
+    )}
+
+
+      {isAdvisor && (() => {
+        const advisoryEvents = advisoryNavigation;
+
+        const resolvedAdvisoryTypes =
+          advisoryTypes.length > 0
+            ? advisoryTypes
+            : [
+                ...new Set(
+                  advisoryEvents.map(e => e.eventType)
+                )
+              ];
+
+        if (resolvedAdvisoryTypes.length === 0) return null;
+
+        return (
+          <>
+            <span>Advisory</span>
+            {" - "}
+            {resolvedAdvisoryTypes.includes("RISK") && (
+              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("RISK")}>
+                Risk
+              </span>
+            )}
+            {resolvedAdvisoryTypes.includes("ISSUE") && (
+              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("ISSUE")}>
+                {" / "}Issue
+              </span>
+            )}
+            {resolvedAdvisoryTypes.includes("QC") && (
+              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("QC")}>
+                {" / "}QC
+              </span>
+            )}
+            {resolvedAdvisoryTypes.includes("CC") && (
+              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("CC")}>
+                {" / "}CC
+              </span>
+            )}
+          </>
+        );
+      })()}
+
   <TaskPopup
     {...advisoryContext}
-    advisoryEntry={true}
   />
+  </>
 );
 }

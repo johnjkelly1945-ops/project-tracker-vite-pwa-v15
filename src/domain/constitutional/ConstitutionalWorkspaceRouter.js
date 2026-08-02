@@ -109,6 +109,12 @@ const { isOperational } =
     };
   }
 
+  if (constitutionalEngagement?.responsibility === "Advisory") {
+    return {
+      destination:
+        CONSTITUTIONAL_WORKSPACE.ADVISORY
+    };
+  }
   if (isOperational) {
     return {
       destination:
@@ -125,12 +131,6 @@ const { isOperational } =
     };
   }
 
-  if (hasAdvisoryWorkspace) {
-    return {
-      destination:
-        CONSTITUTIONAL_WORKSPACE.ADVISORY
-    };
-  }
 
 
 

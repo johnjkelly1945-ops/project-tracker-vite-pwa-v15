@@ -102,9 +102,6 @@ export default function TaskPopup({
   currentUserRole = "PM",
   isSeedSegment = false,
   readOnly = false,
-  advisoryEntry = false,
-  advisoryDestination = null,
-  advisoryDestinationId = null,
 }) {
   if (!task) return null;
     console.log("TASKPOPUP TASK", task);
@@ -227,20 +224,6 @@ function openGovernanceSurface(eventType, eventId) {
   }
 }
 
-  useEffect(() => {
-    if (!advisoryEntry) return;
-    if (!advisoryDestination) return;
-    if (!advisoryDestinationId) return;
-
-    openGovernanceSurface(
-      advisoryDestination,
-      advisoryDestinationId
-    );
-  }, [
-    advisoryEntry,
-    advisoryDestination,
-    advisoryDestinationId
-  ]);
 
   /* ================= Stage 341 — Description State ================= */
   const [descriptionOpen, setDescriptionOpen] = useState(false);
@@ -477,20 +460,6 @@ if (!isOperational && !isAdvisor) {
     setActiveReviewEventId(event.eventId);
     setReviewModalOpen(true);
   }
-
-
-    function handleOpenAdvisoryRisk() {
-    const list = getGovernanceEventsByTask(task.id)
-      .filter(e =>
-        e.eventType === "RISK" &&
-        Array.isArray(e.participation) &&
-        e.participation.some(p => p && p.reviewerId === actor.id)
-      );
-
-    if (!list.length) return;
-
-      setRiskRegisterOpen(true);
-    }
 /* ================= Risk Activation ================= */
 
   function handleInitiateRisk() {
@@ -797,63 +766,6 @@ if (!isOperational && !isAdvisor) {
                isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-{isAdvisor && (() => {
-  const advisoryEvents = resolveAdvisoryNavigation({
-    actor,
-    taskId: task.id
-  });
-
-  const advisoryTypes = [
-    ...new Set(
-      advisoryEvents.map(e => e.eventType)
-    )
-  ];
-
-  if (advisoryTypes.length === 0) return null;
-
-  return (
-    <>
-      <span>Advisory</span>
-      {" - "}
-      {advisoryTypes.includes("RISK") && (
-        <span style={{ cursor: "pointer" }} onClick={handleOpenAdvisoryRisk}>
-          Risk
-        </span>
-        )}
-          {advisoryTypes.includes("ISSUE") && (
-            <span style={{ cursor: "pointer" }} onClick={() => {
-              const list = getGovernanceEventsByTask(task.id)
-                .filter(e =>
-                  e.eventType === "ISSUE" &&
-                  Array.isArray(e.participation) &&
-                  e.participation.some(p => p && p.reviewerId === actor.id)
-                );
-
-              if (!list.length) return;
-
-                setIssueRegisterOpen(true);
-            }}>
-              {" / "}Issue
-            </span>
-          )}
-            {advisoryTypes.includes("QC") && (
-              <span style={{ cursor: "pointer" }} onClick={() => setQcRegisterOpen(true)}>
-                {" / "}QC
-              </span>
-            )}
-      {advisoryTypes.includes("CC") && (
-        <span style={{ cursor: "pointer" }} onClick={() => {
-          const existing = getGovernanceEventsByTask(task.id)
-              .filter(e => e.eventType === "CC");
-            if (!existing.length) return;
-              if (existing.length === 1) { setActiveCcEventId(existing[0].eventId); setCcModalOpen(true); } else if (existing.length > 1) setCcRegisterOpen(true);
-        }}>
-          {" / "}CC
-        </span>
-      )}
-    </>
-  );
-})()}
                     {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
