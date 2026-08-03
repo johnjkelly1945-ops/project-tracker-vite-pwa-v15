@@ -30,8 +30,6 @@ CONSTITUTIONAL RULES
 import { resolveOperationalAuthority }
   from "../operation/OperationalAuthorityResolver";
 
-import { resolveAdvisoryNavigation }
-  from "../governance/AdvisoryNavigationResolver";
 
 export const CONSTITUTIONAL_WORKSPACE = Object.freeze({
   TASK: "TASK",
@@ -84,19 +82,10 @@ const { isOperational } =
       task
     });
 
-  const advisoryNavigation =
-    resolveAdvisoryNavigation({
-      actor,
-      taskId: task?.id
-    });
-
-  const hasAdvisoryWorkspace =
-    advisoryNavigation.length > 0;
 
   console.log("STAGE500T ROUTER", {
     constitutionalEngagement,
     isOperational,
-    hasAdvisoryWorkspace,
     taskId: task?.id
   });
 

@@ -32,6 +32,14 @@ import { useState, useEffect } from "react";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { getGovernanceEvent } from "../governance/governanceStore";
 import { bridgeSubmitAdvisory } from "../governance/governanceBridge";
+import TaskPopup from "./TaskPopup";
+import RiskWorkspace from "./RiskWorkspace";
+import IssueWorkspace from "./IssueWorkspace";
+import QCWorkspace from "./QCWorkspace";
+import CCWorkspace from "./CCWorkspace";
+import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
+
+import WorkspaceSurface from "./WorkspaceSurface";
 
 export default function AdvisoryWorkspaceProvider(props) {
 
@@ -53,10 +61,72 @@ export default function AdvisoryWorkspaceProvider(props) {
 
 
 
+
+    const [riskModalOpen, setRiskModalOpen] = useState(false);
+    const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
+    const [activeRiskEventId, setActiveRiskEventId] = useState(null);
+
+    const [issueModalOpen, setIssueModalOpen] = useState(false);
+    const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
+    const [activeIssueEventId, setActiveIssueEventId] = useState(null);
+
+    const [qcModalOpen, setQcModalOpen] = useState(false);
+    const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
+    const [activeQcEventId, setActiveQcEventId] = useState(null);
+
+    const [ccModalOpen, setCcModalOpen] = useState(false);
+    const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
+    const [activeCcEventId, setActiveCcEventId] = useState(null);
+
   const [advisoryEvent, setAdvisoryEvent] = useState(null);
   const [advisoryText, setAdvisoryText] = useState("");
 
 
+
+
+
+    function openGovernanceSurface(eventType, eventId) {
+      switch (eventType) {
+        case "RISK":
+          setActiveRiskEventId(eventId);
+          setRiskModalOpen(true);
+          break;
+
+        case "ISSUE":
+          setActiveIssueEventId(eventId);
+          setIssueModalOpen(true);
+          break;
+
+        case "QC":
+          setActiveQcEventId(eventId);
+          setQcModalOpen(true);
+          break;
+
+        case "CC":
+          setActiveCcEventId(eventId);
+          setCcModalOpen(true);
+          break;
+
+        default:
+          return;
+      }
+    }
+
+
+
+    function handleAdvisorySelection(eventType) {
+      const engagement =
+        advisoryNavigation.find(
+          e => e.eventType === eventType
+        );
+
+      if (!engagement) return;
+
+      openGovernanceSurface(
+        engagement.eventType,
+        engagement.eventId
+      );
+    }
 
 
   /*
@@ -74,6 +144,13 @@ export default function AdvisoryWorkspaceProvider(props) {
 
   const advisoryEngagement =
     props.activeAdvisory;
+
+      const advisoryNavigation =
+        resolveAdvisoryNavigation({
+          actor: getActingUser(),
+          taskId: props.task?.id
+        });
+
 
     const resolvedAdvisoryEngagement =
       props.constitutionalEngagement?.responsibility === "Advisory"
@@ -149,7 +226,7 @@ export default function AdvisoryWorkspaceProvider(props) {
 
 
         {isAdvisor && resolvedAdvisoryEngagement && (
-          <div>
+          <WorkspaceSurface>
             <h3>Advisory</h3>
 
             {(advisoryEvent?.advisoryRecords || []).map((adv) => (
@@ -175,7 +252,7 @@ export default function AdvisoryWorkspaceProvider(props) {
             <button onClick={props.onClose}>
               Return to MW
             </button>
-          </div>
+          </WorkspaceSurface>
         )}
 
     </>

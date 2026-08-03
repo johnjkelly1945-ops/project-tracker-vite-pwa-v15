@@ -31,13 +31,15 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { attemptAction } from "../domain/authority/ActionExecutor.js";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import TaskDescriptionModal from "./TaskDescriptionModal";
-import WorkspaceSurface from "./WorkspaceSurface";
-
 import TaskDocumentsModal from "./TaskDocumentsModal";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
 import ReviewModal from "./ReviewModal";
 import IssueRegisterModal from "./IssueRegisterModal";
+import CCWorkspace from "./CCWorkspace";
+import RiskWorkspace from "./RiskWorkspace";
+import IssueWorkspace from "./IssueWorkspace";
+import QCWorkspace from "./QCWorkspace";
 import CCModal from "./CCModal";
 import EscalationRegisterModal from "./EscalationRegisterModal";
 import {
@@ -100,6 +102,11 @@ export default function TaskPopup({
   currentUserRole = "PM",
   isSeedSegment = false,
   readOnly = false,
+  advisoryEntry = false,
+  advisoryNavigation = [],
+  advisoryTypes = [],
+  advisoryDestination = null,
+  advisoryDestinationId = null,
 }) {
   if (!task) return null;
     console.log("TASKPOPUP TASK", task);
@@ -109,6 +116,35 @@ export default function TaskPopup({
   const isArchiveTriggerTask =
     task.systemAction === "ARCHIVE_SEGMENT";
 
+  /* ================= Stage 429 — Navigation Handler (Routing) ================= */
+  function handleNavigateToEscalationSource(e) {
+    const personId = getPersonId(getCurrentUserFromStorage());
+    const actor = personId
+      ? getPersonnel().find(p => p.id === personId)
+      : null;
+
+    if (!actor) return;
+
+    const advisoryTypes = [
+      ...new Set(
+        events
+          .filter(e =>
+            Array.isArray(e.participation) &&
+            e.participation.some(p => p.reviewerId === actor.id)
+          )
+          .map(e => e.eventType)
+      )
+    ];
+
+    if (isAdvisor && !isAssignee && advisoryTypes.length > 1) {
+      return;
+    }
+    openGovernanceSurface(
+      e.sourceType,
+      e.sourceId
+    );
+  }
+  /* ================= End Stage 429 ================= */
   const [displayNotes, setDisplayNotes] = useState(task.notes || []);
 
   const [localAssigneeId, setLocalAssigneeId] = useState(task.assigneeId || "");
@@ -118,12 +154,36 @@ export default function TaskPopup({
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [activeReviewEventId, setActiveReviewEventId] = useState(null);
 
+  /*
+==========================================================
 
+STAGE 500H-8H
+
+ADVISORY WORKSPACE PROVIDER
+
+This region owns the advisory workspace lifecycle.
+
+Responsibilities:
+
+• Advisory modal state.
+• Active governance event selection.
+• Advisory workspace rendering.
+
+This region will be extracted intact into the
+Advisory Workspace Provider.
+
+==========================================================
+*/
+
+  const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
 
   /* ================= Stage 333 — Issue State ================= */
+  const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
   /* ================= End Stage 333 State ================= */
 
   /* ================= Stage 334 — QC State ================= */
+  const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
+  const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
   /* ================= End Stage 334 State ================= */
 
   /* ================= Stage 335 — CC State ================= */
@@ -131,7 +191,43 @@ export default function TaskPopup({
   const [escalationRegisterOpen, setEscalationRegisterOpen] = useState(false);
   const [activeCcEventId, setActiveCcEventId] = useState(null);
 
+/*
+==========================================================
 
+STAGE 500H-8I
+
+CANONICAL GOVERNANCE SURFACE OPENING
+
+PURPOSE
+-------
+Provide a single implementation for opening a governance
+surface from any constitutional workspace.
+
+CONSTITUTIONAL RULES
+--------------------
+• ConstitutionalWorkspaceRouter selects the workspace.
+• This helper opens the governance surface.
+• No constitutional decision is made here.
+• No repository mutation occurs here.
+
+==========================================================
+*/
+
+function openGovernanceSurface(eventType, eventId) {
+  switch (eventType) {
+
+
+
+    case "CC":
+      setActiveCcEventId(eventId);
+      setCcModalOpen(true);
+      break;
+
+    default:
+      return;
+
+  }
+}
 
 
   /* ================= Stage 341 — Description State ================= */
@@ -567,7 +663,27 @@ if (!isOperational && !isAdvisor) {
   /* ================= Render ================= */
 
   return (
-      <WorkspaceSurface>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.3)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          width: "90%",
+          height: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: "6px",
+        }}
+      >
         <CanonicalTaskPopupHeader
           task={task}
           summaryTitle={summaryTitle}
@@ -650,11 +766,52 @@ if (!isOperational && !isAdvisor) {
           }}
         >
           <div style={{ textAlign: "center", fontStyle: "italic", color: "#333" }}>
-                {isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={handleInitiateCC}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
+                {isPM && !isSeedSegment && (<><span style={{ cursor: "pointer" }} onClick={() => setCcRegisterOpen(true)}>CC</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateRisk}>Risk</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateIssue}>Issue</span> · <span style={{ cursor: "pointer" }} onClick={handleInitiateQC}>QC</span></>)}
               {executionState === "SUBMITTED" &&
                isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
+{isAdvisor && (() => {
+  const advisoryEvents = advisoryNavigation;
+
+  const resolvedAdvisoryTypes =
+    advisoryTypes.length > 0
+      ? advisoryTypes
+      : [
+          ...new Set(
+            advisoryEvents.map(e => e.eventType)
+          )
+        ];
+
+  if (resolvedAdvisoryTypes.length === 0) return null;
+
+  return (
+    <>
+      <span>Advisory</span>
+      {" - "}
+      {resolvedAdvisoryTypes.includes("RISK") && (
+        <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("RISK")}>
+          Risk
+        </span>
+        )}
+          {resolvedAdvisoryTypes.includes("ISSUE") && (
+            <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("ISSUE")}>
+              {" / "}Issue
+            </span>
+          )}
+            {resolvedAdvisoryTypes.includes("QC") && (
+              <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("QC")}>
+                {" / "}QC
+              </span>
+            )}
+        {resolvedAdvisoryTypes.includes("CC") && (
+          <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("CC")}>
+            {" / "}CC
+          </span>
+        )}
+    </>
+  );
+})()}
                     {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
@@ -732,11 +889,11 @@ if (!isOperational && !isAdvisor) {
                      Delete
                    </button>
                  )}
-              </div>
             </div>
           </div>
-          {assignmentModalOpen && (
-            <SubordinateSelectionModal
+        </div>
+      </div>      {assignmentModalOpen && (
+        <SubordinateSelectionModal
           title={localAssigneeId ? "Reassign Task" : "Assign Task"}
           items={personnel}
             segments={segments}
@@ -942,6 +1099,58 @@ if (!isOperational && !isAdvisor) {
         )}
 
 
+        {riskRegisterOpen && (
+          <RiskWorkspace
+            task={task}
+            segment={segment}
+            isPM={isPM}
+            readOnly={isReadOnly}
+            onClose={() => setRiskRegisterOpen(false)}
+            constitutionalEngagement={constitutionalEngagement}
+            onEscalateRisk={handleEscalateRisk}
+          />
+        )}
+
+          {issueRegisterOpen && (
+            <IssueWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setIssueRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              onEscalateIssue={handleEscalateIssue}
+            />
+          )}
+
+          {qcRegisterOpen && (
+            <QCWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setQcRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              onEscalateQC={handleEscalateQC}
+            />
+          )}
+
+        {ccRegisterOpen && (
+          <CCWorkspace
+              task={task}
+              segment={segment}
+              isPM={isPM}
+              readOnly={isReadOnly}
+              onClose={() => setCcRegisterOpen(false)}
+              constitutionalEngagement={constitutionalEngagement}
+              openCCEvent={(id) => {
+                openGovernanceSurface(
+                  "CC",
+                  id
+                );
+              }}
+            />
+        )}
 
 
 
@@ -955,11 +1164,12 @@ if (!isOperational && !isAdvisor) {
           sourceId={(escalationContext && escalationContext.sourceId) || task.id}
           onClose={() => setEscalationRegisterOpen(false)}
           onAddNote={onAddNote}
+          onNavigate={handleNavigateToEscalationSource}
             isPM={isPM}
             readOnly={isReadOnly}
         />
       )}
-      </WorkspaceSurface>
+    </div>
   );
 }
 
