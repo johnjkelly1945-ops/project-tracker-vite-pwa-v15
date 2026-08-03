@@ -109,37 +109,6 @@ const { isOperational } =
     };
   }
 
-
-    if (constitutionalEngagement?.responsibility === "Advisory" &&
-        constitutionalEngagement?.governanceEventType) {
-
-      switch (constitutionalEngagement.governanceEventType) {
-
-        case "CC":
-          return {
-            destination: CONSTITUTIONAL_WORKSPACE.CC
-          };
-
-        case "RISK":
-          return {
-            destination: CONSTITUTIONAL_WORKSPACE.RISK
-          };
-
-        case "ISSUE":
-          return {
-            destination: CONSTITUTIONAL_WORKSPACE.ISSUE
-          };
-
-        case "QC":
-          return {
-            destination: CONSTITUTIONAL_WORKSPACE.QC
-          };
-
-        default:
-          break;
-      }
-    }
-
   if (constitutionalEngagement?.responsibility === "Advisory") {
     return {
       destination:

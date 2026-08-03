@@ -17,7 +17,7 @@ The Risk capability remains the underlying governance surface.
 ======================================================================
 */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RiskRegisterModal from "./RiskRegisterModal";
 import RiskModal from "./RiskModal";
 import { bridgeEscalateGovernanceEvent } from "../governance/governanceBridge";
@@ -31,6 +31,15 @@ export default function RiskWorkspaceProvider(props) {
     setActiveRiskEventId(eventId);
     setRiskModalOpen(true);
   }
+
+    useEffect(() => {
+      if (!props.constitutionalEngagement?.governanceEventId) return;
+
+      openRiskEvent(
+        props.constitutionalEngagement.governanceEventId
+      );
+    }, [props.constitutionalEngagement]);
+
 
   function handleEscalateRisk(eventId) {
     bridgeEscalateGovernanceEvent({

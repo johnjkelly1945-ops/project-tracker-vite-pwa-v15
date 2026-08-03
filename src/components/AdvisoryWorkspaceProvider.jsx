@@ -17,11 +17,11 @@ implementation.
 
 Subsequent bounded migrations will relocate:
 
-• Governance state
-• Governance lifecycle
-• Governance provider boundary
+• Advisory state
+• Advisory lifecycle
+• Advisory workspace boundary
 
-Governance lifecycle ownership is now contained within this provider.
+Advisory lifecycle ownership is now contained within this provider.
 
 No constitutional behaviour changes occur in this stage.
 
@@ -29,12 +29,9 @@ No constitutional behaviour changes occur in this stage.
 */
 
 import { useState, useEffect } from "react";
-import RiskWorkspace from "./RiskWorkspace";
-import IssueWorkspace from "./IssueWorkspace";
-import QCWorkspace from "./QCWorkspace";
-import CCWorkspace from "./CCWorkspace";
 import { getActingUser } from "../domain/actor/ActingUser";
-import { resolveOperationalAuthority } from "../domain/operation/OperationalAuthorityResolver";
+import { getGovernanceEvent } from "../governance/governanceStore";
+import { bridgeSubmitAdvisory } from "../governance/governanceBridge";
 
 export default function AdvisoryWorkspaceProvider(props) {
 
@@ -43,65 +40,22 @@ export default function AdvisoryWorkspaceProvider(props) {
 
   ADVISORY WORKSPACE LIFECYCLE
 
-  This region will progressively become the constitutional
+  This region is the constitutional
   owner of:
 
-  • Governance state
-  • Governance surface opening
-  • Governance lifecycle
-  • Governance provider boundary
+  • Advisory state
+  • Advisory engagement resolution
+  • Advisory lifecycle
+  • Advisory workspace boundary
 
   ==========================================================
   */
-  const [riskModalOpen, setRiskModalOpen] = useState(false);
-  const [riskRegisterOpen, setRiskRegisterOpen] = useState(false);
-  const [activeRiskEventId, setActiveRiskEventId] = useState(null);
 
-  /* ================= Stage 333 — Issue State ================= */
-  const [issueModalOpen, setIssueModalOpen] = useState(false);
-  const [issueRegisterOpen, setIssueRegisterOpen] = useState(false);
-  const [activeIssueEventId, setActiveIssueEventId] = useState(null);
-  /* ================= End Stage 333 State ================= */
 
-  /* ================= Stage 334 — QC State ================= */
-  const [qcModalOpen, setQcModalOpen] = useState(false);
-  const [qcRegisterOpen, setQcRegisterOpen] = useState(false);
-  const [ccRegisterOpen, setCcRegisterOpen] = useState(false);
-  const [activeQcEventId, setActiveQcEventId] = useState(null);
-  /* ================= End Stage 334 State ================= */
 
-  /* ================= Stage 335 — CC State ================= */
-  const [ccModalOpen, setCcModalOpen] = useState(false);
-  const [escalationRegisterOpen, setEscalationRegisterOpen] = useState(false);
-  const [activeCcEventId, setActiveCcEventId] = useState(null);
+  const [advisoryEvent, setAdvisoryEvent] = useState(null);
+  const [advisoryText, setAdvisoryText] = useState("");
 
-  function openGovernanceSurface(eventType, eventId) {
-    switch (eventType) {
-      case "RISK":
-        setActiveRiskEventId(eventId);
-        setRiskModalOpen(true);
-        break;
-
-      case "ISSUE":
-        setActiveIssueEventId(eventId);
-        setIssueModalOpen(true);
-        break;
-
-      case "QC":
-        setActiveQcEventId(eventId);
-        setQcModalOpen(true);
-        break;
-
-      case "CC":
-        setActiveCcEventId(eventId);
-        setCcModalOpen(true);
-        break;
-
-      default:
-        return;
-
-    }
-  }
 
 
 
@@ -129,6 +83,19 @@ export default function AdvisoryWorkspaceProvider(props) {
           }
         : null;
 
+
+    useEffect(() => {
+      if (!resolvedAdvisoryEngagement?.eventId) return;
+
+      const loaded = getGovernanceEvent(
+        resolvedAdvisoryEngagement.eventId
+      );
+
+      if (loaded) {
+        setAdvisoryEvent(loaded);
+      }
+    }, [resolvedAdvisoryEngagement?.eventId]);
+
     const advisoryTypes = resolvedAdvisoryEngagement
       ? [resolvedAdvisoryEngagement.eventType]
       : [];
@@ -136,14 +103,8 @@ export default function AdvisoryWorkspaceProvider(props) {
 
     const actor = getActingUser();
 
-    const {
-      isAdvisor
-    } = resolveOperationalAuthority({
-      engagement: props.constitutionalEngagement,
-      actor,
-      segment: props.segment,
-      task: props.task
-    });
+      const isAdvisor =
+        props.constitutionalEngagement?.responsibility === "Advisory";
 
   console.log("STAGE500W PROVIDER", {
     taskId: props.task?.id,
@@ -153,16 +114,26 @@ export default function AdvisoryWorkspaceProvider(props) {
 
     console.log("STAGE500W CONTRACT IN PROVIDER", props.constitutionalEngagement);
 
-    function handleAdvisorySelection() {
-      if (!resolvedAdvisoryEngagement) return;
-
-      openGovernanceSurface(
-        resolvedAdvisoryEngagement.eventType,
-        resolvedAdvisoryEngagement.eventId
-      );
-    }
 
 
+
+
+      function handleCommitAdvisory() {
+        const summary = advisoryText.trim();
+        if (!summary) return;
+        if (!resolvedAdvisoryEngagement?.eventId) return;
+
+        const updated = bridgeSubmitAdvisory({
+          eventId: resolvedAdvisoryEngagement.eventId,
+          submittedBy: "PM",
+          summary,
+          artefactId: null,
+          templateId: null,
+        });
+
+        setAdvisoryEvent(updated);
+        setAdvisoryText("");
+      }
 
   const advisoryContext = {
     ...props,
@@ -177,64 +148,35 @@ export default function AdvisoryWorkspaceProvider(props) {
   <>
 
 
-      {isAdvisor && resolvedAdvisoryEngagement && (
-        <>
-          <span>Advisory</span>
-          {" - "}
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => handleAdvisorySelection()}
-          >
-            {resolvedAdvisoryEngagement.eventType}
-          </span>
-        </>
-      )}
-    {riskRegisterOpen && (
-      <RiskWorkspace
-        task={props.task}
-        segment={props.segment}
-        isPM={props.isPM}
-        readOnly={props.readOnly}
-        onClose={() => setRiskRegisterOpen(false)}
-        constitutionalEngagement={props.constitutionalEngagement}
-      />
-    )}
+        {isAdvisor && resolvedAdvisoryEngagement && (
+          <div>
+            <h3>Advisory</h3>
 
-    {issueRegisterOpen && (
-      <IssueWorkspace
-        task={props.task}
-        segment={props.segment}
-        isPM={props.isPM}
-        readOnly={props.readOnly}
-        onClose={() => setIssueRegisterOpen(false)}
-        constitutionalEngagement={props.constitutionalEngagement}
-      />
-    )}
+            {(advisoryEvent?.advisoryRecords || []).map((adv) => (
+              <div key={adv.advisoryId}>
+                {adv.summary}
+              </div>
+            ))}
 
-    {qcRegisterOpen && (
-      <QCWorkspace
-        task={props.task}
-        segment={props.segment}
-        isPM={props.isPM}
-        readOnly={props.readOnly}
-        onClose={() => setQcRegisterOpen(false)}
-        constitutionalEngagement={props.constitutionalEngagement}
-      />
-    )}
+            {!props.readOnly && (
+              <>
+                <textarea
+                  value={advisoryText}
+                  onChange={(e) => setAdvisoryText(e.target.value)}
+                  placeholder="Enter advisory..."
+                />
 
-    {ccRegisterOpen && (
-      <CCWorkspace
-        task={props.task}
-        segment={props.segment}
-        isPM={props.isPM}
-        readOnly={props.readOnly}
-        onClose={() => setCcRegisterOpen(false)}
-        constitutionalEngagement={props.constitutionalEngagement}
-        openCCEvent={(id) => {
-          openGovernanceSurface("CC", id);
-        }}
-      />
-    )}
+                <button onClick={handleCommitAdvisory}>
+                  Commit advisory
+                </button>
+              </>
+            )}
+
+            <button onClick={props.onClose}>
+              Return to MW
+            </button>
+          </div>
+        )}
 
     </>
   );
