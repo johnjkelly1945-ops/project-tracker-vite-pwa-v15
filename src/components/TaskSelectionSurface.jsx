@@ -59,6 +59,12 @@ export default function TaskSelectionSurface(props) {
       task: props.task
     });
 
+    console.log("STAGE500W FINAL ROUTE", {
+      engagement: props.constitutionalEngagement,
+      destination: workspace.destination,
+      task: props.task?.id
+    });
+
   const isTaskWorkspace =
     workspace.destination ===
     CONSTITUTIONAL_WORKSPACE.TASK;
@@ -91,6 +97,7 @@ export default function TaskSelectionSurface(props) {
   }
 
   if (isAdvisoryWorkspace) {
+      console.log("STAGE500W ADVISORY BRANCH HIT");
     return <AdvisoryWorkspace {...props} />;
   }
 

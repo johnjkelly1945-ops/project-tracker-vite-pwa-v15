@@ -20,7 +20,7 @@ import {
   unsubscribeProjectionChanged
 } from "../domain/projection/ProjectionEngine";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onNavigate, onAddNote, isPM = false, readOnly = false }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onAddNote, isPM = false, readOnly = false }) {
 
 
   const [, refresh] = useState(0);

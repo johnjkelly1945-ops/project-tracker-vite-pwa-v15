@@ -21,7 +21,7 @@ Subsequent bounded migrations will relocate:
 • Governance lifecycle
 • Governance provider boundary
 
-from TaskPopup into this provider.
+Governance lifecycle ownership is now contained within this provider.
 
 No constitutional behaviour changes occur in this stage.
 
@@ -29,13 +29,11 @@ No constitutional behaviour changes occur in this stage.
 */
 
 import { useState, useEffect } from "react";
-import TaskPopup from "./TaskPopup";
 import RiskWorkspace from "./RiskWorkspace";
 import IssueWorkspace from "./IssueWorkspace";
 import QCWorkspace from "./QCWorkspace";
 import CCWorkspace from "./CCWorkspace";
 import { getActingUser } from "../domain/actor/ActingUser";
-import { resolveAdvisoryNavigation } from "../domain/governance/AdvisoryNavigationResolver";
 import { resolveOperationalAuthority } from "../domain/operation/OperationalAuthorityResolver";
 
 export default function AdvisoryWorkspaceProvider(props) {
@@ -123,22 +121,18 @@ export default function AdvisoryWorkspaceProvider(props) {
   const advisoryEngagement =
     props.activeAdvisory;
 
-  const advisoryNavigation =
-    resolveAdvisoryNavigation({
-      actor: getActingUser(),
-      taskId: props.task?.id
-    });
+    const resolvedAdvisoryEngagement =
+      props.constitutionalEngagement?.responsibility === "Advisory"
+        ? {
+            eventId: props.constitutionalEngagement.governanceEventId,
+            eventType: props.constitutionalEngagement.governanceEventType
+          }
+        : null;
 
-  const resolvedAdvisoryEngagement =
-    advisoryEngagement ||
-    advisoryNavigation[0] ||
-    null;
+    const advisoryTypes = resolvedAdvisoryEngagement
+      ? [resolvedAdvisoryEngagement.eventType]
+      : [];
 
-  const advisoryTypes = [
-    ...new Set(
-      advisoryNavigation.map(e => e.eventType)
-    )
-  ];
 
     const actor = getActingUser();
 
@@ -153,51 +147,21 @@ export default function AdvisoryWorkspaceProvider(props) {
 
   console.log("STAGE500W PROVIDER", {
     taskId: props.task?.id,
-    advisoryNavigation,
     resolvedAdvisoryEngagement,
     advisoryTypes
   });
 
-  function openConstitutionalDestination() {
-    /*
-    ==========================================================
+    console.log("STAGE500W CONTRACT IN PROVIDER", props.constitutionalEngagement);
 
-    CONSTITUTIONAL EXECUTION
-
-    Progressive destination execution will migrate into this
-    service from TaskPopup.
-
-    Stage 500K-6A establishes the constitutional execution
-    boundary only.
-
-    ==========================================================
-    */
-
-    if (!resolvedAdvisoryEngagement) return;
-
-    openGovernanceSurface(
-      resolvedAdvisoryEngagement.eventType,
-      resolvedAdvisoryEngagement.eventId
-    );
-  }
-
-    function handleAdvisorySelection(eventType) {
-      const engagement =
-        advisoryNavigation.find(
-          e => e.eventType === eventType
-        );
-
-      if (!engagement) return;
+    function handleAdvisorySelection() {
+      if (!resolvedAdvisoryEngagement) return;
 
       openGovernanceSurface(
-        engagement.eventType,
-        engagement.eventId
+        resolvedAdvisoryEngagement.eventType,
+        resolvedAdvisoryEngagement.eventId
       );
     }
 
-  useEffect(() => {
-    openConstitutionalDestination();
-  }, [resolvedAdvisoryEngagement]);
 
 
   const advisoryContext = {
@@ -206,10 +170,25 @@ export default function AdvisoryWorkspaceProvider(props) {
 
 
 
+    console.log("STAGE500W PROVIDER RENDER", { isAdvisor, advisoryTypes });
+
 
   return (
   <>
 
+
+      {isAdvisor && resolvedAdvisoryEngagement && (
+        <>
+          <span>Advisory</span>
+          {" - "}
+          <span
+            style={{ cursor: "pointer" }}
+            onClick={() => handleAdvisorySelection()}
+          >
+            {resolvedAdvisoryEngagement.eventType}
+          </span>
+        </>
+      )}
     {riskRegisterOpen && (
       <RiskWorkspace
         task={props.task}
@@ -257,52 +236,6 @@ export default function AdvisoryWorkspaceProvider(props) {
       />
     )}
 
-
-      {isAdvisor && (() => {
-        const advisoryEvents = advisoryNavigation;
-
-        const resolvedAdvisoryTypes =
-          advisoryTypes.length > 0
-            ? advisoryTypes
-            : [
-                ...new Set(
-                  advisoryEvents.map(e => e.eventType)
-                )
-              ];
-
-        if (resolvedAdvisoryTypes.length === 0) return null;
-
-        return (
-          <>
-            <span>Advisory</span>
-            {" - "}
-            {resolvedAdvisoryTypes.includes("RISK") && (
-              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("RISK")}>
-                Risk
-              </span>
-            )}
-            {resolvedAdvisoryTypes.includes("ISSUE") && (
-              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("ISSUE")}>
-                {" / "}Issue
-              </span>
-            )}
-            {resolvedAdvisoryTypes.includes("QC") && (
-              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("QC")}>
-                {" / "}QC
-              </span>
-            )}
-            {resolvedAdvisoryTypes.includes("CC") && (
-              <span style={{ cursor: "pointer" }} onClick={() => handleAdvisorySelection("CC")}>
-                {" / "}CC
-              </span>
-            )}
-          </>
-        );
-      })()}
-
-  <TaskPopup
-    {...advisoryContext}
-  />
-  </>
-);
+    </>
+  );
 }
