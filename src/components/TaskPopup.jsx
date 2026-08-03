@@ -31,6 +31,8 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { attemptAction } from "../domain/authority/ActionExecutor.js";
 import CanonicalTaskPopupHeader from "./CanonicalTaskPopupHeader";
 import TaskDescriptionModal from "./TaskDescriptionModal";
+import WorkspaceSurface from "./WorkspaceSurface";
+
 import TaskDocumentsModal from "./TaskDocumentsModal";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import { personnel } from "../data/personnel";
@@ -565,27 +567,7 @@ if (!isOperational && !isAdvisor) {
   /* ================= Render ================= */
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.3)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          width: "90%",
-          height: "80vh",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: "6px",
-        }}
-      >
+      <WorkspaceSurface>
         <CanonicalTaskPopupHeader
           task={task}
           summaryTitle={summaryTitle}
@@ -750,11 +732,11 @@ if (!isOperational && !isAdvisor) {
                      Delete
                    </button>
                  )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>      {assignmentModalOpen && (
-        <SubordinateSelectionModal
+          {assignmentModalOpen && (
+            <SubordinateSelectionModal
           title={localAssigneeId ? "Reassign Task" : "Assign Task"}
           items={personnel}
             segments={segments}
@@ -977,7 +959,7 @@ if (!isOperational && !isAdvisor) {
             readOnly={isReadOnly}
         />
       )}
-    </div>
+      </WorkspaceSurface>
   );
 }
 
