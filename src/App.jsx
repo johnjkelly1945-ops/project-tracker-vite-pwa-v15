@@ -441,7 +441,7 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
     */
 
     setActiveEngagement(item);
-    setActiveTaskId(null);
+    setActiveTaskId(item.taskId);
 
 
     console.log("STAGE500T CONTRACT", item);
