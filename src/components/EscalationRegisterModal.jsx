@@ -20,7 +20,7 @@ import {
   unsubscribeProjectionChanged
 } from "../domain/projection/ProjectionEngine";
 
-export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onAddNote, isPM = false, readOnly = false }) {
+export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, onClose, sourceType, sourceId, onAddNote, onNavigate, isPM = false, readOnly = false }) {
 
 
   const [, refresh] = useState(0);
@@ -53,8 +53,10 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
       taskId,
       title: draftTitle.trim(),
       classification: null,
-      sourceType,
-        sourceId: (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId) || sourceId,
+        sourceType,
+        sourceId: sourceType === "TASK"
+          ? sourceId
+          : (getGovernanceEventsByTask(taskId).find(e => e.eventType === sourceType)?.eventId || sourceId),
         segmentId,
         visibilityScope,
     });
@@ -234,7 +236,7 @@ export default function EscalationRegisterModal({ taskId, taskTitle, segmentId, 
           escalation={activeEscalation}
           onClose={() => setActiveReference(null)}
             onAddNote={onAddNote}
-          isPM={isPM}
+            isPM={isPM}
           readOnly={readOnly}
         />
       )}

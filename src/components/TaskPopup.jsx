@@ -84,6 +84,7 @@ export default function TaskPopup({
   tasks = [],
   summaries = [],
   onClose,
+    onReturnToMW,
   onAddNote,
   onAddDescription,
   onAssignTask,
@@ -116,6 +117,10 @@ export default function TaskPopup({
 
   /* ================= Stage 429 — Navigation Handler (Routing) ================= */
   function handleNavigateToEscalationSource(e) {
+      console.log("ESCALATION NAVIGATION REQUEST", e);
+
+
+
     const personId = getPersonId(getCurrentUserFromStorage());
     const actor = personId
       ? getPersonnel().find(p => p.id === personId)
@@ -214,12 +219,26 @@ CONSTITUTIONAL RULES
 function openGovernanceSurface(eventType, eventId) {
   switch (eventType) {
 
-
-
     case "CC":
       setActiveCcEventId(eventId);
       setCcModalOpen(true);
       break;
+
+    case "RISK":
+      setRiskRegisterOpen(true);
+      break;
+
+    case "ISSUE":
+      setIssueRegisterOpen(true);
+      break;
+
+    case "QC":
+      setQcRegisterOpen(true);
+      break;
+
+
+
+
 
     default:
       return;
@@ -443,6 +462,9 @@ if (!isOperational && !isAdvisor) {
     onAddNote(task.id, line);
     setDisplayNotes((p) => [...p, line]);
     onCompleteExecution(task.id);
+  }
+  function handleReturnToMW() {
+    onReturnToMW?.();
   }
 
   /* ================= Review Activation ================= */
@@ -807,7 +829,16 @@ if (!isOperational && !isAdvisor) {
     )}
   </>
 )}
-                    {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
+                          {isPM && (
+    <span
+      style={{ cursor: "pointer" }}
+      onClick={() => setEscalationRegisterOpen(true)}
+    >
+      Escalate
+    </span>
+  )}
+
+
           </div>
 
           <div
@@ -858,7 +889,19 @@ if (!isOperational && !isAdvisor) {
                   </button>
                 )}
             </div>
-
+                <div style={{ textAlign: "center", minWidth: "40px" }}>
+                  <span
+                    onClick={handleReturnToMW}
+                    style={{
+                      cursor: "pointer",
+                      fontSize: "22px",
+                      userSelect: "none"
+                    }}
+                    aria-label="Return to MY METRA WORLD"
+                  >
+                    🌍
+                  </span>
+                </div>
               <div style={{ minWidth: "140px", textAlign: "right" }}>
                   {canMutate && showStart && <button onClick={handleStartWork}>Start</button>}
                   {canMutate && showSubmit && <button onClick={handleSubmitWork}>Submit</button>}

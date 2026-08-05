@@ -1767,7 +1767,7 @@ pmName: pmDraft,
         )}
 
 
-          {(effectiveActiveTask || activeEngagement) && (
+          {effectiveActiveTask && (
             <TaskSelectionSurface
                 hasMutationAuthority={hasMutationAuthority}
                 readOnly={Boolean(archivedSegment)}
@@ -1781,6 +1781,7 @@ pmName: pmDraft,
               constitutionalEngagement={activeEngagement}
               summaries={isDev ? visibleDevSummaries : visibleMgmtSummaries}
               onClose={() => setActiveTaskId(null)}
+                onReturnToMW={() => setMyWorldOpen(true)}
               onAddNote={onAddNote}
               onAddDescription={onAddDescription}
               onAssignTask={onAssignTask}
