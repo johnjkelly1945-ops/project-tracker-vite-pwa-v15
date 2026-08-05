@@ -12,7 +12,7 @@ import { useState, useRef } from "react";
 import GovernanceSurfaceContainer from "./GovernanceSurfaceContainer";
 import SubordinateSelectionModal from "./SubordinateSelectionModal";
 import TaskDescriptionModal from "./TaskDescriptionModal";
-import { personnel } from "../data/personnel";
+import { getPersonnel } from "../domain/personnel/PersonnelRegistry";
 import { appendEscalationAdvisory, closeEscalation, updateEscalationScope, recordEscalationParticipation } from "../domain/escalation/EscalationStore";
 import { getActingUser } from "../domain/actor/ActingUser";
 import { createDocument, resolveDocuments } from "../domain/documents/DocumentStore";
@@ -54,8 +54,6 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
       reference: escalation.reference,
       closedBy: actor?.displayName || actor?.id || "PM",
     });
-      console.log("ESCALATION AFTER CLOSE", escalation);
-      console.log("ESCALATION AFTER CLOSE", escalation);
 
     onClose();
   }
@@ -66,8 +64,9 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
 
 
   const participantNames = (localEscalation.participation || [])
-    .map(p => personnel.find(person => person.id === p.reviewerId)?.displayName)
+    .map(p => getPersonnel().find(person => person.id === p.reviewerId)?.displayName)
     .filter(Boolean);
+
 
   function handleCommitInlineAdvisory() {
 
@@ -352,9 +351,8 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
         {participantModalOpen && !readOnly && (
           <SubordinateSelectionModal
             title="Confirm Escalation Participant"
-            items={personnel}
+            items={getPersonnel()}
             onSelect={(person) => {
-              console.log("ESCALATION PARTICIPANT SELECT", person);
 
               const updated = recordEscalationParticipation({
                 taskId,
@@ -363,6 +361,7 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
                 participationType: "internal",
                 acceptedBy: "PM"
               });
+
 
               setLocalEscalation(updated);
 
