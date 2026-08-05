@@ -67,13 +67,6 @@ export function resolveConstitutionalWorkspace({
 
   ==========================================================
   */
-  console.log("STAGE500T ROUTER INPUT", {
-  constitutionalEngagement,
-  actor,
-  segment: segment?.id,
-  task: task?.id
-});
-
 const { isOperational } =
     resolveOperationalAuthority({
         engagement: constitutionalEngagement,
@@ -82,17 +75,7 @@ const { isOperational } =
       task
     });
 
-
-  console.log("STAGE500T ROUTER", {
-    constitutionalEngagement,
-    isOperational,
-    taskId: task?.id
-  });
-
-
-  if (constitutionalEngagement?.responsibility === "CC_INSPECTION") {
-    console.log("STAGE500T ROUTER -> CC");
-    return {
+  if (constitutionalEngagement?.responsibility === "CC_INSPECTION") {    return {
       destination:
         CONSTITUTIONAL_WORKSPACE.CC
     };
@@ -112,9 +95,7 @@ const { isOperational } =
   }
 
 
-  if (constitutionalEngagement?.responsibility === "CC_INSPECTION") {
-    console.log("STAGE500T ROUTER -> CC");
-    return {
+  if (constitutionalEngagement?.responsibility === "CC_INSPECTION") {    return {
       destination:
         CONSTITUTIONAL_WORKSPACE.CC
     };
@@ -123,26 +104,20 @@ const { isOperational } =
 
 
 
-  if (constitutionalEngagement?.responsibility === "RISK_INSPECTION") {
-    console.log("STAGE500T ROUTER -> RISK");
-      return {
+  if (constitutionalEngagement?.responsibility === "RISK_INSPECTION") {      return {
         destination:
           CONSTITUTIONAL_WORKSPACE.RISK
     };
   }
 
 
-    if (constitutionalEngagement?.responsibility === "QC_INSPECTION") {
-      console.log("STAGE500T ROUTER -> QC");
-      return {
+    if (constitutionalEngagement?.responsibility === "QC_INSPECTION") {      return {
         destination:
           CONSTITUTIONAL_WORKSPACE.QC
       };
     }
 
-    if (constitutionalEngagement?.responsibility === "ISSUE_INSPECTION") {
-      console.log("STAGE500T ROUTER -> ISSUE");
-      return {
+    if (constitutionalEngagement?.responsibility === "ISSUE_INSPECTION") {      return {
         destination:
           CONSTITUTIONAL_WORKSPACE.ISSUE
       };

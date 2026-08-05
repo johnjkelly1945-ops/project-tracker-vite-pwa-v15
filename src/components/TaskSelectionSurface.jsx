@@ -41,16 +41,7 @@ import {
 } from "../domain/constitutional/ConstitutionalWorkspaceRouter";
 
 export default function TaskSelectionSurface(props) {
-  console.log("STAGE500T TASK SELECTION");
-
   const actor = getActingUser();
-
-    console.log("STAGE500T TASK SURFACE PROPS", {
-      segment: props.segment,
-      task: props.task,
-      constitutionalEngagement: props.constitutionalEngagement
-    });
-
   const workspace =
     resolveConstitutionalWorkspace({
       constitutionalEngagement: props.constitutionalEngagement,
@@ -58,13 +49,6 @@ export default function TaskSelectionSurface(props) {
       segment: props.segment,
       task: props.task
     });
-
-    console.log("STAGE500W FINAL ROUTE", {
-      engagement: props.constitutionalEngagement,
-      destination: workspace.destination,
-      task: props.task?.id
-    });
-
   const isTaskWorkspace =
     workspace.destination ===
     CONSTITUTIONAL_WORKSPACE.TASK;
@@ -96,9 +80,7 @@ export default function TaskSelectionSurface(props) {
     return <TaskPopup {...props} />;
   }
 
-  if (isAdvisoryWorkspace) {
-      console.log("STAGE500W ADVISORY BRANCH HIT");
-    return <AdvisoryWorkspace {...props} />;
+  if (isAdvisoryWorkspace) {    return <AdvisoryWorkspace {...props} />;
   }
 
   if (isGovernanceWorkspace) {

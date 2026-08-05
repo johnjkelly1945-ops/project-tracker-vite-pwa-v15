@@ -106,8 +106,8 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
       participationType: "internal",
       acceptedBy: "PM",
     });
-
-    setEvent(updated);
+    console.log("PARTICIPANT UPDATED STATE", updated.participation);
+      setEvent(updated);
 
     if (onAddNote) {
       onAddNote(
@@ -346,7 +346,7 @@ export default function IssueModal({ taskId, taskTitle, eventId, onClose, onAddN
               }}
             >
                 {!readOnly && isPM && event?.status === "OPEN" && (<button onClick={handleCloseItem}>Close Item</button>)}
-              {isPM && <button onClick={onEscalate}>Escalate</button>}
+              {isPM && <button onClick={() => onEscalate(eventId)}>Escalate</button>}
             </div>
 
             <div

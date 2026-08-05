@@ -442,10 +442,6 @@ const [outcomeDraft, setOutcomeDraft] = useState("");
 
     setActiveEngagement(item);
     setActiveTaskId(item.taskId);
-
-
-    console.log("STAGE500T CONTRACT", item);
-
     setActiveSegmentId(item.segmentId);
     setMyWorldOpen(false);
   }
@@ -1219,13 +1215,6 @@ pmName: pmDraft,
       return updated;
     });
   }
-
-  console.log("STAGE500T APP SEGMENT STATE", {
-    activeSegment,
-    activeSegmentId,
-    activeEngagement
-  });
-
   /* ===================== RENDER ===================== */
 
   return (

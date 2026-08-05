@@ -98,23 +98,9 @@ export default function AdvisoryWorkspaceProvider(props) {
     const actor = getActingUser();
 
       const isAdvisor =
-        props.constitutionalEngagement?.responsibility === "Advisory";
-
-  console.log("STAGE500W PROVIDER", {
-    taskId: props.task?.id,
-    resolvedAdvisoryEngagement,
-    advisoryTypes
-  });
-
-    console.log("STAGE500W CONTRACT IN PROVIDER", props.constitutionalEngagement);
-  const advisoryContext = {
+        props.constitutionalEngagement?.responsibility === "Advisory";  const advisoryContext = {
     ...props,
   };
-
-
-
-    console.log("STAGE500W PROVIDER RENDER", { isAdvisor, advisoryTypes });
-
 
   return (
   <>

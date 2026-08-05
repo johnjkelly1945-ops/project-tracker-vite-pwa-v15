@@ -35,9 +35,6 @@ export default function IssueWorkspaceProvider(props) {
   const constitutionalReadOnly =
     props.constitutionalEngagement?.responsibility === "ISSUE_INSPECTION";
 
-    console.log("ISSUE PROVIDER TASK", props.task);
-
-
   return (
     <>
       <IssueRegisterModal

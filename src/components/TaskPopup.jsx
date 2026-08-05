@@ -109,8 +109,6 @@ export default function TaskPopup({
   advisoryDestinationId = null,
 }) {
   if (!task) return null;
-    console.log("TASKPOPUP TASK", task);
-
   const isReadOnly = readOnly === true;
 
   const isArchiveTriggerTask =
@@ -365,6 +363,16 @@ function openGovernanceSurface(eventType, eventId) {
     !isReadOnly;
 
 
+    const resolvedAdvisoryTypes =
+      advisoryTypes.length > 0
+        ? advisoryTypes
+        : [
+            ...new Set(
+              advisoryNavigation.map(e => e.eventType)
+            )
+          ];
+
+
   /*
 ==========================================================
 STAGE 500H-8G
@@ -498,7 +506,9 @@ if (!isOperational && !isAdvisor) {
       sourceId: eventId
     });
 
-    bridgeEscalateGovernanceEvent({ eventId });
+    console.log("ESCALATE DEBUG", { eventId, events: getGovernanceEventsByTask(task.id) });
+
+      bridgeEscalateGovernanceEvent({ eventId });
 
     setEscalationRegisterOpen(true);
   }
@@ -771,47 +781,32 @@ if (!isOperational && !isAdvisor) {
                isPM && (
               <> · <span style={{ cursor: "pointer" }} onClick={handleInitiateReview}>Review</span></>
             )}
-{isAdvisor && (() => {
-  const advisoryEvents = advisoryNavigation;
-
-  const resolvedAdvisoryTypes =
-    advisoryTypes.length > 0
-      ? advisoryTypes
-      : [
-          ...new Set(
-            advisoryEvents.map(e => e.eventType)
-          )
-        ];
-
-  if (resolvedAdvisoryTypes.length === 0) return null;
-
-  return (
-    <>
-      <span>Advisory</span>
-      {" - "}
-      {resolvedAdvisoryTypes.includes("RISK") && (
-        <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("RISK")}>
-          Risk
-        </span>
-        )}
-          {resolvedAdvisoryTypes.includes("ISSUE") && (
-            <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("ISSUE")}>
-              {" / "}Issue
-            </span>
-          )}
-            {resolvedAdvisoryTypes.includes("QC") && (
-              <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("QC")}>
-                {" / "}QC
-              </span>
-            )}
-        {resolvedAdvisoryTypes.includes("CC") && (
-          <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("CC")}>
-            {" / "}CC
-          </span>
-        )}
-    </>
-  );
-})()}
+{isAdvisor && resolvedAdvisoryTypes.length > 0 && (
+  <>
+    <span>Advisory</span>
+    {" - "}
+    {resolvedAdvisoryTypes.includes("RISK") && (
+      <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("RISK")}>
+        Risk
+      </span>
+    )}
+    {resolvedAdvisoryTypes.includes("ISSUE") && (
+      <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("ISSUE")}>
+        {" / "}Issue
+      </span>
+    )}
+    {resolvedAdvisoryTypes.includes("QC") && (
+      <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("QC")}>
+        {" / "}QC
+      </span>
+    )}
+    {resolvedAdvisoryTypes.includes("CC") && (
+      <span style={{ cursor: "pointer" }} onClick={() => onAdvisorySelect("CC")}>
+        {" / "}CC
+      </span>
+    )}
+  </>
+)}
                     {isPM && (<span style={{ cursor: "pointer" }} onClick={() => setEscalationRegisterOpen(true)}>Escalate</span>)}
           </div>
 
