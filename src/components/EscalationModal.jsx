@@ -43,6 +43,8 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
   const [descriptionEntries, setDescriptionEntries] = useState([]);
   const [docModalOpen, setDocModalOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [localEscalation, setLocalEscalation] = useState(escalation);
+
 
   const actor = getActingUser();
 
@@ -63,9 +65,9 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
   });
 
 
-  const participantNames = escalation.participants
-    ? escalation.participants.split(",")
-    : [];
+  const participantNames = (localEscalation.participation || [])
+    .map(p => personnel.find(person => person.id === p.reviewerId)?.displayName)
+    .filter(Boolean);
 
   function handleCommitInlineAdvisory() {
 
@@ -350,15 +352,19 @@ export default function EscalationModal({ taskId, taskTitle, escalation, onClose
         {participantModalOpen && !readOnly && (
           <SubordinateSelectionModal
             title="Confirm Escalation Participant"
-            items={[]}
+            items={personnel}
             onSelect={(person) => {
-              recordEscalationParticipation({
+              console.log("ESCALATION PARTICIPANT SELECT", person);
+
+              const updated = recordEscalationParticipation({
                 taskId,
                 reference: escalation.reference,
                 reviewerId: person.id,
                 participationType: "internal",
                 acceptedBy: "PM"
               });
+
+              setLocalEscalation(updated);
 
               setRefreshTick((v) => v + 1);
               setParticipantModalOpen(false);
