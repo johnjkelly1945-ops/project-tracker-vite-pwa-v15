@@ -382,14 +382,6 @@ function openGovernanceSurface(eventType, eventId) {
     !isReadOnly;
 
 
-    const resolvedAdvisoryTypes =
-      advisoryTypes.length > 0
-        ? advisoryTypes
-        : [
-            ...new Set(
-              advisoryNavigation.map(e => e.eventType)
-            )
-          ];
 
 
   /*

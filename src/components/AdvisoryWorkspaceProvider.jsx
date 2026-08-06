@@ -95,10 +95,22 @@ export default function AdvisoryWorkspaceProvider(props) {
       : [];
 
 
+      const resolvedAdvisoryTypes =
+        advisoryTypes.length > 0
+          ? advisoryTypes
+          : [
+              ...new Set(
+                advisoryNavigation.map(e => e.eventType)
+              )
+            ];
+
+
     const actor = getActingUser();
 
       const isAdvisor =
-        props.constitutionalEngagement?.responsibility === "Advisory";  const advisoryContext = {
+  props.constitutionalEngagement?.responsibility === "Advisory";
+
+const advisoryContext = {
     ...props,
   };
 
